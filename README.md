@@ -1,8 +1,8 @@
 # ZSPACE
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/gitzhcode/zspace_core/LICENSE.MIT)
 [![Documentation](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://github.com/gitzhcode/zspace_core/doxyoutput/)
-[![GitHub Releases](https://img.shields.io/github/release/venumb/zspace.svg)](https://github.com/gitzhcode/zspace_core/releases)
-[![GitHub Issues](https://img.shields.io/github/issues/venumb/zspace.svg)](http://github.com/gitzhcode/zspace_core/issues)
+[![GitHub Releases](https://img.shields.io/github/release/gitzhcode/zspace_core.svg)](https://github.com/gitzhcode/zspace_core/releases)
+[![GitHub Issues](https://img.shields.io/github/issues/gitzhcode/zspace_core.svg)](http://github.com/gitzhcode/zspace_core/issues)
 
 **ZSPACE** is a C++  library collection of geometry data-structures, algorithms framework. It is implemented as a header-only C++ library, whose dependencies, are header-only or static libraries. Hence **ZSPACE** can be easily embedded in C++ projects. 
 
