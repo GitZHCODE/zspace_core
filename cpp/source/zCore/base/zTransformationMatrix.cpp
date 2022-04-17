@@ -502,7 +502,7 @@ namespace zSpace
 		if (R(0, 2) != 1 && R(0, 2) != -1)
 		{
 			rot0[1] = asin(R(0, 2)) * -1;
-			rot1[1] = PI - rot0[1];
+			rot1[1] = Z_PI - rot0[1];
 
 			rot0[0] = atan2(R(1, 2) / cos(rot0[1]), R(2, 2) / cos(rot0[1]));
 			rot1[1] = atan2(R(1, 2) / cos(rot1[1]), R(2, 2) / cos(rot1[1]));
@@ -517,12 +517,12 @@ namespace zSpace
 
 			if (R(0, 2) == -1)
 			{
-				rot0[1] = rot1[1] = HALF_PI;
+				rot0[1] = rot1[1] = Z_HALF_PI;
 				rot0[0] = rot1[0] = atan2(R(1, 0), R(2, 0));
 			}
 			else
 			{
-				rot0[1] = rot1[1] = HALF_PI * -1;
+				rot0[1] = rot1[1] = Z_HALF_PI * -1;
 				rot0[0] = rot1[0] = atan2(R(1, 0)* -1, R(2, 0)* -1);
 			}
 		}

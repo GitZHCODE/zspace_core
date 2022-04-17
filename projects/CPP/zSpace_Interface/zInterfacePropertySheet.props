@@ -6,15 +6,11 @@
     <MayaDir>C:\Program Files\Autodesk\Maya2018</MayaDir>
     <CudaCommonDir>C:\ProgramData\NVIDIA Corporation\CUDA Samples\v10.2\common\inc</CudaCommonDir>
     <zspaceDeployDir>C:\Users\vishu.b\source\repos\GitZHCODE\Alice2018_zSpace\ALICE_PLATFORM\src\zspace</zspaceDeployDir>
-    <aliceEXEDir>C:\Users\vishu.b\source\repos\GitZHCODE\Alice2018_zSpace\ALICE_PLATFORM\x64\Release\EXE</aliceEXEDir>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup>
     <PostBuildEvent>
-      <Command>CALL "$(SolutionDir)scripts\"zspace_libdeploy.bat "$(outDir)" "$(zspaceDeployDir)\lib"
-CALL "$(SolutionDir)scripts\"zspace_dlldeploy.bat "$(outDir)" "$(aliceEXEDir)"
-CALL "$(SolutionDir)scripts\"zspace_includedeploy.bat "$(SolutionDir)\cpp\headers" "$(zspaceDeployDir)\headers"
-REM CALL "$(SolutionDir)scripts\"zspace_includedeploy.bat "$(SolutionDir)\cpp\depends" "$(zspaceDeployDir)\depends"</Command>
+      <Command>CALL "$(SolutionDir)scripts\"zspace_core_deploy.bat "$(outDir)" "$(zspaceDeployDir)\lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -32,10 +28,6 @@ REM CALL "$(SolutionDir)scripts\"zspace_includedeploy.bat "$(SolutionDir)\cpp\de
     </BuildMacro>
     <BuildMacro Include="zspaceDeployDir">
       <Value>$(zspaceDeployDir)</Value>
-      <EnvironmentVariable>true</EnvironmentVariable>
-    </BuildMacro>
-    <BuildMacro Include="aliceEXEDir">
-      <Value>$(aliceEXEDir)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

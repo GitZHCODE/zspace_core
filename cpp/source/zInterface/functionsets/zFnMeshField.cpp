@@ -2419,7 +2419,7 @@ namespace zSpace
 
 				float n = (distFromStart / wave_period) + 0.5;
 
-				float a = (n) * (HALF_PI);
+				float a = (n) * (Z_HALF_PI);
 
 
 				float d = sin(a);
@@ -2577,7 +2577,7 @@ namespace zSpace
 
 				float n = (distFromStart / wave_period) + 0.5;
 
-				float a = (n) * (PI * 0.5);
+				float a = (n) * (Z_PI * 0.5);
 				//printf("\n n %1.2f a %1.2f  %1.2f ",n, a, sin(a));
 
 
@@ -2826,7 +2826,7 @@ namespace zSpace
 
 				float n = positions.size() + 2 /*(distFromStart / wave_period)*/ ;
 
-				float a =   (n + 0.5) * (PI * 0.5);
+				float a =   (n + 0.5) * (Z_PI * 0.5);
 				//printf("\n n %1.2f a %1.2f  %1.2f ",n, a, sin(a));
 
 
@@ -5779,8 +5779,8 @@ namespace zSpace
 
 			float offset = 0.1;
 			float a = temp.x / offset;
-			float val = 2 * asin(sin(a * PI));
-			val /= (PI);
+			float val = 2 * asin(sin(a * Z_PI));
+			val /= (Z_PI);
 
 			//float val = sin(a);
 			
@@ -6780,13 +6780,13 @@ namespace zSpace
 			float t = sin(h) * sqrt(3.0);
 			float rx = sqrt(-c * (s + t + 2.0) + m2);
 			float ry = sqrt(-c * (s - t + 2.0) + m2);
-			co = (ry + sign(l) * rx + abs(g) / (rx * ry) - m) / 2.0;
+			co = (ry + coreUtils.zSign<float>(l) * rx + abs(g) / (rx * ry) - m) / 2.0;
 		}
 		else
 		{
 			float h = 2.0 * m * n * sqrt(d);
-			float s = sign(q + h) * pow(abs(q + h), 1.0 / 3.0);
-			float u = sign(q - h) * pow(abs(q - h), 1.0 / 3.0);
+			float s = coreUtils.zSign<float>(q + h) * pow(abs(q + h), 1.0 / 3.0);
+			float u = coreUtils.zSign<float>(q - h) * pow(abs(q - h), 1.0 / 3.0);
 			float rx = -s - u - c * 4.0 + 2.0 * m2;
 			float ry = (s - u) * sqrt(3.0);
 			float rm = sqrt(rx * rx + ry * ry);

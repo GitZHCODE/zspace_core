@@ -34,7 +34,7 @@ using namespace std;
 	#include<depends/Eigen/Sparse>
 	using namespace Eigen;
 
-#ifndef USING_CLR
+#ifdef USING_ARMA
 	#include <depends/Armadillo/armadillo>
 	using namespace arma;
 #endif

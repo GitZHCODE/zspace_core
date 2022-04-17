@@ -111,7 +111,7 @@ namespace zSpace
 
 
 				// check if data point changed cluster
-				if (clusterID != clusterIDS[j]) exit = false;
+				//if (clusterID != clusterIDS[j]) exit = false;
 
 				clusterIDS[j] = clusterID;
 

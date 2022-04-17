@@ -744,7 +744,7 @@ namespace zSpace
 		*	\return 			zMatrix		- transformation matrix.
 		*	\since version 0.0.2
 		*/
-		ZSPACE_CUDA_CALLABLE zMatrix4 PlanetoPlane(zMatrix4 &from, zMatrix4 &to);
+		ZSPACE_CUDA_CALLABLE zMatrix4 PlanetoPlane(zMatrix4& from, zMatrix4& to);
 
 		/*! \brief This method computes the tranformation to change the baseis from one 4X4 matrix to another.
 		*
@@ -857,7 +857,7 @@ namespace zSpace
 		//---- MATRIX METHODS USING EIGEN / ARMA
 		//--------------------------
 
-		/*! \brief This method return a 4X4 matrix of the best fit plane for the given points using Principal Component Analysis.  Works with Eigen matrix.
+				/*! \brief This method return a 4X4 matrix of the best fit plane for the given points using Principal Component Analysis.  Works with Eigen matrix.
 		*
 		*	\param		[in]	points		- input points.
 		*	\return 			zPlane		- Best fit plane as a 4X4 matrix, with XYZO stored in columns 0,1,2,3 respectively.
@@ -871,7 +871,7 @@ namespace zSpace
 		*	\param		[out]	points		- projected points.
 		*	\since version 0.0.4
 		*/
-		void getProjectedPoints_BestFitPlane(zPointArray& points, zPointArray &projectPoints);
+		void getProjectedPoints_BestFitPlane(zPointArray& points, zPointArray& projectPoints);
 
 		/*! \brief This method computes the bounding box for the given points using PCA.  Works with Eigen matrix.
 		*
@@ -880,7 +880,7 @@ namespace zSpace
 		*	\param		[out]	maxBB			- upper bounds as zVector
 		*	\since version 0.0.2
 		*/
-		void boundingboxPCA(zPointArray points, zVector &minBB, zVector &maxBB, zVector &minBB_local, zVector &maxBB_local);
+		void boundingboxPCA(zPointArray points, zVector& minBB, zVector& maxBB, zVector& minBB_local, zVector& maxBB_local);
 
 		/*! \brief This method computes the tranformation to the world space of the input 4x4 matrix.
 		*
@@ -923,7 +923,7 @@ namespace zSpace
 		//---- MATRIX  METHODS USING ARMADILLO
 		//--------------------------
 
-#ifndef USING_CLR
+#ifdef USING_ARMA
 
 		/*! \brief This method returns the reduced row echelon form of the input matrix. Works with Armadillo matrix.
 		*
@@ -1000,7 +1000,7 @@ namespace zSpace
 		//---- PRIVATE MATRIX  METHODS
 		//--------------------------
 
-#ifndef USING_CLR
+#ifdef USING_ARMA
 
 		/*! \brief This utility method for reduced row echelon form, returns the max value and the pivot in the input column. Works with Armadillo matrix.
 		*

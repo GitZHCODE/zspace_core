@@ -1015,7 +1015,7 @@ namespace zSpace
 
 			Pts.push_back(pos * trans);
 
-			theta += (TWO_PI / (numPoints+1));
+			theta += (Z_TWO_PI / (numPoints+1));
 		}
 	}
 
@@ -1470,6 +1470,7 @@ namespace zSpace
 
 		averagePt /= points.size();
 
+#ifdef USING_ARMA 
 		arma::mat X_arma(points.size(), 3);
 		for (int i = 0; i < points.size(); i++)
 		{
@@ -1497,27 +1498,28 @@ namespace zSpace
 		// o
 		out(0, 3) = averagePt.x;	out(1, 3) = averagePt.y;	out(2, 3) = averagePt.z;
 
-		/*MatrixXd X_eigen(points.size(), 3);
+#else
+		MatrixXd X_eigen(points.size(), 3);
 		for (int i = 0; i < points.size(); i++)
 		{
 			X_eigen(i, 0) = points[i].x - averagePt.x;
 			X_eigen(i, 1) = points[i].y - averagePt.y;
 			X_eigen(i, 2) = points[i].z - averagePt.z;
 
-		}*/
+		}
 
 
-		//Matrix3f covarianceMat;
-		////X_eigen.bdcSvd(ComputeThinU | ComputeThinV).solve(covarianceMat);
+		Matrix3f covarianceMat;
+		//X_eigen.bdcSvd(ComputeThinU | ComputeThinV).solve(covarianceMat);
 
-		//BDCSVD<Matrix3d> svd;
-		//svd.compute(X_eigen);
+		BDCSVD<Matrix3d> svd;
+		svd.compute(X_eigen);
 
-		//cout << "\n eigen \n " << svd.computeV();
+		cout << "\n eigen \n " << svd.computeV();
 
 		// compute covariance matrix 
-		/*SelfAdjointEigenSolver<Matrix3f> eigensolver;
-		Matrix3f covarianceMat;
+		SelfAdjointEigenSolver<Matrix3f> eigensolver;
+		//Matrix3f covarianceMat;
 
 		for (int i = 0; i < 3; i++)
 		{
@@ -1546,17 +1548,28 @@ namespace zSpace
 		vector<double> X = { eigensolver.eigenvectors().col(2)(0), eigensolver.eigenvectors().col(2)(1), eigensolver.eigenvectors().col(2)(2), 1 };
 		vector<double> Y = { eigensolver.eigenvectors().col(1)(0), eigensolver.eigenvectors().col(1)(1), eigensolver.eigenvectors().col(1)(2), 1 };
 		vector<double> Z = { eigensolver.eigenvectors().col(0)(0), eigensolver.eigenvectors().col(0)(1), eigensolver.eigenvectors().col(0)(2), 1 };
-		vector<double> O = { averagePt.x, averagePt.y, averagePt.z, 1 };*/
+		vector<double> O = { averagePt.x, averagePt.y, averagePt.z, 1 };
 
-		/*out.setCol(0, X);
-		out.setCol(1, Y);
-		out.setCol(2, Z);
-		out.setCol(3, O);*/
+		// x
+		out(0, 0) = X[0]; 	out(1, 0) = X[1];	out(2, 0) = X[2];
+
+		// y
+		out(0, 1) = Y[0]; 	out(1, 1) = Y[1];	out(2, 1) = Y[2];
+
+		// z
+		out(0, 2) = Z[0];	out(1, 2) = Z[1];	out(2, 2) = Z[3];
+
+		// o
+		out(0, 3) = averagePt.x;	out(1, 3) = averagePt.y;	out(2, 3) = averagePt.z;	
+		
+
+#endif
 
 		return out;
 	}
 
-	ZSPACE_INLINE void zUtilsCore::getProjectedPoints_BestFitPlane(zPointArray & points, zPointArray &projectPoints)
+
+	ZSPACE_INLINE void zUtilsCore::getProjectedPoints_BestFitPlane(zPointArray& points, zPointArray& projectPoints)
 	{
 		zPlane plane;
 		plane = getBestFitPlane(points);
@@ -1576,7 +1589,7 @@ namespace zSpace
 		}
 	}
 
-	ZSPACE_INLINE void zUtilsCore::boundingboxPCA(zPointArray points, zVector &minBB, zVector &maxBB, zVector &minBB_local, zVector &maxBB_local)
+	ZSPACE_INLINE void zUtilsCore::boundingboxPCA(zPointArray points, zVector& minBB, zVector& maxBB, zVector& minBB_local, zVector& maxBB_local)
 	{
 		zPlane bPlane_Mat = getBestFitPlane(points);
 
@@ -1689,7 +1702,7 @@ namespace zSpace
 
 	//---- MATRIX  METHODS USING ARMADILLO
 
-#ifndef USING_CLR 
+#ifdef USING_ARMA 
 
 	ZSPACE_INLINE arma::mat zUtilsCore::rref(arma::mat A, double tol)
 	{
@@ -1764,7 +1777,7 @@ namespace zSpace
 
 	//---- PRIVATE MATRIX  METHODS
 
-#ifndef USING_CLR
+#ifdef USING_ARMA
 
 	ZSPACE_INLINE void zUtilsCore::rref_max(mat &A, int &r, int &c, double &m, int &pivot)
 	{

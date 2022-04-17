@@ -65,7 +65,7 @@ namespace zSpace
 
 		/*! \brief container for storing face centers */
 		zPointArray faceCenters;
-
+		
 		/*! \brief dihedral angle threshold */
 		double dihedralAngleThreshold;
 

@@ -258,7 +258,7 @@ namespace zSpace
 			float det = normal * (cross);
 
 			float angle = atan2(det, dot);
-			if (angle < 0) angle += TWO_PI;
+			if (angle < 0) angle += Z_TWO_PI;
 
 
 			return angle * RAD_TO_DEG;
@@ -279,7 +279,7 @@ namespace zSpace
 		zVector cross = v1 ^ v2;
 		float  dtheta = atan2(e * cross, dot);
 
-		return(dtheta * (180.0 / PI));
+		return(dtheta * (180.0 / Z_PI));
 	}
 
 	ZSPACE_INLINE float zVector::cotan(zVector &v)
