@@ -292,6 +292,10 @@ namespace zSpace
 				float coTan_alpha = (((p01)*(p21)) / cr_alpha.length());
 				float coTan_beta = (((p01)*(p31)) / cr_beta.length());
 
+				zVector cross = (pt1 - pt) ^ (pt2 - pt);
+				float area = 0.5 * cross.length();
+				areaSum += area;
+
 				// check if triangle is obtuse
 				if ((p10).angle(p20) <= 90 && (p01).angle(p21) <= 90 && (p12).angle(p02) <= 90)
 				{
@@ -314,12 +318,14 @@ namespace zSpace
 
 			meanCurvNormal /= (2 * areaSumMixed);
 
+			// using https://arxiv.org/abs/0804.1046
 			gaussianCurv = (360 - angleSum) / ((0.5 * areaSum) - (multFactor * cotangentSum * edgeLengthSquare));
-			//outGauss.push_back(gaussianCurv);
-
+			
 			////// Based on Discrete Differential-Geometry Operators for Triangulated 2-Manifolds
-
+			//https://link.springer.com/chapter/10.1007/978-3-662-05105-4_2
 			//gaussianCurv = (360 - angleSum) / areaSumMixed;
+
+			//printf("\n %1.6f ", gaussianCurv);
 
 			double meanCurv = (meanCurvNormal.length() / 2);
 			//if (meanCurv <0.001) meanCurv = 0;
@@ -341,9 +347,98 @@ namespace zSpace
 	{
 		double out = -1;
 
-		zCurvature curvature = getPrincipalCurvature();
+		double angleSum = 0;
+		double cotangentSum = 0;
+		double areaSum = 0;
+		double areaSumMixed = 0;
+		double edgeLengthSquare = 0;
+		float gaussianCurv = 0;
+		float gaussianAngle = 0;
+		
 
-		return out = curvature.k1 * curvature.k2;
+		zVector meanCurvNormal;
+
+
+		if (!onBoundary())
+		{
+			zItMeshVertexArray cVerts;
+			getConnectedVertices(cVerts);
+
+			zVector pt = getPosition();
+
+			float multFactor = 0.125;
+
+			int i = 0;
+			for (auto v : cVerts)
+			{
+				int next = (i + 1) % cVerts.size();
+				int prev = (i + cVerts.size() - 1) % cVerts.size();
+
+				zVector pt1 = v.getPosition();
+				zVector pt2 = cVerts[next].getPosition();
+				zVector pt3 = cVerts[prev].getPosition();
+
+				zVector p01 = pt - pt1;
+				zVector p02 = pt - pt2;
+				zVector p10 = pt1 - pt;
+				zVector p20 = pt2 - pt;
+				zVector p12 = pt1 - pt2;
+				zVector p21 = pt2 - pt1;
+				zVector p31 = pt3 - pt1;
+
+				zVector cr = (p10) ^ (p20);
+
+				float ang = (p10).angle(p20);
+				angleSum += ang;
+				cotangentSum += (((p20) * (p10)) / cr.length());
+
+
+				float e_Length = (pt1 - pt2).length();
+
+				edgeLengthSquare += (e_Length * e_Length);
+
+				zVector cr_alpha = (p01) ^ (p21);
+				zVector cr_beta = (p01) ^ (p31);
+
+				float coTan_alpha = (((p01) * (p21)) / cr_alpha.length());
+				float coTan_beta = (((p01) * (p31)) / cr_beta.length());
+
+				zVector cross = (pt1 - pt) ^ (pt2 - pt);
+				float area = 0.5 * cross.length();
+				areaSum += area;
+
+				// check if triangle is obtuse
+				if ((p10).angle(p20) <= 90 && (p01).angle(p21) <= 90 && (p12).angle(p02) <= 90)
+				{
+					areaSumMixed += (coTan_alpha + coTan_beta) * edgeLengthSquare * 0.125;
+				}
+				else
+				{
+
+					double triArea = (((p10) ^ (p20)).length()) / 2;
+
+					if ((ang) <= 90) areaSumMixed += triArea * 0.25;
+					else areaSumMixed += triArea * 0.5;
+
+				}
+
+				meanCurvNormal += ((pt - pt1) * (coTan_alpha + coTan_beta));
+
+				i++;
+			}
+
+			meanCurvNormal /= (2 * areaSumMixed);
+
+			// using https://arxiv.org/abs/0804.1046
+			//gaussianCurv = (360 - angleSum) / ((0.5 * areaSum) - (multFactor * cotangentSum * edgeLengthSquare));
+
+			////// Based on Discrete Differential-Geometry Operators for Triangulated 2-Manifolds
+			//https://link.springer.com/chapter/10.1007/978-3-662-05105-4_2
+			gaussianCurv = (360 - angleSum) / areaSumMixed;
+
+		}
+
+		return gaussianCurv;	
 	}
 
 	ZSPACE_INLINE zVector zItMeshVertex::getGaussianGradient()

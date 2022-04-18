@@ -1509,18 +1509,15 @@ namespace zSpace
 	}
 
 	ZSPACE_INLINE void zFnMesh::getGaussianCurvature(zDoubleArray &vertexCurvatures)
-	{
-		vector<zCurvature> pCurvature;
-
-		getPrincipalCurvatures(pCurvature);
-
-
+	{	
 		vertexCurvatures.clear();
-		vertexCurvatures.assign(numVertices(), -1);
-		for (int i = 0; i < numVertices(); i++)
+		for (zItMeshVertex v(*meshObj); !v.end(); v++)
 		{
-			vertexCurvatures[i] = pCurvature[i].k1 * pCurvature[i].k2;
-		}
+			int j = v.getId();					
+			vertexCurvatures.push_back(v.getGaussianCurvature());
+		
+		}		
+		
 	}
 
 	ZSPACE_INLINE void zFnMesh::getEdgeDihedralAngles(zDoubleArray &dihedralAngles)
