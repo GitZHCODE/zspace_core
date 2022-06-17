@@ -20,3 +20,5 @@
 #include <headers/zInterface/functionsets/zFnGraphDynamics.h>
 
 #include <headers/zInterface/functionsets/zFnSpatialBin.h>
+
+#include <headers/zInterface/functionsets/zFnComputeMesh.h>

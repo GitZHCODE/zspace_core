@@ -45,7 +45,6 @@ namespace zSpace
 	/** @}*/
 
 	/** @}*/
-
 	class ZSPACE_API zFnMesh : public zFn
 	{
 

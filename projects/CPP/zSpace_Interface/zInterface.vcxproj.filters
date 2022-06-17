@@ -114,6 +114,12 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjSpatialBin.h">
       <Filter>Header Files\Objects</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjComputeMesh.h">
+      <Filter>Header Files\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnComputeMesh.h">
+      <Filter>Header Files\FunctionSets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFn.cpp">
@@ -190,6 +196,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjSpatialBin.cpp">
       <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjComputeMesh.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnComputeMesh.cpp">
+      <Filter>Source Files\FunctionSets</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

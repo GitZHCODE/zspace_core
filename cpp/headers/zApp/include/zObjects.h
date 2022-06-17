@@ -17,3 +17,5 @@
 #include <headers/zInterface/objects/zObjMeshField.h>
 
 #include <headers/zInterface/objects/zObjPointField.h>
+
+#include <headers/zInterface/objects/zObjComputeMesh.h>

@@ -193,6 +193,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFn.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnComputeMesh.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnGraph.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnGraphDynamics.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnMesh.h" />
@@ -210,6 +211,7 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterface\iterators\zItPointField.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\model\zModel.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObj.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjComputeMesh.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjGraph.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjMesh.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjMeshField.h" />
@@ -220,6 +222,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFn.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnComputeMesh.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnGraph.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnGraphDynamics.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnMesh.cpp" />
@@ -237,6 +240,7 @@
     <ClCompile Include="..\..\..\cpp\source\zInterface\iterators\zItPointField.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\model\zModel.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObj.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjComputeMesh.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjGraph.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjMesh.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjMeshField.cpp" />

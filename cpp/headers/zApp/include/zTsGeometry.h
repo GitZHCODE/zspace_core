@@ -13,3 +13,5 @@
 //#include <headers/zToolsets/geometry/zTsMesh2Pix.h>
 
 #include <headers/zToolsets/geometry/zTsSDFBridge.h>
+
+#include <headers/zToolsets/geometry/zTsSDFSlicer.h>
