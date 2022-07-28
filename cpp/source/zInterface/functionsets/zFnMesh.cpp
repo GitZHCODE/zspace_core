@@ -443,8 +443,8 @@ namespace zSpace
 				for (zItMeshVertex v(*meshObj); !v.end(); v++)
 				{
 					zColor col;
-					if (v.isActive())
-					{
+					//if (v.isActive())
+					//{
 						vector<int> cVerts;
 						v.getConnectedVertices(cVerts);
 
@@ -461,21 +461,21 @@ namespace zSpace
 						col.r += (currentCol.r); col.g += (currentCol.g); col.b += (currentCol.b);
 
 						col.r /= cVerts.size(); col.g /= cVerts.size(); col.b /= cVerts.size();
-					}
+					//}
 
 					tempColors.push_back(col);
 				}
 
 				for (zItMeshVertex v(*meshObj); !v.end(); v++)
 				{
-					if (v.isActive())
-					{
-						meshObj->mesh.vertexColors[v.getId()] = (tempColors[v.isActive()]);
-					}
+					//if (v.isActive())
+					//{
+						meshObj->mesh.vertexColors[v.getId()] = (tempColors[v.getId()]);
+					//}
 				}
 			}
 
-			if (type == zFaceData)
+			else if (type == zFaceData)
 			{
 				vector<zColor> tempColors;
 
@@ -4895,9 +4895,7 @@ namespace zSpace
 					coreUtils.addToPositionMap(positionVertex, p0, v0, PRECISION);
 				}
 
-				edgeConnects.push_back(v0);
-
-				
+				edgeConnects.push_back(v0);				
 			}
 			
 		}

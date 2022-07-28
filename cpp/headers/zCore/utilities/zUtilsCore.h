@@ -162,6 +162,15 @@ namespace zSpace
 		//---- STRING METHODS
 		//--------------------------
 
+		/*! \brief This method returns the padded string of the input index.
+		*
+		*	\param		[out]	index			- input index to be padded.
+		*	\param		[in]	numStride		- input number stride for padding.
+		*	\return				string			- output padded string.
+		*	\since version 0.0.4
+		*/
+		ZSPACE_CUDA_CALLABLE_HOST string getPaddedIndexString(int index, size_t numStride);
+
 		/*! \brief This method splits the input string based on the input delimiter.
 		*
 		*	\param		[in]	str				- input string to be split.

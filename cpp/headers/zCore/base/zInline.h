@@ -20,7 +20,7 @@
 #  define ZSPACE_INLINE inline
 #endif
 
-#ifdef ZSPACE_DYNAMIC_LIBRARY
+#if defined(ZSPACE_DYNAMIC_LIBRARY) 
 #define ZSPACE_CORE __declspec(dllexport)
 #define ZSPACE_API  __declspec(dllexport)
 #define ZSPACE_TOOLS  __declspec(dllexport)

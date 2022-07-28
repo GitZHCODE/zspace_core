@@ -107,6 +107,14 @@ namespace zSpace
 
 	//---- STRING METHODS
 
+	ZSPACE_INLINE string zUtilsCore::getPaddedIndexString(int index, size_t numStride)
+	{
+		int precision = numStride - std::min(numStride, to_string(index).size());
+		string blockID_padded = string(precision, '0').append(to_string(index));
+
+		return  blockID_padded;
+	}
+	
 	ZSPACE_INLINE vector<string> zUtilsCore::splitString(const string& str, const string& delimiter)
 	{
 		vector<string> elements;
@@ -740,7 +748,8 @@ namespace zSpace
 			}
 		}
 		
-		zPointArray projectedPoints;
+		const int numProjectedPoints = points.size();
+		zPoint* projectedPoints = new zPoint[numProjectedPoints];
 
 		for (int j = 0; j < points.size(); j++)
 		{
@@ -774,7 +783,7 @@ namespace zSpace
 			}
 
 			projP = projP - projectedPt;
-			projectedPoints.push_back(projP);	
+			projectedPoints[j] = (projP);	
 
 			//cout << endl << points[j];
 			
@@ -788,9 +797,9 @@ namespace zSpace
 
 		// loop through all edges of the polygon
 		//https://www.engr.colostate.edu/~dga/documents/papers/point_in_polygon.pdf	
-		for (int j = 0; j < projectedPoints.size(); j++)
+		for (int j = 0; j < numProjectedPoints; j++)
 		{
-			int next = (j + 1) % projectedPoints.size();
+			int next = (j + 1) % numProjectedPoints;
 
 			if (projectedPoints[j].y * projectedPoints[next].y < 0)
 			{
@@ -819,9 +828,9 @@ namespace zSpace
 		if (windingNum == 0)
 		{
 			// check if point lies on one of the edges
-			for (int j = 0; j < projectedPoints.size(); j++)
+			for (int j = 0; j < numProjectedPoints; j++)
 			{
-				int next = (j + 1) % projectedPoints.size();
+				int next = (j + 1) % numProjectedPoints;
 
 				bool check = pointOnLine(projectedPt, projectedPoints[j], projectedPoints[next]);
 				if (check)  windingNum = 1;

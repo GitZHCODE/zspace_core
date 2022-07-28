@@ -99,14 +99,14 @@ namespace zSpace
 	*	\brief Defines the Precision.
 	*/
 	#ifndef PRECISION
-	#define PRECISION 3
+	#define PRECISION 6
 	#endif
 
 	/*!
 	*	\brief Defines the distance calculation tolerance.
 	*/
 	#ifndef distanceTolerance
-	#define distanceTolerance pow(10, -1 *5 )
+	#define distanceTolerance pow(10, -1 *PRECISION )
 	#endif
 
 	/*!

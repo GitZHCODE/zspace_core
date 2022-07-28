@@ -6394,7 +6394,8 @@ namespace zSpace
 
 		zFnGraph tempFn(coutourGraphObj);
 		tempFn.clear(); // clear memory if the mobject exists.
-				
+			
+		
 
 		tempFn.create(pos, edgeConnects, false, PRECISION);
 		//printf("\n %i %i ", tempFn.numVertices(), tempFn.numEdges());

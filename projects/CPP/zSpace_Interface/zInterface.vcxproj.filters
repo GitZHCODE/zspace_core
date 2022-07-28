@@ -120,6 +120,9 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnComputeMesh.h">
       <Filter>Header Files\FunctionSets</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjComputeField2D.h">
+      <Filter>Header Files\Objects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFn.cpp">
@@ -202,6 +205,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnComputeMesh.cpp">
       <Filter>Source Files\FunctionSets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjComputeField2D.cpp">
+      <Filter>Source Files\Objects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

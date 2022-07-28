@@ -211,6 +211,7 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterface\iterators\zItPointField.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\model\zModel.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObj.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjComputeField2D.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjComputeMesh.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjGraph.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\objects\zObjMesh.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="..\..\..\cpp\source\zInterface\iterators\zItPointField.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\model\zModel.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObj.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjComputeField2D.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjComputeMesh.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjGraph.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\objects\zObjMesh.cpp" />

@@ -60,13 +60,16 @@ namespace zSpace
 		/*! \brief container for storing edge centers */
 		zPointArray edgeCenters;
 
+	protected:
+		
+
 	public:
 		//--------------------------
 		//---- PUBLIC ATTRIBUTES
 		//--------------------------
-
 		/*! \brief graph */
 		zGraph graph;
+		
 
 		//--------------------------
 		//---- CONSTRUCTOR
