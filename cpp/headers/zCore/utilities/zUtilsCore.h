@@ -50,6 +50,9 @@ using namespace std;
 #include<headers/zCore/utilities/zUtilsPointerMethods.h>
 #include<headers/zCore/utilities/zUtilsBMP.h>
 
+#include <depends/nlohmann/json.hpp>
+using json = nlohmann::json;;
+
 #ifndef __CUDACC__	
 
 	#include <depends/tooJPEG/toojpeg.h>
@@ -157,6 +160,14 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		ZSPACE_CUDA_CALLABLE_HOST void getFilesFromDirectory(zStringArray &fpaths, string dirPath, zFileTpye type);
+
+		/*! \brief This method check if the file exists
+		*
+		*	\param		[out]	paths			- inout file path.
+		*	\return				int				- number of files in the input folder.
+		*	\since version 0.0.4
+		*/
+		ZSPACE_CUDA_CALLABLE_HOST bool fileExists(string& path);
 
 		//--------------------------
 		//---- STRING METHODS
@@ -893,25 +904,25 @@ namespace zSpace
 
 		/*! \brief This method computes the tranformation to the world space of the input 4x4 matrix.
 		*
-		*	\param		[in]	inMatrix	- input zMatrix to be transformed.
-		*	\return 			zMatrix		- world transformation matrix.
+		*	\param		[in]	inMatrix		- input zTransform to be transformed.
+		*	\return 			zTransform		- world transformation matrix.
 		*	\since version 0.0.2
 		*/
 		zTransform toWorldMatrix(zTransform &inMatrix);
 
 		/*! \brief This method computes the tranformation to the local space of the input 4x4 matrix.
 		*
-		*	\param		[in]	inMatrix	- input 4X4 zMatrix to be transformed.
-		*	\return 			zMatrix		- world transformation matrix.
+		*	\param		[in]	inMatrix		- input 4X4 zTransform to be transformed.
+		*	\return 			zTransform		- world transformation matrix.
 		*	\since version 0.0.2
 		*/
 		zTransform toLocalMatrix(zTransform &inMatrix);
 
 		/*! \brief This method computes the tranformation from one 4X4 matrix to another.
 		*
-		*	\param		[in]	from		- input 4X4 zMatrix.
-		*	\param		[in]	to			- input 4X4 zMatrix.
-		*	\return 			zMatrix		- transformation matrix.
+		*	\param		[in]	from		- input 4X4 zTransform.
+		*	\param		[in]	to			- input 4X4 zTransform.
+		*	\return 			zTransform		- transformation matrix.
 		*	\since version 0.0.2
 		*/
 		zTransform PlanetoPlane(zTransform &from, zTransform &to);
@@ -927,7 +938,59 @@ namespace zSpace
 		*/
 		float getEuclideanDistance(MatrixXf &m1, MatrixXf &m2, double tolerance = 0.001);
 
+		/*! \brief This method computes the zTransform from the input row major container of 16 values.
+		*
+		*	\param		[in]	rowMajorVals		- input 1D container of the transform values in row major format.
+		*	\return 			zTransform		- transformation matrix.
+		*	\since version 0.0.2
+		*/
+		zTransform getTransformFromArray(zFloatArray &rowMajorVals);
 
+		/*! \brief This method compute the transform from input Vectors.
+		*
+		*	\param		[in]	O							- input origin point.
+		*	\param		[in]	X							- input X axis vector.
+		* 	\param		[in]	Y							- input Y axis vector.
+		*	\param		[in]	Z							- input Z axis vector.
+		*	\return				zTransform					- output transform.
+		*	\since version 0.0.4
+		*/
+		zTransform getTransformFromVectors(zPoint& O, zVector& X, zVector& Y, zVector& Z);
+
+		/*! \brief This method compute the transform from input Vectors.
+		*
+		* 	\param		[in]	O							- input origin point.
+		*	\param		[in]	Z							- input Z axis vector.
+		*	\param		[in]	Basis						- input Basis vector.
+		*	\return				zTransform					- output transform.
+		*	\since version 0.0.4
+		*/
+		zTransform getTransformFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis = zVector(0, 1, 0));
+
+
+		//--------------------------
+		//---- JSON  METHODS USING MODERN JSON
+		//--------------------------
+
+		/*! \brief This method gets the JSON file from the input path if it exists.
+		*
+		*	\param		[in]	path			- input file path.
+		*	\param		[out]	outJSON			- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.2
+		*/
+		bool readJSON(string path, json& outJSON);
+		
+		/*! \brief This method gets the JSON file from the input path if it exists.
+		*
+		*	\param		[in]	path			- input file path.
+		*	\param		[out]	outJSON			- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.2
+		*/
+		template <typename T>
+		bool readJSONAttribute(json& inJSON, string attributeKey , T &outAttribute);
+		
 		//--------------------------
 		//---- MATRIX  METHODS USING ARMADILLO
 		//--------------------------
@@ -1167,6 +1230,13 @@ namespace zSpace
 		return out;
 	}
 
+	template<typename T>
+	inline bool zUtilsCore::readJSONAttribute(json& inJSON, string attributeKey, T& outAttribute)
+	{
+		bool out = inJSON.contains(attributeKey);
+		if (out) outAttribute = inJSON[attributeKey].get<T>();
+		return out;
+	}
 
 
 

@@ -6289,11 +6289,8 @@ namespace zSpace
 	//---- CONTOUR METHODS
 	
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsocontour(zObjGraph &coutourGraphObj, float inThreshold)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsocontour(zObjGraph &coutourGraphObj, float inThreshold, int precision, float distTolerance)
 	{
-		//cout << "\n getIsocontour : contourValueDomain " << contourValueDomain.min << " , " << contourValueDomain.max;
-		//cout << "\n getIsocontour : contourVertexValues " << coreUtils.zMin(contourVertexValues) << " , " << coreUtils.zMax(contourVertexValues);
-
 		if (contourVertexValues.size() == 0)
 		{		
 			return;
@@ -6304,8 +6301,7 @@ namespace zSpace
 			return;
 		}
 
-		float threshold = inThreshold /*coreUtils.ofMap(inThreshold, 0.0f, 1.0f, contourValueDomain.min, contourValueDomain.max)*/;
-		//printf("\n threshold %1.2f ", threshold);
+		float threshold = inThreshold;
 
 		vector<zVector> pos;
 		vector<int> edgeConnects;
@@ -6315,83 +6311,9 @@ namespace zSpace
 		zVector *positions = fnMesh.getRawVertexPositions();
 
 		zColorArray vColors;
-		fnMesh.getIsoContour(contourVertexValues, inThreshold, pos, edgeConnects, vColors);
+		fnMesh.getIsoContour(contourVertexValues, inThreshold, pos, edgeConnects, vColors, precision, distTolerance);
 
-		//// compute positions
-		//int i = 0;
-		//for (zItMeshEdge e(*fieldObj); !e.end(); e++)
-		//{
-		//	edgetoIsoGraphVertexId.push_back(-1);
-		//	edgetoIsoGraphVertexId.push_back(-1);
-
-
-		//	int eV0 = e.getHalfEdge(0).getVertex().getId();
-		//	int eV1 = e.getHalfEdge(0).getStartVertex().getId();
-
-
-
-		//	float scalar_lower = (contourVertexValues[eV0] <= contourVertexValues[eV1]) ? contourVertexValues[eV0] : contourVertexValues[eV1];
-		//	float scalar_higher = (contourVertexValues[eV0] <= contourVertexValues[eV1]) ? contourVertexValues[eV1] : contourVertexValues[eV0];;
-
-		//	bool chkSplitEdge = (scalar_lower <= threshold && scalar_higher > threshold) ? true : false;
-
-		//	if (chkSplitEdge)
-		//	{
-		//		// calculate split point
-
-		//		int scalar_lower_vertId = (contourVertexValues[eV0] <= contourVertexValues[eV1]) ? eV0 : eV1;
-		//		int scalar_higher_vertId = (contourVertexValues[eV0] <= contourVertexValues[eV1]) ? eV1 : eV0;
-
-		//		zVector scalar_lower_vertPos = positions[scalar_lower_vertId];
-		//		zVector scalar_higher_vertPos = positions[scalar_higher_vertId];
-
-		//		float scaleVal = coreUtils.ofMap(threshold, scalar_lower, scalar_higher, 0.0f, 1.0f);
-
-		//		zVector e = scalar_higher_vertPos - scalar_lower_vertPos;
-		//		double eLen = e.length();
-
-		//		e.normalize();
-
-		//		zVector newPos = scalar_lower_vertPos + (e * eLen * scaleVal);
-		//		int id;
-		//		
-		//		pos.push_back(newPos);
-
-		//			// map edge to isographVertex
-		//			edgetoIsoGraphVertexId[i] = pos.size() - 1;
-		//			edgetoIsoGraphVertexId[i + 1] = pos.size() - 1;
-		//		
-		//		
-
-		//	}
-
-		//	i += 2;
-		//}
-
-		//// compute edgeConnects
-		//for (zItMeshFace f(*fieldObj); !f.end(); f++)
-		//{
-
-		//	vector<int> fEdges;
-		//	f.getHalfEdges(fEdges);
-		//	vector<int> tempConnects;
-
-		//	for (int j = 0; j < fEdges.size(); j++)
-		//	{
-		//		if (edgetoIsoGraphVertexId[fEdges[j]] != -1)
-		//			tempConnects.push_back(edgetoIsoGraphVertexId[fEdges[j]]);
-		//	}
-
-		//	//printf("\n face %i | %i ", i, tempConnects.size());
-
-		//	if (tempConnects.size() == 2)
-		//	{
-		//		edgeConnects.push_back(tempConnects[0]);
-		//		edgeConnects.push_back(tempConnects[1]);
-		//	}
-
-		//}
-
+		
 		zFnGraph tempFn(coutourGraphObj);
 		tempFn.clear(); // clear memory if the mobject exists.
 			

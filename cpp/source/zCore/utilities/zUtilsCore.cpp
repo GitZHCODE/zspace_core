@@ -105,6 +105,12 @@ namespace zSpace
 		for (it = file_paths.begin(); it != file_paths.end(); ++it)fpaths.push_back(it->string());
 	}
 
+	ZSPACE_INLINE bool zUtilsCore::fileExists(string& path)
+	{
+		ifstream f(path.c_str());
+		return f.good();
+	}
+
 	//---- STRING METHODS
 
 	ZSPACE_INLINE string zUtilsCore::getPaddedIndexString(int index, size_t numStride)
@@ -1707,6 +1713,71 @@ namespace zSpace
 
 
 		return out;
+	}
+
+	
+	ZSPACE_INLINE zTransform zUtilsCore::getTransformFromArray(zFloatArray& rowMajorVals)
+	{
+		zTransform out;
+
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				out(i, j) = rowMajorVals[i * 4 + j];
+			}
+
+		}
+
+		return out;
+	}
+
+	ZSPACE_INLINE zTransform zUtilsCore::getTransformFromVectors(zPoint& O, zVector& X, zVector& Y, zVector& Z)
+	{
+		zTransform out;
+
+		out(0, 0) = X.x; out(0, 1) = X.y; out(0, 2) = X.z; out(0, 3) = 1;
+		out(1, 0) = Y.x; out(1, 1) = Y.y; out(1, 2) = Y.z; out(1, 3) = 1;
+		out(2, 0) = Z.x; out(2, 1) = Z.y; out(2, 2) = Z.z; out(2, 3) = 1;
+		out(3, 0) = O.x; out(3, 1) = O.y; out(3, 2) = O.z; out(3, 3) = 1;
+
+
+		return out;
+	}
+
+	ZSPACE_INLINE zTransform zUtilsCore::getTransformFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis)
+	{
+		zVector X = Basis ^ Z;
+
+		zVector Y = Z ^ X;
+		Y.normalize();
+
+		X = Y ^ Z;
+		X.normalize();
+
+		return getTransformFromVectors(O, X, Y, Z);
+	}
+
+	//---- JSON  METHODS USING MODERN JSON
+
+	ZSPACE_INLINE bool zUtilsCore::readJSON(string path, json& outJSON)
+	{
+		outJSON.clear();
+		ifstream in_myfile;
+		in_myfile.open(path.c_str());
+
+		int lineCnt = 0;
+
+		if (in_myfile.fail())
+		{
+			cout << " error in opening file  " << path.c_str() << endl;
+			return false;
+		}
+
+		in_myfile >> outJSON;
+		in_myfile.close();
+
+		return true;
 	}
 
 	//---- MATRIX  METHODS USING ARMADILLO

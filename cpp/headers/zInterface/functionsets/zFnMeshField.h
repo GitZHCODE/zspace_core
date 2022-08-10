@@ -848,7 +848,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*	\warning	works only with scalar fields
 		*/
-		void getIsocontour(zObjGraph &coutourGraphObj, float inThreshold);
+		void getIsocontour(zObjGraph &coutourGraphObj, float inThreshold, int precision = PRECISION, float distTolerance = distanceTolerance);
 
 		/*! \brief This method creates a isoline mesh from the input field mesh at the given field threshold.
 		*

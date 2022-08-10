@@ -1849,7 +1849,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zFnMesh::getIsoContour(zScalarArray& vertexScalars, float threshold, zPointArray& positions, zIntArray& edgeConnects,  zColorArray& cVertexColor, bool selectedFaces, zColor selectedFaceColor)
+	ZSPACE_INLINE void zFnMesh::getIsoContour(zScalarArray& vertexScalars, float threshold, zPointArray& positions, zIntArray& edgeConnects,  zColorArray& cVertexColor, int precision, float distTolerance, bool selectedFaces, zColor selectedFaceColor)
 	{
 
 		if (vertexScalars.size() != numVertices())
@@ -1870,9 +1870,9 @@ namespace zSpace
 			if (selectedFaces)
 			{
 				if(f.getColor() == selectedFaceColor)
-					getIsoline(vertexScalars, f, positions, edgeConnects, cVertexColor, positionVertex, threshold);
+					getIsoline(vertexScalars, f, positions, edgeConnects, cVertexColor, positionVertex, threshold, precision, distTolerance);
 			}
-			else getIsoline(vertexScalars, f, positions, edgeConnects, cVertexColor, positionVertex, threshold);
+			else getIsoline(vertexScalars, f, positions, edgeConnects, cVertexColor, positionVertex, threshold, precision, distTolerance);
 		}
 		
 
@@ -4344,7 +4344,7 @@ namespace zSpace
 		return (vertex_lower + (e * edgeLen *scaleVal));
 	}
 
-	ZSPACE_INLINE void zFnMesh::getIsoline(zScalarArray& vertexScalars, zItMeshFace& f, zPointArray& positions, zIntArray& edgeConnects, zColorArray& cVertexColor, unordered_map <string, int>& positionVertex, float& threshold)
+	ZSPACE_INLINE void zFnMesh::getIsoline(zScalarArray& vertexScalars, zItMeshFace& f, zPointArray& positions, zIntArray& edgeConnects, zColorArray& cVertexColor, unordered_map <string, int>& positionVertex, float& threshold, int precision, float distTolerance)
 	{
 		vector<zItMeshVertex> fVerts;
 		f.getVertices(fVerts);
@@ -4863,10 +4863,13 @@ namespace zSpace
 
 		if (newPositions.size() == 2)
 		{
-			//newPositions[0] = coreUtils.factorise(newPositions[0], PRECISION);
-			//newPositions[1] = coreUtils.factorise(newPositions[1], PRECISION);
+			zPoint p0 = coreUtils.factorise(newPositions[0], precision);
+			zPoint p1 = coreUtils.factorise(newPositions[1], precision);
 
-			if (newPositions[0].distanceTo(newPositions[1]) < distanceTolerance)
+			//zPoint p0 = newPositions[0];
+			//zPoint p1 = newPositions[1];
+
+			if (p0.distanceTo(p1) < distTolerance)
 				newPositions.clear();
 		}
 
@@ -4880,8 +4883,9 @@ namespace zSpace
 				zVector p0 = newPositions[i];
 				int v0;
 
-				bool vExists = coreUtils.vertexExists(positionVertex, p0, PRECISION, v0);
-				//bool vExists = coreUtils.checkRepeatVector(p0, positions, v0, 3);
+				//bool vExists = coreUtils.vertexExists(positionVertex, p0, PRECISION, v0);
+				bool vExists = coreUtils.checkRepeatVector(p0, positions, v0, precision);
+
 
 				if (!vExists)
 				{
@@ -4892,7 +4896,7 @@ namespace zSpace
 					//string hashKey = (to_string(p0.x) + "," + to_string(p0.y) + "," + to_string(p0.z));
 					//positionVertex[hashKey] = v0;
 
-					coreUtils.addToPositionMap(positionVertex, p0, v0, PRECISION);
+					//coreUtils.addToPositionMap(positionVertex, p0, v0, PRECISION);
 				}
 
 				edgeConnects.push_back(v0);				
@@ -4908,10 +4912,13 @@ namespace zSpace
 
 		if (newPositions2.size() == 2)
 		{
-			//newPositions2[0] = coreUtils.factorise(newPositions2[0], PRECISION);
-			//newPositions2[1] = coreUtils.factorise(newPositions2[1], PRECISION);
+			zPoint p0 = coreUtils.factorise(newPositions2[0], precision);
+			zPoint p1 = coreUtils.factorise(newPositions2[1], precision);
 
-			if (newPositions2[0].distanceTo(newPositions2[1]) < distanceTolerance)
+			//zPoint p0 = newPositions[0];
+			//zPoint p1 = newPositions[1];
+
+			if (p0.distanceTo(p1) < distTolerance)
 				newPositions2.clear();
 		}
 
@@ -4924,9 +4931,8 @@ namespace zSpace
 				zVector p0 = newPositions2[i];
 				int v0;
 
-				bool vExists = coreUtils.vertexExists(positionVertex, p0, PRECISION, v0);
-
-				//bool vExists = coreUtils.checkRepeatVector( p0, positions, v0,3);
+				//bool vExists = coreUtils.vertexExists(positionVertex, p0, PRECISION, v0);
+				bool vExists = coreUtils.checkRepeatVector( p0, positions, v0, precision);
 
 				if (!vExists)
 				{
@@ -4934,7 +4940,7 @@ namespace zSpace
 					positions.push_back(p0);
 					cVertexColor.push_back(newColors2[i]);
 					
-					coreUtils.addToPositionMap(positionVertex, p0, v0, PRECISION);
+					//coreUtils.addToPositionMap(positionVertex, p0, v0, PRECISION);
 				}
 
 				edgeConnects.push_back(v0);
