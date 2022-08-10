@@ -35,6 +35,8 @@
 #include <headers/zCore/base/zTransformationMatrix.h>
 #include <headers/zCore/base/zTypeDef.h>
 
+#include<freeglut/freeglut_std.h>
+
 namespace zSpace
 {
 	/** \addtogroup zCore

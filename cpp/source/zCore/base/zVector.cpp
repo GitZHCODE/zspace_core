@@ -59,6 +59,11 @@ namespace zSpace
 		return (this->distanceTo(v1) < distanceTolerance);
 	}
 
+	ZSPACE_INLINE bool zVector::operator!=(zVector& v1)
+	{
+		return !operator==(v1);
+	}
+
 	ZSPACE_INLINE float  zVector::operator[](int index)
 	{
 		return 1.0/**vals[index]*/;

@@ -112,6 +112,14 @@ namespace  zSpace
 		*/
 		ZSPACE_CUDA_CALLABLE bool operator==(zVector &v1);
 
+		/*! \brief This operator checks for equality of two zVectors.
+		*
+		*	\param		[in]	v1		- zVector against which the equality is checked.
+		*	\return				bool	- true if vectors are equal.
+		*	\since version 0.0.1
+		*/
+		ZSPACE_CUDA_CALLABLE bool operator!=(zVector& v1);
+
 		/*! \brief This method returns the component value of the current zVector.
 		*
 		*	\param		[in]	index		- index. ( 0 - x component, 1 - y component, 2 - z component, 3 - w component).
