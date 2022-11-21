@@ -26,7 +26,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE zFnPointField<T>::zFnPointField(zObjPointField<T> &_fieldObj)
+	ZSPACE_INLINE zFnPointField<T>::zFnPointField(zObjPointField<T>& _fieldObj)
 	{
 		fieldObj = &_fieldObj;
 		fnPoints = zFnPointCloud(_fieldObj);
@@ -51,7 +51,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getBounds(zPoint &minBB, zPoint &maxBB)
+	ZSPACE_INLINE void zFnPointField<T>::getBounds(zPoint& minBB, zPoint& maxBB)
 	{
 		minBB = fieldObj->field.minBB;
 		maxBB = fieldObj->field.maxBB;
@@ -81,14 +81,33 @@ namespace zSpace
 		ringNeighbours.clear();
 		adjacentNeighbours.clear();
 
+		//int i = 0;
+		//for (zItPointScalarField s(*fieldObj); !s.end(); s++, i++)
+		//{
+		//	vector<int> temp_ringNeighbour;
+		//	s.getNeighbour_Ring(_NR, temp_ringNeighbour);
+
+		//	for (auto& o : temp_ringNeighbour) cout << o << endl;
+		//	ringNeighbours[i] = (temp_ringNeighbour);
+
+		//	vector<int> temp_adjacentNeighbour;
+		//	s.getNeighbour_Adjacents(temp_adjacentNeighbour);
+		//	adjacentNeighbours[i] = (temp_adjacentNeighbour);
+		//}
+
+		vector<int> temp_ringNeighbour;
+		vector<int> temp_adjacentNeighbour;
+
+		int size = _n_X * _n_Y * _n_Z;
+		ringNeighbours.assign(size, temp_ringNeighbour);
+		adjacentNeighbours.assign(size, temp_ringNeighbour);
+
 		int i = 0;
 		for (zItPointScalarField s(*fieldObj); !s.end(); s++, i++)
 		{
-			vector<int> temp_ringNeighbour;
 			s.getNeighbour_Ring(_NR, temp_ringNeighbour);
 			ringNeighbours[i] = (temp_ringNeighbour);
 
-			vector<int> temp_adjacentNeighbour;
 			s.getNeighbour_Adjacents(temp_adjacentNeighbour);
 			adjacentNeighbours[i] = (temp_adjacentNeighbour);
 		}
@@ -173,7 +192,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::createVectorFromScalarField(zFnPointField<zScalar> &inFnScalarField)
+	ZSPACE_INLINE void zFnPointField<zVector>::createVectorFromScalarField(zFnPointField<zScalar>& inFnScalarField)
 	{
 		zVector minBB, maxBB;
 		inFnScalarField.getBoundingBox(minBB, maxBB);
@@ -190,13 +209,13 @@ namespace zSpace
 	//--- FIELD QUERY METHODS 
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getNeighbour_Contained(zPoint &pos, zIntArray &containedNeighbour)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getNeighbour_Contained(zPoint& pos, zIntArray& containedNeighbour)
 	{
 
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getNeighbourPosition_Contained(zPoint &pos, zPointArray &containedNeighbour)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getNeighbourPosition_Contained(zPoint& pos, zPointArray& containedNeighbour)
 	{
 
 	}
@@ -210,7 +229,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getResolution(int &_n_X, int &_n_Y, int &_n_Z)
+	ZSPACE_INLINE void zFnPointField<T>::getResolution(int& _n_X, int& _n_Y, int& _n_Z)
 	{
 		_n_X = fieldObj->field.n_X;
 		_n_Y = fieldObj->field.n_Y;
@@ -218,7 +237,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getUnitDistances(double &_unit_X, double &_unit_Y, double &_unit_Z)
+	ZSPACE_INLINE void zFnPointField<T>::getUnitDistances(double& _unit_X, double& _unit_Y, double& _unit_Z)
 	{
 		_unit_X = fieldObj->field.unit_X;
 		_unit_Y = fieldObj->field.unit_Y;
@@ -226,7 +245,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getBoundingBox(zPoint &_minBB, zPoint &_maxBB)
+	ZSPACE_INLINE void zFnPointField<T>::getBoundingBox(zPoint& _minBB, zPoint& _maxBB)
 	{
 		_minBB = fieldObj->field.minBB;
 		_maxBB = fieldObj->field.maxBB;
@@ -235,7 +254,7 @@ namespace zSpace
 	//---- zScalar and zVector specilization for getFieldValue
 
 	template<>
-	ZSPACE_INLINE bool zFnPointField<zScalar>::getFieldValue(zPoint &samplePos, zFieldValueType type, zScalar& fieldValue)
+	ZSPACE_INLINE bool zFnPointField<zScalar>::getFieldValue(zPoint& samplePos, zFieldValueType type, zScalar& fieldValue)
 	{
 
 		bool out = false;
@@ -271,7 +290,7 @@ namespace zSpace
 			vector<double> weights;
 			coreUtils.getDistanceWeights(samplePos, positions, 2.0, weights);
 
-			double w=0;
+			double w = 0;
 			for (int i = 0; i < ringNeighbours.size(); i++)
 			{
 				zScalar val = ringNeighbours[i].getValue();
@@ -286,7 +305,7 @@ namespace zSpace
 
 		else if (type == zFieldAdjacentWeighted)
 		{
-			zScalar fVal=0;
+			zScalar fVal = 0;
 
 			zItPointScalarField s(*fieldObj, index);
 
@@ -302,7 +321,7 @@ namespace zSpace
 			vector<double> weights;
 			coreUtils.getDistanceWeights(samplePos, positions, 2.0, weights);
 
-			double w=0;
+			double w = 0;
 			for (int i = 0; i < adjNeighbours.size(); i++)
 			{
 				zScalar val = adjNeighbours[i].getValue();
@@ -322,7 +341,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE bool zFnPointField<zVector>::getFieldValue(zVector &samplePos, zFieldValueType type, zVector& fieldValue)
+	ZSPACE_INLINE bool zFnPointField<zVector>::getFieldValue(zVector& samplePos, zFieldValueType type, zVector& fieldValue)
 	{
 
 		bool out = false;
@@ -358,7 +377,7 @@ namespace zSpace
 			vector<double> weights;
 			coreUtils.getDistanceWeights(samplePos, positions, 2.0, weights);
 
-			double w =0;
+			double w = 0;
 			for (int i = 0; i < ringNeighbours.size(); i++)
 			{
 				zVector val = ringNeighbours[i].getValue();
@@ -389,7 +408,7 @@ namespace zSpace
 			vector<double> weights;
 			coreUtils.getDistanceWeights(samplePos, positions, 2.0, weights);
 
-			double w=0;
+			double w = 0;
 			for (int i = 0; i < adjNeighbours.size(); i++)
 			{
 				zVector val = adjNeighbours[i].getValue();
@@ -415,9 +434,9 @@ namespace zSpace
 	}
 
 	//---- zScalar specilization for getFieldValue
-	
+
 	template<>
-	ZSPACE_INLINE zVector zFnPointField<zScalar>::getGradient(zItPointScalarField &s, float epsilon)
+	ZSPACE_INLINE zVector zFnPointField<zScalar>::getGradient(zItPointScalarField& s, float epsilon)
 	{
 
 		bool out = true;
@@ -425,7 +444,7 @@ namespace zSpace
 		zVector samplePos = s.getPosition();
 
 		int id_X, id_Y, id_Z;
-		s.getIndices( id_X, id_Y, id_Z);
+		s.getIndices(id_X, id_Y, id_Z);
 
 		if (id_X == 0 || id_Y == 0 || id_Z == 0 || id_X == fieldObj->field.n_X - 1 || id_Y == fieldObj->field.n_Y - 1 || id_Z == fieldObj->field.n_Z - 1)
 		{
@@ -473,13 +492,13 @@ namespace zSpace
 	//---- SET METHODS
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::setFieldColorDomain(zDomainColor &colDomain)
+	ZSPACE_INLINE void zFnPointField<T>::setFieldColorDomain(zDomainColor& colDomain)
 	{
 		fieldColorDomain = colDomain;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::setBoundingBox(zPoint &_minBB, zPoint &_maxBB)
+	ZSPACE_INLINE void zFnPointField<T>::setBoundingBox(zPoint& _minBB, zPoint& _maxBB)
 	{
 		fieldObj->field.minBB = _minBB;
 		fieldObj->field.maxBB = _maxBB;
@@ -488,7 +507,7 @@ namespace zSpace
 	//---- zScalar and zVector specilization for setFieldValues
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::setFieldValues(zScalarArray &fValues)
+	ZSPACE_INLINE void zFnPointField<zScalar>::setFieldValues(zScalarArray& fValues)
 	{
 		if (fValues.size() == numFieldValues())
 		{
@@ -522,13 +541,13 @@ namespace zSpace
 	//----  3D IDW FIELD METHODS
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjMesh &inMeshObj, T meshValue, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjMesh& inMeshObj, T meshValue, double influence, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnMesh inFnMesh(inMeshObj);
 
-		zVector *positions = fnPoints.getRawVertexPositions();
-		zVector *inPositions = inFnMesh.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
+		zVector* inPositions = inFnMesh.getRawVertexPositions();
 
 		for (int i = 0; i < fnPoints.numVertices(); i++)
 		{
@@ -567,13 +586,13 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjGraph &inGraphObj, T graphValue, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjGraph& inGraphObj, T graphValue, double influence, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnGraph inFnGraph(inGraphObj);
 
-		zVector *positions = fnPoints.getRawVertexPositions();
-		zVector *inPositions = inFnGraph.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
+		zVector* inPositions = inFnGraph.getRawVertexPositions();
 
 		for (int i = 0; i < fnPoints.numVertices(); i++)
 		{
@@ -615,14 +634,14 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjPointCloud &inPointsObj, T value, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjPointCloud& inPointsObj, T value, double influence, double power, bool normalise)
 	{
 
 		fieldValues.clear();
 		zFnPointCloud inFnPoints(inPointsObj);
 
-		zVector *positions = fnPoints.getRawVertexPositions();
-		zVector *inPositions = inFnPoints.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
+		zVector* inPositions = inFnPoints.getRawVertexPositions();
 
 		for (int i = 0; i < fnPoints.numVertices(); i++)
 		{
@@ -656,7 +675,7 @@ namespace zSpace
 	}
 
 	template <typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjPointCloud &inPointsObj, vector<T> &values, vector<double>& influences, double power, bool normalise )
+	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjPointCloud& inPointsObj, vector<T>& values, vector<double>& influences, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnPointCloud inFnPoints(inPointsObj);
@@ -665,8 +684,8 @@ namespace zSpace
 		if (inFnPoints.numVertices() != values.size()) throw std::invalid_argument(" error: size of inPositions and values dont match.");
 		if (inFnPoints.numVertices() != influences.size()) throw std::invalid_argument(" error: size of inPositions and influences dont match.");
 
-		zVector *positions = fnPoints.getRawVertexPositions();
-		zVector *inPositions = inFnPoints.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
+		zVector* inPositions = inFnPoints.getRawVertexPositions();
 
 		for (int i = 0; i < fnPoints.numVertices(); i++)
 		{
@@ -697,12 +716,12 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zPointArray &inPositions, T value, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zPointArray& inPositions, T value, double influence, double power, bool normalise)
 	{
 
 		fieldValues.clear();
 
-		zVector *positions = fnPoints.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
 
 		for (int i = 0; i < fnPoints.numVertices(); i++)
 		{
@@ -736,12 +755,12 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zPointArray &inPositions, vector<T> &values, vector<double>& influences, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zPointArray& inPositions, vector<T>& values, vector<double>& influences, double power, bool normalise)
 	{
 		if (inPositions.size() != values.size()) throw std::invalid_argument(" error: size of inPositions and values dont match.");
 		if (inPositions.size() != influences.size()) throw std::invalid_argument(" error: size of inPositions and influences dont match.");
 
-		zVector *positions = fnPoints.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
 
 		for (int i = 0; i < fnPoints.numVertices(); i++)
 		{
@@ -777,14 +796,14 @@ namespace zSpace
 	//----  3D SCALAR FIELD METHODS
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjPointCloud &inPointsObj, bool normalise)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjPointCloud& inPointsObj, bool normalise)
 	{
 		scalars.clear();
 
 		zFnPointCloud inFnPoints(inPointsObj);
 
-		zVector *positions = fnPoints.getRawVertexPositions();
-		zVector *inPositions = inFnPoints.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
+		zVector* inPositions = inFnPoints.getRawVertexPositions();
 
 		vector<double> distVals;
 		double dMin = 100000;
@@ -832,14 +851,14 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjMesh &inMeshObj, double a, double b, bool normalise)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjMesh& inMeshObj, double offset, bool normalise)
 	{
 		scalars.clear();
 
 		zFnMesh inFnMesh(inMeshObj);
 
-		zVector *positions = fnPoints.getRawVertexPositions();
-		zVector *inPositions = inFnMesh.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
+		zVector* inPositions = inFnMesh.getRawVertexPositions();
 
 		for (int i = 0; i < fnPoints.numVertices(); i++)
 		{
@@ -850,9 +869,12 @@ namespace zSpace
 			{
 				double r = positions[i].squareDistanceTo(inPositions[j]);
 
+				r = r - offset;
+
 				if (r < tempDist)
 				{
-					d = F_of_r(r, a, b);
+					d = r;
+					//d = F_of_r(r, a, b);
 					tempDist = r;
 				}
 
@@ -870,14 +892,14 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjGraph &inGraphObj, double a, double b, bool normalise)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjGraph& inGraphObj, double offset, bool normalise)
 	{
 		scalars.clear();
 
 		zFnGraph inFnGraph(inGraphObj);
 
-		zVector *positions = fnPoints.getRawVertexPositions();
-		zVector *inPositions = inFnGraph.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
+		zVector* inPositions = inFnGraph.getRawVertexPositions();
 
 		// update values from meta balls
 
@@ -890,17 +912,20 @@ namespace zSpace
 			{
 				double r = positions[i].squareDistanceTo(inPositions[j]);
 
+				r = r - offset;
+
 				if (r < tempDist)
 				{
-					d = F_of_r(r, a, b);
-					//printf("\n F_of_r:  %1.4f ", F_of_r(r, a, b));
+					d = r;
+					//d = F_of_r(r, a, b);
 					tempDist = r;
 				}
 
 			}
-
+			cout << "d value" << d << endl;
 			scalars.push_back(d);
 		}
+		cout << "points " << fnPoints.numVertices() << endl;
 
 		if (normalise)
 		{
@@ -911,13 +936,13 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsEdgeDistance(zScalarArray &scalars, zObjMesh &inMeshObj, double a, double b, bool normalise)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjMesh& inMeshObj, double offset, bool normalise)
 	{
 		scalars.clear();
 		zFnMesh inFnMesh(inMeshObj);
 
-		zVector *positions = fnPoints.getRawVertexPositions();
-		zVector *inPositions = inFnMesh.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
+		zVector* inPositions = inFnMesh.getRawVertexPositions();
 
 		// update values from edge distance
 		for (int i = 0; i < fnPoints.numVertices(); i++)
@@ -935,14 +960,22 @@ namespace zSpace
 
 				double r = coreUtils.minDist_Edge_Point(positions[i], inPositions[e0], inPositions[e1], closestPt);
 
+				r = r - offset;
 
 				if (r < tempDist)
 				{
-
-					d = F_of_r(r, a, b);
-
+					d = r;
+					//d = F_of_r(r, a, b);
 					tempDist = r;
 				}
+
+				//if (r < tempDist)
+				//{
+
+				//	d = F_of_r(r, a, b);
+
+				//	tempDist = r;
+				//}
 			}
 
 			scalars.push_back(d);
@@ -958,13 +991,13 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsEdgeDistance(zScalarArray &scalars, zObjGraph &inGraphObj, double a, double b, bool normalise )
+	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjGraph& inGraphObj, double offset, bool normalise)
 	{
 		scalars.clear();
 		zFnGraph inFnGraph(inGraphObj);
 
-		zVector *positions = fnPoints.getRawVertexPositions();
-		zVector *inPositions = inFnGraph.getRawVertexPositions();
+		zVector* positions = fnPoints.getRawVertexPositions();
+		zVector* inPositions = inFnGraph.getRawVertexPositions();
 
 		// update values from edge distance
 		for (int i = 0; i < fnPoints.numVertices(); i++)
@@ -982,19 +1015,31 @@ namespace zSpace
 
 				double r = coreUtils.minDist_Edge_Point(positions[i], inPositions[e0], inPositions[e1], closestPt);
 
+				r = r - offset;
 
 				if (r < tempDist)
 				{
-
-					d = F_of_r(r, a, b);
-
+					d = r;
+					//d = F_of_r(r, a, b);
 					tempDist = r;
 				}
-			}
 
+				//cout << "d value" << d << endl;
+
+				//if (r < tempDist)
+				//{
+
+				//	d = F_of_r(r, a, b);
+
+				//	tempDist = r;
+				//}
+			}
+			//if(i==0) cout << "d value" << d << endl;
 			scalars.push_back(d);
 
 		}
+
+		//cout << "points " << fnPoints.numVertices() << endl;
 
 		if (normalise)
 		{
@@ -1009,30 +1054,30 @@ namespace zSpace
 	template<typename T>
 	ZSPACE_INLINE bool zFnPointField<T>::checkBounds_X(int index_X)
 	{
-		return (index_X < fieldObj->field.n_X && index_X >= 0);
+		return (index_X < fieldObj->field.n_X&& index_X >= 0);
 	}
 
 	template<typename T>
 	ZSPACE_INLINE bool zFnPointField<T>::checkBounds_Y(int index_Y)
 	{
-		return (index_Y < fieldObj->field.n_Y && index_Y >= 0);
+		return (index_Y < fieldObj->field.n_Y&& index_Y >= 0);
 	}
 
 	template<typename T>
 	ZSPACE_INLINE bool zFnPointField<T>::checkBounds_Z(int index_Z)
 	{
-		return (index_Z < fieldObj->field.n_Z && index_Z >= 0);
+		return (index_Z < fieldObj->field.n_Z&& index_Z >= 0);
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::computeMinMaxOfScalars(vector<T> &values, T &dMin, T &dMax)
+	ZSPACE_INLINE void zFnPointField<T>::computeMinMaxOfScalars(vector<T>& values, T& dMin, T& dMax)
 	{
 		dMin = coreUtils.zMin(values);
 		dMax = coreUtils.zMax(values);
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::computeDomain(vector<T> &values, zDomain <T> &domain)
+	ZSPACE_INLINE void zFnPointField<T>::computeDomain(vector<T>& values, zDomain <T>& domain)
 	{
 		domain.min = coreUtils.zMin(values);
 		domain.max = coreUtils.zMax(values);
@@ -1041,7 +1086,7 @@ namespace zSpace
 	//---- zScalar and zVector specilization for normliseValues
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::normliseValues(zScalarArray &fieldValues)
+	ZSPACE_INLINE void zFnPointField<zScalar>::normliseValues(zScalarArray& fieldValues)
 	{
 		zDomainFloat d;
 		computeDomain(fieldValues, d);
@@ -1055,7 +1100,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::normliseValues(vector<zVector> &fieldValues)
+	ZSPACE_INLINE void zFnPointField<zVector>::normliseValues(vector<zVector>& fieldValues)
 	{
 		for (int i = 0; i < fieldValues.size(); i++) fieldValues[i].normalize();
 	}
@@ -1063,7 +1108,7 @@ namespace zSpace
 	//---- zScalar specilization for smoothField
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::smoothField(int numSmooth, double diffuseDamp , zDiffusionType type)
+	ZSPACE_INLINE void zFnPointField<zScalar>::smoothField(int numSmooth, double diffuseDamp, zDiffusionType type)
 	{
 		for (int k = 0; k < numSmooth; k++)
 		{
@@ -1121,7 +1166,7 @@ namespace zSpace
 	//---- zScalar & zVector specilization for computePositionsInFieldIndex
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::computePositionsInFieldIndex(zPointArray &positions, vector<zPointArray> &fieldIndexPositions)
+	ZSPACE_INLINE void zFnPointField<zScalar>::computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -1140,7 +1185,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::computePositionsInFieldIndex(zPointArray &positions, vector<zPointArray> &fieldIndexPositions)
+	ZSPACE_INLINE void zFnPointField<zVector>::computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -1161,7 +1206,7 @@ namespace zSpace
 	//---- zScalar & zVector specilization for computePositionIndicesInFieldIndex
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::computePositionIndicesInFieldIndex(zPointArray &positions, vector<zIntArray> &fieldIndexPositionIndicies)
+	ZSPACE_INLINE void zFnPointField<zScalar>::computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -1180,7 +1225,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::computePositionIndicesInFieldIndex(zPointArray &positions, vector<zIntArray> &fieldIndexPositionIndicies)
+	ZSPACE_INLINE void zFnPointField<zVector>::computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -1199,9 +1244,9 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE double zFnPointField<T>::F_of_r(double &r, double &a, double &b)
+	ZSPACE_INLINE double zFnPointField<T>::F_of_r(double& r, double& a, double& b)
 	{
-		if (0 <= r && r <= b / 3.0)return (a * (1.0 - (3.0 * r * r) / (b*b)));
+		if (0 <= r && r <= b / 3.0)return (a * (1.0 - (3.0 * r * r) / (b * b)));
 		if (b / 3.0 <= r && r <= b) return (3 * a / 2 * pow(1.0 - (r / b), 2.0));
 		if (b <= r) return 0;
 	}
@@ -1323,19 +1368,33 @@ namespace zSpace
 			fieldColorDomain.min.toHSV(); fieldColorDomain.max.toHSV();
 
 			zColor* cols = fnPoints.getRawVertexColors();
-			
+
 			for (int i = 0; i < scalars.size(); i++)
 			{
 
-				if (scalars[i] < contourValueDomain.min) cols[i] = fieldColorDomain.min;
-				else if (scalars[i] > contourValueDomain.max) cols[i] = fieldColorDomain.max;
-				else
-				{
-					cols[i] = coreUtils.blendColor(scalars[i], contourValueDomain, fieldColorDomain, zHSV);
-				}
+				//SDFs
+					if (scalars[i] <= 0)
+					{
+						//temp = coreUtils.blendColor(scalars[i], dVal, dCol, zHSV);
+
+						cols[i] = zColor(0, 0.550, 0.950, 1);
+					}
+					else if (scalars[i] > 0)
+					{
+						cols[i] = zColor(0.950, 0, 0.55, 1);
+						//cols[i] = zColor(0.25, 0.25, 0.25, 1) /*dCol.max*/;
+					}
+					else cols[i] = zColor(0.950, 0, 0.55, 1);
+
+				//if (scalars[i] < contourValueDomain.min) cols[i] = fieldColorDomain.min;
+				//else if (scalars[i] > contourValueDomain.max) cols[i] = fieldColorDomain.max;
+				//else
+				//{
+				//	cols[i] = coreUtils.blendColor(scalars[i], contourValueDomain, fieldColorDomain, zHSV);
+				//}
 
 			}
-			
+
 		}
 
 	}
@@ -1374,13 +1433,13 @@ namespace zSpace
 
 					positions.push_back(pos);
 
-				}
 			}
 		}
+	}
 
 		fnPoints.create(positions);
 
-	}
+}
 
 
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)

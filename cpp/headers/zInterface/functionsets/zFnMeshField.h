@@ -78,7 +78,7 @@ namespace zSpace
 		zUtilsCore coreUtils;			
 
 		/*!	\brief boolean indicating if the field values size is equal to mesh vertices(true) or equal to mesh faces(false)  */
-		bool setValuesperVertex = true;
+		bool setValuesperVertex;
 
 		/*!	\brief boolean indicating if the field mesh is triangulated(true or quadragulated (false)  */
 		bool triMesh = true;
