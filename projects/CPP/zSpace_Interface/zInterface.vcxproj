@@ -197,6 +197,7 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnGraph.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnGraphDynamics.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnMesh.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnMeshComputeField.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnMeshDynamics.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnMeshField.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnParticle.h" />
@@ -227,6 +228,7 @@
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnGraph.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnGraphDynamics.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnMesh.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnMeshComputeField.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnMeshDynamics.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnMeshField.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnParticle.cpp" />
