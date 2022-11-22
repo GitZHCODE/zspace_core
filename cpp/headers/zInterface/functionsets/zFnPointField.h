@@ -389,45 +389,41 @@ namespace zSpace
 		*
 		*	\param	[out]	scalars				- container for storing scalar values.
 		*	\param	[in]	inMeshObj			- input mesh object for distance calculations.
-		*	\param	[in]	a					- input variable for distance function.
-		*	\param	[in]	b					- input variable for distance function.
+		*	\param	[in]	offset				- input variable for distance function.
 		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjMesh &inMeshObj, double a, double b, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjMesh &inMeshObj, double offset, bool normalise = true);
 
 		/*! \brief This method creates a vertex distance Field from the input graph vertex positions.
 		*
 		*	\param	[out]	scalars			- container for storing scalar values.
 		*	\param	[in]	inGraphObj		- input graph object for distance calculations.
-		*	\param	[in]	a				- input variable for distance function.
-		*	\param	[in]	b				- input variable for distance function.		
+		*	\param	[in]	offset			- input variable for distance function.
 		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjGraph &inGraphObj, double a, double b, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjGraph &inGraphObj, double offset, bool normalise = true);
 
 		/*! \brief This method creates a edge distance Field from the input mesh.
 		*
 		*	\param	[out]	scalars			- container for storing scalar values.
 		*	\param	[in]	inMeshObj		- input mesh object for distance calculations.
-		*	\param	[in]	a				- input variable for distance function.
-		*	\param	[in]	b				- input variable for distance function.		
+		*	\param	[in]	offset			- input variable for distance function.
 		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjMesh &inMeshObj, double a, double b, bool normalise = true);
+		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjMesh &inMeshObj, double offset, bool normalise = true);
 
 		/*! \brief This method creates a edge distance Field from the input graph.
 		*
 		*	\param	[out]	scalars			- container for storing scalar values.
 		*	\param	[in]	inGraphObj		- input graph object for distance calculations.
-		*	\param	[in]	a				- input variable for distance function.
-		*	\param	[in]	b				- input variable for distance function.		
+		*	\param	[in]	offset			- input variable for distance function.
 		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjGraph &inGraphObj, double a, double b, bool normalise = true);
+		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjGraph &inGraphObj, double offset, bool normalise = true);
 
 		//--------------------------
 		//--- COMPUTE METHODS 
