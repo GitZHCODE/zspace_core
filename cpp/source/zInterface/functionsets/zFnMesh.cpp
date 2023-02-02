@@ -673,20 +673,46 @@ namespace zSpace
 
 		qh_mesh_t mesh = qh_quickhull3d(vertices, num);
 
-		reserve(mesh.nvertices, floor(mesh.nvertices / 3), floor(mesh.nvertices / 3));
+		//reserve(mesh.nvertices, floor(mesh.nvertices / 3), floor(mesh.nvertices / 3));
+
+		zPointArray positions;
+		zIntArray pCounts, pConnects;
 
 		for (int i = 0; i < mesh.nvertices; i += 3)
 		{
-			zItMeshFace f(*meshObj);
-			zPointArray pts;
+			//zItMeshFace f(*meshObj);
+			//zPointArray pts;
 			
-			pts.push_back(zVector(mesh.vertices[i + 0].x, mesh.vertices[i + 0].y, mesh.vertices[i + 0].z));
+			/*pts.push_back(zVector(mesh.vertices[i + 0].x, mesh.vertices[i + 0].y, mesh.vertices[i + 0].z));
 			pts.push_back(zVector(mesh.vertices[i + 1].x, mesh.vertices[i + 1].y, mesh.vertices[i + 1].z));
-			pts.push_back(zVector(mesh.vertices[i + 2].x, mesh.vertices[i + 2].y, mesh.vertices[i + 2].z));
-			addPolygon(pts, f);
-		}
+			pts.push_back(zVector(mesh.vertices[i + 2].x, mesh.vertices[i + 2].y, mesh.vertices[i + 2].z));*/
+			//addPolygon(pts, f);
 
-		computeMeshNormals();
+			printf("\n ");
+			for (int j = 0; j < 3; j += 1)
+			{
+				int vID = -1;
+
+				zPoint pt(mesh.vertices[i + j].x, mesh.vertices[i + j].y, mesh.vertices[i + j].z);
+				bool check = coreUtils.checkRepeatElement(pt, positions, vID);
+
+				if (!check)
+				{
+					vID = positions.size();
+					positions.push_back(pt);
+				}
+
+				pConnects.push_back(vID);
+				printf(" %i ", vID);
+			}
+
+			pCounts.push_back(3);
+		}
+		printf("\n Working %i %i %i ", positions.size(), pCounts.size(), pConnects.size());
+		create(positions, pCounts, pConnects);
+		
+
+		//computeMeshNormals();
 	}
 
 	//--- SET METHODS 
@@ -1677,6 +1703,75 @@ namespace zSpace
 				polyConnects.push_back(facevertices[j]);
 			}
 		}
+	}
+
+	ZSPACE_INLINE void zFnMesh::getMatrices_trimesh(MatrixXd& V, MatrixXi& F)
+	{
+		zPoint* vPositions = getRawVertexPositions();
+		MatrixXd triMesh_V(numVertices(), 3);
+
+		// fill vertex matrix
+		for (int i = 0; i < numVertices(); i++)
+		{
+			triMesh_V(i, 0) = vPositions[i].x;
+			triMesh_V(i, 1) = vPositions[i].y;
+			triMesh_V(i, 2) = vPositions[i].z;
+		}
+
+		V = triMesh_V;
+
+		// fill triangle matrix
+		MatrixXi FTris(numPolygons(), 3);
+
+		int nTris = 0;
+		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		{
+			int i = f.getId();
+
+			zIntArray fVerts;
+			f.getVertices(fVerts);
+
+			FTris(i, 0) = fVerts[0];
+			FTris(i, 1) = fVerts[1];
+			FTris(i, 2) = fVerts[2];
+		}
+
+		F = FTris;
+	}
+
+	ZSPACE_INLINE void zFnMesh::getMatrices_quadmesh(MatrixXd& V, MatrixXi& F)
+	{
+		zPoint* vPositions = getRawVertexPositions();
+		MatrixXd quadMesh_V(numVertices(), 3);
+
+		// fill vertex matrix
+		for (int i = 0; i < numVertices(); i++)
+		{
+			quadMesh_V(i, 0) = vPositions[i].x;
+			quadMesh_V(i, 1) = vPositions[i].y;
+			quadMesh_V(i, 2) = vPositions[i].z;
+		}
+
+		V = quadMesh_V;
+
+		// fill triangle matrix
+		MatrixXi FQuads(numPolygons(), 4);
+
+		int nTris = 0;
+		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		{
+			int i = f.getId();
+
+			zIntArray fVerts;
+			f.getVertices(fVerts);
+
+			FQuads(i, 0) = fVerts[0];
+			FQuads(i, 1) = fVerts[1];
+			FQuads(i, 2) = fVerts[2];
+			FQuads(i, 3) = fVerts[3];
+		}
+
+		F = FQuads;
 	}
 
 	ZSPACE_INLINE void zFnMesh::getEdgeData(zIntArray &edgeConnects, bool excludeBoundary)
