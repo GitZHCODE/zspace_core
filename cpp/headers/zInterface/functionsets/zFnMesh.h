@@ -683,6 +683,22 @@ namespace zSpace
 		*/
 		void getPolygonData(zIntArray &polyConnects, zIntArray &polyCounts);
 
+		/*! \brief This method stores triangle mesh information in the input matrices
+		*
+		*	\param		[out]	V				- matrix storing vertex positions.
+		*	\param		[out]	F				- matrix storing list of triangle connection with vertex ids for each face.
+		*	\since version 0.0.4
+		*/
+		void getMatrices_trimesh(MatrixXd &V, MatrixXi &F);
+
+		/*! \brief This method stores quad mesh information in the input matrices
+		*
+		*	\param		[out]	V				- matrix storing vertex positions.
+		*	\param		[out]	F				- matrix storing list of quad connection with vertex ids for each face.
+		*	\since version 0.0.4
+		*/
+		void getMatrices_quadmesh(MatrixXd& V, MatrixXi& F);
+
 		/*! \brief This method stores mesh edge connectivity information in the input containers.
 		*
 		*	\param		[out]	edgeConnects		- stores list of esdge connection with vertex ids for each edge.
