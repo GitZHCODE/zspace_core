@@ -449,6 +449,36 @@ namespace zSpace
 		}
 	}
 
+	ZSPACE_INLINE bool zUtilsCore::polyWindingXY(zPointArray positions)
+	{
+		float winding = 0.0f;
+
+		for (int i = 0; i < positions.size(); i++)
+		{
+			zPoint previous(0, 0, 0);
+			zPoint current(0, 0, 0);
+
+			if (i < 1)
+			{
+				previous.x = positions[positions.size() - 1].x;
+				previous.y = positions[positions.size() - 1].y;
+				current.x = positions[i].x;
+				current.y = positions[i].y;
+			}
+			else
+			{
+				previous.x = positions[i - 1].x;
+				previous.y = positions[i - 1].y;
+				current.x = positions[i].x;
+				current.y = positions[i].y;
+			}
+			winding += (previous.x * current.y - current.x * previous.y);
+		}
+		if (winding > 0) return true;
+		else return false;
+	}
+
+
 	ZSPACE_INLINE zVector zUtilsCore::getDimsFromBounds(zVector &minBB, zVector &maxBB)
 	{
 		zVector out;
@@ -849,6 +879,159 @@ namespace zSpace
 			return false;
 	}
 
+	ZSPACE_INLINE bool zUtilsCore::pointInPlanarPolygon(zPoint& pt, zPoint& p0, zPoint& p1, zPoint& p2, zPoint& p3, zVector& planeNormal)
+	{
+
+		// get component with largest component of normal
+		int largeComponent = 0;
+		float largeValue = 0;
+
+		if (abs(planeNormal.x) > largeValue)
+		{
+			largeComponent = 0;
+			largeValue = abs(planeNormal.x);
+		}
+
+		if (abs(planeNormal.y) > largeValue)
+		{
+			largeComponent = 1;
+			largeValue = abs(planeNormal.y);
+		}
+
+		if (abs(planeNormal.z) > largeValue)
+		{
+			largeComponent = 2;
+			largeValue = abs(planeNormal.z);
+		}
+
+		// convert points to 2D points by ignorning largest component
+
+		zPoint projectedPt;
+		int counter = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			if (i != largeComponent)
+			{
+				if (counter == 0)
+				{
+					if (i == 0)  projectedPt.x = pt.x;
+					if (i == 1)  projectedPt.x = pt.y;
+					if (i == 2)  projectedPt.x = pt.z;
+
+
+				}
+				if (counter == 1)
+				{
+					if (i == 0) projectedPt.y = pt.x;
+					if (i == 1) projectedPt.y = pt.y;
+					if (i == 2) projectedPt.y = pt.z;
+
+				}
+
+				counter++;
+			}
+		}
+
+		zPoint projectedPoints[4];
+
+		for (int j = 0; j < 4; j++)
+		{
+			zPoint p;
+			if (j == 0) p = p0;
+			if (j == 1) p = p1;
+			if (j == 2) p = p2;
+			if (j == 3) p = p3;
+
+
+			zPoint projP;
+			int count = 0;
+			for (int i = 0; i < 3; i++)
+			{
+				if (i != largeComponent)
+				{
+					if (count == 0)
+					{
+						if (i == 0)  projP.x = p.x;
+						if (i == 1)  projP.x = p.y;
+						if (i == 2)  projP.x = p.z;
+
+					}
+					if (count == 1)
+					{
+						if (i == 0)  projP.y = p.x;
+						if (i == 1)  projP.y = p.y;
+						if (i == 2)  projP.y = p.z;
+
+					}
+
+					count++;
+				}
+
+
+			}
+
+			projP = projP - projectedPt;
+			projectedPoints[j] = (projP);
+
+			//cout << endl << points[j];
+
+		}
+
+		projectedPt = zPoint(0, 0, 0);
+
+
+		// compute winding number
+		float windingNum = 0;
+
+		// loop through all edges of the polygon
+		//https://www.engr.colostate.edu/~dga/documents/papers/point_in_polygon.pdf	
+		for (int j = 0; j < 4; j++)
+		{
+			int next = (j + 1) % 4;
+
+			if (projectedPoints[j].y * projectedPoints[next].y < 0)
+			{
+				float numerator = projectedPoints[j].y * (projectedPoints[next].x - projectedPoints[j].x);
+				float denominator = (projectedPoints[j].y - projectedPoints[next].y);
+				float r = projectedPoints[j].x + (numerator / denominator);
+
+				if (r > 0)
+				{
+					if (projectedPoints[j].y < 0) windingNum += 1;
+					else windingNum -= 1;
+				}
+			}
+			else if (projectedPoints[j].y == 0 && projectedPoints[j].x > 0)
+			{
+				if (projectedPoints[next].y > 0) windingNum += 0.5;
+				else windingNum -= 0.5;
+			}
+			else if (projectedPoints[next].y == 0 && projectedPoints[next].x > 0)
+			{
+				if (projectedPoints[j].y < 0) windingNum += 0.5;
+				else windingNum -= 0.5;
+			}
+		}
+
+		if (windingNum == 0)
+		{
+			// check if point lies on one of the edges
+			for (int j = 0; j < 4; j++)
+			{
+
+				int next = (j + 1) % 4;
+
+				bool check = pointOnLine(projectedPt, projectedPoints[j], projectedPoints[next]);
+				if (check)  windingNum = 1;
+			}
+		}
+
+		if (windingNum != 0)
+			return true;
+		else
+			return false;
+	}
+
 	ZSPACE_INLINE bool zUtilsCore::pointOnLine(zPoint& pt, zPoint& pA, zPoint& pB, float tolerance)
 	{
 		float d = (pt.distanceTo(pA) + pt.distanceTo(pB)) - (pA.distanceTo(pB));
@@ -863,7 +1046,10 @@ namespace zSpace
 
 	ZSPACE_INLINE double zUtilsCore::minDist_Edge_Point(zVector & pt, zVector & e0, zVector & e1, zVector & closest_Pt)
 	{
-		zVector n = (e1 - e0) ^ (zVector(0, 0, 1));
+		zVector temp = (e1 - pt) ^ (e0 - pt);
+		temp.normalize();
+		zVector n = (e1 - e0) ^ temp;
+		//zVector n = (e1 - e0) ^ (zVector(0, 0, 1));
 		n.normalize();
 		closest_Pt = n * ((e0 - pt) * n);
 		closest_Pt += pt;

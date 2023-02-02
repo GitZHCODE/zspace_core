@@ -477,6 +477,14 @@ namespace zSpace
 		*/
 		ZSPACE_CUDA_CALLABLE_HOST void getBounds(vector<zVector> &inPoints, zVector &minBB, zVector &maxBB);
 
+		/*! \brief This method returns the winding direction of a closed planar polygon to XY plane. true for CCW, false for CW.
+		*
+		*	\details	based on https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
+		*	\param  	[in]	positions	- input pointer to container of positions.
+		* 	\param		[in]	planeNormal	- input plane normal.
+		*/
+		ZSPACE_CUDA_CALLABLE_HOST bool polyWindingXY(zPointArray positions);
+
 		/*! \brief This method returns the bounds of the input list points.
 		*
 		*	\param  	[in]	inPoints	- input pointer to container of positions.
@@ -629,6 +637,20 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		ZSPACE_CUDA_CALLABLE bool pointInPlanarPolygon(zPoint& pt, zPointArray& points, zVector& planeNormal);
+
+		/*! \brief This method checks if the point is inside the 3D Planar Polygon.
+		*	\detail http://geomalgorithms.com/a03-_inclusion.html
+		*
+		*	\param		[in]	pt							- input point to test.
+		*	\param		[in]	p0							- input polygon p0.
+		*	\param		[in]	p1							- input polygon p1.
+		*	\param		[in]	p2							- input polygon p2.
+		*	\param		[in]	p3							- input polygon p3.
+		*	\param		[in]	planeNormal					- input plane normal.
+		*	\return				bool						- true if the point is inside or on the polygon
+		*	\since version 0.0.4
+		*/
+		ZSPACE_CUDA_CALLABLE bool pointInPlanarPolygon(zPoint& pt, zPoint& p0, zPoint& p1, zPoint& p2, zPoint& p3, zVector& planeNormal);
 
 		/*! \brief This method checks if the point lies on a line
 		*		
@@ -988,8 +1010,8 @@ namespace zSpace
 		*	\return 			bool			- true if file exists, else false.
 		*	\since version 0.0.2
 		*/
-		template <typename T>
-		bool readJSONAttribute(json& inJSON, string attributeKey , T &outAttribute);
+		//template <typename T>
+		//bool readJSONAttribute(json& inJSON, string attributeKey , T &outAttribute);
 		
 		//--------------------------
 		//---- MATRIX  METHODS USING ARMADILLO
@@ -1230,13 +1252,13 @@ namespace zSpace
 		return out;
 	}
 
-	template<typename T>
+	/*template<typename T>
 	inline bool zUtilsCore::readJSONAttribute(json& inJSON, string attributeKey, T& outAttribute)
 	{
 		bool out = inJSON.contains(attributeKey);
 		if (out) outAttribute = inJSON[attributeKey].get<T>();
 		return out;
-	}
+	}*/
 
 	
 

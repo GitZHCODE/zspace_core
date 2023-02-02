@@ -456,7 +456,7 @@ namespace zSpace
 		*
 		*	\details The points are stored in a single contiguous array of doubles, first by coordinate, then by element (xyzxyz...) There are three coordinate values, so each vertex is stored in 24 bytes of data, and the total array length is 24*numVertices() bytes.
 		*	\param		[out]			points				- pointer to internal vertex position container.
-		*	\warning points to be initialised to three times number of vertices, before calling the method. ( points = new double*[numVertices * 3] ) 
+		*	\warning points to be initialised to three times number of vertices, before calling the method. ( points = new float*[numVertices * 3] ) 
 		*	\since version 0.0.2
 		*/
 		void getRawVertexPositions(float** points);
@@ -479,7 +479,7 @@ namespace zSpace
 		*
 		*	\details The normals are stored in a single contiguous array of doubles, first by coordinate, then by element (xyzxyz...) There are three coordinate values, so each vertex is stored in 24 bytes of data, and the total array length is 24*numVertices() bytes.
 		*	\param		[out]			normals				- pointer to internal vertex normal container.
-		*	\warning normals to be initialised to three times number of vertices, before calling the method. ( normals = new double*[numVertices] )
+		*	\warning normals to be initialised to three times number of vertices, before calling the method. ( normals = new float*[numVertices * 3] )
 		*	\since version 0.0.2
 		*/
 		void getRawVertexNormals(float** normals);

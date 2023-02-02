@@ -317,7 +317,7 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItMeshScalarField::getId()
 	{
-		return distance(fieldObj->field.fieldValues.begin(), iter);
+		return distance(fieldObj->field.fieldValues.begin(), iter)  ;
 	}
 
 	ZSPACE_INLINE void zItMeshScalarField::getIndices(int &index_X, int& index_Y)

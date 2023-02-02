@@ -45,6 +45,8 @@ namespace zSpace
 
 	template class zDomain<zVector>;
 
+	template class zDomain<zDate>;
+
 #endif
 
 }
