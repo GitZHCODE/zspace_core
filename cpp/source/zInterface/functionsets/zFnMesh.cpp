@@ -1953,7 +1953,7 @@ namespace zSpace
 			return;
 		}
 
-			positions.clear();
+		positions.clear();
 		edgeConnects.clear();
 		cVertexColor.clear();
 
@@ -4243,13 +4243,13 @@ namespace zSpace
 
 		if (vertexBinary[0] && vertexBinary[1] && !vertexBinary[2]) out = 3;
 
-		if (!vertexBinary[0] && !vertexBinary[1] && vertexBinary[2]) out = 4;
+		if (!vertexBinary[0] && !vertexBinary[1] && !vertexBinary[2]) out = 4;
 
 		if (vertexBinary[0] && !vertexBinary[1] && !vertexBinary[2]) out = 5;
 
 		if (!vertexBinary[0] && vertexBinary[1] && !vertexBinary[2]) out = 6;
 
-		if (!vertexBinary[0] && !vertexBinary[1] && !vertexBinary[2]) out = 7;
+		if (!vertexBinary[0] && !vertexBinary[1] && vertexBinary[2]) out = 7;
 
 		return out;
 	}
@@ -4444,604 +4444,778 @@ namespace zSpace
 		vector<zItMeshVertex> fVerts;
 		f.getVertices(fVerts);
 
-		if (fVerts.size() != 4) return;
+		if (fVerts.size() != 4 && fVerts.size() != 3) return;
 
-		// chk if all the face vertices are below the threshold
-		bool vertexBinary[4];
-		float averageScalar = 0;
-
-		for (int j = 0; j < fVerts.size(); j++)
+		// tri mesh
+		if (fVerts.size() == 3)
 		{
-			if (vertexScalars[fVerts[j].getId()] < threshold)
+			// chk if all the face vertices are below the threshold
+			bool vertexBinary[3];
+			float averageScalar = 0;
+
+			for (int j = 0; j < fVerts.size(); j++)
 			{
-				vertexBinary[j] =  true;
-			}
-			else vertexBinary[j] = false;
-
-			averageScalar += vertexScalars[fVerts[j].getId()];
-		}
-
-		averageScalar /= fVerts.size();
-
-		int MS_case = getIsolineCase(vertexBinary);
-						
-
-		vector<zVector> newPositions;
-		zColorArray newColors;
-
-		vector<zVector> newPositions2;
-		zColorArray newColors2;
-		
-
-		// CASE 0
-		if (MS_case == 0)
-		{
-			// No Veritices to be added 
-		}
-
-		// CASE 1
-		if (MS_case == 1)
-		{
-			zVector v0 = fVerts[0].getPosition();
-			float s0 = vertexScalars[fVerts[0].getId()];
-
-			zVector v1 = fVerts[1].getPosition();
-			float s1 = vertexScalars[fVerts[1].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v1, v0, s1, s0));
-			
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he1);
-			
-		
-			v1 = fVerts[3].getPosition();
-			s1 = vertexScalars[fVerts[3].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[0].getId(), fVerts[3].getId(), he2);
-			
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-		}
-
-		// CASE 2
-		if (MS_case == 2)
-		{
-			zVector v0 = fVerts[0].getPosition();
-			float s0 = vertexScalars[fVerts[0].getId()];
-
-			zVector v1 = fVerts[1].getPosition();
-			float s1 = vertexScalars[fVerts[1].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he2);
-
-			v0 = fVerts[2].getPosition();
-			s0 = vertexScalars[fVerts[2].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[2].getId(), fVerts[1].getId(), he1);
-			
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-		}
-
-		// CASE 3
-		if (MS_case == 3)
-		{
-			zVector v0 = fVerts[3].getPosition();
-			float s0 = vertexScalars[fVerts[3].getId()];
-
-			zVector v1 = fVerts[0].getPosition();
-			float s1 = vertexScalars[fVerts[0].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[3].getId(), fVerts[0].getId(), he2);
-
-			v0 = fVerts[2].getPosition();
-			s0 = vertexScalars[fVerts[2].getId()];
-
-			v1 = fVerts[1].getPosition();
-			s1 = vertexScalars[fVerts[1].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[2].getId(), fVerts[1].getId(), he1);
-
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-
-		}
-
-		// CASE 4
-		if (MS_case == 4)
-		{
-			zVector v0 = fVerts[1].getPosition();
-			float s0 = vertexScalars[fVerts[1].getId()];
-
-			zVector v1 = fVerts[2].getPosition();
-			float s1 = vertexScalars[fVerts[2].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[1].getId(), fVerts[2].getId(), he2);
-
-			v0 = fVerts[3].getPosition();
-			s0 = vertexScalars[fVerts[3].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[3].getId(), fVerts[2].getId(), he1);
-
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-		}
-
-		// CASE 5
-		if (MS_case == 5)
-		{
-			// SADDLE CASE 
-
-			// tri 1
-			zVector v0 = fVerts[1].getPosition();
-			float s0 = vertexScalars[fVerts[1].getId()];
-
-			zVector v1 = fVerts[0].getPosition();
-			float s1 = vertexScalars[fVerts[0].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[1].getId(), fVerts[0].getId(), he1);
-
-			v1 = fVerts[2].getPosition();
-			s1 = vertexScalars[fVerts[2].getId()];
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[1].getId(), fVerts[2].getId(), he2);
-
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-
-			// tri 2
-			v0 = fVerts[3].getPosition();
-			s0 = vertexScalars[fVerts[3].getId()];
-			zVector pos4 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he4;
-			halfEdgeExists(fVerts[3].getId(), fVerts[2].getId(), he4);
-			
-			v1 = fVerts[0].getPosition();
-			s1 = vertexScalars[fVerts[0].getId()];
-			zVector pos3 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he3;
-			halfEdgeExists(fVerts[3].getId(), fVerts[0].getId(), he3);
-			
-			newPositions2.push_back(pos3);
-			newPositions2.push_back(pos4);
-
-			newColors2.push_back(he3.getColor());
-			newColors2.push_back(he4.getColor());
-
-		}
-
-		// CASE 6
-		if (MS_case == 6)
-		{
-			zVector v0 = fVerts[0].getPosition();
-			float s0 = vertexScalars[fVerts[0].getId()];
-			zVector v1 = fVerts[1].getPosition();
-			float s1 = vertexScalars[fVerts[1].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he2);
-
-			v0 = fVerts[3].getPosition();
-			s0 = vertexScalars[fVerts[3].getId()];
-			v1 = fVerts[2].getPosition();
-			s1 = vertexScalars[fVerts[2].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[3].getId(), fVerts[2].getId(), he1);
-			
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-
-		}
-
-
-		// CASE 7
-		if (MS_case == 7)
-		{
-			zVector v0 = fVerts[3].getPosition();
-			float s0 = vertexScalars[fVerts[3].getId()];
-			zVector v1 = fVerts[2].getPosition();
-			float s1 = vertexScalars[fVerts[2].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[3].getId(), fVerts[2].getId(), he1);
-			
-			v1 = fVerts[0].getPosition();
-			s1 = vertexScalars[fVerts[0].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[3].getId(), fVerts[0].getId(), he2);
-			
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-		}
-
-		// CASE 8
-		if (MS_case == 8)
-		{
-			zVector v0 = fVerts[2].getPosition();
-			float s0 = vertexScalars[fVerts[2].getId()];
-			zVector v1 = fVerts[3].getPosition();
-			float s1 = vertexScalars[fVerts[3].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[2].getId(), fVerts[3].getId(), he2);
-
-			v0 = fVerts[0].getPosition();
-			s0 = vertexScalars[fVerts[0].getId()];
-			
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[0].getId(), fVerts[3].getId(), he1);
-			
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-
-		}
-
-		// CASE 9
-		if (MS_case == 9)
-		{
-			zVector v0 = fVerts[1].getPosition();
-			float s0 = vertexScalars[fVerts[1].getId()];
-			zVector v1 = fVerts[0].getPosition();
-			float s1 = vertexScalars[fVerts[0].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[1].getId(), fVerts[0].getId(), he1);
-
-			v0 = fVerts[2].getPosition();
-			s0 = vertexScalars[fVerts[2].getId()];
-			v1 = fVerts[3].getPosition();
-			s1 = vertexScalars[fVerts[3].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[2].getId(), fVerts[3].getId(), he2);
-
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-
-		}
-
-		// CASE 10
-		if (MS_case == 10)
-		{
-			//printf("\n case 10");
-
-			// tri 1
-			zVector v0 = fVerts[0].getPosition();
-			float s0 = vertexScalars[fVerts[0].getId()];
-			zVector v1 = fVerts[1].getPosition();
-			float s1 = vertexScalars[fVerts[1].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he2);
-
-			v1 = fVerts[3].getPosition();
-			s1 = vertexScalars[fVerts[1].getId()];
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[0].getId(), fVerts[3].getId(), he1);
-
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-
-			// tri 2
-
-			v0 = fVerts[2].getPosition();
-			s0 = vertexScalars[fVerts[2].getId()];
-			v1 = fVerts[1].getPosition();
-			s1 = vertexScalars[fVerts[1].getId()];
-
-			zVector pos3 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he3;
-			halfEdgeExists(fVerts[2].getId(), fVerts[1].getId(), he3);
-
-			v1 = fVerts[3].getPosition();
-			s1 = vertexScalars[fVerts[3].getId()];
-			zVector pos4 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he4;
-			halfEdgeExists(fVerts[2].getId(), fVerts[3].getId(), he4);
-
-			newPositions2.push_back(pos3);
-			newPositions2.push_back(pos4);
-
-			newColors2.push_back(he3.getColor());
-			newColors2.push_back(he4.getColor());
-
-		}
-
-		// CASE 11
-		if (MS_case == 11)
-		{
-			zVector v0 = fVerts[2].getPosition();
-			float s0 = vertexScalars[fVerts[2].getId()];
-			zVector v1 = fVerts[1].getPosition();
-			float s1 = vertexScalars[fVerts[1].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[2].getId(), fVerts[1].getId(), he1);
-
-			v1 = fVerts[3].getPosition();
-			s1 = vertexScalars[fVerts[3].getId()];
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[2].getId(), fVerts[3].getId(), he2);
-
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-
-		}
-
-		// CASE 12
-		if (MS_case == 12)
-		{
-			zVector v0 = fVerts[1].getPosition();
-			float s0 = vertexScalars[fVerts[1].getId()];
-			zVector v1 = fVerts[2].getPosition();
-			float s1 = vertexScalars[fVerts[2].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[1].getId(), fVerts[2].getId(), he2);
-
-			v0 = fVerts[0].getPosition();
-			s0 = vertexScalars[fVerts[0].getId()];
-			v1 = fVerts[3].getPosition();
-			s1 = vertexScalars[fVerts[3].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[0].getId(), fVerts[3].getId(), he1);
-			
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-
-		}
-
-		// CASE 13
-		if (MS_case == 13)
-		{
-			zVector v0 = fVerts[1].getPosition();
-			float s0 = vertexScalars[fVerts[1].getId()];
-			zVector v1 = fVerts[0].getPosition();
-			float s1 = vertexScalars[fVerts[0].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[1].getId(), fVerts[0].getId(), he1);
-
-			v1 = fVerts[2].getPosition();
-			s1 = vertexScalars[fVerts[2].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[1].getId(), fVerts[2].getId(), he2);
-			
-
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-		}
-
-		// CASE 14
-		if (MS_case == 14)
-		{
-			zVector v0 = fVerts[0].getPosition();
-			float s0 = vertexScalars[fVerts[0].getId()];
-			zVector v1 = fVerts[1].getPosition();
-			float s1 = vertexScalars[fVerts[1].getId()];
-
-			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he2;
-			halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he2);
-
-			v1 = fVerts[3].getPosition();
-			s1 = vertexScalars[fVerts[3].getId()];
-
-			zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
-			
-			zItMeshHalfEdge he1;
-			halfEdgeExists(fVerts[0].getId(), fVerts[3].getId(), he1);
-
-			newPositions.push_back(pos1);
-			newPositions.push_back(pos2);
-
-			newColors.push_back(he1.getColor());
-			newColors.push_back(he2.getColor());
-		}
-
-		// CASE 15
-		if (MS_case == 15)
-		{
-			// No Veritices to be added 
-
-		}
-
-
-		// check for edge lengths
-
-		if (newPositions.size() == 2)
-		{
-			zPoint p0 = coreUtils.factorise(newPositions[0], precision);
-			zPoint p1 = coreUtils.factorise(newPositions[1], precision);
-
-			//zPoint p0 = newPositions[0];
-			//zPoint p1 = newPositions[1];
-
-			if (p0.distanceTo(p1) < distTolerance)
-				newPositions.clear();
-		}
-
-
-
-		// compute edge 
-		if (newPositions.size() == 2 )
-		{
-			for (int i = 0; i < newPositions.size(); i++)
-			{
-				zVector p0 = newPositions[i];
-				int v0;
-
-				//bool vExists = coreUtils.vertexExists(positionVertex, p0, PRECISION, v0);
-				bool vExists = coreUtils.checkRepeatVector(p0, positions, v0, precision);
-
-
-				if (!vExists)
+				if (vertexScalars[fVerts[j].getId()] < threshold)
 				{
-					v0 = positions.size();
-					positions.push_back(p0);
-					cVertexColor.push_back(newColors[i]);
+					vertexBinary[j] = true;
+				}
+				else vertexBinary[j] = false;
 
-					//string hashKey = (to_string(p0.x) + "," + to_string(p0.y) + "," + to_string(p0.z));
-					//positionVertex[hashKey] = v0;
+				averageScalar += vertexScalars[fVerts[j].getId()];
+			}
 
-					//coreUtils.addToPositionMap(positionVertex, p0, v0, PRECISION);
+			averageScalar /= fVerts.size();
+
+			int MS_case = getIsolineCase_triangle(vertexBinary);
+
+			vector<zVector> newPositions;
+			zColorArray newColors;
+
+			// CASE 0 or 4
+			if (MS_case == 0 || MS_case == 0)
+			{
+				// No Veritices to be added 
+			}
+
+			// CASE 1 or 5
+			if (MS_case == 1 || MS_case == 5)
+			{
+				zVector v0 = fVerts[0].getPosition();
+				float s0 = vertexScalars[fVerts[0].getId()];
+
+				zVector v1 = fVerts[1].getPosition();
+				float s1 = vertexScalars[fVerts[1].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v1, v0, s1, s0));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he1);
+
+
+				v1 = fVerts[2].getPosition();
+				s1 = vertexScalars[fVerts[2].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[0].getId(), fVerts[2].getId(), he2);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+			}
+
+			// CASE 2 or 6
+			if (MS_case == 2 || MS_case == 6)
+			{
+				zVector v0 = fVerts[1].getPosition();
+				float s0 = vertexScalars[fVerts[1].getId()];
+
+				zVector v1 = fVerts[2].getPosition();
+				float s1 = vertexScalars[fVerts[2].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v1, v0, s1, s0));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[1].getId(), fVerts[2].getId(), he1);
+
+
+				v1 = fVerts[0].getPosition();
+				s1 = vertexScalars[fVerts[0].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[1].getId(), fVerts[0].getId(), he2);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+			}
+
+			// CASE 3 or 7
+			if (MS_case == 3 || MS_case == 7)
+			{
+				zVector v0 = fVerts[2].getPosition();
+				float s0 = vertexScalars[fVerts[2].getId()];
+
+				zVector v1 = fVerts[0].getPosition();
+				float s1 = vertexScalars[fVerts[0].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v1, v0, s1, s0));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[2].getId(), fVerts[0].getId(), he1);
+
+
+				v1 = fVerts[1].getPosition();
+				s1 = vertexScalars[fVerts[1].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[2].getId(), fVerts[1].getId(), he2);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+			}
+
+			// check for edge lengths
+
+			if (newPositions.size() == 2)
+			{
+				zPoint p0 = coreUtils.factorise(newPositions[0], precision);
+				zPoint p1 = coreUtils.factorise(newPositions[1], precision);
+
+				//zPoint p0 = newPositions[0];
+				//zPoint p1 = newPositions[1];
+
+				if (p0.distanceTo(p1) < distTolerance)
+					newPositions.clear();
+			}
+
+
+
+			// compute edge 
+			if (newPositions.size() == 2)
+			{
+				for (int i = 0; i < newPositions.size(); i++)
+				{
+					zVector p0 = newPositions[i];
+					int v0;
+
+					//bool vExists = coreUtils.vertexExists(positionVertex, p0, PRECISION, v0);
+					bool vExists = coreUtils.checkRepeatVector(p0, positions, v0, precision);
+
+
+					if (!vExists)
+					{
+						v0 = positions.size();
+						positions.push_back(p0);
+						cVertexColor.push_back(newColors[i]);
+
+						//string hashKey = (to_string(p0.x) + "," + to_string(p0.y) + "," + to_string(p0.z));
+						//positionVertex[hashKey] = v0;
+
+						//coreUtils.addToPositionMap(positionVertex, p0, v0, PRECISION);
+					}
+
+					edgeConnects.push_back(v0);
 				}
 
-				edgeConnects.push_back(v0);				
 			}
-			
+
 		}
 
-
-		// only if there are 2 tris Case : 5,10
-
-		// Edge Length Check
-				
-
-		if (newPositions2.size() == 2)
+		// quad mesh
+		if (fVerts.size() == 4)
 		{
-			zPoint p0 = coreUtils.factorise(newPositions2[0], precision);
-			zPoint p1 = coreUtils.factorise(newPositions2[1], precision);
+			// chk if all the face vertices are below the threshold
+			bool vertexBinary[4];
+			float averageScalar = 0;
 
-			//zPoint p0 = newPositions[0];
-			//zPoint p1 = newPositions[1];
-
-			if (p0.distanceTo(p1) < distTolerance)
-				newPositions2.clear();
-		}
-
-
-		// compute edge 
-		if (newPositions2.size() == 2 )
-		{
-			for (int i = 0; i < newPositions2.size(); i++)
+			for (int j = 0; j < fVerts.size(); j++)
 			{
-				zVector p0 = newPositions2[i];
-				int v0;
-
-				//bool vExists = coreUtils.vertexExists(positionVertex, p0, PRECISION, v0);
-				bool vExists = coreUtils.checkRepeatVector( p0, positions, v0, precision);
-
-				if (!vExists)
+				if (vertexScalars[fVerts[j].getId()] < threshold)
 				{
-					v0 = positions.size();
-					positions.push_back(p0);
-					cVertexColor.push_back(newColors2[i]);
-					
-					//coreUtils.addToPositionMap(positionVertex, p0, v0, PRECISION);
+					vertexBinary[j] = true;
+				}
+				else vertexBinary[j] = false;
+
+				averageScalar += vertexScalars[fVerts[j].getId()];
+			}
+
+			averageScalar /= fVerts.size();
+
+			int MS_case = getIsolineCase(vertexBinary);
+
+
+			vector<zVector> newPositions;
+			zColorArray newColors;
+
+			vector<zVector> newPositions2;
+			zColorArray newColors2;
+
+
+			// CASE 0
+			if (MS_case == 0)
+			{
+				// No Veritices to be added 
+			}
+
+			// CASE 1
+			if (MS_case == 1)
+			{
+				zVector v0 = fVerts[0].getPosition();
+				float s0 = vertexScalars[fVerts[0].getId()];
+
+				zVector v1 = fVerts[1].getPosition();
+				float s1 = vertexScalars[fVerts[1].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v1, v0, s1, s0));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he1);
+
+
+				v1 = fVerts[3].getPosition();
+				s1 = vertexScalars[fVerts[3].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[0].getId(), fVerts[3].getId(), he2);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+			}
+
+			// CASE 2
+			if (MS_case == 2)
+			{
+				zVector v0 = fVerts[0].getPosition();
+				float s0 = vertexScalars[fVerts[0].getId()];
+
+				zVector v1 = fVerts[1].getPosition();
+				float s1 = vertexScalars[fVerts[1].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he2);
+
+				v0 = fVerts[2].getPosition();
+				s0 = vertexScalars[fVerts[2].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[2].getId(), fVerts[1].getId(), he1);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+			}
+
+			// CASE 3
+			if (MS_case == 3)
+			{
+				zVector v0 = fVerts[3].getPosition();
+				float s0 = vertexScalars[fVerts[3].getId()];
+
+				zVector v1 = fVerts[0].getPosition();
+				float s1 = vertexScalars[fVerts[0].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[3].getId(), fVerts[0].getId(), he2);
+
+				v0 = fVerts[2].getPosition();
+				s0 = vertexScalars[fVerts[2].getId()];
+
+				v1 = fVerts[1].getPosition();
+				s1 = vertexScalars[fVerts[1].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[2].getId(), fVerts[1].getId(), he1);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+
+			}
+
+			// CASE 4
+			if (MS_case == 4)
+			{
+				zVector v0 = fVerts[1].getPosition();
+				float s0 = vertexScalars[fVerts[1].getId()];
+
+				zVector v1 = fVerts[2].getPosition();
+				float s1 = vertexScalars[fVerts[2].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[1].getId(), fVerts[2].getId(), he2);
+
+				v0 = fVerts[3].getPosition();
+				s0 = vertexScalars[fVerts[3].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[3].getId(), fVerts[2].getId(), he1);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+			}
+
+			// CASE 5
+			if (MS_case == 5)
+			{
+				// SADDLE CASE 
+
+				// tri 1
+				zVector v0 = fVerts[1].getPosition();
+				float s0 = vertexScalars[fVerts[1].getId()];
+
+				zVector v1 = fVerts[0].getPosition();
+				float s1 = vertexScalars[fVerts[0].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[1].getId(), fVerts[0].getId(), he1);
+
+				v1 = fVerts[2].getPosition();
+				s1 = vertexScalars[fVerts[2].getId()];
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[1].getId(), fVerts[2].getId(), he2);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+
+				// tri 2
+				v0 = fVerts[3].getPosition();
+				s0 = vertexScalars[fVerts[3].getId()];
+				zVector pos4 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he4;
+				halfEdgeExists(fVerts[3].getId(), fVerts[2].getId(), he4);
+
+				v1 = fVerts[0].getPosition();
+				s1 = vertexScalars[fVerts[0].getId()];
+				zVector pos3 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he3;
+				halfEdgeExists(fVerts[3].getId(), fVerts[0].getId(), he3);
+
+				newPositions2.push_back(pos3);
+				newPositions2.push_back(pos4);
+
+				newColors2.push_back(he3.getColor());
+				newColors2.push_back(he4.getColor());
+
+			}
+
+			// CASE 6
+			if (MS_case == 6)
+			{
+				zVector v0 = fVerts[0].getPosition();
+				float s0 = vertexScalars[fVerts[0].getId()];
+				zVector v1 = fVerts[1].getPosition();
+				float s1 = vertexScalars[fVerts[1].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he2);
+
+				v0 = fVerts[3].getPosition();
+				s0 = vertexScalars[fVerts[3].getId()];
+				v1 = fVerts[2].getPosition();
+				s1 = vertexScalars[fVerts[2].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[3].getId(), fVerts[2].getId(), he1);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+
+			}
+
+
+			// CASE 7
+			if (MS_case == 7)
+			{
+				zVector v0 = fVerts[3].getPosition();
+				float s0 = vertexScalars[fVerts[3].getId()];
+				zVector v1 = fVerts[2].getPosition();
+				float s1 = vertexScalars[fVerts[2].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[3].getId(), fVerts[2].getId(), he1);
+
+				v1 = fVerts[0].getPosition();
+				s1 = vertexScalars[fVerts[0].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[3].getId(), fVerts[0].getId(), he2);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+			}
+
+			// CASE 8
+			if (MS_case == 8)
+			{
+				zVector v0 = fVerts[2].getPosition();
+				float s0 = vertexScalars[fVerts[2].getId()];
+				zVector v1 = fVerts[3].getPosition();
+				float s1 = vertexScalars[fVerts[3].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[2].getId(), fVerts[3].getId(), he2);
+
+				v0 = fVerts[0].getPosition();
+				s0 = vertexScalars[fVerts[0].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[0].getId(), fVerts[3].getId(), he1);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+
+			}
+
+			// CASE 9
+			if (MS_case == 9)
+			{
+				zVector v0 = fVerts[1].getPosition();
+				float s0 = vertexScalars[fVerts[1].getId()];
+				zVector v1 = fVerts[0].getPosition();
+				float s1 = vertexScalars[fVerts[0].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[1].getId(), fVerts[0].getId(), he1);
+
+				v0 = fVerts[2].getPosition();
+				s0 = vertexScalars[fVerts[2].getId()];
+				v1 = fVerts[3].getPosition();
+				s1 = vertexScalars[fVerts[3].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[2].getId(), fVerts[3].getId(), he2);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+
+			}
+
+			// CASE 10
+			if (MS_case == 10)
+			{
+				//printf("\n case 10");
+
+				// tri 1
+				zVector v0 = fVerts[0].getPosition();
+				float s0 = vertexScalars[fVerts[0].getId()];
+				zVector v1 = fVerts[1].getPosition();
+				float s1 = vertexScalars[fVerts[1].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he2);
+
+				v1 = fVerts[3].getPosition();
+				s1 = vertexScalars[fVerts[1].getId()];
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[0].getId(), fVerts[3].getId(), he1);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+
+				// tri 2
+
+				v0 = fVerts[2].getPosition();
+				s0 = vertexScalars[fVerts[2].getId()];
+				v1 = fVerts[1].getPosition();
+				s1 = vertexScalars[fVerts[1].getId()];
+
+				zVector pos3 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he3;
+				halfEdgeExists(fVerts[2].getId(), fVerts[1].getId(), he3);
+
+				v1 = fVerts[3].getPosition();
+				s1 = vertexScalars[fVerts[3].getId()];
+				zVector pos4 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he4;
+				halfEdgeExists(fVerts[2].getId(), fVerts[3].getId(), he4);
+
+				newPositions2.push_back(pos3);
+				newPositions2.push_back(pos4);
+
+				newColors2.push_back(he3.getColor());
+				newColors2.push_back(he4.getColor());
+
+			}
+
+			// CASE 11
+			if (MS_case == 11)
+			{
+				zVector v0 = fVerts[2].getPosition();
+				float s0 = vertexScalars[fVerts[2].getId()];
+				zVector v1 = fVerts[1].getPosition();
+				float s1 = vertexScalars[fVerts[1].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[2].getId(), fVerts[1].getId(), he1);
+
+				v1 = fVerts[3].getPosition();
+				s1 = vertexScalars[fVerts[3].getId()];
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[2].getId(), fVerts[3].getId(), he2);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+
+			}
+
+			// CASE 12
+			if (MS_case == 12)
+			{
+				zVector v0 = fVerts[1].getPosition();
+				float s0 = vertexScalars[fVerts[1].getId()];
+				zVector v1 = fVerts[2].getPosition();
+				float s1 = vertexScalars[fVerts[2].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[1].getId(), fVerts[2].getId(), he2);
+
+				v0 = fVerts[0].getPosition();
+				s0 = vertexScalars[fVerts[0].getId()];
+				v1 = fVerts[3].getPosition();
+				s1 = vertexScalars[fVerts[3].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[0].getId(), fVerts[3].getId(), he1);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+
+			}
+
+			// CASE 13
+			if (MS_case == 13)
+			{
+				zVector v0 = fVerts[1].getPosition();
+				float s0 = vertexScalars[fVerts[1].getId()];
+				zVector v1 = fVerts[0].getPosition();
+				float s1 = vertexScalars[fVerts[0].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[1].getId(), fVerts[0].getId(), he1);
+
+				v1 = fVerts[2].getPosition();
+				s1 = vertexScalars[fVerts[2].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[1].getId(), fVerts[2].getId(), he2);
+
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+			}
+
+			// CASE 14
+			if (MS_case == 14)
+			{
+				zVector v0 = fVerts[0].getPosition();
+				float s0 = vertexScalars[fVerts[0].getId()];
+				zVector v1 = fVerts[1].getPosition();
+				float s1 = vertexScalars[fVerts[1].getId()];
+
+				zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he2;
+				halfEdgeExists(fVerts[0].getId(), fVerts[1].getId(), he2);
+
+				v1 = fVerts[3].getPosition();
+				s1 = vertexScalars[fVerts[3].getId()];
+
+				zVector pos1 = (getContourPosition(threshold, v0, v1, s0, s1));
+
+				zItMeshHalfEdge he1;
+				halfEdgeExists(fVerts[0].getId(), fVerts[3].getId(), he1);
+
+				newPositions.push_back(pos1);
+				newPositions.push_back(pos2);
+
+				newColors.push_back(he1.getColor());
+				newColors.push_back(he2.getColor());
+			}
+
+			// CASE 15
+			if (MS_case == 15)
+			{
+				// No Veritices to be added 
+
+			}
+
+
+			// check for edge lengths
+
+			if (newPositions.size() == 2)
+			{
+				zPoint p0 = coreUtils.factorise(newPositions[0], precision);
+				zPoint p1 = coreUtils.factorise(newPositions[1], precision);
+
+				//zPoint p0 = newPositions[0];
+				//zPoint p1 = newPositions[1];
+
+				if (p0.distanceTo(p1) < distTolerance)
+					newPositions.clear();
+			}
+
+
+
+			// compute edge 
+			if (newPositions.size() == 2)
+			{
+				for (int i = 0; i < newPositions.size(); i++)
+				{
+					zVector p0 = newPositions[i];
+					int v0;
+
+					//bool vExists = coreUtils.vertexExists(positionVertex, p0, PRECISION, v0);
+					bool vExists = coreUtils.checkRepeatVector(p0, positions, v0, precision);
+
+
+					if (!vExists)
+					{
+						v0 = positions.size();
+						positions.push_back(p0);
+						cVertexColor.push_back(newColors[i]);
+
+						//string hashKey = (to_string(p0.x) + "," + to_string(p0.y) + "," + to_string(p0.z));
+						//positionVertex[hashKey] = v0;
+
+						//coreUtils.addToPositionMap(positionVertex, p0, v0, PRECISION);
+					}
+
+					edgeConnects.push_back(v0);
 				}
 
-				edgeConnects.push_back(v0);
 			}
-			
-		}	
+
+
+			// only if there are 2 tris Case : 5,10
+
+			// Edge Length Check
+
+
+			if (newPositions2.size() == 2)
+			{
+				zPoint p0 = coreUtils.factorise(newPositions2[0], precision);
+				zPoint p1 = coreUtils.factorise(newPositions2[1], precision);
+
+				//zPoint p0 = newPositions[0];
+				//zPoint p1 = newPositions[1];
+
+				if (p0.distanceTo(p1) < distTolerance)
+					newPositions2.clear();
+			}
+
+
+			// compute edge 
+			if (newPositions2.size() == 2)
+			{
+				for (int i = 0; i < newPositions2.size(); i++)
+				{
+					zVector p0 = newPositions2[i];
+					int v0;
+
+					//bool vExists = coreUtils.vertexExists(positionVertex, p0, PRECISION, v0);
+					bool vExists = coreUtils.checkRepeatVector(p0, positions, v0, precision);
+
+					if (!vExists)
+					{
+						v0 = positions.size();
+						positions.push_back(p0);
+						cVertexColor.push_back(newColors2[i]);
+
+						//coreUtils.addToPositionMap(positionVertex, p0, v0, PRECISION);
+					}
+
+					edgeConnects.push_back(v0);
+				}
+
+			}
+		}
+
+		
 				
 
 	}

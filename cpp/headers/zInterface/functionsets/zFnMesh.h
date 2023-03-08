@@ -1020,7 +1020,7 @@ namespace zSpace
 		int getIsolineCase_triangle(bool vertexBinary[3]);
 
 
-		/*! \brief This method gets the isoline case based on the input vertex binary values fro quads.
+		/*! \brief This method gets the isoline case based on the input vertex binary values for quads.
 		*
 		*	\details based on https://en.wikipedia.org/wiki/Marching_squares. The sequencing is reversed as CCW windings are required.
 		*	\param	[in]	vertexBinary	- vertex binary values.
