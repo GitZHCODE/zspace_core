@@ -111,11 +111,11 @@ namespace  zSpace
 		MatrixXi setMatrixFTris();
 
 		/*! \brief This method set the connected vertices of each each vertex.
-	*
-	*  	\param	[out]	vertexIndices			- Vertices connected to each vertex collapsed as 1D array.
-	*  	\param	[out]	cvCounts				- Count of connected vertices per vertex.
-	*	\since version 0.0.4
-	*/
+		*
+		*  	\param	[out]	vertexIndices			- Vertices connected to each vertex collapsed as 1D array.
+		*  	\param	[out]	cvCounts				- Count of connected vertices per vertex.
+		*	\since version 0.0.4
+		*/
 		void setCVertices(int* _vertexIndices, int* _cvCounts);
 
 		void computeFaceVolumes(zPointArray& fCenters, zDoubleArray& fVolumes);
@@ -126,30 +126,7 @@ namespace  zSpace
 
 		void computeBounds(zDomainVector& bounds);
 
-		/*! \brief This method computes the principal curvature directions of the input mesh.
-		*
-		*  	\param	[out]	PV1						- output container of principal curvature value 1.
-		*  	\param	[out]	PV2						- output container of principal curvature value 2.
-		*  	\param	[out]	PD1						- output matrix of principal curvature direction 1.
-		*  	\param	[out]	PD2						- output matrix of principal curvature direction 2.
-		*	\since version 0.0.4
-		*/
-		void computeCurvatureDirections(VectorXd& PV1, VectorXd& PV2, MatrixXd& PD1, MatrixXd& PD2);
-
-		/*! \brief This method computes the gaussian curvature of the input mesh.
-		*
-		*	\param	[out]	K						- output container of gaussian curvature per vertex.
-		*	\since version 0.0.4
-		*/
-		void computeGaussianCurvature(VectorXd& K);
-
-		/*! \brief This method computes the pricipal curvature directions of the input triangle mesh.
-		*
-		*	\param	[out]	HV						- output container of mean curvature per vertex.
-		*	\param	[out]	HN						- output matrix of mean curvature normal per vertex.
-		*	\since version 0.0.4
-		*/
-		void computeMeanCurvature(VectorXd& HV, MatrixXd& HN);
+	
 
 		//--------------------------
 		//---- TRANSFORM METHODS OVERRIDES

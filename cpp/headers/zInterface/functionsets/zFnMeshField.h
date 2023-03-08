@@ -213,6 +213,13 @@ namespace zSpace
 		//---- QUERIES
 		//--------------------------
 
+		/*! \brief This method gets pointer to the internal mesh object.
+		*
+		*	\return				zObjMesh*					- pointer to internal mesh object.
+		*	\since version 0.0.4
+		*/
+		zObjMesh* getRawMesh();
+
 		/*! \brief This method gets the field indices which contain the input position.
 		*
 		*	\param		[in]	pos					- input position.
