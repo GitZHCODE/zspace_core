@@ -727,6 +727,8 @@ namespace zSpace
 		}
 	}
 
+
+
 	ZSPACE_INLINE void zFnMesh::setVertexColor(zColor col, bool setFaceColor)
 	{
 		meshObj->mesh.vertexColors.clear();
@@ -759,8 +761,6 @@ namespace zSpace
 
 	}
 
-	
-
 	ZSPACE_INLINE void zFnMesh::setVertexColors(zColorArray& col, bool setFaceColor)
 	{
 		if (meshObj->mesh.vertexColors.size() != meshObj->mesh.vertices.size())
@@ -777,6 +777,21 @@ namespace zSpace
 		}
 
 		if (setFaceColor) computeFaceColorfromVertexColor();
+	}
+
+	ZSPACE_INLINE void zFnMesh::setVertexWeight(double wt)
+	{
+		for (int i = 0; i < meshObj->mesh.vertexWeights.size(); i++) meshObj->mesh.vertexWeights[i] = wt;
+	}
+
+	ZSPACE_INLINE void zFnMesh::setVertexWeights(zDoubleArray& wt)
+	{
+		if (wt.size() != meshObj->mesh.vertexWeights.size()) throw std::invalid_argument("size of wt contatiner is not equal to number of mesh vertices.");
+
+		for (int i = 0; i < meshObj->mesh.vertexWeights.size(); i++)
+		{
+			meshObj->mesh.vertexWeights[i] = wt[i];
+		}
 	}
 
 	ZSPACE_INLINE void zFnMesh::setFaceColor(zColor col, bool setVertexColor)
@@ -867,6 +882,11 @@ namespace zSpace
 		}
 
 		if (setVertexColor) computeVertexColorfromEdgeColor();
+	}
+
+	ZSPACE_INLINE void zFnMesh::setEdgeWeight(double wt)
+	{
+		for (int i = 0; i < meshObj->mesh.edges.size(); i++) meshObj->mesh.edgeWeights[i] = wt;
 	}
 
 	ZSPACE_INLINE void zFnMesh::setEdgeWeight(int index, double wt)

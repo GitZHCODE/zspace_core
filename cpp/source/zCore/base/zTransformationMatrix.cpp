@@ -376,9 +376,12 @@ namespace zSpace
 		zTransform world = to.getWorldMatrix();
 		zTransform local = this->getLocalMatrix();
 
-
-
 		return world * local;
+	}
+
+	ZSPACE_CUDA_CALLABLE zTransform zTransformationMatrix::getToTransform(zTransformationMatrix& to)
+	{
+		return getToMatrix(to).transpose();
 	}
 
 	ZSPACE_INLINE zTransform zTransformationMatrix::getBasisChangeMatrix(zTransformationMatrix &to)

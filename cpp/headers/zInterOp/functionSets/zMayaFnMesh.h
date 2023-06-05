@@ -51,6 +51,9 @@ namespace zSpace
 		zDoubleArray creaseEdgeData;
 		zIntArray creaseEdgeIndex;
 
+		zDoubleArray creaseVertexData;
+		zIntArray creaseVertexIndex;
+
 	public:
 
 		//--------------------------

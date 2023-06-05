@@ -312,13 +312,21 @@ namespace zSpace
 		*/		
 		ZSPACE_CUDA_CALLABLE zTransform getLocalMatrix();
 		
-		/*! \brief This method gets the tranformation from current tranform to input transform.
+		/*! \brief This method gets the tranformation from current tranformation matrix to input tranformation matrix.
 		*
 		*	\param		[in]	to			- input transform.
 		*	\return 			zTransform	- transformation matrix.
 		*	\since version 0.0.2
 		*/
 		ZSPACE_CUDA_CALLABLE zTransform getToMatrix(zTransformationMatrix &to);
+
+		/*! \brief This method gets the row major transform from current tranformation matrix to input transformatrion matrix.
+		*
+		*	\param		[in]	to			- input transform.
+		*	\return 			zTransform	- transform.
+		*	\since version 0.0.2
+		*/
+		ZSPACE_CUDA_CALLABLE zTransform getToTransform(zTransformationMatrix& to);
 
 		/*! \brief This method gets the tranformation to change the basis to another.
 		*

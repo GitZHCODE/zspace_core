@@ -378,6 +378,8 @@ namespace zSpace
 				zVector pt2 = cVerts[next].getPosition();
 				zVector pt3 = cVerts[prev].getPosition();
 
+				//if (onBoundary() && cVerts[next].onBoundary() && cVerts[prev].onBoundary()) continue;
+
 				zVector p01 = pt - pt1;
 				zVector p02 = pt - pt2;
 				zVector p10 = pt1 - pt;
@@ -429,12 +431,16 @@ namespace zSpace
 
 			meanCurvNormal /= (2 * areaSumMixed);
 
+			gaussianCurv = ((360 - angleSum) * DEG_TO_RAD);
+			gaussianCurv /= getArea();
+
+			/// 
 			// using https://arxiv.org/abs/0804.1046
-			//gaussianCurv = (360 - angleSum) / ((0.5 * areaSum) - (multFactor * cotangentSum * edgeLengthSquare));
+			//gaussianCurv = (gaussianCurv) / ((0.5 * areaSum) - (multFactor * cotangentSum * edgeLengthSquare));
 
 			////// Based on Discrete Differential-Geometry Operators for Triangulated 2-Manifolds
 			//https://link.springer.com/chapter/10.1007/978-3-662-05105-4_2
-			gaussianCurv = (360 - angleSum) / areaSumMixed;
+			//gaussianCurv = gaussianCurv / areaSumMixed;
 
 		}
 

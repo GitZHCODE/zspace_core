@@ -135,6 +135,7 @@ namespace zSpace
 		MUintArray  edgeIds;
 		MDoubleArray creaseData;
 		maya_fnMesh.getCreaseEdges(edgeIds, creaseData);
+			
 
 		creaseEdgeData.clear();
 		creaseEdgeData.assign(creaseData.length(), 0.0);
@@ -144,8 +145,37 @@ namespace zSpace
 
 		for (int i = 0; i < edgeIds.length(); i++)
 		{
+			MItMeshEdge e(maya_meshObj);
+			int prevId;
+			e.setIndex(edgeIds[i], prevId);
+
+			// get halfedge
+			zItMeshHalfEdge he;
+			bool chk = halfEdgeExists(e.index(0), e.index(1), he);
+					
+
 			creaseEdgeData[i] = creaseData[i];
-			creaseEdgeIndex[i] = edgeIds[i];
+			creaseEdgeIndex[i] = he.getEdge().getId()/*edgeIds[i]*/;
+		}
+
+
+		// crease vertex
+
+		MUintArray  vertexIds;
+		MDoubleArray v_creaseData;
+		maya_fnMesh.getCreaseVertices(vertexIds, v_creaseData);
+
+		
+		creaseVertexData.clear();
+		creaseVertexData.assign(v_creaseData.length(), 0.0);
+
+		creaseVertexIndex.clear();
+		creaseVertexIndex.assign(vertexIds.length(), -1);
+
+		for (int i = 0; i < vertexIds.length(); i++)
+		{			
+			creaseVertexData[i] = v_creaseData[i];
+			creaseVertexIndex[i] = vertexIds[i];
 		}
 
 	}
@@ -202,8 +232,16 @@ namespace zSpace
 
 		for (int i = 0; i < edgeIds.length(); i++)
 		{
-			creaseEdgeData[i] = creaseData[i];
-			creaseEdgeIndex[i] = edgeIds[i];
+			MItMeshEdge e(maya_dagpath);
+			int prevId;
+			e.setIndex(edgeIds[i], prevId);
+
+			// get halfedge
+			zItMeshHalfEdge he;
+			bool chk = halfEdgeExists(e.index(0), e.index(1), he);
+
+			creaseEdgeData[he.getEdge().getId()] = creaseData[i];
+			creaseEdgeIndex[i] = he.getEdge().getId()/*edgeIds[i]*/;
 		}
 	}
 
@@ -352,8 +390,17 @@ namespace zSpace
 			meshJSON.edgeCreaseData[creaseEdgeIndex[i]] = creaseEdgeData[i];	
 		}
 
+		//vertex Crease	
+		meshJSON.vertexCreaseData.assign(numVertices(), 0.0);
+
+		for (int i = 0; i < creaseVertexIndex.size(); i++)
+		{
+			meshJSON.vertexCreaseData[creaseVertexIndex[i]] = creaseVertexData[i];
+		}
+
 		// Json file 
-		j["EdgeCreaseData"] = meshJSON.edgeCreaseData;		
+		j["EdgeCreaseData"] = meshJSON.edgeCreaseData;	
+		j["VertexCreaseData"] = meshJSON.vertexCreaseData;
 
 		// EXPORT	
 		ofstream myfile;
