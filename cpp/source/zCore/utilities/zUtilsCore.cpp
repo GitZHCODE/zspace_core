@@ -1865,7 +1865,6 @@ namespace zSpace
 		outMatrix(0, 3) = -(X*d); outMatrix(1, 3) = -(Y*d); outMatrix(2, 3) = -(Z*d);
 
 
-
 		return outMatrix;
 	}
 

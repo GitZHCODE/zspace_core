@@ -121,28 +121,82 @@ namespace zSpace
 		//---- FORCE METHODS 
 		//--------------------------
 
-		/*! \brief This method adds the input gravity force to all the particles in the input container.
+		/*! \brief This method adds the gravitational force to the input mesh.
 		*
-		*	\param		[in]		grav		- Input gravity force.
-		*	\since version 0.0.2
+		*	\param	[in]	inMesh					- input compute mesh object.
+		*	\param	[in]	gForce					- gravitational force vector.
+		*	\since version 0.0.4
 		*/
-		void addGravityForce(zVector grav = zVector(0, 0, -9.8));
+		void addGravityForce( zVector& gForce);
 
-		/*! \brief This method adds the edge forces to all the particles in the input container based on the input graph/ mesh.
+		/*! \brief This method adds the drag force to the input mesh.
 		*
-		*	\param		[in]	weights				- Input container of weights per vertex.
-		*	\since version 0.0.2
+		*	\param	[in]	inMesh					- input compute mesh object.
+		*	\param	[in]	drag					- drag constant.
+		*	\since version 0.0.4
 		*/
-		void addEdgeForce(const zDoubleArray &weights = zDoubleArray());
+		void addDragForce(float drag);
 
-		/*! \brief This method adds the planarity force to all the particles in the input container based on the face volumes of the input mesh.
+		/*! \brief This method adds the drag force to the input mesh.
 		*
-		*	\param		[in]	fVolumes			- container of face volumes. Use getMeshFaceVolumes method to compute it.
-		*	\param		[in]	fCenters			- container of face centers. Use getCenters method to compute it.
-		*	\param		[in]	tolerance			- tolerance value. Default it is set to 0.001.
-		*	\since version 0.0.2
+		*	\param	[in]	inMesh					- input compute mesh object.
+		*	\param	[in]	restLength				- input container of restlengths per edge.
+		*	\param	[in]	springConstant			- input spring constant.
+		*	\since version 0.0.4
 		*/
-		void addPlanarityForce(vector<double> &fVolumes, vector<zVector> fCenters, double tolerance = EPS);
+		void addSpringForce(zFloatArray& restLength, double strength = 1);
+
+		/*! \brief This method adds the smoothness force to the mesh.
+		*	\details based on https://github.com/Dan-Piker/K2Goals/blob/master/TangentialSmooth.cs
+		*	\param	[in]	strength			- input strength of the force.
+		*	\since version 0.0.4
+		*/
+		void addSmoothnessForce(double strength = 1);
+
+		/*! \brief This method adds the planarisation forces to the input mesh.
+		*
+		*	\param	[in]	type					- input planarisation type - zQuadPlanar or zVolumePlanar.
+		* 	\param	[in]	tolerance				- input tolerance value below which the force isnt applied.
+		*  	\param	[out]	planarityDeviations		- output container of planarity deviations per face.
+		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*	\since version 0.0.4
+		*/
+		void addPlanarityForce( zPlanarSolverType type, double& tolerance, zDoubleArray& planarityDeviations, bool& exit);
+
+		/*! \brief This method adds the planarisation forces to the input mesh.
+		*
+		*	\param	[in]	type					- input planarisation type - zQuadPlanar or zVolumePlanar.
+		*  	\param	[in]	targetCenters			- container of target origin per face. Used only for zVolumePlanar planarisation type.
+		*  	\param	[in]	targetNormals			- container of target normals per face. Used only for zVolumePlanar planarisation type.
+		* 	\param	[in]	tolerance				- input tolerance value below which the force isnt applied.
+		*  	\param	[out]	planarityDeviations		- output container of planarity deviations per face.
+		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*	\since version 0.0.4
+		*/
+		void addPlanarityForce_targetPlane(zPlanarSolverType type, zPointArray& targetCenters, zVectorArray& targetNormals, double& tolerance, zDoubleArray& planarityDeviations, bool& exit);
+
+		/*! \brief This method adds the planarisation forces to the input mesh.
+		*	\details based on Desburn et.al(2002) http://www.geometry.caltech.edu/pubs/DMA02.pdf
+		*	\param	[in]	inMesh					- input compute mesh object.
+		*	\param	[in]	type					- input planarisation type - zQuadPlanar or zVolumePlanar.
+		* 	\param	[in]	tolerance				- input tolerance value belwo which the force isnt applied.
+		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*  	\param	[out]	planarityDeviations		- output container of planarity deviations per face.
+		*  	\param	[in]	targetCenters			- container of target origin per face. Used only for zVolumePlanar planarisation type.
+		*  	\param	[in]	targetNormals			- container of target normals per face. Used only for zVolumePlanar planarisation type.
+		*	\since version 0.0.4
+		*/
+		void addGaussianForce( double& tolerance, zDoubleArray& vGaussianCurvatures, bool& exit);
+
+
+		/*! \brief This method adds the minimize area forces (minimal surface) to the input mesh.
+		*	\details based on http://courses.cms.caltech.edu/cs177/hmw/Hmw2.pdf , https://github.com/Dan-Piker/K2Goals/blob/master/SoapFilm.cs
+		*	\param	[in]	inMesh					- input compute mesh object.
+		*	\param	[in]	type					- input planarisation type - zQuadPlanar or zVolumePlanar.
+		* 	\param	[in]	strength				- input strength of the force.
+		*	\since version 0.0.4
+		*/
+		void addMinimizeAreaForce(double strength = 1);
 
 		//--------------------------
 		//---- UPDATE METHODS 

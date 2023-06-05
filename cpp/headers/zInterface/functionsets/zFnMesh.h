@@ -364,6 +364,20 @@ namespace zSpace
 		*/
 		void setVertexColors(zColorArray& col, bool setFaceColor = false);
 
+		/*! \brief This method sets vertex weight of all the vertices to the input weight.
+		*
+		*	\param		[in]	wt						- input wight.
+		*	\since version 0.0.2
+		*/
+		void setVertexWeight(double wt);
+
+		/*! \brief This method sets vertex weights of all the vertices with the input weight contatiner.
+		*
+		*	\param		[in]	wt				- input weight  contatiner. The size of the contatiner should be equal to number of vertices in the mesh.
+		*	\since version 0.0.2
+		*/
+		void setVertexWeights(zDoubleArray& wt);
+
 		/*! \brief This method sets face color of all the faces to the input color.
 		*
 		*	\param		[in]	col				- input color.
@@ -417,6 +431,13 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void setEdgeColors(zColorArray& col, bool setVertexColor);
+
+		/*! \brief This method sets edge weight of all the edges to the input weight.
+		*
+		*	\param		[in]	wt						- input wight.
+		*	\since version 0.0.2
+		*/
+		void setEdgeWeight( double wt);
 
 		/*! \brief This method sets edge weight of of the input edge and its symmetry edge to the input weight.
 		*

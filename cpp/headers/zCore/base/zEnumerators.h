@@ -173,8 +173,19 @@ namespace zSpace
 	*	\brief	connectivty matrix types.
 	*	\since	version 0.0.4
 	*/
-  enum zConnectivityType { zVertexVertex = 250, zVertexEdge, zFaceVertex, zFaceEdge };
+	enum zConnectivityType { zVertexVertex = 250, zVertexEdge, zFaceVertex, zFaceEdge };
 
+	/*! \enum	zPlanarSolverType
+	*	\brief	Types of planarisation solver.
+	*	\since	version 0.0.4
+	*/
+	enum zPlanarSolverType { zQuadPlanar = 260, zVolumePlanar };
+
+	/*! \enum	zMSSolverType
+	*	\brief	Types of planarisation.
+	*	\since	version 0.0.4
+	*/
+	enum zMSSolverType { zMinimiseArea = 270, zRestlength };
 
 	/** @}*/
 

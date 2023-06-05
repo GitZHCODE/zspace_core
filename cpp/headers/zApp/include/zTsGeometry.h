@@ -19,3 +19,5 @@
 #include <headers/zToolsets/geometry/zTsSpatialGraph.h>
 
 #include <headers/zToolsets/geometry/zTsMeshParameterization.h>
+
+#include <headers/zToolsets/geometry/zTsPaneling.h>
