@@ -1010,8 +1010,8 @@ namespace zSpace
 		*	\return 			bool			- true if file exists, else false.
 		*	\since version 0.0.2
 		*/
-		//template <typename T>
-		//bool readJSONAttribute(json& inJSON, string attributeKey , T &outAttribute);
+		template <typename T>
+		bool readJSONAttribute(json& inJSON, string attributeKey , T &outAttribute);
 		
 		//--------------------------
 		//---- MATRIX  METHODS USING ARMADILLO
@@ -1252,13 +1252,13 @@ namespace zSpace
 		return out;
 	}
 
-	/*template<typename T>
+	template<typename T>
 	inline bool zUtilsCore::readJSONAttribute(json& inJSON, string attributeKey, T& outAttribute)
 	{
 		bool out = inJSON.contains(attributeKey);
 		if (out) outAttribute = inJSON[attributeKey].get<T>();
 		return out;
-	}*/
+	}
 
 	
 

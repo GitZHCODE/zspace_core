@@ -228,16 +228,14 @@ namespace zSpace
 		a.normalize();
 		b.normalize();
 
-		if (a*b == 1) return 0;
-		else if (a*b == -1) return 180;
-		else
-		{
+		float dotProduct = a * b;
+		double factor = pow(10, PRECISION);
+		dotProduct =  std::round(dotProduct * factor) / factor;
 
-			float dotProduct = a * b;
-			float angle = acos(dotProduct);
-
-			return angle * RAD_TO_DEG;
-		}
+		if (dotProduct == 1.000000f) return 0.0f;
+		else if (dotProduct == -1.000000f) return 180.0f;
+		else return acos(dotProduct) * RAD_TO_DEG;
+		
 
 	}
 
