@@ -10,18 +10,16 @@
 // Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
 //
 
-#ifndef ZSPACE_FN_POINTCLOUD_H
-#define ZSPACE_FN_POINTCLOUD_H
+#ifndef ZSPACE_FN_NURBSCURVE_H
+#define ZSPACE_FN_NURBSCURVE_H
 
 #pragma once
 
-#include<headers/zInterface/objects/zObjPointCloud.h>
 #include<headers/zInterface/functionsets/zFn.h>
-#include<headers/zInterface/iterators/zItPointCloud.h>
+#include<headers/zInterop/objects/zObjNurbsCurve.h>
 
 namespace zSpace
 {
-
 	/** \addtogroup zInterface
 	*	\brief The Application Program Interface of the library.
 	*  @{
@@ -32,26 +30,39 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \class zFnPointCloud
-	*	\brief A point cloud function set.
-	*	\since version 0.0.2
+	/*! \class zFnNurbsCUrve
+	*	\brief A nurbs curve function set.
+	*	\since version 0.0.4
 	*/
 
 	/** @}*/
 
 	/** @}*/
 
-	class ZSPACE_API zFnPointCloud : public zFn
-	{
+	class ZSPACE_API zFnNurbsCurve : protected zFn
+	{	
+
 	protected:
 		//--------------------------
 		//---- PROTECTED ATTRIBUTES
 		//--------------------------
 
-		/*!	\brief pointer to a mesh object  */
-		zObjPointCloud *pointsObj;
+		/*!	\brief pointer to a graph object  */
+		zObjNurbsCurve *nurbsCurveObj;	
+
+		/*!	\brief core utilities Object  */
+		zUtilsCore coreUtils;
 
 	public:
+
+		//--------------------------
+		//---- PUBLIC ATTRIBUTES
+		//--------------------------
+		/*!	\brief boolean true is its a planar graph  */
+		bool planarGraph;
+
+		/*!	\brief stores normal of the the graph if planar  */
+		zVector graphNormal;
 
 		//--------------------------
 		//---- CONSTRUCTOR
@@ -61,14 +72,15 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		zFnPointCloud();
+		zFnNurbsCurve();
 
 		/*! \brief Overloaded constructor.
 		*
-		*	\param		[in]	_pointsObj			- input point cloud object.
+		*	\param		[in]	_nurbsCurveObj			- input nurbscurve object.
 		*	\since version 0.0.2
 		*/
-		zFnPointCloud(zObjPointCloud &_pointsObj);
+		zFnNurbsCurve(zObjNurbsCurve&_nurbsCurveObj);
+
 
 		//--------------------------
 		//---- DESTRUCTOR
@@ -78,7 +90,7 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		~zFnPointCloud();
+		~zFnNurbsCurve();
 
 		//--------------------------
 		//---- OVERRIDE METHODS
@@ -102,93 +114,100 @@ namespace zSpace
 		//---- CREATE METHODS
 		//--------------------------
 
-		/*! \brief This method creates a mesh from the input containers.
+		/*! \brief This method creates a graph from the input containers.
 		*
-		*	\param		[in]	_positions		- container of type zVector containing position information of vertices.
-		*	\since version 0.0.1
-		*/
-		void create(zPointArray(&_positions));
-
-		//--------------------------
-		//---- APPEND METHODS
-		//--------------------------
-
-		/*! \brief This method adds the input point to the point cloud.
-		*	\param		[in]	_position		- input position to be added.
+		*	\param		[in]	_positions		- container of type zPoint containing control point positions.
+		*	\param		[in]	edgeConnects	- container of edge connections with vertex ids for each edge
+		*	\param		[in]	staticGraph		- makes the graph fixed. Computes the static edge vertex positions if true.
 		*	\since version 0.0.2
 		*/
-		void addPosition(zPoint &_position);
-
-		/*! \brief This method adds the input point container to the point cloud.
-		*	\param		[in]	_positions		- input container positions to be added.
-		*	\since version 0.0.2
-		*/
-		void addPositions(zPointArray &_positions);
+		void create(zPointArray(&_positions), int degree,  bool periodic, int displayNumPoints = 25);
+				
 
 		//--------------------------
-		//---- QUERY METHODS
+		//--- TOPOLOGY QUERY METHODS 
 		//--------------------------
 
-		/*! \brief This method returns the number of points in the pointcloud.
-		*	\return				number of points.
-		*	\since version 0.0.2
-		*/
-		int numVertices();
+		
+	
+
+		//--------------------------
+		//--- COMPUTE METHODS 
+		//--------------------------
+
+		
 
 		//--------------------------
 		//--- SET METHODS 
 		//--------------------------
 
-		/*! \brief This method sets point color of all the point with the input color.
+		/*! \brief This method sets vertex positions of all the vertices.
+		*
+		*	\param		[in]	pos				- positions  contatiner.
+		*	\since version 0.0.2
+		*/
+		void setDegree(int _degree);
+
+
+		/*! \brief This method sets curve color to the input color.
 		*
 		*	\param		[in]	col				- input color.
 		*	\since version 0.0.2
 		*/
-		void setVertexColor(zColor col);
+		void setCurveColor(zColor col);
 
-		/*! \brief This method sets point color of all the point with the input color contatiner.
+	
+		/*! \brief This method sets edge weight of the curve to the input weight.
 		*
-		*	\param		[in]	col				- input color  contatiner. The size of the contatiner should be equal to number of points in the point cloud.
+		*	\param		[in]	wt				- input weight.
 		*	\since version 0.0.2
 		*/
-		void setVertexColors(zColorArray& col);
+		void setCurveWeight(double wt);
 
 		//--------------------------
 		//--- GET METHODS 
 		//--------------------------
 
-		/*! \brief This method gets vertex positions of all the vertices.
+		/*! \brief This method gets curve positions.
 		*
 		*	\param		[out]	pos				- positions  contatiner.
 		*	\since version 0.0.2
 		*/
-		void getVertexPositions(zPointArray& pos);
+		void getCurvePositions(zPointArray& pos);
 
-		/*! \brief This method gets pointer to the internal vertex positions container.
+		/*! \brief This method gets pointer to the internal curve positions container.
 		*
-		*	\return				zVector*					- pointer to internal vertex position container.
+		*	\return				zPoint*					- pointer to internal vertex position container.
 		*	\since version 0.0.2
 		*/
-		zPoint* getRawVertexPositions();
+		zPoint* getRawCurvePositions();
 
-		/*! \brief This method gets vertex color of all the vertices.
+		
+		/*! \brief This method computes the center the graph.
 		*
-		*	\param		[out]	col				- color  contatiner.
+		*	\return		zPoint					- center .
 		*	\since version 0.0.2
 		*/
-		void getVertexColors(zColorArray& col);
+		zPoint getCenter();
 
-		/*! \brief This method gets pointer to the internal vertex color container.
+		
+		/*! \brief This method computes the lengths of all the half edges of a the graph.
 		*
-		*	\return				zColor*					- pointer to internal vertex color container.
+		*	\param		[out]	halfEdgeLengths				- vector of halfedge lengths.
+		*	\return				double						- total edge lengths.
 		*	\since version 0.0.2
 		*/
-		zColor* getRawVertexColors();
+		ON_NurbsCurve* getRawON_Curve();
 
+		
+		//--------------------------
+		//---- TOPOLOGY MODIFIER METHODS
+		//--------------------------
+		
+		
 		//--------------------------
 		//---- TRANSFORM METHODS OVERRIDES
 		//--------------------------
-
 
 		void setTransform(zTransform &inTransform, bool decompose = true, bool updatePositions = true) override;
 
@@ -202,41 +221,37 @@ namespace zSpace
 
 		void getTransform(zTransform &transform) override;
 
-
 	protected:
 
 		//--------------------------
 		//---- PROTECTED OVERRIDE METHODS
 		//--------------------------	
-
 		void transformObject(zTransform &transform) override;
 
 		//--------------------------
-		//---- FACTORY METHODS
+		//---- PROTECTED REMOVE INACTIVE
 		//--------------------------
 
-		/*! \brief This method imports a point cloud from an TXT file.
-		*
-		*	\param [in]		infilename			- input file name including the directory path and extension.
-		*	\since version 0.0.1
-		*/
-		void fromCSV(string infilename);
+		//--------------------------
+		//---- PROTECTED FACTORY METHODS
+		//--------------------------
 
-		/*! \brief This method exports the input point cloud to a TXT file format.
-		*
-		*	\param [in]		inPositions			- input container of position.
-		*	\param [in]		outfilename			- output file name including the directory path and extension.
-		*	\since version 0.0.1
-		*/
-		void toCSV(string outfilename);
+
+	private:
+
+		//--------------------------
+		//---- PRIVATE METHODS
+		//--------------------------
 
 	};
+
+
 }
 
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
 // All defined OK so do nothing
 #else
-#include<source/zInterface/functionsets/zFnPointCloud.cpp>
+#include<source/zInterop/functionsets/zFnNurbsCurve.cpp>
 #endif
 
 #endif

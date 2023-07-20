@@ -20,7 +20,7 @@ namespace zSpace
 	ZSPACE_INLINE zObjGraph::zObjGraph()
 	{
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) || defined (ZSPACE_RHINO_INTEROP)
+#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
 		displayUtils = nullptr;
@@ -87,7 +87,7 @@ namespace zSpace
 		coreUtils.getBounds(graph.vertexPositions, minBB, maxBB);
 	}
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) || defined (ZSPACE_RHINO_INTEROP)
+#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing
 #else
 	   

@@ -11,156 +11,68 @@
 //
 
 
-#include<headers/zInterface/functionsets/zFnGraph.h>
+#include<headers/zInterop/functionsets/zFnNurbsCurve.h>
 
 namespace zSpace
 {
 	//---- CONSTRUCTOR
 
-	ZSPACE_INLINE zFnGraph::zFnGraph()
+	ZSPACE_INLINE zFnNurbsCurve::zFnNurbsCurve()
 	{
-		fnType = zFnType::zGraphFn;
-		graphObj = nullptr;
+		fnType = zFnType::zNurbsCurveFn;
+		nurbsCurveObj = nullptr;
 	}
 
-	ZSPACE_INLINE zFnGraph::zFnGraph(zObjGraph &_graphObj, bool  _planarGraph, zVector _graphNormal)
+	ZSPACE_INLINE zFnNurbsCurve::zFnNurbsCurve(zObjNurbsCurve&_nurbsCurveObj)
 	{
-		fnType = zFnType::zGraphFn;
+		fnType = zFnType::zNurbsCurveFn;
 
-		graphObj = &_graphObj;
+		nurbsCurveObj = &_nurbsCurveObj;
 
-		planarGraph = _planarGraph;
-		graphNormal = _graphNormal;
+		
 	}
 
 	//---- DESTRUCTOR
 
-	ZSPACE_INLINE zFnGraph::~zFnGraph() {}
+	ZSPACE_INLINE zFnNurbsCurve::~zFnNurbsCurve() {}
 
 	//---- OVERRIDE METHODS
 	
-	ZSPACE_INLINE zFnType zFnGraph::getType()
+	ZSPACE_INLINE zFnType zFnNurbsCurve::getType()
 	{
-		return zGraphFn;
+		return zNurbsCurveFn;
 	}
 
-	ZSPACE_INLINE void zFnGraph::from(string path, zFileTpye type, bool staticGeom)
+	ZSPACE_INLINE void zFnNurbsCurve::from(string path, zFileTpye type, bool staticGeom)
 	{
-		if (type == zTXT)
-		{
-			bool chk = fromTXT(path);
-			if (chk && staticGeom) setStaticContainers();
-		}
-		else if (type == zMAYATXT)
-		{
-			bool chk = fromMAYATXT(path);
-			if (chk && staticGeom) setStaticContainers();
-		}
-		else if (type == zJSON)
+		if (type == zJSON)
 		{
 			json j;
 
 			bool chk = coreUtils.readJSON(path, j);
-			if (chk) from(j, staticGeom);
-
-			//bool chk = fromJSON(path);
-			//if (chk && staticGeom) setStaticContainers();
+			if (chk) from(j, staticGeom);			
 		}
 
 		else throw std::invalid_argument(" error: invalid zFileTpye type");
 	}
 
-	ZSPACE_INLINE void zFnGraph::from(json& j, bool staticGeom)
+	ZSPACE_INLINE void zFnNurbsCurve::from(json& j, bool staticGeom)
 	{
 		zUtilsJsonHE graphJSON;
 		
-		// read data to json graph
-		// Vertices
-		graphJSON.vertices.clear();
-		graphJSON.vertices = (j["Vertices"].get<vector<int>>());
-		// Edges
-		graphJSON.halfedges.clear();
-		graphJSON.halfedges = (j["Halfedges"].get<vector<vector<int>>>());
-		graphObj->graph.edges.clear();
-		// update graph
-		graphObj->graph.clear();
-		graphObj->graph.vertices.assign(graphJSON.vertices.size(), zVertex());
-		graphObj->graph.halfEdges.assign(graphJSON.halfedges.size(), zHalfEdge());
-		graphObj->graph.edges.assign(floor(graphJSON.halfedges.size() * 0.5), zEdge());
-		graphObj->graph.vHandles.assign(graphJSON.vertices.size(), zVertexHandle());
-		graphObj->graph.eHandles.assign(floor(graphJSON.halfedges.size() * 0.5), zEdgeHandle());
-		graphObj->graph.heHandles.assign(graphJSON.halfedges.size(), zHalfEdgeHandle());
-		// set IDs
-		for (int i = 0; i < graphJSON.vertices.size(); i++) graphObj->graph.vertices[i].setId(i);
-		for (int i = 0; i < graphJSON.halfedges.size(); i++)graphObj->graph.halfEdges[i].setId(i);
-		// set Pointers
-		int n_v = 0;
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
-		{
-			v.setId(n_v);
-			if (graphJSON.vertices[n_v] != -1)
-			{
-				zItGraphHalfEdge he(*graphObj, graphJSON.vertices[n_v]);
-				v.setHalfEdge(he);
-				graphObj->graph.vHandles[n_v].id = n_v;
-				graphObj->graph.vHandles[n_v].he = graphJSON.vertices[n_v];
-			}
-			n_v++;
-		}
-		graphObj->graph.setNumVertices(n_v);
-		int n_he = 0;
-		int n_e = 0;
-		for (zItGraphHalfEdge he(*graphObj); !he.end(); he++)
-		{
-			// Half Edge
-			he.setId(n_he);
-			graphObj->graph.heHandles[n_he].id = n_he;
-			if (graphJSON.halfedges[n_he][0] != -1)
-			{
-				zItGraphHalfEdge e(*graphObj, graphJSON.halfedges[n_he][0]);
-				he.setPrev(e);
-				graphObj->graph.heHandles[n_he].p = graphJSON.halfedges[n_he][0];
-			}
-			if (graphJSON.halfedges[n_he][1] != -1)
-			{
-				zItGraphHalfEdge e(*graphObj, graphJSON.halfedges[n_he][1]);
-				he.setNext(e);
-				graphObj->graph.heHandles[n_he].n = graphJSON.halfedges[n_he][1];
-			}
-			if (graphJSON.halfedges[n_he][2] != -1)
-			{
-				zItGraphVertex v(*graphObj, graphJSON.halfedges[n_he][2]);
-				he.setVertex(v);
-				graphObj->graph.heHandles[n_he].v = graphJSON.halfedges[n_he][2];
-			}
-			// symmetry half edges
-			if (n_he % 2 == 1)
-			{
-				zItGraphHalfEdge heSym(*graphObj, n_he - 1);
-				he.setSym(heSym);
-				zItGraphEdge e(*graphObj, n_e);
-				e.setId(n_e);
-				e.setHalfEdge(heSym, 0);
-				e.setHalfEdge(he, 1);
-				he.setEdge(e);
-				heSym.setEdge(e);
-				graphObj->graph.heHandles[n_he].e = n_e;
-				graphObj->graph.heHandles[n_he - 1].e = n_e;
-				graphObj->graph.eHandles[n_e].id = n_e;
-				graphObj->graph.eHandles[n_e].he0 = n_he - 1;
-				graphObj->graph.eHandles[n_e].he1 = n_he;
-				n_e++;
-			}
-			n_he++;
-		}
-		graphObj->graph.setNumEdges(n_e);
+		// read data to json 
+		
 
-		// Vertex Attributes
-		graphJSON.vertexAttributes = j["VertexAttributes"].get<vector<vector<double>>>();
+		// Curve Attributes
+		vector<zDoubleArray> cPoints;		
+		coreUtils.readJSONAttribute(j, "NC_ControlPoints", cPoints);
+
+
+		
 		//printf("\n vertexAttributes: %zi %zi", vertexAttributes.size(), vertexAttributes[0].size());
-		graphObj->graph.vertexPositions.clear();
-		graphObj->graph.vertexColors.clear();
-		graphObj->graph.vertexWeights.clear();
+		nurbsCurveObj->controlPoints.clear();
+		nurbsCurveObj->curvePositions.clear();
+		
 		for (int i = 0; i < graphJSON.vertexAttributes.size(); i++)
 		{
 			for (int k = 0; k < graphJSON.vertexAttributes[i].size(); k++)

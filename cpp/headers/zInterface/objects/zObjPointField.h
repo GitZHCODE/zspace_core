@@ -82,7 +82,7 @@ namespace zSpace
 		//---- OVERRIDE METHODS
 		//--------------------------
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) || defined (ZSPACE_RHINO_INTEROP)
+#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
 		void draw() override;

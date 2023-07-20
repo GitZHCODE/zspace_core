@@ -137,12 +137,12 @@ namespace zSpace
 
 	//---- FORCE METHODS 
 
-
 	ZSPACE_INLINE void zFnMeshDynamics::addGravityForce(double strength, zVector& gForce)
 	{
 		for (auto &fnP : fnParticles)
 		{
-			fnP.addForce(gForce * strength);
+			zVector force = gForce * strength;
+			fnP.addForce(force);
 		}
 	}
 
@@ -174,11 +174,13 @@ namespace zSpace
 
 			float val = strength * (eLen - restLen);
 			zVector pForce_v1 = eVec * (val * 0.5);
+			pForce_v1 *= strength;
 
-			zVector pForce_v2 = pForce_v1 * -1;
-
-			fnParticles[eVerts[0]].addForce(pForce_v1 * strength);
-			fnParticles[eVerts[1]].addForce(pForce_v2 * strength);
+			zVector pForce_v2 = pForce_v1 * -1;	
+			pForce_v2 *= strength;
+			
+			fnParticles[eVerts[0]].addForce(pForce_v1);
+			fnParticles[eVerts[1]].addForce(pForce_v2);
 		}
 	}
 
@@ -233,17 +235,20 @@ namespace zSpace
 					zVector pForceA = dir * planarityDeviations[fID] * 0.5;
 					zVector pForceB = dir * planarityDeviations[fID] * -0.5;
 
-					fnParticles[fVerts[0]].addForce(pForceA * strength);
-					fnParticles[fVerts[2]].addForce(pForceA * strength);
+					pForceA = pForceA * strength;
+					pForceB = pForceB * strength;
 
-					fnParticles[fVerts[1]].addForce(pForceA * strength);
-					fnParticles[fVerts[3]].addForce(pForceA * strength);
+					fnParticles[fVerts[0]].addForce(pForceA);
+					fnParticles[fVerts[2]].addForce(pForceA);
 
-					forceDir[fVerts[0]] += pForceA * strength;
-					forceDir[fVerts[2]] += pForceA * strength;
+					fnParticles[fVerts[1]].addForce(pForceB);
+					fnParticles[fVerts[3]].addForce(pForceB);
 
-					forceDir[fVerts[1]] += pForceA * strength;
-					forceDir[fVerts[3]] += pForceA * strength;
+					forceDir[fVerts[0]] += pForceA;
+					forceDir[fVerts[2]] += pForceA;
+
+					forceDir[fVerts[1]] += pForceB;
+					forceDir[fVerts[3]] += pForceB;
 				}
 
 			}
@@ -261,7 +266,8 @@ namespace zSpace
 				zIntArray fTris;
 				zPoint fCenter = f.getCenter();
 				zVector fNorm = f.getNormal();
-				//planarityDeviations[fID] = f.getVolume(fTris, fCenter,false);
+				/*float dev   = f.getVolume(fTris, fCenter,false);
+				planarityDeviations[fID] = abs(dev);*/
 
 				planarityDeviations[fID] = -1;
 
@@ -273,7 +279,7 @@ namespace zSpace
 				}
 							
 
-				if (planarityDeviations[fID] > tolerance)
+				if (abs(planarityDeviations[fID]) > tolerance)
 				{
 					exit = false;
 
@@ -281,9 +287,12 @@ namespace zSpace
 					{
 						double dist = core.minDist_Point_Plane(vPositions[fVerts[k]], fCenter, fNorm);
 						zVector pForce = fNorm * dist * -1.0;
-						fnParticles[fVerts[k]].addForce(pForce * strength);
+						pForce = pForce * strength;
 
-						forceDir[fVerts[k]] += pForce * strength;
+						fnParticles[fVerts[k]].addForce(pForce);
+
+						/*zVector pForce = fNorm * dev *-1;*/
+						forceDir[fVerts[k]] += pForce;
 					}
 
 				}
@@ -299,12 +308,73 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zFnMeshDynamics::addPlanarityForce_targetPlane(double strength, zPointArray& targetCenters, zVectorArray& targetNormals, double& tolerance, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit)
+	ZSPACE_INLINE void zFnMeshDynamics::addPlanarityForce_vertexgroups(double strength, double tolerance, vector<zIntArray>& vertexIDs, zPointArray& targetCenters, zVectorArray& targetNormals, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit)
+	{
+
+		if (vertexIDs.size() != targetNormals.size()) return;
+
+		if (forceDir.size() != vertexIDs.size())
+		{
+			forceDir.clear();
+			forceDir.assign(vertexIDs.size(), zVector());
+		}
+
+		if (planarityDeviations.size() != vertexIDs.size())
+		{
+			planarityDeviations.clear();
+			planarityDeviations.assign(vertexIDs.size(), -1);
+		}
+
+		exit = true;
+
+		zUtilsCore core;
+		zPoint* vPositions = getRawVertexPositions();
+
+		for (int i = 0; i < vertexIDs.size(); i++)
+		{
+			planarityDeviations[i] = -1;
+
+			for (int k = 0; k < vertexIDs[i].size(); k++)
+			{
+				double dist = core.minDist_Point_Plane(vPositions[vertexIDs[i][k]], targetCenters[i], targetNormals[i]);
+				if (dist > planarityDeviations[i]) planarityDeviations[i] = dist;
+			}
+
+			if (planarityDeviations[i] > tolerance)
+			{
+				exit = false;
+				for (int k = 0; k < vertexIDs[i].size(); k++)
+				{
+					double dist = core.minDist_Point_Plane(vPositions[vertexIDs[i][k]], targetCenters[i], targetNormals[i]);
+					zVector pForce = targetNormals[i] * dist * -1.0;
+
+					pForce = pForce * strength;
+					fnParticles[vertexIDs[i][k]].addForce(pForce);
+
+					forceDir[vertexIDs[i][k]] += pForce;
+				}
+			}
+		}
+
+		for (auto& fDir : forceDir)
+		{
+			if (fDir.length() > 0) fDir.normalize();
+		}
+
+	}
+
+	ZSPACE_INLINE void zFnMeshDynamics::addPlanarityForce_targetPlane(double strength, double& tolerance, zPointArray& targetCenters, zVectorArray& targetNormals, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit)
 	{
 		if (forceDir.size() != numVertices())
 		{
 			forceDir.clear();
 			forceDir.assign(numVertices(), zVector());
+		}
+
+		if (planarityDeviations.size() != numPolygons())
+		{
+			planarityDeviations.clear();
+			planarityDeviations.assign(numPolygons(), -1);
 		}
 
 		exit = true;
@@ -338,9 +408,11 @@ namespace zSpace
 				{
 					double dist = core.minDist_Point_Plane(vPositions[fVerts[k]], targetCenters[fID], targetNormals[fID]);
 					zVector pForce = targetNormals[fID] * dist * -1.0;
-					fnParticles[fVerts[k]].addForce(pForce * strength);
 
-					forceDir[fVerts[k]] += pForce * strength;
+					pForce = pForce * strength;
+					fnParticles[fVerts[k]].addForce(pForce);
+
+					forceDir[fVerts[k]] += pForce;
 				}
 			}
 				
@@ -425,11 +497,15 @@ namespace zSpace
 
 				if (addForce)
 				{
-					angGrad.normalize();
-					gForce = angGrad * (vGaussianCurvatures[vID]) * strength ;
-					fnParticles[v.getId()].addForce(gForce);
+					if (angGrad.length() > 0)
+					{
+						angGrad.normalize();
+						gForce = angGrad * (vGaussianCurvatures[vID]) * strength;
+						fnParticles[v.getId()].addForce(gForce);
 
-					forceDir[v.getId()] = angGrad * coreUtils.zSign(vGaussianCurvatures[v.getId()]);;
+						forceDir[v.getId()] = angGrad * coreUtils.zSign(vGaussianCurvatures[v.getId()]);;
+					}
+					
 				}
 
 			}
@@ -437,7 +513,7 @@ namespace zSpace
 			// interval vertices
 			else
 			{
-				if (fnParticles[v.getId()].getFixed()) vGaussianCurvatures[v.getId()] = 0.0;
+				//if (fnParticles[v.getId()].getFixed()) vGaussianCurvatures[v.getId()] = 0.0;
 			
 				if (vGaussianCurvatures[v.getId()] > tolerance) exit = false;
 
@@ -461,8 +537,8 @@ namespace zSpace
 					zVector e = vPositions[Vj.getId()] - vPositions[v.getId()];
 
 					//////  Desbrun Cotangent Weights 
-					/*
-					zVector eNext = vPositions[Vnext.getId()] - vPositions[Vj.getId()];
+					
+					/*zVector eNext = vPositions[Vnext.getId()] - vPositions[Vj.getId()];
 					zVector ePrev = vPositions[Vprev.getId()] - vPositions[Vj.getId()];
 					
 					float rho = eFlip.angle(eNext);
@@ -472,8 +548,8 @@ namespace zSpace
 					float cotDELTA = cos(delta) / sin(delta);
 					
 					zVector grad = eFlip *((cotRHO + cotDELTA)/ eFlip.length()) ;
-					angGrad += grad;
-					*/
+					angGrad += grad;*/
+					
 					
 					//////  SB CCF Cotangent Weights
 					
@@ -490,8 +566,8 @@ namespace zSpace
 					float cotDELTA = cos(delta) / sin(delta);
 
 					zVector grad = eFlip *((cotRHO + cotDELTA)/ eFlip.length()) ;
-					angGrad += grad;
-					*/
+					angGrad += grad;*/
+					
 
 					//// only Gradient direction
 					e.normalize();
@@ -540,14 +616,74 @@ namespace zSpace
 				zVector V1 = (CA ^ Normal) * 0.5;
 
 				zVector pForce0 = V0 * strength;
-				fnParticles[faceTris[i][j + 0]].addForce(pForce0 * strength);
+				fnParticles[faceTris[i][j + 0]].addForce(pForce0);
 
 				zVector pForce1 = V1 * strength;
-				fnParticles[faceTris[i][j + 1]].addForce(pForce1 * strength);
+				fnParticles[faceTris[i][j + 1]].addForce(pForce1);
 
 				zVector pForce2 = ((V0 * -1) - V1) * strength;
-				fnParticles[faceTris[i][j + 2]].addForce(pForce2 * strength);
+				fnParticles[faceTris[i][j + 2]].addForce(pForce2);
 			}
+		}
+	}
+
+	ZSPACE_INLINE void zFnMeshDynamics::addRigidLineForce(double strength, double maintainDistance, zIntPairArray& vertexIDs, zDoubleArray& deviations, zVectorArray& forceDir, bool& exit)
+	{
+		if (forceDir.size() != numVertices())
+		{
+			forceDir.clear();
+			forceDir.assign(numVertices(), zVector());
+		}
+
+		exit = true;
+
+		zPoint* vPositions = getRawVertexPositions();
+
+		for (auto& p : vertexIDs)
+		{
+			int v0 = p.first;
+			int v1 = p.second;
+
+
+			zVector dir = vPositions[v0] - vPositions[v1];
+			dir.normalize();
+			float dist = vPositions[v0].distanceTo(vPositions[v1]);
+
+			float diff = dist - maintainDistance;
+			if (diff > EPS & dist > 0)
+			{
+				zVector pForceA = dir * diff * -1.0;
+				pForceA *= strength;
+
+				zVector pForceB = dir * diff * 1.0;
+				pForceB *= strength;
+
+				fnParticles[v0].addForce(pForceA);
+				fnParticles[v1].addForce(pForceB);
+
+				forceDir[v0] += pForceA;
+				forceDir[v1] += pForceB;
+
+				exit = false;
+			}
+			
+			if (diff < EPS && dist > 0)
+			{
+				zVector pForceA = dir * diff * 1.0;
+				pForceA *= strength;
+
+				zVector pForceB = dir * diff * -1.0;
+				pForceB *= strength;
+
+				fnParticles[v0].addForce(pForceA);
+				fnParticles[v1].addForce(pForceB);
+
+				forceDir[v0] += pForceA;
+				forceDir[v1] += pForceB;
+
+				exit = false;
+			}
+
 		}
 	}
 

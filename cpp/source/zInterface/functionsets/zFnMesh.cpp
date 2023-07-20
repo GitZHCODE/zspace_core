@@ -52,19 +52,461 @@ namespace zSpace
 
 		else if (type == zJSON)
 		{
-			bool chk = fromJSON(path);
-			if (chk && staticGeom) setStaticContainers();
+			json j;
+
+			bool chk = coreUtils.readJSON(path, j);
+			if(chk) from(j, staticGeom);
+			//if (chk && staticGeom) setStaticContainers();
 		}
 
 		else throw std::invalid_argument(" error: invalid zFileTpye type");
 	}
 
+	ZSPACE_INLINE void zFnMesh::from(json& j, bool staticGeom)
+	{
+		zUtilsJsonHE meshJSON;
+		
+		// READ Data from JSON
+		// Vertices
+		meshJSON.vertices.clear();
+		meshJSON.vertices = (j["Vertices"].get<vector<int>>());
+
+
+		//Edges
+		meshJSON.halfedges.clear();
+		meshJSON.halfedges = (j["Halfedges"].get<vector<vector<int>>>());
+
+		// Faces
+		meshJSON.faces.clear();
+		meshJSON.faces = (j["Faces"].get<vector<int>>());
+
+		// update  mesh
+		meshObj->mesh.clear();
+
+		meshObj->mesh.vertices.assign(meshJSON.vertices.size(), zVertex());
+		meshObj->mesh.halfEdges.assign(meshJSON.halfedges.size(), zHalfEdge());
+
+		int numE = (int)floor(meshJSON.halfedges.size() * 0.5);
+		meshObj->mesh.edges.assign(numE, zEdge());
+		meshObj->mesh.faces.assign(meshJSON.faces.size(), zFace());
+
+		meshObj->mesh.vHandles.assign(meshJSON.vertices.size(), zVertexHandle());
+		meshObj->mesh.eHandles.assign(numE, zEdgeHandle());
+		meshObj->mesh.heHandles.assign(meshJSON.halfedges.size(), zHalfEdgeHandle());
+		meshObj->mesh.fHandles.assign(meshJSON.faces.size(), zFaceHandle());
+
+		// set IDs
+		for (int i = 0; i < meshJSON.vertices.size(); i++) meshObj->mesh.vertices[i].setId(i);
+		for (int i = 0; i < meshJSON.halfedges.size(); i++) meshObj->mesh.halfEdges[i].setId(i);
+		for (int i = 0; i < meshJSON.faces.size(); i++) meshObj->mesh.faces[i].setId(i);
+
+		//printf("\n nV %i | nHE %i | nP %i ", meshJSON.vertices.size(), meshJSON.halfedges.size(), meshJSON.faces.size());
+
+		// set Pointers
+		int n_v = 0;
+		for (zItMeshVertex v(*meshObj); !v.end(); v++)
+		{
+			v.setId(n_v);
+
+			if (meshJSON.vertices[n_v] != -1)
+			{
+				zItMeshHalfEdge he(*meshObj, meshJSON.vertices[n_v]);;
+				v.setHalfEdge(he);
+
+				meshObj->mesh.vHandles[n_v].id = n_v;
+				meshObj->mesh.vHandles[n_v].he = meshJSON.vertices[n_v];
+			}
+
+			n_v++;
+		}
+		meshObj->mesh.setNumVertices(n_v);
+
+		int n_he = 0;
+		int n_e = 0;
+
+		for (zItMeshHalfEdge he(*meshObj); !he.end(); he++)
+		{
+			// Half Edge
+			he.setId(n_he);
+			meshObj->mesh.heHandles[n_he].id = n_he;
+
+			if (meshJSON.halfedges[n_he][0] != -1)
+			{
+				zItMeshHalfEdge hePrev(*meshObj, meshJSON.halfedges[n_he][0]);
+				he.setPrev(hePrev);
+
+				meshObj->mesh.heHandles[n_he].p = meshJSON.halfedges[n_he][0];
+			}
+
+			if (meshJSON.halfedges[n_he][1] != -1)
+			{
+				zItMeshHalfEdge heNext(*meshObj, meshJSON.halfedges[n_he][1]);
+				he.setNext(heNext);
+
+				meshObj->mesh.heHandles[n_he].n = meshJSON.halfedges[n_he][1];
+			}
+
+			if (meshJSON.halfedges[n_he][2] != -1)
+			{
+				zItMeshVertex v(*meshObj, meshJSON.halfedges[n_he][2]);
+				he.setVertex(v);
+
+				meshObj->mesh.heHandles[n_he].v = meshJSON.halfedges[n_he][2];
+			}
+
+			if (meshJSON.halfedges[n_he][3] != -1)
+			{
+				zItMeshFace f(*meshObj, meshJSON.halfedges[n_he][3]);
+				he.setFace(f);
+
+				meshObj->mesh.heHandles[n_he].f = meshJSON.halfedges[n_he][3];
+			}
+
+			// symmetry half edges && Edge
+			if (n_he % 2 == 1)
+			{
+				zItMeshHalfEdge heSym(*meshObj, n_he - 1);
+				he.setSym(heSym);
+
+				zItMeshEdge e(*meshObj, n_e);
+				e.setId(n_e);
+
+				e.setHalfEdge(heSym, 0);
+				e.setHalfEdge(he, 1);
+
+				he.setEdge(e);
+				heSym.setEdge(e);
+
+				meshObj->mesh.heHandles[n_he].e = n_e;
+				meshObj->mesh.heHandles[n_he - 1].e = n_e;
+
+				meshObj->mesh.eHandles[n_e].id = n_e;
+				meshObj->mesh.eHandles[n_e].he0 = n_he - 1;
+				meshObj->mesh.eHandles[n_e].he1 = n_he;
+
+				n_e++;
+			}
+
+			n_he++;
+		}
+
+		meshObj->mesh.setNumEdges(n_e);
+
+		int n_f = 0;
+
+		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		{
+			f.setId(n_f);
+
+			if (meshJSON.vertices[n_f] != -1)
+			{
+				zItMeshHalfEdge he(*meshObj, meshJSON.faces[n_f]);
+				f.setHalfEdge(he);
+
+				meshObj->mesh.fHandles[n_f].id = n_f;
+				meshObj->mesh.fHandles[n_f].he = meshJSON.faces[n_f];
+			}
+
+			n_f++;
+		}
+		meshObj->mesh.setNumPolygons(n_f);
+
+		//// Vertex Attributes
+		meshJSON.vertexAttributes = j["VertexAttributes"].get<vector<vector<double>>>();
+		//printf("\n vertexAttributes: %zi %zi", vertexAttributes.size(), vertexAttributes[0].size());
+
+		meshObj->mesh.vertexPositions.clear();
+		meshObj->mesh.vertexNormals.clear();
+		meshObj->mesh.vertexColors.clear();
+		meshObj->mesh.vertexWeights.clear();
+		for (int i = 0; i < meshJSON.vertexAttributes.size(); i++)
+		{
+			for (int k = 0; k < meshJSON.vertexAttributes[i].size(); k++)
+			{
+				// position, normal and color
+
+				if (meshJSON.vertexAttributes[i].size() == 9)
+				{
+					zVector pos(meshJSON.vertexAttributes[i][k], meshJSON.vertexAttributes[i][k + 1], meshJSON.vertexAttributes[i][k + 2]);
+					meshObj->mesh.vertexPositions.push_back(pos);
+
+					zVector normal(meshJSON.vertexAttributes[i][k + 3], meshJSON.vertexAttributes[i][k + 4], meshJSON.vertexAttributes[i][k + 5]);
+					meshObj->mesh.vertexNormals.push_back(normal);
+
+					zColor col(meshJSON.vertexAttributes[i][k + 6], meshJSON.vertexAttributes[i][k + 7], meshJSON.vertexAttributes[i][k + 8], 1);
+					meshObj->mesh.vertexColors.push_back(col);
+
+					meshObj->mesh.vertexWeights.push_back(2.0);
+
+					k += 8;
+				}
+
+				// position, normal
+				if (meshJSON.vertexAttributes[i].size() == 6)
+				{
+					zVector pos(meshJSON.vertexAttributes[i][k], meshJSON.vertexAttributes[i][k + 1], meshJSON.vertexAttributes[i][k + 2]);
+					meshObj->mesh.vertexPositions.push_back(pos);
+
+					zVector normal(meshJSON.vertexAttributes[i][k + 3], meshJSON.vertexAttributes[i][k + 4], meshJSON.vertexAttributes[i][k + 5]);
+					meshObj->mesh.vertexNormals.push_back(normal);
+
+					meshObj->mesh.vertexColors.push_back(zColor(1, 0, 0, 1));
+
+					meshObj->mesh.vertexWeights.push_back(2.0);
+
+					k += 5;
+				}
+
+				// BRG position, normal and color, thickness
+				if (meshJSON.vertexAttributes[i].size() == 15)
+				{
+					zVector pos(meshJSON.vertexAttributes[i][k], meshJSON.vertexAttributes[i][k + 1], meshJSON.vertexAttributes[i][k + 2]);
+					meshObj->mesh.vertexPositions.push_back(pos);
+
+					zVector normal(meshJSON.vertexAttributes[i][k + 3], meshJSON.vertexAttributes[i][k + 4], meshJSON.vertexAttributes[i][k + 5]);
+					meshObj->mesh.vertexNormals.push_back(normal);
+
+					zColor col(meshJSON.vertexAttributes[i][k + 6], meshJSON.vertexAttributes[i][k + 7], meshJSON.vertexAttributes[i][k + 8], 1);
+					meshObj->mesh.vertexColors.push_back(col);
+
+					meshObj->mesh.vertexWeights.push_back(2.0);
+
+					k += 14;
+				}
+
+
+				// position, normal
+				if (meshJSON.vertexAttributes[i].size() == 8)
+				{
+					zVector pos(meshJSON.vertexAttributes[i][k], meshJSON.vertexAttributes[i][k + 1], meshJSON.vertexAttributes[i][k + 2]);
+					meshObj->mesh.vertexPositions.push_back(pos);
+
+					zVector normal(meshJSON.vertexAttributes[i][k + 3], meshJSON.vertexAttributes[i][k + 4], meshJSON.vertexAttributes[i][k + 5]);
+					meshObj->mesh.vertexNormals.push_back(normal);
+
+					meshObj->mesh.vertexColors.push_back(zColor(1, 0, 0, 1));
+
+					meshObj->mesh.vertexWeights.push_back(2.0);
+
+					k += 7;
+				}
+
+			}
+		}
+
+		// Edge Attributes
+		//meshJSON.halfedgeAttributes = j["HalfedgeAttributes"].get<vector<vector<double>>>();
+
+		meshObj->mesh.edgeColors.clear();
+		meshObj->mesh.edgeWeights.clear();
+		if (meshJSON.halfedgeAttributes.size() == 0)
+		{
+			for (int i = 0; i < meshObj->mesh.n_e; i++)
+			{
+				meshObj->mesh.edgeColors.push_back(zColor());
+				meshObj->mesh.edgeWeights.push_back(1.0);
+			}
+		}
+		else
+		{
+
+			/*for (int i = 0; i < meshObj->mesh.n_e; i++)
+			{
+				meshObj->mesh.edgeColors.push_back(zColor());
+				meshObj->mesh.edgeWeights.push_back(1.0);
+			}*/
+
+			for (int i = 0; i < meshJSON.halfedgeAttributes.size(); i += 2)
+			{
+				// color
+				if (meshJSON.halfedgeAttributes[i].size() == 3)
+				{
+					zColor col(meshJSON.halfedgeAttributes[i][0], meshJSON.halfedgeAttributes[i][1], meshJSON.halfedgeAttributes[i][2], 1);
+
+					meshObj->mesh.edgeColors.push_back(col);
+					meshObj->mesh.edgeWeights.push_back(1.0);
+
+				}
+			}
+		}
+
+		// face Attributes
+		meshJSON.faceAttributes = j["FaceAttributes"].get<vector<vector<double>>>();
+
+		meshObj->mesh.faceColors.clear();
+		meshObj->mesh.faceNormals.clear();
+		for (int i = 0; i < meshJSON.faceAttributes.size(); i++)
+		{
+			for (int k = 0; k < meshJSON.faceAttributes[i].size(); k++)
+			{
+				// normal and color
+				if (meshJSON.faceAttributes[i].size() == 6)
+				{
+					zColor col(meshJSON.faceAttributes[i][k + 3], meshJSON.faceAttributes[i][k + 4], meshJSON.faceAttributes[i][k + 5], 1);
+					meshObj->mesh.faceColors.push_back(col);
+
+					zVector normal(meshJSON.faceAttributes[i][k], meshJSON.faceAttributes[i][k + 1], meshJSON.faceAttributes[i][k + 2]);
+					meshObj->mesh.faceNormals.push_back(normal);
+
+					k += 5;
+				}
+
+				if (meshJSON.faceAttributes[i].size() == 3)
+				{
+					zVector normal(meshJSON.faceAttributes[i][k], meshJSON.faceAttributes[i][k + 1], meshJSON.faceAttributes[i][k + 2]);
+					meshObj->mesh.faceNormals.push_back(normal);
+
+					meshObj->mesh.faceColors.push_back(zColor(0.5, 0.5, 0.5, 1));
+
+					k += 2;
+				}
+			}
+		}
+
+		if (meshJSON.faceAttributes.size() == 0)
+		{
+			computeMeshNormals();
+			setFaceColor(zColor(0.5, 0.5, 0.5, 1));
+		}
+
+		// add to maps 
+		for (int i = 0; i < meshObj->mesh.vertexPositions.size(); i++)
+		{
+			meshObj->mesh.addToPositionMap(meshObj->mesh.vertexPositions[i], i);
+		}
+
+		for (zItMeshEdge e(*meshObj); !e.end(); e++)
+		{
+			int v1 = e.getHalfEdge(0).getVertex().getId();
+			int v2 = e.getHalfEdge(1).getVertex().getId();
+
+			meshObj->mesh.addToHalfEdgesMap(v1, v2, e.getHalfEdge(0).getId());
+		}
+
+		printf("\n mesh: %i %i %i ", numVertices(), numEdges(), numPolygons());
+
+		if (staticGeom) setStaticContainers();
+
+	}
+
 	ZSPACE_INLINE void zFnMesh::to(string path, zFileTpye type)
 	{
 		if (type == zOBJ) toOBJ(path);
-		else if (type == zJSON) toJSON(path);
+		else if (type == zJSON)
+		{
+			json j;
+			to(j);
+			bool chk = coreUtils.writeJSON(path, j);
+		}
 
 		else throw std::invalid_argument(" error: invalid zFileType type");
+	}
+
+	ZSPACE_INLINE void zFnMesh::to(json& j)
+	{
+		// remove inactive elements
+		if (numVertices() != meshObj->mesh.vertices.size()) garbageCollection(zVertexData);
+		if (numEdges() != meshObj->mesh.edges.size()) garbageCollection(zEdgeData);
+		if (numPolygons() != meshObj->mesh.faces.size())garbageCollection(zFaceData);
+
+		// CREATE JSON FILE
+		zUtilsJsonHE meshJSON;
+		j.clear();
+
+		// Vertices
+		for (zItMeshVertex v(*meshObj); !v.end(); v++)
+		{
+			if (v.getHalfEdge().isActive()) meshJSON.vertices.push_back(v.getHalfEdge().getId());
+			else meshJSON.vertices.push_back(-1);
+		}
+
+		//Edges
+		for (zItMeshHalfEdge he(*meshObj); !he.end(); he++)
+		{
+			vector<int> HE_edges;
+
+			if (he.getPrev().isActive()) HE_edges.push_back(he.getPrev().getId());
+			else HE_edges.push_back(-1);
+
+			if (he.getNext().isActive()) HE_edges.push_back(he.getNext().getId());
+			else HE_edges.push_back(-1);
+
+			if (he.getVertex().isActive()) HE_edges.push_back(he.getVertex().getId());
+			else HE_edges.push_back(-1);
+
+			if (!he.onBoundary()) HE_edges.push_back(he.getFace().getId());
+			else HE_edges.push_back(-1);
+
+			meshJSON.halfedges.push_back(HE_edges);
+		}
+
+		// Faces
+		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		{
+			if (f.getHalfEdge().isActive()) meshJSON.faces.push_back(f.getHalfEdge().getId());
+			else meshJSON.faces.push_back(-1);
+		}
+
+		// vertex Attributes
+		for (int i = 0; i < meshObj->mesh.vertexPositions.size(); i++)
+		{
+			vector<double> v_attrib;
+
+			v_attrib.push_back(meshObj->mesh.vertexPositions[i].x);
+			v_attrib.push_back(meshObj->mesh.vertexPositions[i].y);
+			v_attrib.push_back(meshObj->mesh.vertexPositions[i].z);
+
+			v_attrib.push_back(meshObj->mesh.vertexNormals[i].x);
+			v_attrib.push_back(meshObj->mesh.vertexNormals[i].y);
+			v_attrib.push_back(meshObj->mesh.vertexNormals[i].z);
+
+
+			v_attrib.push_back(meshObj->mesh.vertexColors[i].r);
+			v_attrib.push_back(meshObj->mesh.vertexColors[i].g);
+			v_attrib.push_back(meshObj->mesh.vertexColors[i].b);
+
+			meshJSON.vertexAttributes.push_back(v_attrib);
+		}
+
+		// face Attributes
+		for (int i = 0; i < numPolygons(); i++)
+		{
+			vector<double> f_attrib;
+
+			f_attrib.push_back(meshObj->mesh.faceNormals[i].x);
+			f_attrib.push_back(meshObj->mesh.faceNormals[i].y);
+			f_attrib.push_back(meshObj->mesh.faceNormals[i].z);
+
+			f_attrib.push_back(meshObj->mesh.faceColors[i].r);
+			f_attrib.push_back(meshObj->mesh.faceColors[i].g);
+			f_attrib.push_back(meshObj->mesh.faceColors[i].b);
+
+			meshJSON.faceAttributes.push_back(f_attrib);
+		}
+
+		// he Attributes
+		for (int i = 0; i < numEdges(); i++)
+		{
+			vector<double> he_attrib;
+
+			he_attrib.push_back(meshObj->mesh.edgeColors[i].r);
+			he_attrib.push_back(meshObj->mesh.edgeColors[i].g);
+			he_attrib.push_back(meshObj->mesh.edgeColors[i].b);
+
+			meshJSON.halfedgeAttributes.push_back(he_attrib);
+
+			meshJSON.halfedgeAttributes.push_back(he_attrib);
+		}
+
+		// Json file 
+		j["Vertices"] = meshJSON.vertices;
+		j["Halfedges"] = meshJSON.halfedges;
+		j["Faces"] = meshJSON.faces;
+		j["VertexAttributes"] = meshJSON.vertexAttributes;
+		j["HalfedgeAttributes"] = meshJSON.halfedgeAttributes;
+		j["FaceAttributes"] = meshJSON.faceAttributes;
+
+		
 	}
 
 	ZSPACE_INLINE void zFnMesh::getBounds(zPoint &minBB, zPoint &maxBB)

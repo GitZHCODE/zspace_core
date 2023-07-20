@@ -215,7 +215,7 @@ namespace zSpace
 		*	\param		[out]	bsf		- container holding the BSF zItGraphVertex.
 		*	\since version 0.0.4
 		*/
-		void getBSF(zItGraphVertexArray& bsf);
+		void getBSF(zItGraphVertexArray& bsf, zIntPairArray& vertexPairs);
 
 		/*! \brief This method returns a container holding the BSF if the input ItGraph.
 		*
@@ -223,7 +223,7 @@ namespace zSpace
 		*	\param		[out]	bsf		- container holding the BSF IDs.
 		*	\since version 0.0.4
 		*/
-		void getBSF(zIntArray& bsf);
+		void getBSF(zIntArray& bsf, zIntPairArray& vertexPairs);
 
 		/*!	\brief This method determines if vertex valency is equal to the input valence number.
 		*

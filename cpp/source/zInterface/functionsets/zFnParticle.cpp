@@ -49,20 +49,25 @@ namespace zSpace
 		
 	}
 
+	ZSPACE_INLINE void zFnParticle::from(json& j, bool staticGeom)
+	{
+	}
+
 	ZSPACE_INLINE void zFnParticle::to(string path, zFileTpye type)
 	{
 		
 	}
 
-	ZSPACE_INLINE void zFnParticle::getBounds(zPoint &minBB, zPoint &maxBB)
+	ZSPACE_INLINE void zFnParticle::to(json& j)
 	{
-		
+	}
+
+	ZSPACE_INLINE void zFnParticle::getBounds(zPoint &minBB, zPoint &maxBB)
+	{	
 	}
 
 	ZSPACE_INLINE void zFnParticle::clear()
-	{
-
-		
+	{		
 	}
 
 	//---- CREATE METHODS

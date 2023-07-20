@@ -74,6 +74,21 @@ namespace zSpace
 		glColor3f(0, 0, 1);
 	}
 
+	ZSPACE_INLINE void zUtilsDisplay::drawPoints(zPoint* pos, zColor col, double wt, int size)
+	{
+		glPointSize(wt);
+		glColor3f(col.r, col.g, col.b);
+		glBegin(GL_POINTS);
+		for (int i = 0; i < size; i++)
+		{
+			glVertex3f(pos[i].x, pos[i].y, pos[i].z);
+		}
+		glEnd();
+
+		glPointSize(1.0);
+		glColor3f(0, 0, 1);
+	}
+
 	ZSPACE_INLINE void zUtilsDisplay::drawLine(zPoint &p0, zPoint &p1, const zColor &col , const double &wt)
 	{
 		glColor3f(col.r, col.g, col.b);
@@ -205,6 +220,24 @@ namespace zSpace
 		glLineWidth(1.0);
 		glColor3f(0, 0, 1);
 	}
+
+	ZSPACE_INLINE void zUtilsDisplay::drawCurve( zVector* pos, zColor col, double wt, int numPoints, bool closed)
+	{
+		glColor3f(col.r, col.g, col.b);
+		glLineWidth(wt);
+
+		
+		(closed) ? glBegin(GL_LINE_LOOP) : glBegin(GL_LINE_STRIP);
+		for (int i =0; i< numPoints -1; i++)
+		{
+			glVertex3f(pos[i].x, pos[i].y, pos[i].z);
+		}
+		glEnd();
+
+		glLineWidth(1.0);
+		glColor3f(0, 0, 1);
+	}
+
 
 	ZSPACE_INLINE void zUtilsDisplay::drawEdgeIds(int numEdges, zVector *pos, zColor &col)
 	{

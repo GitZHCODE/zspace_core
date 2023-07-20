@@ -379,7 +379,7 @@ namespace zSpace
 		return world * local;
 	}
 
-	ZSPACE_CUDA_CALLABLE zTransform zTransformationMatrix::getToTransform(zTransformationMatrix& to)
+	ZSPACE_INLINE zTransform zTransformationMatrix::getToTransform(zTransformationMatrix& to)
 	{
 		return getToMatrix(to).transpose();
 	}

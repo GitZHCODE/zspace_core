@@ -5,8 +5,8 @@
     <RhinoDir>C:\Program Files\Rhino 6 SDK</RhinoDir>
     <MayaDir>C:\Program Files\Autodesk\Maya2018</MayaDir>
     <CudaCommonDir>C:\ProgramData\NVIDIA Corporation\CUDA Samples\v10.2\common\inc</CudaCommonDir>
-    <zspaceDeployDir>C:\Users\vishu.b\source\repos\GitZHCODE\Alice2018_zSpace\ALICE_PLATFORM\src\zspace</zspaceDeployDir>
-    <aliceEXEDir>C:\Users\vishu.b\source\repos\GitZHCODE\Alice2018_zSpace\ALICE_PLATFORM\x64\Release\EXE</aliceEXEDir>
+    <zspaceDeployDir>C:\Users\vishu.b\source\repos\GitZHCODE\zspace_alice\ALICE_PLATFORM\src\zspace</zspaceDeployDir>
+    <aliceEXEDir>C:\Users\vishu.b\source\repos\GitZHCODE\zspace_alice\ALICE_PLATFORM\x64\Release\EXE</aliceEXEDir>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup>

@@ -21,7 +21,7 @@ namespace zSpace
 	ZSPACE_INLINE zObjPointCloud::zObjPointCloud()
 	{
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) || defined (ZSPACE_RHINO_INTEROP)
+#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
 		displayUtils = nullptr;
@@ -49,7 +49,7 @@ namespace zSpace
 		coreUtils.getBounds(pCloud.vertexPositions, minBB, maxBB);
 	}
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) || defined (ZSPACE_RHINO_INTEROP)
+#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing
 #else
 

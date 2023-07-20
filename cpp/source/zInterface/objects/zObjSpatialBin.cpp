@@ -20,7 +20,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zObjSpatialBin::zObjSpatialBin()
 	{
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) || defined (ZSPACE_RHINO_INTEROP)
+#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
 		displayUtils = nullptr;
@@ -48,7 +48,7 @@ namespace zSpace
 		maxBB = field.maxBB;
 	}
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) || defined (ZSPACE_RHINO_INTEROP)
+#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing
 #else
 

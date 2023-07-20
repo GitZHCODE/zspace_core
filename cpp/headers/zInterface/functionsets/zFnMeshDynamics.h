@@ -180,6 +180,18 @@ namespace zSpace
 		*/
 		void addPlanarityForce(double strength, double tolerance, zPlanarSolverType type, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit);
 
+		/*! \brief This method adds the forces to the keep the input vertex groups to the target planes specified by target centers and normals.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		* 	\param	[in]	tolerance				- input tolerance value below which the force isnt applied.
+		*	\param	[in]	type					- input planarisation type - zQuadPlanar or zVolumePlanar.
+		*  	\param	[out]	planarityDeviations		- output container of planarity deviations per face.
+		*  	\param	[out]	forceDir				- output container of planarity force direction per vertex.
+		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*	\since version 0.0.4
+		*/
+		void addPlanarityForce_vertexgroups(double strength, double tolerance, vector<zIntArray> &vertexIDs, zPointArray& targetCenters, zVectorArray& targetNormals, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit);
+
 		/*! \brief This method adds the planarisation forces to the input mesh.
 		*
 		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
@@ -191,7 +203,7 @@ namespace zSpace
 		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
 		*	\since version 0.0.4
 		*/
-		void addPlanarityForce_targetPlane(double strength, zPointArray& targetCenters, zVectorArray& targetNormals, double& tolerance, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit);
+		void addPlanarityForce_targetPlane(double strength, double& tolerance, zPointArray& targetCenters, zVectorArray& targetNormals,  zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit);
 
 		/*! \brief This method adds the developability forces to the input mesh.
 		*	\details based on Desburn et.al(2002) http://www.geometry.caltech.edu/pubs/DMA02.pdf
@@ -213,6 +225,18 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		void addMinimizeAreaForce(double strength);
+
+		/*! \brief This method adds the forces to keep the input vertex pairs aligned to each other.
+		*	\details based on http://courses.cms.caltech.edu/cs177/hmw/Hmw2.pdf , https://github.com/Dan-Piker/K2Goals/blob/master/SoapFilm.cs
+		* 	\param	[in]	strength				- input strength of the force.
+		*  	\param	[in]	maintainDistance		- input distance to be maintained between vertex pairs of the force.
+		*	\param	[in]	vertexIDs				- input container of vertex pairs to be kept aligned.
+		*  	\param	[out]	deviations				- output container of deviations per vertex.
+		*  	\param	[out]	forceDir				- output container of planarity force direction per vertex.
+		*  	\param	[out]	exit					- output boolean true if all the vertex gaussian deviations are below tolerance.
+		*	\since version 0.0.4
+		*/
+		void addRigidLineForce(double strength, double maintainDistance, zIntPairArray& vertexIDs, zDoubleArray& deviations, zVectorArray& forceDir, bool& exit);
 
 		//--------------------------
 		//---- UPDATE METHODS 

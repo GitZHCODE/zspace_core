@@ -18,6 +18,9 @@
 
 #include <headers/zInterface/objects/zObj.h>
 
+#include <depends/nlohmann/json.hpp>
+using json = nlohmann::json;;
+
 namespace zSpace
 {
 	/** \addtogroup zInterface
@@ -81,20 +84,38 @@ namespace zSpace
 
 		/*! \brief This method imports the object linked to function type.
 		*
-		*	\param	[in]	path			- output file name including the directory path and extension.
+		*	\param	[in]	path			- input file name including the directory path and extension.
 		*	\param	[in]	type			- type of file to be imported.
 		*	\param	[in]	staticGeom		- true if the object is static. Helps speed up display especially for meshes object. Default set to false.
 		*	\since version 0.0.2
 		*/
 		virtual void from(string path, zFileTpye type, bool staticGeom = false) = 0;
 
-		/*! \brief This method exports the object linked to function type.
+		/*! \brief This method imports the object linked to function type.
 		*
-		*	\param [in]		path			- input file name including the directory path and extension.
+		*	\param	[in]	j				- input json file.
+		*	\param	[in]	staticGeom		- true if the object is static. Helps speed up display especially for meshes object. Default set to false.
+		*	\since version 0.0.2
+		*/
+		virtual void from(json &j, bool staticGeom = false) = 0;
+
+		/*! \brief This method exports the object linked to json file.
+		*
+		*	\param [in]		path			- output file name including the directory path and extension.
 		*	\param [in]		type			- type of file to be exported.
 		*	\since version 0.0.2
 		*/
 		virtual void to(string path, zFileTpye type) = 0;
+
+		/*! \brief This method exports the object linked to json file.
+		*
+		*	\param [in]		path			- output file name including the directory path and extension.
+		*	\param [in]		type			- type of file to be exported.
+		*	\since version 0.0.2
+		*/
+		virtual void to(json &j) = 0;
+
+
 
 		/*! \brief This method clears the dynamic and array memory the object holds.
 		*

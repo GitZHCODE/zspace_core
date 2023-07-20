@@ -1,22 +1,22 @@
 // This file is part of zspace, a simple C++ collection of geometry data-structures & algorithms, 
 // data analysis & visualization framework.
 //
-// Copyright (C) 2019 ZSPACE 
+// Copyright (C) 2023 ZSPACE 
 // 
 // This Source Code Form is subject to the terms of the MIT License 
 // If a copy of the MIT License was not distributed with this file, You can 
 // obtain one at https://opensource.org/licenses/MIT.
 //
-// Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>, Leo Bieling <leo.bieling@zaha-hadid.com>
+// Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
 //
 
-#ifndef ZSPACE_OBJ_GRAPH_H
-#define ZSPACE_OBJ_GRAPH_H
+#ifndef ZSPACE_OBJ_NURBSCURVE_H
+#define ZSPACE_OBJ_NURBSCURVE_H
 
 #pragma once
 
 #include <headers/zInterface/objects/zObj.h>
-#include <headers/zCore/geometry/zGraph.h>
+#include <headers/zInterOp/include/zRhinoInclude.h>
 
 #include <vector>
 using namespace std;
@@ -33,43 +33,64 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \class zObjGraph
-	*	\brief The graph object class.
-	*	\since version 0.0.2
+	/*! \class zObjNurbsCurve
+	*	\brief The nurbs curve object class using OpenNURBS
+	*	\details https://github.com/mcneel/opennurbs
+	*	\since version 0.0.4
 	*/
 
 	/** @}*/
 	
 	/** @}*/
 
-	class ZSPACE_API zObjGraph : public zObj
+	class ZSPACE_API zObjNurbsCurve : public zObj
 	{
 	private:
 		/*! \brief boolean for displaying the vertices */
-		bool displayVertices;
+		bool displayControlPoints;
 
 		/*! \brief boolean for displaying the edges */
-		bool displayEdges;
+		bool displayCurve;
 
-		/*! \brief boolean for displaying the edges */
-		bool displayVertexIds = false;
+		/*!	\brief stores the start vertex ID in the VBO, when attached to the zBufferObject.	*/
+		int VBO_ControlPointId;
 
-		/*! \brief boolean for displaying the edges */
-		bool displayEdgeIds = false;
+		/*!	\brief stores the start edge ID in the VBO, when attached to the zBufferObject.	*/
+		int VBO_CurvePointId;
 
-		/*! \brief container for storing edge centers */
-		zPointArray edgeCenters;
+		/*!	\brief stores the start vertex color ID in the VBO, when attache to the zBufferObject.	*/
+		int VBO_CurveColorId;
+		
 
 	protected:
+		
 		
 
 	public:
 		//--------------------------
 		//---- PUBLIC ATTRIBUTES
 		//--------------------------
-		/*! \brief graph */
-		zGraph graph;
 		
+		/*!	\brief container which stores positions of curve points.			*/
+		zPointArray controlPoints;
+
+		/*!	\brief container which stores positions of curve points.			*/
+		zPointArray curvePositions;
+
+		/*!	\brief stores color of the curve.			*/
+		zColor curveColor;
+
+		/*!	\brief stores weight of the curve.			*/
+		double curveWeight;
+
+		/*!	\brief stores degree of the curve.			*/
+		int degree;
+
+		/*!	\brief stores if the curve is perodic or not.			*/
+		bool periodic;
+
+		/*!	\brief OpenNURBS curve			*/
+		ON_NurbsCurve curve;
 
 		//--------------------------
 		//---- CONSTRUCTOR
@@ -79,7 +100,7 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		zObjGraph();
+		zObjNurbsCurve();
 
 		//--------------------------
 		//---- DESTRUCTOR
@@ -89,7 +110,7 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		~zObjGraph();
+		~zObjNurbsCurve();
 
 		//--------------------------
 		//---- SET METHODS
@@ -97,41 +118,12 @@ namespace zSpace
 
 		/*! \brief This method sets display vertices, edges and face booleans.
 		*
-		*	\param		[in]	_showVerts				- input display vertices booelan.
-		*	\param		[in]	_showEdges				- input display edges booelan.
+		*	\param		[in]	_displayControlPoints		- input display controlPoints booelan.
+		*	\param		[in]	_displayCurve				- input display curve booelan.
 		*	\since version 0.0.2
 		*/
-		void setDisplayElements(bool _displayVertices, bool _displayEdges);
+		void setDisplayElements(bool _displayControlPoints, bool _displayCurve);
 
-		/*! \brief This method sets display vertices, edges and face booleans.
-		*
-		*	\param		[in]	_showVertIds				- input display vertex Ids booelan.
-		*	\param		[in]	_showEdgeIds				- input display edge Ids booelan.
-		*	\since version 0.0.4
-		*/
-		void setDisplayElementIds(bool _displayVertexIds, bool _displayEdgeIds);
-
-		/*! \brief This method sets display vertices boolean.
-		*
-		*	\param		[in]	_showVerts				- input display vertices booelan.
-		*	\since version 0.0.2
-		*/
-		void setDisplayVertices(bool _displayVertices);
-
-
-		/*! \brief This method sets display edges boolean.
-		*
-		*	\param		[in]	_showEdges				- input display edges booelan.
-		*	\since version 0.0.2
-		*/
-		void setDisplayEdges(bool _displayEdges);
-
-		/*! \brief This method sets edge centers container.
-		*
-		*	\param		[in]	_edgeCenters				- input edge center conatiner.
-		*	\since version 0.0.4
-		*/
-		void setEdgeCenters(zPointArray &_edgeCenters);
 
 		//--------------------------
 		//---- GET METHODS
@@ -142,21 +134,21 @@ namespace zSpace
 		*	\return			int				- vertex VBO Index.
 		*	\since version 0.0.2
 		*/
-		int getVBO_VertexID();
+		int getVBO_ControlPointId();
 
 		/*! \brief This method gets the edge VBO Index .
 		*
 		*	\return			int				- edge VBO Index.
 		*	\since version 0.0.2
 		*/
-		int getVBO_EdgeID();
+		int getVBO_CurvePointId();
 
 		/*! \brief This method gets the vertex color VBO Index .
 		*
 		*	\return			int				- vertex color VBO Index.
 		*	\since version 0.0.2
 		*/
-		int getVBO_VertexColorID();
+		int getVBO_CurveColorId();
 
 		//--------------------------
 		//---- OVERRIDE METHODS
@@ -189,7 +181,7 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		void drawGraph();
+		void drawNurbsCurve();
 	};
 
 	/** \addtogroup zCore
@@ -212,19 +204,19 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \typedef zObjGraphArray
-	*	\brief A vector of zObjGraph.
+	/*! \typedef zObjNurbsCurveArray
+	*	\brief A vector of zObjNurbsCurve.
 	*
 	*	\since version 0.0.4
 	*/
-	typedef vector<zObjGraph> zObjGraphArray;
+	typedef vector<zObjNurbsCurve> zObjNurbsCurveArray;
 
-	/*! \typedef zObjGraphPointerArray
-	*	\brief A vector of zObjGraph pointers.
+	/*! \typedef zObjNurbsCurvePointerArray
+	*	\brief A vector of zObjNurbsCurve pointers.
 	*
 	*	\since version 0.0.4
 	*/
-	typedef vector<zObjGraph*>zObjGraphPointerArray;
+	typedef vector<zObjNurbsCurve*>zObjNurbsCurvePointerArray;
 
 	/** @}*/
 	/** @}*/
@@ -235,7 +227,7 @@ namespace zSpace
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
 // All defined OK so do nothing
 #else
-#include<source/zInterface/objects/zObjGraph.cpp>
+#include<source/zInterOp/objects/zObjNurbsCurve.cpp>
 #endif
 
 #endif
