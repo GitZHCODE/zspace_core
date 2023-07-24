@@ -65,10 +65,10 @@ namespace zSpace
 
 	ZSPACE_INLINE void zObjNurbsCurve::getBounds(zPoint &minBB, zPoint &maxBB)
 	{
-		coreUtils.getBounds(curvePositions, minBB, maxBB);
+		coreUtils.getBounds(displayPositions, minBB, maxBB);
 	}
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) || /*defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing
 #else
 	   
@@ -100,14 +100,14 @@ namespace zSpace
 		if (displayControlPoints)
 		{
 			displayUtils->drawPoints(&controlPoints[0], zColor(), 3, controlPoints.size());
-			displayUtils->drawCurve(&controlPoints[0], zColor(), 1, controlPoints.size());
+			displayUtils->drawCurve(&controlPoints[0], zColor(), 1, controlPoints.size(), periodic);
 		}
 
 
 		// draw edges
 		if (displayCurve)
 		{
-			displayUtils->drawCurve(&curvePositions[0], curveColor, curveWeight, curvePositions.size());
+			displayUtils->drawCurve(&displayPositions[0], displayColor, displayWeight, displayPositions.size(),periodic);
 		}
 
 	

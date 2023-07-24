@@ -228,7 +228,7 @@ namespace zSpace
 
 		
 		(closed) ? glBegin(GL_LINE_LOOP) : glBegin(GL_LINE_STRIP);
-		for (int i =0; i< numPoints -1; i++)
+		for (int i =0; i< numPoints; i++)
 		{
 			glVertex3f(pos[i].x, pos[i].y, pos[i].z);
 		}

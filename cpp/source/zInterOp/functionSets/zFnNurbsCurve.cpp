@@ -65,86 +65,60 @@ namespace zSpace
 
 		// Curve Attributes
 		vector<zDoubleArray> cPoints;		
-		coreUtils.readJSONAttribute(j, "NC_ControlPoints", cPoints);
+		coreUtils.readJSONAttribute(j, "NC_controlPoints", cPoints);
 
+		zDoubleArray cPointWeights;
+		coreUtils.readJSONAttribute(j, "NC_weights", cPointWeights);
+		
 
+		int cDegree;
+		coreUtils.readJSONAttribute(j, "NC_degree", cDegree);
+		nurbsCurveObj->degree = cDegree;
+
+		bool cPeriodic;
+		coreUtils.readJSONAttribute(j, "NC_periodic", cPeriodic);
+		nurbsCurveObj->periodic = cPeriodic;
 		
 		//printf("\n vertexAttributes: %zi %zi", vertexAttributes.size(), vertexAttributes[0].size());
 		nurbsCurveObj->controlPoints.clear();
-		nurbsCurveObj->curvePositions.clear();
-		
-		for (int i = 0; i < graphJSON.vertexAttributes.size(); i++)
-		{
-			for (int k = 0; k < graphJSON.vertexAttributes[i].size(); k++)
-			{
-				// position
-				if (graphJSON.vertexAttributes[i].size() == 3)
-				{
-					zVector pos(graphJSON.vertexAttributes[i][k], graphJSON.vertexAttributes[i][k + 1], graphJSON.vertexAttributes[i][k + 2]);
-					graphObj->graph.vertexPositions.push_back(pos);
-					graphObj->graph.vertexColors.push_back(zColor(1, 0, 0, 1));
-					graphObj->graph.vertexWeights.push_back(2.0);
-					k += 2;
-				}
+		nurbsCurveObj->displayPositions.clear();
+		nurbsCurveObj->controlPointWeights.clear();
 
-				// position and color
-				if (graphJSON.vertexAttributes[i].size() == 6)
-				{
-					zVector pos(graphJSON.vertexAttributes[i][k], graphJSON.vertexAttributes[i][k + 1], graphJSON.vertexAttributes[i][k + 2]);
-					graphObj->graph.vertexPositions.push_back(pos);
-					zColor col(graphJSON.vertexAttributes[i][k + 3], graphJSON.vertexAttributes[i][k + 4], graphJSON.vertexAttributes[i][k + 5], 1);
-					graphObj->graph.vertexColors.push_back(col);
-					graphObj->graph.vertexWeights.push_back(2.0);
-					k += 5;
-				}
-			}
-		}
-		// Edge Attributes
-		graphJSON.halfedgeAttributes = j["HalfedgeAttributes"].get<vector<vector<double>>>();
-		graphObj->graph.edgeColors.clear();
-		graphObj->graph.edgeWeights.clear();
-		if (graphJSON.halfedgeAttributes.size() == 0)
+		ON_3dPointArray points;
+		
+		for (int i = 0; i < cPoints.size(); i++)
 		{
-			for (int i = 0; i < graphObj->graph.n_e; i++)
-			{
-				graphObj->graph.edgeColors.push_back(zColor());
-				graphObj->graph.edgeWeights.push_back(1.0);
-			}
+			nurbsCurveObj->controlPointWeights.push_back(cPointWeights[i]);
+			points.Append(ON_3dPoint(cPoints[i][0], cPoints[i][1], cPoints[i][2]));			
 		}
-		else
+
+		const int order = cDegree + 1;
+			
+		bool check =	(cPeriodic) ? nurbsCurveObj->curve.CreatePeriodicUniformNurbs(3, order, points.Count(), points) : nurbsCurveObj->curve.CreateClampedUniformNurbs(3, order, points.Count(), points);
+		printf("\n curve created %s ", (check) ? "True" : "False");
+
+		// store control points
+		for (int i = 0; i < points.Count(); i++)
 		{
-			for (int i = 0; i < graphJSON.halfedgeAttributes.size(); i += 2)
-			{
-				// color
-				if (graphJSON.halfedgeAttributes[i].size() == 3)
-				{
-					zColor col(graphJSON.halfedgeAttributes[i][0], graphJSON.halfedgeAttributes[i][1], graphJSON.halfedgeAttributes[i][2], 1);
-					graphObj->graph.edgeColors.push_back(col);
-					graphObj->graph.edgeWeights.push_back(1.0);
-				}
-			}
-		}
-		printf("\n graph: %i %i ", numVertices(), numEdges());
-		// add to maps
-		for (int i = 0; i < graphObj->graph.vertexPositions.size(); i++)
-		{
-			graphObj->graph.addToPositionMap(graphObj->graph.vertexPositions[i], i);
-		}
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			int v1 = e.getHalfEdge(0).getVertex().getId();
-			int v2 = e.getHalfEdge(1).getVertex().getId();
-			graphObj->graph.addToHalfEdgesMap(v1, v2, e.getHalfEdge(0).getId());
+			//nurbsCurveObj->curve.SetCV(i, points[i]);
+			nurbsCurveObj->curve.SetWeight(i, cPointWeights[i]);			
+			
+			zPoint cP(points[i].x, points[i].y, points[i].z);
+			nurbsCurveObj->controlPoints.push_back(cP);			
 		}
 		
-
-		if (staticGeom) setStaticContainers();
+		// normalise curve
+		nurbsCurveObj->curve.SetDomain(0.0, 1.0);
+		
+		// display points 
+		setDisplayNumPoints();
+			
+		
 	}
 
-	ZSPACE_INLINE void zFnGraph::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnNurbsCurve::to(string path, zFileTpye type)
 	{
-		if (type == zTXT) toTXT(path);
-		else if (type == zJSON)
+		if (type == zJSON)
 		{
 			json j;
 			to(j);
@@ -155,929 +129,263 @@ namespace zSpace
 		else throw std::invalid_argument(" error: invalid zFileTpye type");
 	}
 
-	ZSPACE_INLINE void zFnGraph::to(json& j)
+	ZSPACE_INLINE void zFnNurbsCurve::to(json& j)
 	{
-		// remove inactive elements
-		if (numVertices() != graphObj->graph.vertices.size()) removeInactiveElements(zVertexData);
-		if (numEdges() != graphObj->graph.edges.size()) removeInactiveElements(zEdgeData);
+		vector<zDoubleArray> cPoints;
+		cPoints.assign(nurbsCurveObj->controlPoints.size(), zDoubleArray());
 
+		zDoubleArray cPointWeights;
+		cPointWeights.assign(nurbsCurveObj->controlPoints.size(), -1);
 
-		// output file
-		zUtilsJsonHE graphJSON;
-		
-		// create json
-
-		// Vertices
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
+		for (int i = 0; i < nurbsCurveObj->controlPoints.size(); i++)
 		{
-			if (v.getHalfEdge().isActive()) graphJSON.vertices.push_back(v.getHalfEdge().getId());
-			else graphJSON.vertices.push_back(-1);
+			cPoints[i].push_back(nurbsCurveObj->controlPoints[i].x);
+			cPoints[i].push_back(nurbsCurveObj->controlPoints[i].y);
+			cPoints[i].push_back(nurbsCurveObj->controlPoints[i].z);
 
+			cPointWeights[i] = nurbsCurveObj->controlPointWeights[i];
 		}
 
-		//Edges
-		for (zItGraphHalfEdge he(*graphObj); !he.end(); he++)
-		{
-			vector<int> HE_edges;
+		int cDegree = nurbsCurveObj->degree;
+		bool cPeriodic = nurbsCurveObj->periodic;		
 
-			if (he.getPrev().isActive()) HE_edges.push_back(he.getPrev().getId());
-			else HE_edges.push_back(-1);
+		zDomainDouble domain = getDomain();
+		zDoubleArray cDomain = { domain.min, domain.max};
 
-			if (he.getNext().isActive()) HE_edges.push_back(he.getNext().getId());
-			else HE_edges.push_back(-1);
-
-			if (he.getVertex().isActive()) HE_edges.push_back(he.getVertex().getId());
-			else HE_edges.push_back(-1);
-
-			graphJSON.halfedges.push_back(HE_edges);
-		}
-
-
-		// vertex Attributes
-		for (int i = 0; i < graphObj->graph.vertexPositions.size(); i++)
-		{
-			vector<double> v_attrib;
-
-			v_attrib.push_back(graphObj->graph.vertexPositions[i].x);
-			v_attrib.push_back(graphObj->graph.vertexPositions[i].y);
-			v_attrib.push_back(graphObj->graph.vertexPositions[i].z);
-
-
-			v_attrib.push_back(graphObj->graph.vertexColors[i].r);
-			v_attrib.push_back(graphObj->graph.vertexColors[i].g);
-			v_attrib.push_back(graphObj->graph.vertexColors[i].b);
-
-
-
-			graphJSON.vertexAttributes.push_back(v_attrib);
-		}
+		zDoubleArray cKnots = getKnotVector();
 
 
 		// Json file 
-		j["Vertices"] = graphJSON.vertices;
-		j["Halfedges"] = graphJSON.halfedges;
-		j["VertexAttributes"] = graphJSON.vertexAttributes;
-		j["HalfedgeAttributes"] = graphJSON.halfedgeAttributes;
-
+		coreUtils.writeJSONAttribute(j, "NC_controlPoints", cPoints);
+		coreUtils.writeJSONAttribute(j, "NC_weights", cPointWeights);
+		coreUtils.writeJSONAttribute(j, "NC_degree", cDegree);
+		coreUtils.writeJSONAttribute(j, "NC_domain", cDomain);
+		coreUtils.writeJSONAttribute(j, "NC_knots", cKnots);
+		coreUtils.writeJSONAttribute(j, "NC_periodic", cPeriodic);
 		
 	}
 
-	ZSPACE_INLINE void zFnGraph::getBounds(zPoint &minBB, zPoint &maxBB)
+	ZSPACE_INLINE void zFnNurbsCurve::getBounds(zPoint &minBB, zPoint &maxBB)
 	{
-		graphObj->getBounds(minBB, maxBB);
+		nurbsCurveObj->getBounds(minBB, maxBB);
 	}
 
-	ZSPACE_INLINE void zFnGraph::clear()
+	ZSPACE_INLINE void zFnNurbsCurve::clear()
 	{
-		graphObj->graph.clear();
+		nurbsCurveObj->controlPoints.clear();
+		nurbsCurveObj->displayPositions.clear();
 	}
 
 	//---- CREATE METHODS
 
-	ZSPACE_INLINE void zFnGraph::create(zPointArray(&_positions), zIntArray(&edgeConnects), bool staticGraph,int precision)
+	ZSPACE_INLINE void zFnNurbsCurve::create(zPointArray(&_positions), int degree, bool periodic, int displayNumPoints)
 	{
-		graphObj->graph.create(_positions, edgeConnects,staticGraph, precision);
+		nurbsCurveObj->controlPoints.clear();
+		//nurbsCurveObj->controlPoints = _positions;
 
-		if (staticGraph) setStaticContainers();
-	}
+		nurbsCurveObj->displayPositions.clear();
+		nurbsCurveObj->controlPoints.clear();
 
-	ZSPACE_INLINE void zFnGraph::create(zPointArray(&_positions), zIntArray(&edgeConnects), zVector &graphNormal, bool staticGraph)
-	{
+		ON_3dPointArray points;
 
-		graphNormal.normalize();
-
-		zVector x(1, 0, 0);
-		zVector sortRef = graphNormal ^ x;
-
-		graphObj->graph.create(_positions, edgeConnects, graphNormal, sortRef);
-
-		if (staticGraph) setStaticContainers();
-	}
-
-	ZSPACE_INLINE void zFnGraph::createFromMesh(zObjMesh &meshObj, bool excludeBoundary, bool staticGraph)
-	{
-		zFnMesh fnMesh(meshObj);
-
-		vector<int>edgeConnects;
-		vector<zVector> vertexPositions;
-
-		fnMesh.getVertexPositions(vertexPositions, excludeBoundary);
-		fnMesh.getEdgeData(edgeConnects, excludeBoundary);
-
-		create(vertexPositions, edgeConnects, staticGraph);
-
-		if (staticGraph) setStaticContainers();
-	}
-
-	ZSPACE_INLINE bool zFnGraph::addVertex(zPoint &_pos, bool checkDuplicates, zItGraphVertex &vertex)
-	{
-		if (checkDuplicates)
+		for (int i = 0; i < _positions.size(); i++)
 		{
-			int id;
-			bool chk = vertexExists(_pos, vertex);
-			if (chk)	return false;
-
+			points.Append(ON_3dPoint(_positions[i][0], _positions[i][1], _positions[i][2]));
 		}
 
-		bool out = graphObj->graph.addVertex(_pos);
-		vertex = zItGraphVertex(*graphObj, numVertices() - 1);
+		(periodic) ? nurbsCurveObj->curve.CreatePeriodicUniformNurbs(degree, degree - 1, points.Count(), points) : nurbsCurveObj->curve.CreateClampedUniformNurbs(degree, degree - 1, points.Count(), points);
 
-		return out;
-	}
 
-	ZSPACE_INLINE bool zFnGraph::addEdges(int &v1, int &v2, bool checkDuplicates, zItGraphHalfEdge &halfEdge)
-	{
-		if (v1 < 0 && v1 >= numVertices()) throw std::invalid_argument(" error: index out of bounds");
-		if (v2 < 0 && v2 >= numVertices()) throw std::invalid_argument(" error: index out of bounds");
-
-		if (checkDuplicates)
+		for (int i = 0; i < nurbsCurveObj->curve.CVCount(); i++)
 		{
-			int id;
-			bool chk = halfEdgeExists(v1, v2, id);
-			if (chk)
-			{
-				halfEdge = zItGraphHalfEdge(*graphObj, id);
-				return false;
-			}
+			nurbsCurveObj->controlPointWeights.push_back(nurbsCurveObj->curve.Weight(i));
+		
+			ON_3dPoint p;
+			nurbsCurveObj->curve.GetCV(i, p);
+
+			zPoint cP(p.x, p.y, p.z);
+			nurbsCurveObj->controlPoints.push_back(cP);
 		}
 
-		bool out = graphObj->graph.addEdges(v1, v2);
+		// normalise curve
+		nurbsCurveObj->curve.SetDomain(0.0, 1.0);
 
-		halfEdge = zItGraphHalfEdge(*graphObj, numHalfEdges() - 2);
-
-		return out;
+		// display points 
+		setDisplayNumPoints();
 	}
 
-	//--- TOPOLOGY QUERY METHODS 
-
-	ZSPACE_INLINE int zFnGraph::numVertices()
+	ZSPACE_INLINE int zFnNurbsCurve::numControlVertices()
 	{
-		return graphObj->graph.n_v;
-	}
-
-	ZSPACE_INLINE int zFnGraph::numEdges()
-	{
-		return graphObj->graph.n_e;
-	}
-
-	ZSPACE_INLINE int zFnGraph::numHalfEdges()
-	{
-		return graphObj->graph.n_he;
-	}
-
-	ZSPACE_INLINE bool zFnGraph::vertexExists(zPoint pos, zItGraphVertex &outVertex, int precisionfactor)
-	{
-
-		int id;
-		bool chk = graphObj->graph.vertexExists(pos, id, precisionfactor);
-
-		if (chk) outVertex = zItGraphVertex(*graphObj, id);
-
-		return chk;
-	}
-
-	ZSPACE_INLINE bool zFnGraph::halfEdgeExists(int v1, int v2, int &outHalfEdgeId)
-	{
-		return graphObj->graph.halfEdgeExists(v1, v2, outHalfEdgeId);
-	}
-
-	ZSPACE_INLINE bool zFnGraph::halfEdgeExists(int v1, int v2, zItGraphHalfEdge &outHalfEdge)
-	{
-		int id;
-		bool chk = halfEdgeExists(v1, v2, id);
-
-		if (chk) outHalfEdge = zItGraphHalfEdge(*graphObj, id);
-
-		return chk;
-	}
-
-
-	//--- COMPUTE METHODS 
-
-	ZSPACE_INLINE void zFnGraph::computeEdgeColorfromVertexColor()
-	{
-
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			if (e.isActive())
-			{
-				int v0 = e.getHalfEdge(0).getVertex().getId();
-				int v1 = e.getHalfEdge(1).getVertex().getId();
-
-				zColor col;
-				col.r = (graphObj->graph.vertexColors[v0].r + graphObj->graph.vertexColors[v1].r) * 0.5;
-				col.g = (graphObj->graph.vertexColors[v0].g + graphObj->graph.vertexColors[v1].g) * 0.5;
-				col.b = (graphObj->graph.vertexColors[v0].b + graphObj->graph.vertexColors[v1].b) * 0.5;
-				col.a = (graphObj->graph.vertexColors[v0].a + graphObj->graph.vertexColors[v1].a) * 0.5;
-
-				if (graphObj->graph.edgeColors.size() <= e.getId()) graphObj->graph.edgeColors.push_back(col);
-				else graphObj->graph.edgeColors[e.getId()] = col;
-
-
-			}
-
-
-		}
-
-	}
-
-	ZSPACE_INLINE void zFnGraph::computeVertexColorfromEdgeColor()
-	{
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
-		{
-			if (v.isActive())
-			{
-				vector<int> cEdges;
-				v.getConnectedHalfEdges(cEdges);
-
-				zColor col;
-				for (int j = 0; j < cEdges.size(); j++)
-				{
-					col.r += graphObj->graph.edgeColors[cEdges[j]].r;
-					col.g += graphObj->graph.edgeColors[cEdges[j]].g;
-					col.b += graphObj->graph.edgeColors[cEdges[j]].b;
-				}
-
-				col.r /= cEdges.size(); col.g /= cEdges.size(); col.b /= cEdges.size();
-
-				graphObj->graph.vertexColors[v.getId()] = col;
-
-			}
-		}
-	}
-
-	ZSPACE_INLINE void zFnGraph::averageVertices(int numSteps)
-	{
-		for (int k = 0; k < numSteps; k++)
-		{
-			vector<zVector> tempVertPos;
-
-			for (zItGraphVertex v(*graphObj); !v.end(); v++)
-			{
-				tempVertPos.push_back(graphObj->graph.vertexPositions[v.getId()]);
-
-				if (v.isActive())
-				{
-					if (!v.checkValency(1))
-					{
-						vector<int> cVerts;
-
-						v.getConnectedVertices(cVerts);
-
-						for (int j = 0; j < cVerts.size(); j++)
-						{
-							zVector p = graphObj->graph.vertexPositions[cVerts[j]];
-							tempVertPos[v.getId()] += p;
-						}
-
-						tempVertPos[v.getId()] /= (cVerts.size() + 1);
-					}
-				}
-
-			}
-
-			// update position
-			for (int i = 0; i < tempVertPos.size(); i++) graphObj->graph.vertexPositions[i] = tempVertPos[i];
-		}
-
-	}
-
-	ZSPACE_INLINE void zFnGraph::removeInactiveElements(zHEData type)
-	{
-		if (type == zVertexData || type == zEdgeData || type == zHalfEdgeData) removeInactive(type);
-		else throw std::invalid_argument(" error: invalid zHEData type");
-	}
-
-	ZSPACE_INLINE void zFnGraph::makeStatic()
-	{
-		setStaticContainers();
+		return nurbsCurveObj->controlPoints.size();
 	}
 
 	//--- SET METHODS 
 
-	ZSPACE_INLINE void zFnGraph::setVertexPositions(zPointArray& pos)
+	ZSPACE_INLINE void zFnNurbsCurve::setDegree(int _degree)
 	{
-		if (pos.size() != graphObj->graph.vertexPositions.size()) throw std::invalid_argument("size of position contatiner is not equal to number of graph vertices.");
+		nurbsCurveObj->curve.IncreaseDegree(_degree);
+		nurbsCurveObj->degree = _degree;
 
-		for (int i = 0; i < graphObj->graph.vertexPositions.size(); i++)
-		{
-			graphObj->graph.vertexPositions[i] = pos[i];
-		}
+		// display points 
+		int numPoints = nurbsCurveObj->displayPositions.size();
+		getCurvePositions(numPoints, nurbsCurveObj->displayPositions);
 	}
 
-	ZSPACE_INLINE void zFnGraph::setVertexColor(zColor col, bool setEdgeColor)
+	ZSPACE_INLINE void zFnNurbsCurve::setDisplayColor(zColor _col)
 	{
-		graphObj->graph.vertexColors.clear();
-		graphObj->graph.vertexColors.assign(graphObj->graph.n_v, col);
-
-		if (setEdgeColor) computeEdgeColorfromVertexColor();
+		nurbsCurveObj->displayColor = _col;
 	}
 
-	ZSPACE_INLINE void zFnGraph::setVertexColors(zColorArray& col, bool setEdgeColor)
+	ZSPACE_INLINE void zFnNurbsCurve::setDisplayWeight(double _wt)
 	{
-		if (graphObj->graph.vertexColors.size() != graphObj->graph.vertices.size())
-		{
-			graphObj->graph.vertexColors.clear();
-			for (int i = 0; i < graphObj->graph.vertices.size(); i++) graphObj->graph.vertexColors.push_back(zColor(1, 0, 0, 1));
-		}
-
-		if (col.size() != graphObj->graph.vertexColors.size()) throw std::invalid_argument("size of color contatiner is not equal to number of graph vertices.");
-
-		for (int i = 0; i < graphObj->graph.vertexColors.size(); i++)
-		{
-			graphObj->graph.vertexColors[i] = col[i];
-		}
-
-		if (setEdgeColor) computeEdgeColorfromVertexColor();
+		nurbsCurveObj->displayWeight = _wt;
 	}
 
-	ZSPACE_INLINE void zFnGraph::setEdgeColor(zColor col, bool setVertexColor)
+	ZSPACE_INLINE void zFnNurbsCurve::setDisplayNumPoints(int _numPoints)
 	{
-
-		graphObj->graph.edgeColors.clear();
-		graphObj->graph.edgeColors.assign(graphObj->graph.n_e, col);
-
-		if (setVertexColor) computeVertexColorfromEdgeColor();
-
+		getCurvePositions(_numPoints, nurbsCurveObj->displayPositions);
 	}
 
-	ZSPACE_INLINE void zFnGraph::setEdgeColors(zColorArray& col, bool setVertexColor)
-	{
-		if (col.size() != graphObj->graph.edgeColors.size()) throw std::invalid_argument("size of color contatiner is not equal to number of graph half edges.");
-
-		for (int i = 0; i < graphObj->graph.edgeColors.size(); i++)
-		{
-			graphObj->graph.edgeColors[i] = col[i];
-		}
-
-		if (setVertexColor) computeVertexColorfromEdgeColor();
-	}
-
-	ZSPACE_INLINE void zFnGraph::setEdgeWeight(double wt)
-	{
-		graphObj->graph.edgeWeights.clear();
-		graphObj->graph.edgeWeights.assign(graphObj->graph.n_e, wt);
-
-	}
-
-	ZSPACE_INLINE void zFnGraph::setEdgeWeights(zDoubleArray& wt)
-	{
-		if (wt.size() != graphObj->graph.edgeColors.size()) throw std::invalid_argument("size of wt contatiner is not equal to number of mesh half edges.");
-
-		for (int i = 0; i < graphObj->graph.edgeWeights.size(); i++)
-		{
-			graphObj->graph.edgeWeights[i] = wt[i];
-		}
-	}
 
 	//--- GET METHODS 
 
-	ZSPACE_INLINE void zFnGraph::getVertexPositions(zPointArray& pos)
+	ZSPACE_INLINE void zFnNurbsCurve::getCurvePositions(int numPoints, zPointArray& positions)
 	{
-		pos = graphObj->graph.vertexPositions;
-	}
+		positions.clear();
 
-	ZSPACE_INLINE zPoint* zFnGraph::getRawVertexPositions()
-	{
-		if (numVertices() == 0) throw std::invalid_argument(" error: null pointer.");
+		zDoubleArray s;
+		s.assign(numPoints,-1);	
 
-		return &graphObj->graph.vertexPositions[0];
-	}
+		s[0] = 0;
+		for (int i = 1; i < numPoints - 1; i++) s[i] = (1.0 / (numPoints - 1)) * i;
+		s[numPoints - 1] = 1;		
 
-	ZSPACE_INLINE void zFnGraph::getVertexColors(zColorArray& col)
-	{
-		col = graphObj->graph.vertexColors;
-	}
-
-	ZSPACE_INLINE zColor* zFnGraph::getRawVertexColors()
-	{
-		if (numVertices() == 0) throw std::invalid_argument(" error: null pointer.");
-
-		return &graphObj->graph.vertexColors[0];
-	}
-
-	ZSPACE_INLINE void zFnGraph::getEdgeColors(zColorArray& col)
-	{
-		col = graphObj->graph.edgeColors;
-	}
-
-	ZSPACE_INLINE zColor* zFnGraph::getRawEdgeColors()
-	{
-		if (numEdges() == 0) throw std::invalid_argument(" error: null pointer.");
-
-		return &graphObj->graph.edgeColors[0];
-	}
-
-	ZSPACE_INLINE zPoint zFnGraph::getCenter()
-	{
-		zPoint out;
-
-		for (int i = 0; i < graphObj->graph.vertexPositions.size(); i++)
-		{
-			out += graphObj->graph.vertexPositions[i];
-		}
-
-		out /= graphObj->graph.vertexPositions.size();
-
-		return out;
-
-	}
-
-	ZSPACE_INLINE void zFnGraph::getCenters(zHEData type, zPointArray &centers)
-	{
-		// graph Edge 
-		if (type == zHalfEdgeData)
-		{
-
-			centers.clear();
-
-			for (zItGraphHalfEdge he(*graphObj); !he.end(); he++)
-			{
-				if (he.isActive())
-				{
-					centers.push_back(he.getCenter());
-				}
-				else
-				{
-					centers.push_back(zVector());
-
-				}
-			}
-
-		}
-		else if (type == zEdgeData)
-		{
-
-			centers.clear();
-
-			for (zItGraphEdge e(*graphObj); !e.end(); e++)
-			{
-				if (e.isActive())
-				{
-					centers.push_back(e.getCenter());
-				}
-				else
-				{
-					centers.push_back(zVector());
-
-				}
-			}
-
-		}
-
-		else throw std::invalid_argument(" error: invalid zHEData type");
-	}
-
-	ZSPACE_INLINE double zFnGraph::getHalfEdgeLengths(zDoubleArray &halfEdgeLengths)
-	{
-		double total = 0.0;
-
-
-		halfEdgeLengths.clear();
-
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			if (e.isActive())
-			{
-				double e_len = e.getLength();
-
-				halfEdgeLengths.push_back(e_len);
-				halfEdgeLengths.push_back(e_len);
-
-				total += e_len;
-			}
-			else
-			{
-				halfEdgeLengths.push_back(0);
-				halfEdgeLengths.push_back(0);
-			}
-		}
-
-		return total;
-	}
-
-	ZSPACE_INLINE double zFnGraph::getEdgeLengths(zDoubleArray &edgeLengths)
-	{
-		double total = 0.0;
-
-
-		edgeLengths.clear();
-
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			if (e.isActive())
-			{
-				double e_len = e.getLength();
-				edgeLengths.push_back(e_len);
-				total += e_len;
-			}
-			else
-			{
-				edgeLengths.push_back(0);
-			}
-		}
-
-		return total;
-	}
-
-	ZSPACE_INLINE void zFnGraph::getEdgeData(zIntArray &edgeConnects)
-	{
-		edgeConnects.clear();
-
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			edgeConnects.push_back(e.getHalfEdge(0).getVertex().getId());
-			edgeConnects.push_back(e.getHalfEdge(1).getVertex().getId());
+		for (int i = 0; i < numPoints; i++)
+		{	
+			ON_3dPoint p = nurbsCurveObj->curve.PointAt(s[i]);
+			positions.push_back(zPoint(p.x, p.y, p.z));
 		}
 	}
 
-	ZSPACE_INLINE zObjGraph zFnGraph::getDuplicate(bool planarGraph, zVector graphNormal)
+	ZSPACE_INLINE zPoint* zFnNurbsCurve::getRawControlPoints()
 	{
-		zObjGraph out;
+		return &nurbsCurveObj->controlPoints[0];
+	}
 
-		if (numVertices() != graphObj->graph.vertices.size()) removeInactiveElements(zVertexData);
-		if (numEdges() != graphObj->graph.edges.size()) removeInactiveElements(zEdgeData);
+	ZSPACE_INLINE zPoint zFnNurbsCurve::getPointAt(double t)
+	{
+		ON_3dPoint p = nurbsCurveObj->curve.PointAt(t);
+		return zPoint(p.x, p.y, p.z);
+	}
 
-		vector<zVector> positions;
-		vector<int> edgeConnects;
+	ZSPACE_INLINE zVector zFnNurbsCurve::getTangentAt(double t)
+	{
+		ON_3dVector tan = nurbsCurveObj->curve.TangentAt(t);
+		return zVector(tan.x, tan.y, tan.z);
+	}
 
+	ZSPACE_INLINE void zFnNurbsCurve::getPointTangentAt(double t, zPoint& p, zVector& tan)
+	{
+		p = getPointAt(t);
+		tan = getTangentAt(t);
+	}
 
-		positions = graphObj->graph.vertexPositions;
-		getEdgeData(edgeConnects);
+	ZSPACE_INLINE zPoint* zFnNurbsCurve::getRawDisplayPositions(int& numPoints)
+	{
+		numPoints = nurbsCurveObj->displayPositions.size();
+		return &nurbsCurveObj->displayPositions[0];
+	}
 
+	ZSPACE_INLINE zPoint zFnNurbsCurve::getCenter()
+	{
+		ON_3dPoint p = nurbsCurveObj->curve.PointAt(0.5);
+		return zPoint(p.x, p.y, p.z);
+	}
 
-		if (planarGraph)
-		{
-			graphNormal.normalize();
+	ZSPACE_INLINE double zFnNurbsCurve::getLength()
+	{
+		double len = 0.0;
+		ON_NurbsCurve nCurve = nurbsCurveObj->curve;
+		ON_NurbsCurve_GetLength(nCurve, &len);
 
-			zVector x(1, 0, 0);
-			zVector sortRef = graphNormal ^ x;
+		return len;
+	
+	}
 
-			out.graph.create(positions, edgeConnects, graphNormal, sortRef);
-		}
-		else out.graph.create(positions, edgeConnects);
-
-		out.graph.vertexColors = graphObj->graph.vertexColors;
-		out.graph.edgeColors = graphObj->graph.edgeColors;
+	ZSPACE_INLINE zDomainDouble zFnNurbsCurve::getDomain()
+	{
+		zDomainDouble out;
+		nurbsCurveObj->curve.GetDomain(&out.min, &out.max);
 
 		return out;
 	}
 
-	ZSPACE_INLINE void zFnGraph::getGraphMesh(zObjMesh &out, double width, zVector graphNormal)
+	ZSPACE_INLINE zDoubleArray zFnNurbsCurve::getKnotVector()
 	{
-
-		vector<zVector>positions;
-		vector<int> polyConnects;
-		vector<int> polyCounts;
-
-		if (numVertices() != graphObj->graph.vertices.size()) removeInactiveElements(zVertexData);
-		if (numEdges() != graphObj->graph.edges.size()) removeInactiveElements(zEdgeData);
-
-		positions = graphObj->graph.vertexPositions;
-
-		vector<vector<int>> edgeVertices;
-		for (zItGraphHalfEdge he(*graphObj); !he.end(); he++)
-		{
-
-			int v0 = he.getStartVertex().getId();
-			int v1 = he.getVertex().getId();
-
-			vector<int> temp;
-			temp.push_back(v0);
-			temp.push_back(v1);
-			temp.push_back(-1);
-			temp.push_back(-1);
-
-			edgeVertices.push_back(temp);
-		}
-
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
-		{
-			vector<zItGraphHalfEdge> cEdges;
-			v.getConnectedHalfEdges(cEdges);
-
-			if (cEdges.size() == 1)
-			{
-
-				int currentId = cEdges[0].getId();
-				int prevId = cEdges[0].getPrev().getId();
-
-				zVector e_current = cEdges[0].getVector();
-				e_current.normalize();
-
-				zVector e_prev = cEdges[0].getPrev().getVector();
-				e_prev.normalize();
-
-				zVector n_current = graphNormal ^ e_current;
-				n_current.normalize();
-
-				zVector n_prev = graphNormal ^ e_prev;
-				n_prev.normalize();
-
-
-				double w = width * 0.5;
-
-				edgeVertices[currentId][3] = positions.size();
-				positions.push_back(v.getPosition() + (n_current * w));
-
-				edgeVertices[prevId][2] = positions.size();
-				positions.push_back(v.getPosition() + (n_prev * w));
-
-			}
-
-			else
-			{
-				for (int j = 0; j < cEdges.size(); j++)
-				{
-					int currentId = cEdges[j].getId();
-					int prevId = cEdges[j].getPrev().getId();
-
-
-					zVector e_current = cEdges[j].getVector();
-					e_current.normalize();
-
-					zVector e_prev = cEdges[j].getPrev().getVector();
-					e_prev.normalize();
-
-					zVector n_current = graphNormal ^ e_current;
-					n_current.normalize();
-
-					zVector n_prev = graphNormal ^ e_prev;
-					n_prev.normalize();
-
-					zVector norm = (n_current + n_prev) * 0.5;
-					norm.normalize();
-
-
-					double w = width * 0.5;
-
-					zVector a0 = cEdges[j].getStartVertex().getPosition() + (n_current * w);
-					zVector a1 = cEdges[j].getCenter() + (n_current * w);
-
-					zVector b0 = cEdges[j].getStartVertex().getPosition() + (n_prev * w);
-					zVector b1 = cEdges[j].getPrev().getCenter() + (n_prev * w);
-
-					double uA, uB;
-					bool intersect = graphObj->graph.coreUtils.line_lineClosestPoints(a0, a1, b0, b1, uA, uB);
-
-
-					edgeVertices[currentId][3] = positions.size();
-					edgeVertices[prevId][2] = positions.size();
-
-
-
-					if (!intersect) positions.push_back(v.getPosition() + (norm * w));
-					else
-					{
-						if (uA >= uB)
-						{
-							zVector dir = a1 - a0;
-							double len = dir.length();
-							dir.normalize();
-
-							if (uA < 0) dir *= -1;
-							positions.push_back(a0 + dir * len * uA);
-						}
-						else
-						{
-							zVector dir = b1 - b0;
-							double len = dir.length();
-							dir.normalize();
-
-							if (uB < 0) dir *= -1;
-
-							positions.push_back(b0 + dir * len * uB);
-						}
-					}
-				}
-			}
-
-		}
-
-		for (int i = 0; i < edgeVertices.size(); i++)
-		{
-
-			for (int j = 0; j < edgeVertices[i].size(); j++)
-			{
-				polyConnects.push_back(edgeVertices[i][j]);
-			}
-
-			polyCounts.push_back(edgeVertices[i].size());
-
-		}
-
-
-
-
-		// mesh
-		if (positions.size() > 0)
-		{
-			out.mesh.create(positions, polyCounts, polyConnects);
-		}
-
-
-
-	}
-
-	ZSPACE_INLINE void zFnGraph::getGraphEccentricityCenter(zItGraphVertexArray & outV)
-	{
-		const int N = numVertices();	// number of nodes in graph
-		const int INF = 99999;
-		MatrixXi d(N,N);				// distances between nodes
-		VectorXi e(N);					// eccentricity of nodes
-		set<int> c;						// center of graph
-		int rad = INF;					// radius of graph
-		int diam = 0;					// diamater of graph
-
-		zIntArray boundaryVerts;
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
-			if (v.checkValency(1)) boundaryVerts.push_back(v.getId());
+		zDoubleArray out;
+		out.assign(nurbsCurveObj->curve.KnotCount(), -1);
 		
-		d.setConstant(INF);
-		e.setZero();
-
-		for (zItGraphHalfEdge he(*graphObj); !he.end(); he++)
+		for (int i = 0; i < nurbsCurveObj->curve.KnotCount(); i++)
 		{
-			d(he.getStartVertex().getId(), he.getVertex().getId()) = 1;
-			d(he.getStartVertex().getId(), he.getStartVertex().getId()) = 0;
+			out[i] = nurbsCurveObj->curve.m_knot[i];
 		}
-
-		// Floyd-Warshall's algorithm
-		for (int k = 0; k < N; k++)
-			for (int j = 0; j < N; j++)
-				for (int i = 0; i < N; i++)
-					d(i,j) = coreUtils.zMin(d(i, j), d(i, k) + d(k, j));
-
-		// Counting values of eccentricity
-		for (int i = 0; i < N; i++)
-			for (int j = 0; j < N; j++)
-				e(i) = coreUtils.zMax(e(i), d(i,j));
-
-		for (int i = 0; i < N; i++) 
-		{
-			rad = coreUtils.zMin(rad, e(i));
-			diam = coreUtils.zMax(diam, e(i));
-		}
-
-
-		for (int i = 0; i < N; i++) 
-			if (e[i] == rad) 		
-				c.insert(i);
-
-
-		zItGraphVertex v(*graphObj);
-		int maxScore = 0;
-
-		//printf("\n cen:");
-		for (auto id : c)
-		{
-			zItGraphVertex v1(*graphObj, id);
-			outV.push_back(v1);
-
-			double score = 0;
-
-			for (int j = 0; j < boundaryVerts.size(); j++)
-				score += d(v1.getId(), boundaryVerts[j]);
-
-			if (score > maxScore)
-			{
-				maxScore = score;
-				v = v1;
-			}
-
-			//printf("  %i ", v1.getId());
-		}
-
 		
-		//outV.push_back(v);
+
+		return out;
 	}
 
-	//---- TOPOLOGY MODIFIER METHODS
-
-	ZSPACE_INLINE zItGraphVertex zFnGraph::splitEdge(zItGraphEdge &edge, double edgeFactor)
+	ZSPACE_INLINE int zFnNurbsCurve::getDegree()
 	{
-		int edgeId = edge.getId();
-
-		zItGraphHalfEdge he = edge.getHalfEdge(0);
-		zItGraphHalfEdge heS = edge.getHalfEdge(1);
-
-		zItGraphHalfEdge he_next = he.getNext();
-		zItGraphHalfEdge he_prev = he.getPrev();
-
-		zItGraphHalfEdge heS_next = heS.getNext();
-		zItGraphHalfEdge heS_prev = heS.getPrev();
-
-
-		zVector edgeDir = he.getVector();
-		double  edgeLength = edgeDir.length();
-		edgeDir.normalize();
-
-		zVector newVertPos = he.getStartVertex().getPosition() + edgeDir * edgeFactor * edgeLength;
-
-		int numOriginalVertices = numVertices();
-
-		// check if vertex exists if not add new vertex
-		zItGraphVertex newVertex;
-		addVertex(newVertPos, false, newVertex);
-
-		if (newVertex.getId() >= numOriginalVertices)
-		{
-			// remove from halfEdge vertices map
-			removeFromHalfEdgesMap(he);
-
-			// add new edges
-			int v1 = newVertex.getId();
-			int v2 = he.getVertex().getId();
-
-			bool v2_val1 = he.getVertex().checkValency(1);
-
-			zItGraphHalfEdge newHe;
-			bool edgesResize = addEdges(v1, v2, false, newHe);
-
-			int newHeId = newHe.getId();
-
-			// recompute iterators if resize is true
-			if (edgesResize)
-			{
-				edge = zItGraphEdge(*graphObj, edgeId);
-
-				he = edge.getHalfEdge(0);
-				heS = edge.getHalfEdge(1);
-
-				he_next = he.getNext();
-				he_prev = he.getPrev();
-
-				heS_next = heS.getNext();
-				heS_prev = heS.getPrev();
-
-				newHe = zItGraphHalfEdge(*graphObj, newHeId);
-			}
-
-			zItGraphHalfEdge newHeS = newHe.getSym();
-
-			// update vertex pointers
-			newVertex.setHalfEdge(newHe);
-			he.getVertex().setHalfEdge(newHeS);
-
-			//// update pointers
-			he.setVertex(newVertex);		// current hedge vertex pointer updated to new added vertex
-
-			newHeS.setNext(heS);			// new added symmetry hedge next pointer to point to the symmetry of current hedge
-			
-			if (!v2_val1) newHeS.setPrev(heS_prev);
-			else newHeS.setPrev(newHe);
-			
-			newHe.setPrev(he);				// new added  hedge prev pointer to point to the current hedge
-			if (!v2_val1) newHe.setNext(he_next);
-
-			// update verticesEdge map
-			addToHalfEdgesMap(he);
-		}
-
-		return newVertex;
+		return nurbsCurveObj->degree;
 	}
+
+	ZSPACE_INLINE ON_NurbsCurve* zFnNurbsCurve::getRawON_Curve()
+	{
+		return &nurbsCurveObj->curve;
+	}
+
 
 	//---- TRANSFORM METHODS OVERRIDES
 
-	ZSPACE_INLINE void zFnGraph::setTransform(zTransform &inTransform, bool decompose, bool updatePositions)
+	ZSPACE_INLINE void zFnNurbsCurve::setTransform(zTransform &inTransform, bool decompose, bool updatePositions)
 	{
 		if (updatePositions)
 		{
 			zTransformationMatrix to;
 			to.setTransform(inTransform, decompose);
 
-			zTransform transMat = graphObj->transformationMatrix.getToMatrix(to);
+			zTransform transMat = nurbsCurveObj->transformationMatrix.getToMatrix(to);
 			transformObject(transMat);
 
-			graphObj->transformationMatrix.setTransform(inTransform);
+			nurbsCurveObj->transformationMatrix.setTransform(inTransform);
 
 			// update pivot values of object transformation matrix
-			zVector p = graphObj->transformationMatrix.getPivot();
+			zVector p = nurbsCurveObj->transformationMatrix.getPivot();
 			p = p * transMat;
 			setPivot(p);
 
 		}
 		else
 		{
-			graphObj->transformationMatrix.setTransform(inTransform, decompose);
+			nurbsCurveObj->transformationMatrix.setTransform(inTransform, decompose);
 
-			zVector p = graphObj->transformationMatrix.getO();
+			zVector p = nurbsCurveObj->transformationMatrix.getO();
 			setPivot(p);
 
 		}
 
 	}
 
-	ZSPACE_INLINE void zFnGraph::setScale(zFloat4 &scale)
+	ZSPACE_INLINE void zFnNurbsCurve::setScale(zFloat4 &scale)
 	{
 		// get  inverse pivot translations
-		zTransform invScalemat = graphObj->transformationMatrix.asInverseScaleTransformMatrix();
+		zTransform invScalemat = nurbsCurveObj->transformationMatrix.asInverseScaleTransformMatrix();
 
 		// set scale values of object transformation matrix
-		graphObj->transformationMatrix.setScale(scale);
+		nurbsCurveObj->transformationMatrix.setScale(scale);
 
 		// get new scale transformation matrix
-		zTransform scaleMat = graphObj->transformationMatrix.asScaleTransformMatrix();
+		zTransform scaleMat = nurbsCurveObj->transformationMatrix.asScaleTransformMatrix();
 
 		// compute total transformation
 		zTransform transMat = invScalemat * scaleMat;
@@ -1086,16 +394,16 @@ namespace zSpace
 		transformObject(transMat);
 	}
 
-	ZSPACE_INLINE void zFnGraph::setRotation(zFloat4 &rotation, bool appendRotations)
+	ZSPACE_INLINE void zFnNurbsCurve::setRotation(zFloat4 &rotation, bool appendRotations)
 	{
 		// get pivot translation and inverse pivot translations
-		zTransform pivotTransMat = graphObj->transformationMatrix.asPivotTranslationMatrix();
-		zTransform invPivotTransMat = graphObj->transformationMatrix.asInversePivotTranslationMatrix();
+		zTransform pivotTransMat = nurbsCurveObj->transformationMatrix.asPivotTranslationMatrix();
+		zTransform invPivotTransMat = nurbsCurveObj->transformationMatrix.asInversePivotTranslationMatrix();
 
 		// get plane to plane transformation
-		zTransformationMatrix to = graphObj->transformationMatrix;
+		zTransformationMatrix to = nurbsCurveObj->transformationMatrix;
 		to.setRotation(rotation, appendRotations);
-		zTransform toMat = graphObj->transformationMatrix.getToMatrix(to);
+		zTransform toMat = nurbsCurveObj->transformationMatrix.getToMatrix(to);
 
 		// compute total transformation
 		zTransform transMat = invPivotTransMat * toMat * pivotTransMat;
@@ -1104,23 +412,23 @@ namespace zSpace
 		transformObject(transMat);
 
 		// set rotation values of object transformation matrix
-		graphObj->transformationMatrix.setRotation(rotation, appendRotations);;
+		nurbsCurveObj->transformationMatrix.setRotation(rotation, appendRotations);;
 	}
 
-	ZSPACE_INLINE void zFnGraph::setTranslation(zVector &translation, bool appendTranslations)
+	ZSPACE_INLINE void zFnNurbsCurve::setTranslation(zVector &translation, bool appendTranslations)
 	{
 		// get vector as zDouble3
 		zFloat4 t;
 		translation.getComponents(t);
 
 		// get pivot translation and inverse pivot translations
-		zTransform pivotTransMat = graphObj->transformationMatrix.asPivotTranslationMatrix();
-		zTransform invPivotTransMat = graphObj->transformationMatrix.asInversePivotTranslationMatrix();
+		zTransform pivotTransMat = nurbsCurveObj->transformationMatrix.asPivotTranslationMatrix();
+		zTransform invPivotTransMat = nurbsCurveObj->transformationMatrix.asInversePivotTranslationMatrix();
 
 		// get plane to plane transformation
-		zTransformationMatrix to = graphObj->transformationMatrix;
+		zTransformationMatrix to = nurbsCurveObj->transformationMatrix;
 		to.setTranslation(t, appendTranslations);
-		zTransform toMat = graphObj->transformationMatrix.getToMatrix(to);
+		zTransform toMat = nurbsCurveObj->transformationMatrix.getToMatrix(to);
 
 		// compute total transformation
 		zTransform transMat = invPivotTransMat * toMat * pivotTransMat;
@@ -1129,618 +437,66 @@ namespace zSpace
 		transformObject(transMat);
 
 		// set translation values of object transformation matrix
-		graphObj->transformationMatrix.setTranslation(t, appendTranslations);;
+		nurbsCurveObj->transformationMatrix.setTranslation(t, appendTranslations);;
 
 		// update pivot values of object transformation matrix
-		zVector p = graphObj->transformationMatrix.getPivot();
+		zVector p = nurbsCurveObj->transformationMatrix.getPivot();
 		p = p * transMat;
 		setPivot(p);
 
 	}
 
-	ZSPACE_INLINE void zFnGraph::setPivot(zVector &pivot)
+	ZSPACE_INLINE void zFnNurbsCurve::setPivot(zVector &pivot)
 	{
 		// get vector as zDouble3
 		zFloat4 p;
 		pivot.getComponents(p);
 
 		// set pivot values of object transformation matrix
-		graphObj->transformationMatrix.setPivot(p);
+		nurbsCurveObj->transformationMatrix.setPivot(p);
 	}
 
-	ZSPACE_INLINE void zFnGraph::getTransform(zTransform &transform)
+	ZSPACE_INLINE void zFnNurbsCurve::getTransform(zTransform &transform)
 	{
-		transform = graphObj->transformationMatrix.asMatrix();
+		transform = nurbsCurveObj->transformationMatrix.asMatrix();
 	}
 
 	//---- PROTECTED OVERRIDE METHODS
 
-	ZSPACE_INLINE void zFnGraph::transformObject(zTransform &transform)
+	ZSPACE_INLINE void zFnNurbsCurve::transformObject(zTransform &transform)
 	{
 
-		if (numVertices() == 0) return;
+		if (numControlVertices() == 0) return;
 
+	
+		zPoint* pos = getRawControlPoints();
 
-		zVector* pos = getRawVertexPositions();
-
-		for (int i = 0; i < numVertices(); i++)
+		for (int i = 0; i < numControlVertices(); i++)
 		{
 
 			zVector newPos = pos[i] * transform;
 			pos[i] = newPos;
 		}
 
-	}
-
-	//---- PROTECTED REMOVE INACTIVE METHODS
-
-	ZSPACE_INLINE void zFnGraph::removeInactive(zHEData type)
-	{
-		//  Vertex
-		if (type == zVertexData)
+		for (int i = 0; i < nurbsCurveObj->curve.CVCount(); i++)
 		{
-			zItVertex v = graphObj->graph.vertices.begin();
-
-			while (v != graphObj->graph.vertices.end())
-			{
-				bool active = v->isActive();
-
-				if (!active)
-				{
-					graphObj->graph.vertices.erase(v++);
-
-					graphObj->graph.n_v--;
-				}
-			}
-
-			graphObj->graph.indexElements(zVertexData);
-
-			printf("\n removed inactive vertices. ");
-
+			ON_3dPoint p(pos[i].x, pos[i].y, pos[i].z);
+			nurbsCurveObj->curve.SetCV(i, p);
 		}
 
-		//  Edge
-		else if (type == zEdgeData || type == zHalfEdgeData)
-		{
-
-			zItHalfEdge he = graphObj->graph.halfEdges.begin();
-
-			while (he != graphObj->graph.halfEdges.end())
-			{
-				bool active = he->isActive();
-
-				if (!active)
-				{
-					graphObj->graph.halfEdges.erase(he++);
-
-					graphObj->graph.n_he--;
-				}
-			}
-
-			zItEdge e = graphObj->graph.edges.begin();
-
-			while (e != graphObj->graph.edges.end())
-			{
-				bool active = e->isActive();
-
-				if (!active)
-				{
-					graphObj->graph.edges.erase(e++);
-
-					graphObj->graph.n_e--;
-				}
-			}
-
-			printf("\n removed inactive edges. ");
-
-			graphObj->graph.indexElements(zHalfEdgeData);
-			graphObj->graph.indexElements(zEdgeData);
-
-		}
-
-		else throw std::invalid_argument(" error: invalid zHEData type");
-	}
-
-	//---- PROTECTED FACTORY METHODS
-
-	ZSPACE_INLINE bool zFnGraph::fromTXT(string infilename)
-	{
-		vector<zVector>positions;
-		vector<int>edgeConnects;
-
-
-		ifstream myfile;
-		myfile.open(infilename.c_str());
-
-		if (myfile.fail())
-		{
-			cout << " error in opening file  " << infilename.c_str() << endl;
-			return false;
-
-		}
-
-		while (!myfile.eof())
-		{
-			string str;
-			getline(myfile, str);
-
-
-
-			vector<string> perlineData = graphObj->graph.coreUtils.splitString(str, " ");
-
-			if (perlineData.size() > 0)
-			{
-				// vertex
-				if (perlineData[0] == "v")
-				{
-					if (perlineData.size() == 4)
-					{
-						zVector pos;
-						pos.x = atof(perlineData[1].c_str());
-						pos.y = atof(perlineData[2].c_str());
-						pos.z = atof(perlineData[3].c_str());
-
-						positions.push_back(pos);
-					}
-					//printf("\n working vertex");
-				}
-
-
-				// face
-				if (perlineData[0] == "e")
-				{
-
-					for (int i = 1; i < perlineData.size(); i++)
-					{
-						int id = atoi(perlineData[i].c_str()) - 1;
-						edgeConnects.push_back(id);
-					}
-				}
-			}
-		}
-
-		myfile.close();
-
-
-		if (!planarGraph) graphObj->graph.create(positions, edgeConnects);;
-		if (planarGraph)
-		{
-			graphNormal.normalize();
-
-			zVector x(1, 0, 0);
-			zVector sortRef = graphNormal ^ x;
-
-			graphObj->graph.create(positions, edgeConnects, graphNormal, sortRef);
-		}
-		printf("\n graphObj->graph: %i %i ", numVertices(), numEdges());
-
-		return true;
-	}
-
-	ZSPACE_INLINE bool zFnGraph::fromMAYATXT(string infilename)
-	{
-		vector<zVector>positions;
-		vector<int>edgeConnects;
-		vector<int>positionIds;
-
-		int hashCounter = 0;
-
-		ifstream myfile;
-		myfile.open(infilename.c_str());
-
-		if (myfile.fail())
-		{
-			cout << " error in opening file  " << infilename.c_str() << endl;
-			return false;
-		}
-
-		while (!myfile.eof())
-		{
-			string str;
-			getline(myfile, str);
-
-			vector<string> perlineData = graphObj->graph.coreUtils.splitString(str, " ");
-
-			if (perlineData.size() > 0)
-			{
-				if (perlineData[0] == "}")
-				{
-
-					for (int i = 1; i < positionIds.size(); i++)
-					{
-
-						edgeConnects.push_back(positionIds[i - 1]);
-						edgeConnects.push_back(positionIds[i]);
-					}
-
-					positionIds.clear();
-					//printf("\n working #");
-
-				}
-
-
-				if (perlineData[0] == "#")
-				{
-					if (hashCounter > 0)
-					{
-						if (positions.size() > 1)
-						{
-							if (!planarGraph) graphObj->graph.create(positions, edgeConnects);;
-							if (planarGraph)
-							{
-								graphNormal.normalize();
-
-								zVector x(1, 0, 0);
-								zVector sortRef = graphNormal ^ x;
-
-								graphObj->graph.create(positions, edgeConnects, graphNormal, sortRef);
-							}
-							printf("\n graph: %i %i", numVertices(), numEdges());
-						}
-					}
-
-					hashCounter++;
-
-					positions.clear();
-					edgeConnects.clear();
-				}
-
-				// vertex
-				if (perlineData[0] == "v")
-				{
-					if (perlineData.size() == 4)
-					{
-						zVector pos;
-						pos.x = atof(perlineData[1].c_str());
-						pos.y = atof(perlineData[2].c_str());
-						pos.z = atof(perlineData[3].c_str());
-
-						int index = -1;
-						bool chk = graphObj->graph.coreUtils.checkRepeatVector(pos, positions, index);
-
-						if (!chk)
-						{
-							positionIds.push_back(positions.size());
-							positions.push_back(pos);
-						}
-						else positionIds.push_back(index);
-					}
-
-				}
-			}
-		}
-
-		return true;
-	}
-
-	ZSPACE_INLINE bool zFnGraph::fromJSON(string infilename)
-	{
-		json j;
-		zUtilsJsonHE graphJSON;
-		// read data to json
-		ifstream in_myfile;
-		in_myfile.open(infilename.c_str());
-		int lineCnt = 0;
-		if (in_myfile.fail())
-		{
-			cout << " error in opening file  " << infilename.c_str() << endl;
-			return false;
-		}
-		in_myfile >> j;
-		in_myfile.close();
-		// read data to json graph
-		// Vertices
-		graphJSON.vertices.clear();
-		graphJSON.vertices = (j["Vertices"].get<vector<int>>());
-		// Edges
-		graphJSON.halfedges.clear();
-		graphJSON.halfedges = (j["Halfedges"].get<vector<vector<int>>>());
-		graphObj->graph.edges.clear();
-		// update graph
-		graphObj->graph.clear();
-		graphObj->graph.vertices.assign(graphJSON.vertices.size(), zVertex());
-		graphObj->graph.halfEdges.assign(graphJSON.halfedges.size(), zHalfEdge());
-		graphObj->graph.edges.assign(floor(graphJSON.halfedges.size() * 0.5), zEdge());
-		graphObj->graph.vHandles.assign(graphJSON.vertices.size(), zVertexHandle());
-		graphObj->graph.eHandles.assign(floor(graphJSON.halfedges.size() * 0.5), zEdgeHandle());
-		graphObj->graph.heHandles.assign(graphJSON.halfedges.size(), zHalfEdgeHandle());
-		// set IDs
-		for (int i = 0; i < graphJSON.vertices.size(); i++) graphObj->graph.vertices[i].setId(i);
-		for (int i = 0; i < graphJSON.halfedges.size(); i++)graphObj->graph.halfEdges[i].setId(i);
-		// set Pointers
-		int n_v = 0;
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
-		{
-			v.setId(n_v);
-			if (graphJSON.vertices[n_v] != -1)
-			{
-				zItGraphHalfEdge he(*graphObj, graphJSON.vertices[n_v]);
-				v.setHalfEdge(he);
-				graphObj->graph.vHandles[n_v].id = n_v;
-				graphObj->graph.vHandles[n_v].he = graphJSON.vertices[n_v];
-			}
-			n_v++;
-		}
-		graphObj->graph.setNumVertices(n_v);
-		int n_he = 0;
-		int n_e = 0;
-		for (zItGraphHalfEdge he(*graphObj); !he.end(); he++)
-		{
-			// Half Edge
-			he.setId(n_he);
-			graphObj->graph.heHandles[n_he].id = n_he;
-			if (graphJSON.halfedges[n_he][0] != -1)
-			{
-				zItGraphHalfEdge e(*graphObj, graphJSON.halfedges[n_he][0]);
-				he.setPrev(e);
-				graphObj->graph.heHandles[n_he].p = graphJSON.halfedges[n_he][0];
-			}
-			if (graphJSON.halfedges[n_he][1] != -1)
-			{
-				zItGraphHalfEdge e(*graphObj, graphJSON.halfedges[n_he][1]);
-				he.setNext(e);
-				graphObj->graph.heHandles[n_he].n = graphJSON.halfedges[n_he][1];
-			}
-			if (graphJSON.halfedges[n_he][2] != -1)
-			{
-				zItGraphVertex v(*graphObj, graphJSON.halfedges[n_he][2]);
-				he.setVertex(v);
-				graphObj->graph.heHandles[n_he].v = graphJSON.halfedges[n_he][2];
-			}
-			// symmetry half edges
-			if (n_he % 2 == 1)
-			{
-				zItGraphHalfEdge heSym(*graphObj, n_he - 1);
-				he.setSym(heSym);
-				zItGraphEdge e(*graphObj, n_e);
-				e.setId(n_e);
-				e.setHalfEdge(heSym, 0);
-				e.setHalfEdge(he, 1);
-				he.setEdge(e);
-				heSym.setEdge(e);
-				graphObj->graph.heHandles[n_he].e = n_e;
-				graphObj->graph.heHandles[n_he - 1].e = n_e;
-				graphObj->graph.eHandles[n_e].id = n_e;
-				graphObj->graph.eHandles[n_e].he0 = n_he - 1;
-				graphObj->graph.eHandles[n_e].he1 = n_he;
-				n_e++;
-			}
-			n_he++;
-		}
-		graphObj->graph.setNumEdges(n_e);
-
-		// Vertex Attributes
-		graphJSON.vertexAttributes = j["VertexAttributes"].get<vector<vector<double>>>();
-		//printf("\n vertexAttributes: %zi %zi", vertexAttributes.size(), vertexAttributes[0].size());
-		graphObj->graph.vertexPositions.clear();
-		graphObj->graph.vertexColors.clear();
-		graphObj->graph.vertexWeights.clear();
-		for (int i = 0; i < graphJSON.vertexAttributes.size(); i++)
-		{
-			for (int k = 0; k < graphJSON.vertexAttributes[i].size(); k++)
-			{
-				// position
-				if (graphJSON.vertexAttributes[i].size() == 3)
-				{
-					zVector pos(graphJSON.vertexAttributes[i][k], graphJSON.vertexAttributes[i][k + 1], graphJSON.vertexAttributes[i][k + 2]);
-					graphObj->graph.vertexPositions.push_back(pos);
-					graphObj->graph.vertexColors.push_back(zColor(1,0,0,1));
-					graphObj->graph.vertexWeights.push_back(2.0);
-					k += 2;
-				}
-				
-				// position and color
-				if (graphJSON.vertexAttributes[i].size() == 6)
-				{
-					zVector pos(graphJSON.vertexAttributes[i][k], graphJSON.vertexAttributes[i][k + 1], graphJSON.vertexAttributes[i][k + 2]);
-					graphObj->graph.vertexPositions.push_back(pos);
-					zColor col(graphJSON.vertexAttributes[i][k + 3], graphJSON.vertexAttributes[i][k + 4], graphJSON.vertexAttributes[i][k + 5], 1);
-					graphObj->graph.vertexColors.push_back(col);
-					graphObj->graph.vertexWeights.push_back(2.0);
-					k += 5;
-				}
-			}
-		}
-		// Edge Attributes
-		graphJSON.halfedgeAttributes = j["HalfedgeAttributes"].get<vector<vector<double>>>();
-		graphObj->graph.edgeColors.clear();
-		graphObj->graph.edgeWeights.clear();
-		if (graphJSON.halfedgeAttributes.size() == 0)
-		{
-			for (int i = 0; i < graphObj->graph.n_e; i++)
-			{
-				graphObj->graph.edgeColors.push_back(zColor());
-				graphObj->graph.edgeWeights.push_back(1.0);
-			}
-		}
-		else
-		{
-			for (int i = 0; i < graphJSON.halfedgeAttributes.size(); i += 2)
-			{
-				// color
-				if (graphJSON.halfedgeAttributes[i].size() == 3)
-				{
-					zColor col(graphJSON.halfedgeAttributes[i][0], graphJSON.halfedgeAttributes[i][1], graphJSON.halfedgeAttributes[i][2], 1);
-					graphObj->graph.edgeColors.push_back(col);
-					graphObj->graph.edgeWeights.push_back(1.0);
-				}
-			}
-		}
-		printf("\n graph: %i %i ", numVertices(), numEdges());
-		// add to maps
-		for (int i = 0; i < graphObj->graph.vertexPositions.size(); i++)
-		{
-			graphObj->graph.addToPositionMap(graphObj->graph.vertexPositions[i], i);
-		}
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			int v1 = e.getHalfEdge(0).getVertex().getId();
-			int v2 = e.getHalfEdge(1).getVertex().getId();
-			graphObj->graph.addToHalfEdgesMap(v1, v2, e.getHalfEdge(0).getId());
-		}
-		return true;
+		// display points 
+		int numPoints = nurbsCurveObj->displayPositions.size();
+		getCurvePositions(numPoints, nurbsCurveObj->displayPositions);
 
 	}
 
-	ZSPACE_INLINE void zFnGraph::toTXT(string outfilename)
-	{
-		// remove inactive elements
-		if (numVertices() != graphObj->graph.vertices.size()) removeInactiveElements(zVertexData);
-		if (numEdges() != graphObj->graph.edges.size()) removeInactiveElements(zEdgeData);
-
-
-		// output file
-		ofstream myfile;
-		myfile.open(outfilename.c_str());
-
-		if (myfile.fail())
-		{
-			cout << " error in opening file  " << outfilename.c_str() << endl;
-			return;
-
-		}
-
-		myfile << "\n ";
-
-		// vertex positions
-		for (auto &vPos : graphObj->graph.vertexPositions)
-		{
-
-			myfile << "\n v " << vPos.x << " " << vPos.y << " " << vPos.z;
-
-		}
-
-		myfile << "\n ";
-
-		// edge connectivity
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			int v1 = e.getHalfEdge(0).getVertex().getId();
-			int v2 = e.getHalfEdge(1).getVertex().getId();
-
-			myfile << "\n e ";
-
-			myfile << v1 << " ";
-			myfile << v2;
-		}
-
-		myfile << "\n ";
-
-		myfile.close();
-
-		cout << endl << " TXT exported. File:   " << outfilename.c_str() << endl;
-	}
-
-	ZSPACE_INLINE void zFnGraph::toJSON(string outfilename)
-	{
-		// remove inactive elements
-		if (numVertices() != graphObj->graph.vertices.size()) removeInactiveElements(zVertexData);
-		if (numEdges() != graphObj->graph.edges.size()) removeInactiveElements(zEdgeData);
-
-
-		// output file
-		zUtilsJsonHE graphJSON;
-		json j;
-
-		// create json
-
-		// Vertices
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
-		{
-			if (v.getHalfEdge().isActive()) graphJSON.vertices.push_back(v.getHalfEdge().getId());
-			else graphJSON.vertices.push_back(-1);
-
-		}
-
-		//Edges
-		for (zItGraphHalfEdge he(*graphObj); !he.end(); he++)
-		{
-			vector<int> HE_edges;
-
-			if (he.getPrev().isActive()) HE_edges.push_back(he.getPrev().getId());
-			else HE_edges.push_back(-1);
-
-			if (he.getNext().isActive()) HE_edges.push_back(he.getNext().getId());
-			else HE_edges.push_back(-1);
-
-			if (he.getVertex().isActive()) HE_edges.push_back(he.getVertex().getId());
-			else HE_edges.push_back(-1);
-
-			graphJSON.halfedges.push_back(HE_edges);
-		}
-
-
-		// vertex Attributes
-		for (int i = 0; i < graphObj->graph.vertexPositions.size(); i++)
-		{
-			vector<double> v_attrib;
-
-			v_attrib.push_back(graphObj->graph.vertexPositions[i].x);
-			v_attrib.push_back(graphObj->graph.vertexPositions[i].y);
-			v_attrib.push_back(graphObj->graph.vertexPositions[i].z);
-
-
-			v_attrib.push_back(graphObj->graph.vertexColors[i].r);
-			v_attrib.push_back(graphObj->graph.vertexColors[i].g);
-			v_attrib.push_back(graphObj->graph.vertexColors[i].b);
-
-
-
-			graphJSON.vertexAttributes.push_back(v_attrib);
-		}
-
-
-		// Json file 
-		j["Vertices"] = graphJSON.vertices;
-		j["Halfedges"] = graphJSON.halfedges;
-		j["VertexAttributes"] = graphJSON.vertexAttributes;
-		j["HalfedgeAttributes"] = graphJSON.halfedgeAttributes;
-
-
-		// export json
-
-		ofstream myfile;
-		myfile.open(outfilename.c_str());
-
-		if (myfile.fail())
-		{
-			cout << " error in opening file  " << outfilename.c_str() << endl;
-			return;
-		}
-
-		//myfile.precision(16);
-		myfile << j.dump();
-		myfile.close();
-	}
 
 	//---- PRIVATE METHODS
 
-	ZSPACE_INLINE void zFnGraph::setStaticContainers()
+	ZSPACE_INLINE bool zFnNurbsCurve::ON_NurbsCurve_GetLength(const ON_NurbsCurve& curve, double* length, double fractional_tolerance, const ON_Interval* sub_domain)
 	{
-		graphObj->graph.staticGeometry = true;
-
-		vector<vector<int>> edgeVerts;
-
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			vector<int> verts;
-			e.getVertices(verts);
-
-			edgeVerts.push_back(verts);
-		}
-
-		graphObj->graph.setStaticEdgeVertices(edgeVerts);
+		return curve.GetLength(length, fractional_tolerance, sub_domain);
 	}
 
-	//---- PRIVATE DEACTIVATE AND REMOVE METHODS
 
-	ZSPACE_INLINE void zFnGraph::addToHalfEdgesMap(zItGraphHalfEdge &he)
-	{
-		graphObj->graph.addToHalfEdgesMap(he.getStartVertex().getId(), he.getVertex().getId(), he.getId());
-	}
-
-	ZSPACE_INLINE void zFnGraph::removeFromHalfEdgesMap(zItGraphHalfEdge &he)
-	{
-		graphObj->graph.removeFromHalfEdgesMap(he.getStartVertex().getId(), he.getVertex().getId());
-	}
 }

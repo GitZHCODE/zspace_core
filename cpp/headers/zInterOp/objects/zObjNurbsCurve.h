@@ -59,7 +59,7 @@ namespace zSpace
 		int VBO_CurvePointId;
 
 		/*!	\brief stores the start vertex color ID in the VBO, when attache to the zBufferObject.	*/
-		int VBO_CurveColorId;
+		int VBO_CurveColorId;		
 		
 
 	protected:
@@ -71,17 +71,20 @@ namespace zSpace
 		//---- PUBLIC ATTRIBUTES
 		//--------------------------
 		
+		/*!	\brief container which stores positions of curve points for display.			*/
+		zPointArray displayPositions;
+
+		/*!	\brief stores color of the curve.			*/
+		zColor displayColor;
+
+		/*!	\brief stores weight of the curve.			*/
+		double displayWeight;
+
 		/*!	\brief container which stores positions of curve points.			*/
 		zPointArray controlPoints;
 
-		/*!	\brief container which stores positions of curve points.			*/
-		zPointArray curvePositions;
-
-		/*!	\brief stores color of the curve.			*/
-		zColor curveColor;
-
-		/*!	\brief stores weight of the curve.			*/
-		double curveWeight;
+		/*!	\brief container which stores weights of curve points.			*/
+		zDoubleArray controlPointWeights;
 
 		/*!	\brief stores degree of the curve.			*/
 		int degree;

@@ -121,12 +121,18 @@ namespace zSpace
 		*	\param		[in]	staticGraph		- makes the graph fixed. Computes the static edge vertex positions if true.
 		*	\since version 0.0.2
 		*/
-		void create(zPointArray(&_positions), int degree,  bool periodic, int displayNumPoints = 25);
+		void create(zPointArray(&_positions), int degree,  bool periodic, int displayNumPoints = 20);
 				
 
 		//--------------------------
 		//--- TOPOLOGY QUERY METHODS 
 		//--------------------------
+		
+		/*! \brief This method returns the number of control vertices of the curve.
+		*	\return				number of control vertices.
+		*	\since version 0.0.4
+		*/
+		int numControlVertices();
 
 		
 	
@@ -151,45 +157,112 @@ namespace zSpace
 
 		/*! \brief This method sets curve color to the input color.
 		*
-		*	\param		[in]	col				- input color.
+		*	\param		[in]	_col				- input color.
 		*	\since version 0.0.2
 		*/
-		void setCurveColor(zColor col);
+		void setDisplayColor(zColor _col);
 
 	
 		/*! \brief This method sets edge weight of the curve to the input weight.
 		*
-		*	\param		[in]	wt				- input weight.
+		*	\param		[in]	_wt				- input weight.
 		*	\since version 0.0.2
 		*/
-		void setCurveWeight(double wt);
+		void setDisplayWeight(double _wt);
+
+		/*! \brief This method sets number of sample points of the curve for display.
+		*
+		*	\param		[in]	_numPoints				- input num points.
+		*	\since version 0.0.2
+		*/
+		void setDisplayNumPoints(int _numPoints = 100);
 
 		//--------------------------
 		//--- GET METHODS 
 		//--------------------------
 
-		/*! \brief This method gets curve positions.
+		/*! \brief This method computes the points on the curve.
 		*
-		*	\param		[out]	pos				- positions  contatiner.
-		*	\since version 0.0.2
+		*	\param		[in]	numPoints			- number of points required.
+		*	\param		[out]	positions			- output container of positions
+		*	\since version 0.0.4
 		*/
-		void getCurvePositions(zPointArray& pos);
+		void getCurvePositions( int numPoints, zPointArray& positions);
 
 		/*! \brief This method gets pointer to the internal curve positions container.
 		*
 		*	\return				zPoint*					- pointer to internal vertex position container.
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
-		zPoint* getRawCurvePositions();
+		zPoint* getRawControlPoints();
 
+		/*! \brief This method gets point at the specified parameter value.
+		*
+		*	\param		[in]	t						- parameter value ( between 0 & 1).
+		*	\return				zPoint					- point at parameter value.
+		*	\since version 0.0.4
+		*/
+		zPoint getPointAt(double t);
+
+		/*! \brief This method gets tangent at the specified parameter value.
+		*
+		*	\param		[in]	t						- parameter value ( between 0 & 1).
+		*	\return				zVector					- tangent at parameter value.
+		*	\since version 0.0.4
+		*/
+		zVector getTangentAt(double t);
+
+		/*! \brief This method gets tangent at the specified parameter value.
+		*
+		*	\param		[in]	t						- parameter value ( between 0 & 1).
+		*	\param		[out]	p						- point at parameter value.
+		*	\param		[out]	tan						- tangent at parameter value.
+		*	\since version 0.0.4
+		*/
+		void getPointTangentAt(double t, zPoint &p, zVector &tan);
+
+		/*! \brief This method gets pointer to the internal curve positions container.
+		*
+		*	\param		[out]	numPoints				- output number of points in container.
+		*	\return				zPoint*					- pointer to internal vertex position container.
+		*	\since version 0.0.4
+		*/
+		zPoint* getRawDisplayPositions(int& numPoints);
 		
-		/*! \brief This method computes the center the graph.
+		/*! \brief This method gets the center the curve.
 		*
 		*	\return		zPoint					- center .
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
 		zPoint getCenter();
 
+		/*! \brief This method gets the length of the curve.
+		*
+		*	\return		double					- length of the curve .
+		*	\since version 0.0.4
+		*/
+		double getLength();
+
+		/*! \brief This method gets the domain of the curve.
+		*
+		*	\return		zDomainDouble					- domain of the curve .
+		*	\since version 0.0.4
+		*/
+		zDomainDouble getDomain();
+
+		/*! \brief This method gets the knot of the curve.
+		*
+		*	\return		zDoubleArray					- container of knot vector of the curve .
+		*	\since version 0.0.4
+		*/
+		zDoubleArray getKnotVector();
+
+		/*! \brief This method gets the degree of the curve.
+		*
+		*	\return		int					- degree of the curve .
+		*	\since version 0.0.4
+		*/
+		int getDegree();
 		
 		/*! \brief This method computes the lengths of all the half edges of a the graph.
 		*
@@ -199,11 +272,6 @@ namespace zSpace
 		*/
 		ON_NurbsCurve* getRawON_Curve();
 
-		
-		//--------------------------
-		//---- TOPOLOGY MODIFIER METHODS
-		//--------------------------
-		
 		
 		//--------------------------
 		//---- TRANSFORM METHODS OVERRIDES
@@ -228,14 +296,6 @@ namespace zSpace
 		//--------------------------	
 		void transformObject(zTransform &transform) override;
 
-		//--------------------------
-		//---- PROTECTED REMOVE INACTIVE
-		//--------------------------
-
-		//--------------------------
-		//---- PROTECTED FACTORY METHODS
-		//--------------------------
-
 
 	private:
 
@@ -243,6 +303,8 @@ namespace zSpace
 		//---- PRIVATE METHODS
 		//--------------------------
 
+		bool ON_NurbsCurve_GetLength(const ON_NurbsCurve& curve, double* length, double fractional_tolerance = 1.0e-8, const ON_Interval* sub_domain = NULL);
+		
 	};
 
 
