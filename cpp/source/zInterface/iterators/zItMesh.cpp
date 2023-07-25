@@ -432,7 +432,7 @@ namespace zSpace
 			meanCurvNormal /= (2 * areaSumMixed);
 
 			gaussianCurv = ((360 - angleSum) * DEG_TO_RAD);
-			gaussianCurv /= getArea();
+			//gaussianCurv /= getArea();
 
 			/// 
 			// using https://arxiv.org/abs/0804.1046

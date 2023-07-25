@@ -109,6 +109,15 @@ namespace zSpace
 		*/
 		void drawPoints(zPoint *pos, zColor *col, double *wt, int size);
 
+		/*! \brief This method draws vertices of a graph or mesh.
+		*	\param		 [in]		pos			- container of positions to be drawn.
+		*	\param		 [in]		col			- color.
+		*	\param		 [in]		wt			- weight.
+		*	\param		 [in]		size		- size of container.
+		*	\since version 0.0.1
+		*/
+		void drawPoints(zPoint* pos, zColor col, double wt, int size);
+
 		/*! \brief This method draws a line between the given two points.
 		*	\param		[in]		p0			- start Point of the line.
 		*	\param		[in]		p1			- end Point of the line.
@@ -184,6 +193,16 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		void drawEdges(vector<zEdgeHandle> &eHandles, vector<zIntArray> &edgeVerts, zVector *pos, zColor *col, double *wt);
+
+		/*! \brief This method draws the curve from a sequence of positions.
+		*	\param		 [in]		pos			- container of positions.
+		*	\param		 [in]		col			- curve color.
+		*	\param		 [in]		wt			- curve weight.
+		*	\param		 [in]		size		- number of points in the container.
+		*	\param		 [in]		closed		- boolean indicating if the curve is closed.
+		*	\since version 0.0.4
+		*/
+		void drawCurve( zVector* pos, zColor col, double wt, int size , bool closed);
 
 		/*! \brief This method draws edgeIds of a graph or mesh.
 		*	\param		 [in]		numEdges		- number of edges.

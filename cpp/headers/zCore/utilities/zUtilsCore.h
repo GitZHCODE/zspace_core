@@ -997,21 +997,41 @@ namespace zSpace
 		/*! \brief This method gets the JSON file from the input path if it exists.
 		*
 		*	\param		[in]	path			- input file path.
-		*	\param		[out]	outJSON			- output JSON file if it exists.
+		*	\param		[out]	j				- output JSON file if it exists.
 		*	\return 			bool			- true if file exists, else false.
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
-		bool readJSON(string path, json& outJSON);
+		bool readJSON(string path, json& j);
+
+		/*! \brief This method writes the JSON file to the output path.
+		*
+		*	\param		[out]	path			- output file path.
+		*	\param		[in]	j				- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool writeJSON(string path, json& j);
 		
+		/*! \brief This method gets the attributes from the input json.
+		*
+		*	\param		[in]	j				- input JSON file if it exists.
+		*	\param		[in]	attributeKey	- input JSON attribute name.
+		*	\param		[in]	outAttribute	- input JSON attribute values.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		template <typename T>
+		bool readJSONAttribute(json& j, string attributeKey , T &outAttribute);
+
 		/*! \brief This method gets the JSON file from the input path if it exists.
 		*
 		*	\param		[in]	path			- input file path.
-		*	\param		[out]	outJSON			- output JSON file if it exists.
+		*	\param		[out]	j				- output JSON file if it exists.
 		*	\return 			bool			- true if file exists, else false.
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
-		//template <typename T>
-		//bool readJSONAttribute(json& inJSON, string attributeKey , T &outAttribute);
+		template <typename T>
+		void writeJSONAttribute(json& j, string attributeKey, T& outAttribute);
 		
 		//--------------------------
 		//---- MATRIX  METHODS USING ARMADILLO
@@ -1201,6 +1221,8 @@ namespace zSpace
 	template <typename T>
 	inline T zUtilsCore::zMin(vector<T> &vals)
 	{
+		if (vals.size() == 0) return 0;
+
 		vector<T> sortVals = vals;
 		std::sort(sortVals.begin(), sortVals.end());
 
@@ -1216,6 +1238,8 @@ namespace zSpace
 	template <typename T>
 	inline T zUtilsCore::zMax(vector<T> &vals)
 	{
+		if (vals.size() == 0) return 0;
+
 		vector<T> sortVals = vals;
 		std::sort(sortVals.begin(), sortVals.end());
 
@@ -1252,16 +1276,19 @@ namespace zSpace
 		return out;
 	}
 
-	/*template<typename T>
-	inline bool zUtilsCore::readJSONAttribute(json& inJSON, string attributeKey, T& outAttribute)
+	template<typename T>
+	inline bool zUtilsCore::readJSONAttribute(json& j, string attributeKey, T& outAttribute)
 	{
-		bool out = inJSON.contains(attributeKey);
-		if (out) outAttribute = inJSON[attributeKey].get<T>();
+		bool out = j.contains(attributeKey);
+		if (out) outAttribute = j[attributeKey].get<T>();
 		return out;
 	}*/
 
-	
-
+	template<typename T>
+	inline void zUtilsCore::writeJSONAttribute(json& j, string attributeKey, T& outAttribute)
+	{
+		j[attributeKey] = outAttribute;		
+	}
 
 
 #endif

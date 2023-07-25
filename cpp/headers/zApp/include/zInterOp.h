@@ -19,10 +19,17 @@
 #include<commdlg.h>
 
 //--------------------------
+//---- zRhinoObjects
+//--------------------------
+#include <headers/zInterOp/objects/zObjNurbsCurve.h>
+
+//--------------------------
 //---- zRhinoFNSETS
 //--------------------------
 #include <headers/zInterOp/functionSets/zRhinoFnMesh.h>
 #include <headers/zInterOp/functionSets/zRhinoFnGraph.h>
+
+#include <headers/zInterOp/functionSets/zFnNurbsCurve.h>
 
 #endif
 

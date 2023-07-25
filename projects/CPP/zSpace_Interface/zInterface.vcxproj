@@ -193,7 +193,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFn.h" />
-    <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnComputeMesh.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnComputeMesh.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnGraph.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnGraphDynamics.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterface\functionsets\zFnMesh.h" />
@@ -223,7 +226,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFn.cpp" />
-    <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnComputeMesh.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnComputeMesh.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnGraph.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnGraphDynamics.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterface\functionsets\zFnMesh.cpp" />

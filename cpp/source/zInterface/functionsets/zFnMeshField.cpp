@@ -616,7 +616,7 @@ namespace zSpace
 	template<typename T>
 	ZSPACE_INLINE zObjMesh* zFnMeshField<T>::getRawMesh()
 	{
-		return &fieldObj->mesh;
+		return this->fieldObj;
 	}
 
 	ZSPACE_INLINE void zFnMeshField<zScalar>::getNeighbourPosition_Contained(zPoint &pos, zPointArray &containedNeighbour)

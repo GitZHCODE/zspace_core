@@ -103,7 +103,11 @@ namespace zSpace
 
 		void from(string path, zFileTpye type, bool staticGeom = false) override;
 
+		void from(json& j, bool staticGeom = false)override;
+
 		void to(string path, zFileTpye type) override;
+
+		void to(json& j) override;
 
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 

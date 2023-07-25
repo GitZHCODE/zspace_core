@@ -176,7 +176,7 @@ namespace zSpace
 		return out;
 	}
 
-	ZSPACE_INLINE void zItGraphVertex::getBSF(zItGraphVertexArray& bsf)
+	ZSPACE_INLINE void zItGraphVertex::getBSF(zItGraphVertexArray& bsf, zIntPairArray& vertexPairs)
 	{
 		int verticesVisitedCounter = 0;
 
@@ -186,7 +186,10 @@ namespace zSpace
 		zItGraphVertexArray currentVertex = { zItGraphVertex(*graphObj, getId()) };
 		bool exit = false;
 
+		bsf.clear();
 		bsf.push_back(currentVertex[0]);
+
+		vertexPairs.clear();
 
 		do
 		{
@@ -228,7 +231,12 @@ namespace zSpace
 							}
 						}
 
-						if (!checkRepeat) temp.push_back(v);				
+						if (!checkRepeat)
+						{
+							temp.push_back(v);
+
+							vertexPairs.push_back(zIntPair(currentV.getId(), v.getId()));
+						}
 					}				
 				}
 				vertsVisited[currentV.getId()] = true;
@@ -245,10 +253,10 @@ namespace zSpace
 		} while (verticesVisitedCounter != graphObj->graph.n_v && !exit);
 	}
 
-	ZSPACE_INLINE void zItGraphVertex::getBSF(zIntArray& bsf)
+	ZSPACE_INLINE void zItGraphVertex::getBSF(zIntArray& bsf, zIntPairArray& vertexPairs)
 	{
 		zItGraphVertexArray itBSF;
-		getBSF(itBSF);
+		getBSF(itBSF, vertexPairs);
 
 		for (auto it : itBSF)
 			bsf.push_back(it.getId());		

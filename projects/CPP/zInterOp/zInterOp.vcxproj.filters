@@ -34,6 +34,12 @@
     <Filter Include="Source Files\core">
       <UniqueIdentifier>{4fefddb5-8413-4b7a-9c58-dca2d935699c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\objects">
+      <UniqueIdentifier>{80ec32b3-effa-4977-9f6a-018930eb3976}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\objects">
+      <UniqueIdentifier>{35c7b89e-d68f-4687-8b78-c181df206afd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\zRhinoCore.h">
@@ -75,6 +81,12 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\include\zUnrealInclude.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjNurbsCurve.h">
+      <Filter>Header Files\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zFnNurbsCurve.h">
+      <Filter>Header Files\functionSets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zRhinoCore.cpp">
@@ -105,6 +117,12 @@
       <Filter>Source Files\interOp</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zUnrealFnMesh.cpp">
+      <Filter>Source Files\functionSets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjNurbsCurve.cpp">
+      <Filter>Source Files\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zFnNurbsCurve.cpp">
       <Filter>Source Files\functionSets</Filter>
     </ClCompile>
   </ItemGroup>

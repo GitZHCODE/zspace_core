@@ -47,9 +47,19 @@ namespace zSpace
 		if (type == zCSV) fromCSV(path);
 	}
 
+	ZSPACE_INLINE void zFnPointCloud::from(json& j, bool staticGeom)
+	{
+
+	}
+
 	ZSPACE_INLINE void zFnPointCloud::to(string path, zFileTpye type)
 	{
 		if (type == zCSV) toCSV(path);
+	}
+
+	ZSPACE_INLINE void zFnPointCloud::to(json& j)
+	{
+
 	}
 
 	ZSPACE_INLINE void zFnPointCloud::getBounds(zPoint &minBB, zPoint &maxBB)

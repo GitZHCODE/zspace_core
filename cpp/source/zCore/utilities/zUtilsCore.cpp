@@ -1716,7 +1716,7 @@ namespace zSpace
 		BDCSVD<Matrix3d> svd;
 		svd.compute(X_eigen);
 
-		cout << "\n eigen \n " << svd.computeV();
+		//cout << "\n eigen \n " << svd.computeV();
 
 		// compute covariance matrix 
 		SelfAdjointEigenSolver<Matrix3f> eigensolver;
@@ -1962,6 +1962,25 @@ namespace zSpace
 		in_myfile >> outJSON;
 		in_myfile.close();
 
+		return true;
+	}
+
+	ZSPACE_INLINE bool zUtilsCore::writeJSON(string path, json& outJSON)
+	{
+		ofstream myfile;
+		myfile.open(path.c_str());
+
+		if (myfile.fail())
+		{
+			cout << " error in opening file  " << path.c_str() << endl;
+			return false;
+		}
+		else cout << endl << " JSON exported. File:   " << path.c_str() << endl;
+
+
+		//myfile.precision(16);
+		myfile << outJSON.dump();
+		myfile.close();
 		return true;
 	}
 
