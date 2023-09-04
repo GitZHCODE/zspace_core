@@ -53,6 +53,8 @@ namespace zSpace
 	{
 	}
 
+
+
 	ZSPACE_INLINE void zFnParticle::to(string path, zFileTpye type)
 	{
 		
@@ -61,6 +63,17 @@ namespace zSpace
 	ZSPACE_INLINE void zFnParticle::to(json& j)
 	{
 	}
+
+#if defined ZSPACE_USD_INTEROP
+
+	ZSPACE_INLINE void zFnParticle::from(UsdPrim& usd, bool staticGeom)
+	{
+	}
+
+	ZSPACE_INLINE void zFnParticle::to(UsdPrim& usd)
+	{
+	}
+#endif
 
 	ZSPACE_INLINE void zFnParticle::getBounds(zPoint &minBB, zPoint &maxBB)
 	{	

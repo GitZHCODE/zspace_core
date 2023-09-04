@@ -105,9 +105,18 @@ namespace zSpace
 
 		void from(json& j, bool staticGeom = false)override;
 
+		
+
 		void to(string path, zFileTpye type) override;
 
 		void to(json& j) override;
+
+#if defined ZSPACE_USD_INTEROP
+
+		void from(UsdPrim& usd, bool staticGeom = false)override;
+
+		void to(UsdPrim& usd)override;
+#endif
 
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 

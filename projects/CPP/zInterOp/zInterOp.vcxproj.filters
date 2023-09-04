@@ -87,6 +87,9 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zFnNurbsCurve.h">
       <Filter>Header Files\functionSets</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\zOmniCore.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zRhinoCore.cpp">
@@ -124,6 +127,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zFnNurbsCurve.cpp">
       <Filter>Source Files\functionSets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zOmniCore.cpp">
+      <Filter>Source Files\core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

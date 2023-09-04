@@ -19,7 +19,7 @@
 #include <headers/zInterOp/include/zRhinoInclude.h>
 
 #include <vector>
-using namespace std;
+//using namespace std;
 
 namespace zSpace
 {

@@ -59,6 +59,26 @@ namespace zSpace
 			//if (chk && staticGeom) setStaticContainers();
 		}
 
+#if defined ZSPACE_USD_INTEROP
+		else if (type == zUSD)
+		{
+			UsdStageRefPtr stage = UsdStage::Open(path);
+
+			if (stage)
+			{
+				for (UsdPrim prim : stage->Traverse())
+				{
+					if (prim.IsA<UsdGeomMesh>())
+					{
+						from(prim, staticGeom);						
+					}
+				}
+			}
+			else cout << " error in opening file  " << path.c_str() << endl;
+	
+		}
+#endif
+
 		else throw std::invalid_argument(" error: invalid zFileTpye type");
 	}
 
@@ -389,6 +409,8 @@ namespace zSpace
 
 	}
 
+
+
 	ZSPACE_INLINE void zFnMesh::to(string path, zFileTpye type)
 	{
 		if (type == zOBJ) toOBJ(path);
@@ -398,6 +420,39 @@ namespace zSpace
 			to(j);
 			bool chk = coreUtils.writeJSON(path, j);
 		}
+
+#if defined ZSPACE_USD_INTEROP
+		else if (type == zUSD)
+		{
+			// Create this file in Omniverse cleanly
+			UsdStageRefPtr gStage = UsdStage::CreateNew(path);
+			if (!gStage)
+			{
+				cout << " error creating USD file  " << path.c_str() << endl;
+			}
+
+			else
+			{
+				gStage->SetMetadata(TfToken("defaultPrim"), VtValue("World"));
+				gStage->SetMetadata(TfToken("upAxis"), VtValue("Z"));
+
+				string s_root, s_layer, s_prim;
+				s_root = "/World";
+				s_layer = s_root + "/Geometry";
+				s_prim = s_layer + "/mesh";
+				UsdGeomXform root = UsdGeomXform::Define(gStage, SdfPath(s_root));
+				UsdGeomXform layer = UsdGeomXform::Define(gStage, SdfPath(s_layer));
+				UsdGeomMesh meshPrim = UsdGeomMesh::Define(gStage, SdfPath(s_prim));
+
+				UsdPrim usd = meshPrim.GetPrim();
+				to(usd);
+
+				gStage->GetRootLayer()->Save();
+
+				cout << endl << " USD exported. File:   " << path.c_str() << endl;
+			}
+		}
+#endif
 
 		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
@@ -508,6 +563,198 @@ namespace zSpace
 
 		
 	}
+
+#if defined ZSPACE_USD_INTEROP
+
+	ZSPACE_INLINE void zFnMesh::from(UsdPrim& usd, bool staticGeom)
+	{
+		// Declare arrays to store mesh data
+		VtArray<GfVec3f> u_points;
+		VtArray<GfVec3f> u_normals;
+		VtArray<GfVec3f> u_Colors;
+		VtArray<int>     faceVertexCounts;
+		VtArray<int>     faceVertexIndices;
+		VtArray<int>	 u_ColorIndices;
+
+		GfMatrix4d transform;
+		bool tmp = true;
+
+		UsdGeomMesh usdMesh(usd);
+
+		// Retrieve attributes from `usdMesh`
+		UsdAttribute pointsAttr = usdMesh.GetPointsAttr();
+		UsdAttribute normalsAttr = usdMesh.GetNormalsAttr();
+		UsdAttribute faceVertexCountsAttr = usdMesh.GetFaceVertexCountsAttr();
+		UsdAttribute faceVertexIndicesAttr = usdMesh.GetFaceVertexIndicesAttr();
+		UsdAttribute colorAttr = usdMesh.GetDisplayColorAttr();
+		UsdAttribute colorIndicesAttr = usdMesh.GetPrim().GetAttribute(pxr::TfToken("primvars:displayColor:indices"));
+
+
+		// Prepare data structures for the zObjMesh
+		zPointArray positions;
+		zIntArray polyCounts;
+		zIntArray polyConnects;
+		zTransform myTransform;
+		zColorArray palette;
+		zColorArray colors;
+
+		if (pointsAttr.Get(&u_points))
+			for (int i = 0; i < u_points.size() * 3; i += 3)
+			{
+				zPoint pos = zPoint(u_points.cdata()->GetArray()[i], u_points.cdata()->GetArray()[i + 1], u_points.cdata()->GetArray()[i + 2]);
+				positions.push_back(pos);
+			}
+
+		if (faceVertexCountsAttr.Get(&faceVertexCounts))
+			for (int i = 0; i < faceVertexCounts.size(); i++)
+			{
+				polyCounts.push_back(faceVertexCounts.cdata()[i]);
+			}
+
+		if (faceVertexIndicesAttr.Get(&faceVertexIndices))
+			for (int i = 0; i < faceVertexIndices.size(); i++)
+			{
+				polyConnects.push_back(faceVertexIndices.cdata()[i]);
+			}
+
+		if (colorAttr.Get(&u_Colors))
+			for (int i = 0; i < u_Colors.size() * 3; i += 3)
+			{
+				zColor col = zColor(u_Colors.cdata()->GetArray()[i], u_Colors.cdata()->GetArray()[i + 1], u_Colors.cdata()->GetArray()[i + 2], 1);
+				palette.push_back(col);
+			}
+
+		if (colorIndicesAttr.Get(&u_ColorIndices))
+			for (size_t i = 0; i < u_ColorIndices.size(); i++)
+			{
+				int id = u_ColorIndices[i];
+				colors.push_back(palette[id]);
+			}
+
+		// Convert the GfMatrix4d to a `zTransform` matrix
+		if (usdMesh.GetLocalTransformation(&transform, &tmp))
+		{
+			double* data = transform.GetArray();
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
+					myTransform(i, j) = data[i * 4 + j];
+				}
+			}
+		}
+
+		// Create the zObjMesh
+		create(positions, polyCounts, polyConnects);
+		computeMeshNormals();
+
+		// Set vertex colors
+		if (colors.size() == numVertices()) 	setVertexColors(colors, true);
+		if (colors.size() == numPolygons()) setFaceColors(colors, true);
+
+		// Set the transformation matrix
+		setTransform(myTransform);
+
+		if (staticGeom) setStaticContainers();
+
+	}
+
+	ZSPACE_INLINE void zFnMesh::to(UsdPrim& usd)
+	{
+		//mesh attributes
+		VtArray<GfVec3f> points;
+		VtArray<GfVec3f> normals;
+		VtArray<int> fVCounts;
+		VtArray<int> fVIDs;
+		GfMatrix4d transform;
+
+		//custom attributes
+		VtArray<GfVec3f> vCols;
+		VtArray<float> opacity;
+
+		//set mesh vertex attributes
+		int numV = numVertices();	
+		zPoint* rawVPositions = getRawVertexPositions();	
+		zColor* rawVColor = getRawVertexColors();		
+
+		//get & set transformation
+		zTransform t;
+		getTransform(t);		
+
+		transform.Set(	t(0, 0), t(1, 0), t(2, 0), t(3, 0),
+						t(0, 1), t(1, 1), t(2, 1), t(3, 1),
+						t(0, 2), t(1, 2), t(2, 2), t(3, 2),
+						t(0, 3), t(1, 3), t(2, 3), t(3, 3));
+		
+		// v positions and color
+		for (int i = 0; i < numV; i++)
+		{
+			GfVec3f v_attr, c_attr;
+			//set vertex positions
+			v_attr.Set(rawVPositions[i].x, rawVPositions[i].y, rawVPositions[i].z);
+			points.push_back(v_attr);
+
+			opacity.push_back(1.0);
+			c_attr.Set(rawVColor[i].r, rawVColor[i].g, rawVColor[i].b);
+			vCols.push_back(c_attr);			
+			
+		}
+
+		//set mesh face attributes
+		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		{
+			zVector fNorm = f.getNormal();
+
+			fVCounts.push_back(f.getNumVertices());
+			
+			zIntArray v_idx;
+			f.getVertices(v_idx);
+			for (auto& o : v_idx)
+			{
+				fVIDs.push_back(o);
+
+				GfVec3f n_attr;
+				n_attr.Set(fNorm.x, fNorm.y, fNorm.z);
+				normals.push_back(n_attr);
+			}
+		}
+
+
+
+		//create default attr
+		UsdGeomMesh usdMesh(usd);
+		UsdGeomPrimvarsAPI usdPrimVar(usd);
+		UsdGeomSubset usdSubset(usd);
+
+		usdMesh.CreatePointsAttr(VtValue(points), true);
+
+		usdMesh.CreateFaceVertexCountsAttr(VtValue(fVCounts), true);
+		usdMesh.CreateFaceVertexIndicesAttr(VtValue(fVIDs), true);
+		usdMesh.CreateNormalsAttr(VtValue(normals), true);
+				
+
+		//usdSubset.CreateElementTypeAttr(VtValue(vCols), true);
+
+		//GfVec3f c_attr;
+		//c_attr.Set(1,0,1);
+		//VtIntArray vColIndices = { 1,1,1,1,1,1 };
+
+		//usdPrimVar.CreateIndexedPrimvar(TfToken("DisplayColor"), SdfValueTypeName(), c_attr, vColIndices, UsdGeomTokens->vertex);
+		
+		
+		
+		usdMesh.CreateDisplayColorAttr(VtValue(vCols), true);
+		usdMesh.CreateDisplayOpacityAttr(VtValue(opacity), true);
+
+		//set mesh attributes
+		UsdAttribute attr;
+
+		attr = usdMesh.AddTransformOp();
+		attr.Set(transform);
+
+			
+
+	}
+
+#endif
 
 	ZSPACE_INLINE void zFnMesh::getBounds(zPoint &minBB, zPoint &maxBB)
 	{

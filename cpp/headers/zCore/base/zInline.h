@@ -31,6 +31,7 @@
 #define ZSPACE_INTEROP  __declspec(dllexport)
 #define ZSPACE_MAYA  __declspec(dllexport)
 #define ZSPACE_RHINO  __declspec(dllexport)
+#define ZSPACE_OMNI  __declspec(dllexport)
 #define ZSPACE_CUDA  __declspec(dllexport)
 #else
 #define ZSPACE_CORE 
@@ -43,6 +44,7 @@
 #define ZSPACE_INTEROP 
 #define ZSPACE_MAYA  
 #define ZSPACE_RHINO  
+#define ZSPACE_OMNI 
 #define ZSPACE_CUDA  
 #endif
 

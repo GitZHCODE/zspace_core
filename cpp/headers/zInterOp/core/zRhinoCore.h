@@ -32,7 +32,7 @@ namespace zSpace
 	*/
 
 	/*! \class zRhinoCore
-	*	\brief A Rhjino Core Object Class for loading required Rhino module fo interop.
+	*	\brief A Rhino Core Object Class for loading required Rhino module for interop.
 	*	\since version 0.0.4
 	*/
 

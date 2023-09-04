@@ -1932,7 +1932,10 @@ namespace zSpace
 
 	ZSPACE_INLINE zTransform zUtilsCore::getTransformFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis)
 	{
+		Basis.normalize();
+
 		zVector X = Basis ^ Z;
+		X.normalize();
 
 		zVector Y = Z ^ X;
 		Y.normalize();
