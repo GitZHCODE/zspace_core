@@ -40,6 +40,12 @@
     <Filter Include="Source Files\objects">
       <UniqueIdentifier>{35c7b89e-d68f-4687-8b78-c181df206afd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\core\omniUtils">
+      <UniqueIdentifier>{f9ba2d49-9471-4973-adf8-926e9c13283c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core\omniUtils">
+      <UniqueIdentifier>{cb28f805-3515-4070-8c31-e8e3f854468a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\zRhinoCore.h">
@@ -90,6 +96,24 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\zOmniCore.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\LiveSessionConfigFile.h">
+      <Filter>Header Files\core\omniUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\LiveSessionInfo.h">
+      <Filter>Header Files\core\omniUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\OmniChannel.h">
+      <Filter>Header Files\core\omniUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\OmniverseUsdLuxLightCompat.h">
+      <Filter>Header Files\core\omniUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\primUtils.h">
+      <Filter>Header Files\core\omniUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\xformUtils.h">
+      <Filter>Header Files\core\omniUtils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zRhinoCore.cpp">
@@ -130,6 +154,18 @@
     </ClCompile>
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zOmniCore.cpp">
       <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\LiveSessionConfigFile.cpp">
+      <Filter>Source Files\core\omniUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\LiveSessionInfo.cpp">
+      <Filter>Source Files\core\omniUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\OmniChannel.cpp">
+      <Filter>Source Files\core\omniUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\OmniverseUsdLuxLightCompat.cpp">
+      <Filter>Source Files\core\omniUtils</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

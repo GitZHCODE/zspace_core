@@ -23,6 +23,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\LiveSessionConfigFile.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\LiveSessionInfo.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\OmniChannel.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\OmniverseUsdLuxLightCompat.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\primUtils.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\xformUtils.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\zOmniCore.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\zRhinoCore.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zFnNurbsCurve.h" />
@@ -41,6 +47,10 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjNurbsCurve.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\LiveSessionConfigFile.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\LiveSessionInfo.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\OmniChannel.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\OmniverseUsdLuxLightCompat.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zOmniCore.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zRhinoCore.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zFnNurbsCurve.cpp" />

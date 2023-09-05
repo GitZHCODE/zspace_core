@@ -670,6 +670,10 @@ namespace zSpace
 		VtArray<GfVec3f> vCols;
 		VtArray<float> opacity;
 
+		VtArray<GfVec3f> vCols_unique;
+		VtArray<float> opacity_unique;
+		VtArray<int> vCols_unique_index;
+
 		//set mesh vertex attributes
 		int numV = numVertices();	
 		zPoint* rawVPositions = getRawVertexPositions();	
@@ -694,7 +698,33 @@ namespace zSpace
 
 			opacity.push_back(1.0);
 			c_attr.Set(rawVColor[i].r, rawVColor[i].g, rawVColor[i].b);
-			vCols.push_back(c_attr);			
+			vCols.push_back(c_attr);	
+
+			int id = -1;
+			bool chkRepeat = false;
+
+			for (int j = 0; j < vCols.size() - 1; j++)
+			{
+				if (vCols[j] == c_attr)
+				{
+					chkRepeat = true;
+					id = j;
+
+					break;
+				}
+			}
+
+			if (chkRepeat)
+			{
+				vCols_unique_index.push_back(id);
+			}
+			else
+			{
+				vCols_unique_index.push_back(vCols_unique.size());
+				vCols_unique.push_back(c_attr);
+				opacity_unique.push_back(1.0);
+
+			}
 			
 		}
 
@@ -730,19 +760,18 @@ namespace zSpace
 		usdMesh.CreateFaceVertexIndicesAttr(VtValue(fVIDs), true);
 		usdMesh.CreateNormalsAttr(VtValue(normals), true);
 				
+				
+		auto displayColorPrimvar = usdMesh.CreateDisplayColorPrimvar();
+		displayColorPrimvar.Set(vCols_unique);
+		displayColorPrimvar.SetIndices(vCols_unique_index);
+		displayColorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
 
-		//usdSubset.CreateElementTypeAttr(VtValue(vCols), true);
+		auto displayOpacityPrimvar = usdMesh.CreateDisplayOpacityPrimvar();
+		displayOpacityPrimvar.Set(opacity_unique);
+		displayOpacityPrimvar.SetIndices(vCols_unique_index);
+		displayOpacityPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+		
 
-		//GfVec3f c_attr;
-		//c_attr.Set(1,0,1);
-		//VtIntArray vColIndices = { 1,1,1,1,1,1 };
-
-		//usdPrimVar.CreateIndexedPrimvar(TfToken("DisplayColor"), SdfValueTypeName(), c_attr, vColIndices, UsdGeomTokens->vertex);
-		
-		
-		
-		usdMesh.CreateDisplayColorAttr(VtValue(vCols), true);
-		usdMesh.CreateDisplayOpacityAttr(VtValue(opacity), true);
 
 		//set mesh attributes
 		UsdAttribute attr;

@@ -19,6 +19,7 @@ namespace zSpace
 {
 	UsdStageRefPtr zOmniCore::gStage;
 	LiveSessionInfo zOmniCore::gLiveSessionInfo;
+	OmniChannel zOmniCore::gOmniChannel;
 	bool zOmniCore::gOmniverseLoggingEnabled = false;
 	mutex zOmniCore::gLogMutex;
 
@@ -381,6 +382,30 @@ namespace zSpace
 		channel.SendChannelMessage(OmniChannelMessage::MessageType::MergeFinished);
 
 		return true;
+	}
+
+	ZSPACE_INLINE void zOmniCore::checkpointFile(const std::string& stageUrl, const char* comment, bool bForce)
+	{
+		bool bCheckpointsSupported = false;
+		omniClientWait(omniClientGetServerInfo(stageUrl.c_str(), &bCheckpointsSupported,
+			[](void* UserData, OmniClientResult Result, OmniClientServerInfo const* Info) noexcept
+		{
+			if (Result == eOmniClientResult_Ok && Info && UserData)
+			{
+				bool* bCheckpointsSupported = static_cast<bool*>(UserData);
+				*bCheckpointsSupported = Info->checkpointsEnabled;
+			}
+		}));
+
+		if (bCheckpointsSupported)
+		{
+			omniClientWait(omniClientCreateCheckpoint(stageUrl.c_str(), comment, bForce, nullptr,
+				[](void* userData, OmniClientResult result, char const* checkpointQuery) noexcept
+			{}));
+
+			std::unique_lock<std::mutex> lk(gLogMutex);
+			std::cout << "Adding checkpoint comment <" << comment << "> to stage <" << stageUrl << ">" << std::endl;
+		}
 	}
 
 }

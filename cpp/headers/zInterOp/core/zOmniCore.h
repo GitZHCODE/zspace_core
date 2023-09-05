@@ -44,9 +44,10 @@
 #include <condition_variable>
 
 #include <OmniClient.h>
-#include <OmniChannel.h>
-#include <LiveSessionInfo.h>
-#include <LiveSessionConfigFile.h>
+#include <OmniUsdResolver.h>
+#include <headers/zInterOp/core/omniUtils/OmniChannel.h>
+#include <headers/zInterOp/core/omniUtils/LiveSessionInfo.h>
+#include <headers/zInterOp/core/omniUtils/LiveSessionConfigFile.h>
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/metrics.h>
@@ -214,6 +215,9 @@ namespace zSpace
 		std::string getConnectedUsername(const char* stageUrl);
 
 		bool endAndMergeSession(UsdStageRefPtr rootStage, OmniChannel& channel, LiveSessionInfo& liveSessionInfo);
+	
+		void checkpointFile(const std::string& stageUrl, const char* comment, bool bForce = true);
+	
 	};
 
 
