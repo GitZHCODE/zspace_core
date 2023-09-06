@@ -703,9 +703,9 @@ namespace zSpace
 			int id = -1;
 			bool chkRepeat = false;
 
-			for (int j = 0; j < vCols.size() - 1; j++)
+			for (int j = 0; j < vCols_unique.size(); j++)
 			{
-				if (vCols[j] == c_attr)
+				if (vCols_unique[j] == c_attr)
 				{
 					chkRepeat = true;
 					id = j;

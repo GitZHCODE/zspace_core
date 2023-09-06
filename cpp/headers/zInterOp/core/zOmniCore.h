@@ -19,9 +19,9 @@
 #include "headers/zCore/base/zInline.h"
 
 /// OV
-#include "xformUtils.h"
-#include "primUtils.h"
-#include "OmniverseUsdLuxLightCompat.h"
+#include "headers/zInterOp/core/omniUtils/xformUtils.h"
+#include "headers/zInterOp/core/omniUtils/primUtils.h"
+#include "headers/zInterOp/core/omniUtils/OmniverseUsdLuxLightCompat.h"
 
 #include <chrono>
 #include <iostream>

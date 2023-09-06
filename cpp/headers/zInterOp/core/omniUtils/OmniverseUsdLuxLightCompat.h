@@ -149,7 +149,7 @@ public:
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
 // All defined OK so do nothing
 #else
-#include <source/zInterOp/core/omniUtils/OmniverseUsdLuxLightCOompat.cpp>
+#include <source/zInterOp/core/omniUtils/OmniverseUsdLuxLightCompat.cpp>
 #endif
 
 
