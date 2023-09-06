@@ -425,7 +425,18 @@ namespace zSpace
 		else if (type == zUSD)
 		{
 			// Create this file in Omniverse cleanly
-			UsdStageRefPtr gStage = UsdStage::CreateNew(path);
+
+			UsdStageRefPtr gStage = UsdStage::Open(path);
+			if (!gStage)
+			{
+				std::cout << "Failure to open stage.  Exiting." << std::endl;
+			}
+			else
+			{
+				gStage = UsdStage::CreateNew(path);
+			}
+			
+
 			if (!gStage)
 			{
 				cout << " error creating USD file  " << path.c_str() << endl;
