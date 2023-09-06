@@ -1282,7 +1282,7 @@ namespace zSpace
 		bool out = j.contains(attributeKey);
 		if (out) outAttribute = j[attributeKey].get<T>();
 		return out;
-	}*/
+	}
 
 	template<typename T>
 	inline void zUtilsCore::writeJSONAttribute(json& j, string attributeKey, T& outAttribute)
