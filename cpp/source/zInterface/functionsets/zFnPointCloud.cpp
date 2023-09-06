@@ -52,6 +52,8 @@ namespace zSpace
 
 	}
 
+
+
 	ZSPACE_INLINE void zFnPointCloud::to(string path, zFileTpye type)
 	{
 		if (type == zCSV) toCSV(path);
@@ -61,6 +63,18 @@ namespace zSpace
 	{
 
 	}
+
+#if defined ZSPACE_USD_INTEROP
+
+	ZSPACE_INLINE void zFnPointCloud::from(UsdPrim& usd, bool staticGeom)
+	{
+	}
+
+	ZSPACE_INLINE void zFnPointCloud::to(UsdPrim& usd)
+	{
+	}
+
+#endif
 
 	ZSPACE_INLINE void zFnPointCloud::getBounds(zPoint &minBB, zPoint &maxBB)
 	{

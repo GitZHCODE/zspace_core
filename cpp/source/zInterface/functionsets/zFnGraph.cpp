@@ -229,6 +229,8 @@ namespace zSpace
 		if (staticGeom) setStaticContainers();
 	}
 
+	
+
 	ZSPACE_INLINE void zFnGraph::to(string path, zFileTpye type)
 	{
 		if (type == zTXT) toTXT(path);
@@ -309,6 +311,18 @@ namespace zSpace
 
 		
 	}
+
+#if defined ZSPACE_USD_INTEROP
+
+	ZSPACE_INLINE void zFnGraph::from(UsdPrim& usd, bool staticGeom)
+	{
+	}
+
+	ZSPACE_INLINE void zFnGraph::to(UsdPrim& usd)
+	{
+	}
+
+#endif
 
 	ZSPACE_INLINE void zFnGraph::getBounds(zPoint &minBB, zPoint &maxBB)
 	{

@@ -46,3 +46,13 @@
 
 
 #endif
+
+#if defined(ZSPACE_USD_INTEROP) 
+
+//--------------------------
+//---- zInterOp
+//--------------------------
+
+
+
+#endif

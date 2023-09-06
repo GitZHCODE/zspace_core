@@ -23,6 +23,13 @@
 
 #include<headers/zInterface/iterators/zItMesh.h>
 
+#if defined ZSPACE_USD_INTEROP
+#include <pxr/usd/usdGeom/mesh.h>
+#include <pxr/usd/usd/primRange.h>
+#include <pxr/usd/usdGeom/xform.h>
+#include <pxr/usd/usdGeom/subset.h>
+
+#endif
 
 
 namespace zSpace
@@ -98,6 +105,13 @@ namespace zSpace
 		void to(string path, zFileTpye type) override;
 
 		void to(json& j) override;
+
+#if defined ZSPACE_USD_INTEROP
+
+		void from(UsdPrim& usd, bool staticGeom = false)override;
+
+		void to(UsdPrim& usd) override;
+#endif
 
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 

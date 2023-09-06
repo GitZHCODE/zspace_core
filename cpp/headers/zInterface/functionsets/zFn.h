@@ -21,6 +21,18 @@
 #include <depends/nlohmann/json.hpp>
 using json = nlohmann::json;;
 
+#if defined ZSPACE_USD_INTEROP
+#include <pxr/pxr.h>
+#include <pxr/usd/usd/schemaBase.h>
+#include <pxr/usd/usd/prim.h>
+
+#if PXR_VERSION >= 2208
+#include <pxr/usd/usdGeom/primvarsAPI.h>
+#endif
+
+PXR_NAMESPACE_USING_DIRECTIVE;
+#endif
+
 namespace zSpace
 {
 	/** \addtogroup zInterface
@@ -97,9 +109,9 @@ namespace zSpace
 		*	\param	[in]	staticGeom		- true if the object is static. Helps speed up display especially for meshes object. Default set to false.
 		*	\since version 0.0.2
 		*/
-		virtual void from(json &j, bool staticGeom = false) = 0;
+		virtual void from(json &j, bool staticGeom = false) = 0;		
 
-		/*! \brief This method exports the object linked to json file.
+		/*! \brief This method exports the object linked to output file.
 		*
 		*	\param [in]		path			- output file name including the directory path and extension.
 		*	\param [in]		type			- type of file to be exported.
@@ -107,7 +119,7 @@ namespace zSpace
 		*/
 		virtual void to(string path, zFileTpye type) = 0;
 
-		/*! \brief This method exports the object linked to json file.
+		/*! \brief This method exports the object linked to JSON.
 		*
 		*	\param [in]		path			- output file name including the directory path and extension.
 		*	\param [in]		type			- type of file to be exported.
@@ -115,6 +127,24 @@ namespace zSpace
 		*/
 		virtual void to(json &j) = 0;
 
+#if defined ZSPACE_USD_INTEROP
+
+		/*! \brief This method imports the object linked to function type.
+		*
+		*	\param	[in]	usd				- input usd.
+		*	\param	[in]	staticGeom		- true if the object is static. Helps speed up display especially for meshes object. Default set to false.
+		*	\since version 0.0.2
+		*/
+		virtual void from(UsdPrim& usd, bool staticGeom = false) = 0;
+
+		/*! \brief This method exports the object linked to USD.
+		*
+		*	\param [in]		path			- output file name including the directory path and extension.
+		*	\param [in]		type			- type of file to be exported.
+		*	\since version 0.0.2
+		*/
+		virtual void to(UsdPrim& usd) = 0;
+#endif
 
 
 		/*! \brief This method clears the dynamic and array memory the object holds.

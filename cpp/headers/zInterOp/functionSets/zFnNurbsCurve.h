@@ -141,15 +141,16 @@ namespace zSpace
 		//--- COMPUTE METHODS 
 		//--------------------------
 
+		void intersect(zPlane &plane, zPoint &intersectionPt, double &t);
 		
 
 		//--------------------------
 		//--- SET METHODS 
 		//--------------------------
 
-		/*! \brief This method sets vertex positions of all the vertices.
+		/*! \brief This method sets degree of the curve.
 		*
-		*	\param		[in]	pos				- positions  contatiner.
+		*	\param		[in]	_degree				- input degree.
 		*	\since version 0.0.2
 		*/
 		void setDegree(int _degree);

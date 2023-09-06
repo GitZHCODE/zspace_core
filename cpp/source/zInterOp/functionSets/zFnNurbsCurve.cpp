@@ -219,6 +219,11 @@ namespace zSpace
 		return nurbsCurveObj->controlPoints.size();
 	}
 
+	ZSPACE_INLINE void zFnNurbsCurve::intersect(zPlane& plane, zPoint& intersectionPt, double& t)
+	{
+		//ON_3dPoint o = coreUtils.
+	}
+
 	//--- SET METHODS 
 
 	ZSPACE_INLINE void zFnNurbsCurve::setDegree(int _degree)
@@ -253,18 +258,27 @@ namespace zSpace
 	{
 		positions.clear();
 
-		zDoubleArray s;
-		s.assign(numPoints,-1);	
-
-		s[0] = 0;
-		for (int i = 1; i < numPoints - 1; i++) s[i] = (1.0 / (numPoints - 1)) * i;
-		s[numPoints - 1] = 1;		
-
-		for (int i = 0; i < numPoints; i++)
-		{	
-			ON_3dPoint p = nurbsCurveObj->curve.PointAt(s[i]);
-			positions.push_back(zPoint(p.x, p.y, p.z));
+		if (nurbsCurveObj->degree == 1)
+		{
+			positions = nurbsCurveObj->controlPoints;
 		}
+		else
+		{
+			zDoubleArray s;
+			s.assign(numPoints, -1);
+
+			s[0] = 0;
+			for (int i = 1; i < numPoints - 1; i++) s[i] = (1.0 / (numPoints - 1)) * i;
+			s[numPoints - 1] = 1;
+
+			for (int i = 0; i < numPoints; i++)
+			{
+				ON_3dPoint p = nurbsCurveObj->curve.PointAt(s[i]);
+				positions.push_back(zPoint(p.x, p.y, p.z));
+			}
+		}
+
+		
 	}
 
 	ZSPACE_INLINE zPoint* zFnNurbsCurve::getRawControlPoints()
