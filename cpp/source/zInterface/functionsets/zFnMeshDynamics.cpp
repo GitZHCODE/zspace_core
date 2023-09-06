@@ -587,45 +587,6 @@ namespace zSpace
 		}
 	}
 
-	ZSPACE_INLINE void zFnMeshDynamics::addMinimizeAreaForce(double strength)
-	{
-		int currentIndex = 0;
-
-		zInt2DArray faceTris;
-		getMeshTriangles(faceTris);
-
-		zPoint* vPositions = getRawVertexPositions();
-
-
-		for (int i = 0; i < numPolygons(); i++)
-		{
-			for (int j = 0; j < faceTris[i].size(); j += 3)
-			{
-				zPoint PA = vPositions[faceTris[i][j + 0]];
-				zPoint PB = vPositions[faceTris[i][j + 1]];
-				zPoint PC = vPositions[faceTris[i][j + 2]];
-
-				zVector AB = PB - PA;
-				zVector BC = PC - PB;
-				zVector CA = PA - PC;
-
-				zVector Normal = AB ^ BC;
-				Normal.normalize();
-
-				zVector V0 = (BC ^ Normal) * 0.5;
-				zVector V1 = (CA ^ Normal) * 0.5;
-
-				zVector pForce0 = V0 * strength;
-				fnParticles[faceTris[i][j + 0]].addForce(pForce0);
-
-				zVector pForce1 = V1 * strength;
-				fnParticles[faceTris[i][j + 1]].addForce(pForce1);
-
-				zVector pForce2 = ((V0 * -1) - V1) * strength;
-				fnParticles[faceTris[i][j + 2]].addForce(pForce2);
-			}
-		}
-	}
 
 	ZSPACE_INLINE void zFnMeshDynamics::addRigidLineForce(double strength, double maintainDistance, zIntPairArray& vertexIDs, zDoubleArray& deviations, zVectorArray& forceDir, bool& exit)
 	{
@@ -666,7 +627,7 @@ namespace zSpace
 
 				exit = false;
 			}
-			
+
 			if (diff < EPS && dist > 0)
 			{
 				zVector pForceA = dir * diff * 1.0;
@@ -684,47 +645,8 @@ namespace zSpace
 				exit = false;
 			}
 
-	ZSPACE_INLINE void zFnMeshDynamics::addMinimizeAreaForce(double strength)
-	{
-		int currentIndex = 0;
-
-		zInt2DArray faceTris;
-		getMeshTriangles(faceTris);
-
-		zPoint* vPositions = getRawVertexPositions();
-
-
-		for (int i = 0; i < numPolygons(); i++)
-		{
-			for (int j = 0; j < faceTris[i].size(); j += 3)
-			{
-				zPoint PA = vPositions[faceTris[i][j + 0]];
-				zPoint PB = vPositions[faceTris[i][j + 1]];
-				zPoint PC = vPositions[faceTris[i][j + 2]];
-
-				zVector AB = PB - PA;
-				zVector BC = PC - PB;
-				zVector CA = PA - PC;
-
-				zVector Normal = AB ^ BC;
-				Normal.normalize();
-
-				zVector V0 = (BC ^ Normal) * 0.5;
-				zVector V1 = (CA ^ Normal) * 0.5;
-
-				zVector pForce0 = V0 * strength;
-				fnParticles[faceTris[i][j + 0]].addForce(pForce0);
-
-				zVector pForce1 = V1 * strength;
-				fnParticles[faceTris[i][j + 1]].addForce(pForce1);
-
-				zVector pForce2 = ((V0 * -1) - V1) * strength;
-				fnParticles[faceTris[i][j + 2]].addForce(pForce2);
-			}
 		}
 	}
-
-
 	//---- UPDATE METHODS 
 
 	ZSPACE_INLINE void zFnMeshDynamics::update(double dT, zIntergrationType type, bool clearForce, bool clearVelocity, bool clearDerivatives)
