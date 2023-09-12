@@ -1,7 +1,11 @@
 ## Ignore USER Provide files
 
+bin-int/
+
 ##projects/
-##*.sln
+*.sln
+*.vcxproj
+*.vcxproj.filters
 compiled/
 unreal/
 
