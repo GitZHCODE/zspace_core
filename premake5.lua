@@ -6,33 +6,33 @@ workspace "zSpace_core"
     configurations {"Debug", "Debug_DLL", "Release", "Release_DLL", "Release_DLL_OV", "Release_Make", "Release_Unreal"}
     startproject "zSpace_Core"
 
-project_path = "projects/CPP"
+project_path = "projects"
 
 IncludeDir = {}
-IncludeDir["ALGLIB"] = "cpp/depends/alglib/cpp/src"
-IncludeDir["ARMADILLO"] = "cpp/depends/Armadillo"
-IncludeDir["EIGEN"] = "cpp/depends/Eigen/src"
-IncludeDir["EIGEN_UNSUPPORTED"]= "cpp/depends/Eigen_Unsupported/Eigen"
-IncludeDir["FREEGLUT"] = "cpp/depends/freeglut"
-IncludeDir["LODEPNG"] = "cpp/depends/lodePNG"
-IncludeDir["NLOHMANN"] = "cpp/depends/nlohmann"
-IncludeDir["OPENGL"] = "cpp/depends/openGL"
-IncludeDir["QUICKHULL"] = "cpp/depends/quickhull"
-IncludeDir["SPA"] = "cpp/depends/spa"
-IncludeDir["SPECTRA"] = "cpp/depends/spectra/inlude"
-IncludeDir["SQLITE"] = "cpp/depends/SQLITE"
-IncludeDir["TOOJPEG"] = "cpp/depends/tooJPEG"
+IncludeDir["ALGLIB"] = "Dependencies/alglib/cpp/src"
+IncludeDir["ARMADILLO"] = "Dependencies/Armadillo"
+IncludeDir["EIGEN"] = "Dependencies/Eigen"
+IncludeDir["EIGEN_UNSUPPORTED"]= "Dependencies/Eigen_Unsupported/Eigen"
+IncludeDir["FREEGLUT"] = "Dependencies/freeglut"
+IncludeDir["LODEPNG"] = "Dependencies/lodePNG"
+IncludeDir["NLOHMANN"] = "Dependencies/nlohmann"
+IncludeDir["GLEW"] = "Dependencies/glew"
+IncludeDir["QUICKHULL"] = "Dependencies/quickhull"
+IncludeDir["SPA"] = "Dependencies/spa"
+IncludeDir["SPECTRA"] = "Dependencies/spectra/inlude"
+IncludeDir["SQLITE"] = "Dependencies/SQLITE"
+IncludeDir["TOOJPEG"] = "Dependencies/tooJPEG"
 
 LibDir = {}
-LibDir["FREEGLUT"] = "cpp/depends/freeglut"
-LibDir["OPENGL"] = "cpp/depends/openGL/lib"
-LibDir["SQLITE"] = "cpp/depends/SQLITE/lib" 
+LibDir["FREEGLUT"] = "Dependencies/freeglut"
+LibDir["GLEW"] = "Dependencies/glew/lib"
+LibDir["SQLITE"] = "Dependencies/SQLITE/lib" 
 
 PropsFiles = {}
-PropsFiles["zCore"] = "../zSpace_Core/zCorePropertySheet.props"
-PropsFiles["OV_203"] = "../zSpace_Core/OV_203.props"
-PropsFiles["zInterface"] = "../zSpace_Interface/zInterfacePropertySheet.props"
-PropsFiles["zInterOp"] = "../zInterOp/zInterOpPropertySheet.props"
+PropsFiles["zCore"] = "../../PropertySheets/zCorePropertySheet.props"
+PropsFiles["OV_203"] = "../../PropertySheets/OV_203.props"
+PropsFiles["zInterface"] = "../../PropertySheets/zInterfacePropertySheet.props"
+PropsFiles["zInterOp"] = "../../PropertySheets/zInterOpPropertySheet.props"
 
 PropsDir = {}
 --          project        propfiles                   configurations
@@ -48,21 +48,21 @@ function CommonConfigurationSettings()
     filter "configurations:Debug"
         kind "ConsoleApp"
         objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("%{cfg.architecture}/%{cfg.buildcfg}")
+        targetdir ("bin/%{cfg.architecture}/%{cfg.buildcfg}")
         targetname ("%{prj.name}")
         symbols "On"
 
     filter "configurations:Debug_DLL"
         kind "SharedLib"
         objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("cpp/compiled/dll")
+        targetdir ("bin/dll/")
         targetname ("%{prj.name}")
         symbols "On"
 
     filter "configurations:Release"
         kind "StaticLib"
         objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("cpp/compiled/dll")
+        targetdir ("bin/lib/")
         targetname ("%{prj.name}")
         defines {"ZSPACE_STATIC_LIBRARY",
                 "USING_ARMA"}
@@ -73,7 +73,7 @@ function CommonConfigurationSettings()
     filter "configurations:Release_DLL"
         kind "SharedLib"
         objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("cpp/compiled/dll")
+        targetdir ("bin/dll/")
         targetname ("%{prj.name}")
         defines {"ZSPACE_DYNAMIC_LIBRARY"}
         optimize "Speed"
@@ -83,7 +83,7 @@ function CommonConfigurationSettings()
     filter "configurations:Release_DLL_OV"
         kind "SharedLib"
         objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("cpp/compiled/dll")
+        targetdir ("bin/dll/")
         targetname ("%{prj.name}")
         defines {"ZSPACE_DYNAMIC_LIBRARY"}
         optimize "Speed"
@@ -93,7 +93,7 @@ function CommonConfigurationSettings()
     filter "configurations:Release_Unreal"
         kind "StaticLib"
         objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("cpp/compiled/UnrealLib")
+        targetdir ("bin/lib/")
         targetname ("%{prj.name}")
         defines {"ZSPACE_STATIC_LIBRARY"}
         optimize "Speed"
@@ -113,8 +113,8 @@ project "zSpace_App"
 
     files
     {
-        "cpp/headers/zApp/**.h",
-        "cpp/source/zApp/**.cpp",
+        "src/headers/zApp/**.h",
+        "src/source/zApp/**.cpp",
         --Source files of Includes
         "%{IncludeDir.ALGLIB}/**.cpp",
         --Other Prj includes
@@ -124,15 +124,15 @@ project "zSpace_App"
     {
         "%{IncludeDir.ARMADILLO}",
         "%{IncludeDir.ALGLIB}",
-        "cpp/depends",
-        "cpp"
+        "Dependencies",
+        "src"
     }
 
     libdirs
     {
-        "%{LibDir.OPENGL}",
+        "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
-        "cpp/compiled/dll"
+        "bin/dll"
     }
 
     links
@@ -150,6 +150,9 @@ project "zSpace_App"
 
     filter "configurations:Release_Make"
         kind "SharedLib"
+        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
+        targetdir ("bin/dll/")
+        targetname ("%{prj.name}")
     
 
 --#########################################
@@ -164,8 +167,8 @@ project "zSpace_Core"
 
     files
     {
-        "cpp/headers/zCore/**.h",
-        "cpp/source/zCore/**.cpp",
+        "src/headers/zCore/**.h",
+        "src/source/zCore/**.cpp",
         --Source files of Includes
         "%{IncludeDir.ALGLIB}/**.cpp",
         "%{IncludeDir.LODEPNG}/lodepng.h",
@@ -180,13 +183,18 @@ project "zSpace_Core"
         "$(MayaDir)/include",
         "%{IncludeDir.LODEPNG}",
         "%{IncludeDir.TOOJPEG}",
-        "cpp/depends",
-        "cpp"
+        "%{IncludeDir.EIGEN}",
+        "%{IncludeDir.SQLITE}",
+        "%{IncludeDir.GLEW}",
+        "%{IncludeDir.FREEGLUT}",
+        "%{IncludeDir.NLOHMANN}",
+        "%{IncludeDir.QUICKHULL}",
+        "src/headers"
     }
 
     libdirs
     {
-        "%{LibDir.OPENGL}",
+        "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
         "%{LibDir.FREEGLUT}"
     }
@@ -204,6 +212,9 @@ project "zSpace_Core"
 
     filter "configurations:Release_Make"
         kind "Makefile"
+        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
+        targetdir ("bin/make")
+        targetname ("%{prj.name}")
 
 
 --#########################################
@@ -216,8 +227,8 @@ project "zSpace_Interface"
 
     files
     {
-        "cpp/headers/zInterface/**.h",
-        "cpp/source/zInterface/**.cpp",
+        "src/headers/zInterface/**.h",
+        "src/source/zInterface/**.cpp",
         --Source files of Includes
         "%{IncludeDir.ALGLIB}/**.cpp"
     }
@@ -230,16 +241,22 @@ project "zSpace_Interface"
     {
         "%{IncludeDir.ARMADILLO}",
         "%{IncludeDir.ALGLIB}",
-        "cpp/depends",
-        "cpp"
+        "%{IncludeDir.EIGEN}",
+        "%{IncludeDir.NLOHMANN}",
+        "%{IncludeDir.TOOJPEG}",
+        "%{IncludeDir.LODEPNG}",
+        "%{IncludeDir.QUICKHULL}",
+        "%{IncludeDir.GLEW}",
+        "%{IncludeDir.FREEGLUT}",
+        "src/headers"
     }
 
     libdirs
     {
-        "%{LibDir.OPENGL}",
+        "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
         "%{LibDir.FREEGLUT}",
-        "cpp/compiled/dll"
+        "bin/dll"
     }
 
     links
@@ -254,6 +271,9 @@ project "zSpace_Interface"
 
     filter "configurations:Release_Make"
         kind "Makefile"
+        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
+        targetdir ("bin/make")
+        targetname ("%{prj.name}")
 
 
 --#########################################        
@@ -266,8 +286,8 @@ project "zSpace_InterOp"
 
     files
     {
-        "cpp/headers/zInterOp/**.h",
-        "cpp/source/zInterOp/**cpp",
+        "src/headers/zInterOp/**.h",
+        "src/source/zInterOp/**cpp",
         --Source files of Includes
         "%{IncludeDir.ALGLIB}/**.cpp"
     }
@@ -276,15 +296,15 @@ project "zSpace_InterOp"
     {
         "%{IncludeDir.ARMADILLO}",
         "%{IncludeDir.ALGLIB}",
-        "cpp/depends",
-        "cpp"
+        "Dependencies",
+        "src"
     }
 
     libdirs
     {
-        "%{LibDir.OPENGL}",
+        "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
-        "cpp/compiled/dll",
+        "bin/dll",
         "$(MayaDir)/lib",
         "$(RhinoDir)/lib/Release"
     }
