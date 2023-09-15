@@ -1,5 +1,7 @@
 require('vstudio')
 
+include("includes.lua")
+
 workspace "zSpace_core"
     filename "zSpace_core"
     architecture "x64"
@@ -8,20 +10,7 @@ workspace "zSpace_core"
 
 project_path = "projects"
 
-IncludeDir = {}
-IncludeDir["ALGLIB"] = "Dependencies/alglib/cpp/src"
-IncludeDir["ARMADILLO"] = "Dependencies/Armadillo"
-IncludeDir["EIGEN"] = "Dependencies/Eigen"
-IncludeDir["EIGEN_UNSUPPORTED"]= "Dependencies/Eigen_Unsupported/Eigen"
-IncludeDir["FREEGLUT"] = "Dependencies/freeglut"
-IncludeDir["LODEPNG"] = "Dependencies/lodePNG"
-IncludeDir["NLOHMANN"] = "Dependencies/nlohmann"
-IncludeDir["GLEW"] = "Dependencies/glew"
-IncludeDir["QUICKHULL"] = "Dependencies/quickhull"
-IncludeDir["SPA"] = "Dependencies/spa"
-IncludeDir["SPECTRA"] = "Dependencies/spectra/inlude"
-IncludeDir["SQLITE"] = "Dependencies/SQLITE"
-IncludeDir["TOOJPEG"] = "Dependencies/tooJPEG"
+IncludeDir = get_dependencies()
 
 LibDir = {}
 LibDir["FREEGLUT"] = "Dependencies/freeglut"
