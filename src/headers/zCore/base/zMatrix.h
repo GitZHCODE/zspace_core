@@ -43,7 +43,7 @@ using namespace std;
 	using namespace Eigen;
 
 #ifdef USING_ARMA
-	#include <depends/Armadillo/armadillo>
+	#include <armadillo>
 	using namespace arma;
 #endif
 

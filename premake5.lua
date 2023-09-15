@@ -10,12 +10,9 @@ workspace "zSpace_core"
 
 project_path = "projects"
 
-IncludeDir = get_dependencies()
+IncludeDir = get_include_dirs()
 
-LibDir = {}
-LibDir["FREEGLUT"] = "Dependencies/freeglut"
-LibDir["GLEW"] = "Dependencies/glew/lib"
-LibDir["SQLITE"] = "Dependencies/SQLITE/lib" 
+LibDir = get_lib_dirs()
 
 PropsFiles = {}
 PropsFiles["zCore"] = "../../PropertySheets/zCorePropertySheet.props"
@@ -27,7 +24,7 @@ PropsDir = {}
 --          project        propfiles                   configurations
 PropsDir["zSpace_Core"] = {{{"zCore"}, {"Release_DLL", "Release_DLL_OV"}}}
 
-PropsDir["zSpace_Interface"] = {{{"zCore", "OV_203"}, {"Release", "Release_DLL_OV"}},
+PropsDir["zSpace_Interface"] = {{{"zCore", "OV_203"}, {"Release_DLL_OV"}}, --removed "Release"
                                 {{"zCore"},           {"Debug", "Release_DLL"}},
                                 {{"zInterface"}, {"Release_Make", "Release_Unreal"}}}
 
@@ -121,7 +118,8 @@ project "zSpace_App"
     {
         "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
-        "bin/dll"
+        "bin/dll",
+        "bin/lib"
     }
 
     links
@@ -245,7 +243,8 @@ project "zSpace_Interface"
         "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
         "%{LibDir.FREEGLUT}",
-        "bin/dll"
+        "bin/dll",
+        "bin/lib"
     }
 
     links
@@ -294,6 +293,7 @@ project "zSpace_InterOp"
         "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
         "bin/dll",
+        "bin/lib",
         "$(MayaDir)/lib",
         "$(RhinoDir)/lib/Release"
     }
