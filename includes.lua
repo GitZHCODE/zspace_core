@@ -1,4 +1,4 @@
-function get_dependencies()
+function get_include_dirs()
     local IncludeDir = {}
     IncludeDir["ALGLIB"] = "Dependencies/alglib/cpp/src"
     IncludeDir["ARMADILLO"] = "Dependencies/Armadillo"
@@ -14,4 +14,12 @@ function get_dependencies()
     IncludeDir["SQLITE"] = "Dependencies/SQLITE"
     IncludeDir["TOOJPEG"] = "Dependencies/tooJPEG"
     return IncludeDir
+end
+
+function get_lib_dirs()
+    local LibDir = {}
+    LibDir["FREEGLUT"] = "Dependencies/freeglut"
+    LibDir["GLEW"] = "Dependencies/glew/lib"
+    LibDir["SQLITE"] = "Dependencies/SQLITE/lib"
+    return LibDir
 end

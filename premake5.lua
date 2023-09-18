@@ -10,12 +10,9 @@ workspace "zSpace_core"
 
 project_path = "projects"
 
-IncludeDir = get_dependencies()
+IncludeDir = get_include_dirs()
 
-LibDir = {}
-LibDir["FREEGLUT"] = "Dependencies/freeglut"
-LibDir["GLEW"] = "Dependencies/glew/lib"
-LibDir["SQLITE"] = "Dependencies/SQLITE/lib" 
+LibDir = get_lib_dirs()
 
 PropsFiles = {}
 PropsFiles["zCore"] = "../../PropertySheets/zCorePropertySheet.props"
