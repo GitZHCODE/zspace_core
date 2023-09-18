@@ -425,35 +425,29 @@ namespace zSpace
 		else if (type == zUSD)
 		{
 			// Create this file in Omniverse cleanly
-
-			UsdStageRefPtr gStage = UsdStage::Open(path);
-			if (!gStage)
-			{
-				std::cout << "Failure to open stage.  Exiting." << std::endl;
-			}
-			else
-			{
-				gStage = UsdStage::CreateNew(path);
-			}
+			UsdStageRefPtr gStage;
+			bool checkStage = usd_openStage(path, gStage);
 			
+			if (!checkStage) checkStage = usd_createStage(path, gStage);
 
-			if (!gStage)
+			if (checkStage)		
 			{
-				cout << " error creating USD file  " << path.c_str() << endl;
-			}
-
-			else
-			{
-				gStage->SetMetadata(TfToken("defaultPrim"), VtValue("World"));
+				/*gStage->SetMetadata(TfToken("defaultPrim"), VtValue("World"));
 				gStage->SetMetadata(TfToken("upAxis"), VtValue("Z"));
+				gStage->SetMetadata(TfToken("metersPerUnit"), VtValue("1"));
+				
 
 				string s_root, s_layer, s_prim;
 				s_root = "/World";
 				s_layer = s_root + "/Geometry";
 				s_prim = s_layer + "/mesh";
 				UsdGeomXform root = UsdGeomXform::Define(gStage, SdfPath(s_root));
-				UsdGeomXform layer = UsdGeomXform::Define(gStage, SdfPath(s_layer));
-				UsdGeomMesh meshPrim = UsdGeomMesh::Define(gStage, SdfPath(s_prim));
+				UsdGeomXform layer = UsdGeomXform::Define(gStage, SdfPath(s_layer));*/
+				//UsdGeomMesh meshPrim = UsdGeomMesh::Define(gStage, SdfPath(s_prim));
+
+				UsdGeomMesh meshPrim;
+				usd_createGeomPrim(gStage, "Mesh", meshPrim);
+			
 
 				UsdPrim usd = meshPrim.GetPrim();
 				to(usd);
@@ -770,7 +764,7 @@ namespace zSpace
 		usdMesh.CreateFaceVertexCountsAttr(VtValue(fVCounts), true);
 		usdMesh.CreateFaceVertexIndicesAttr(VtValue(fVIDs), true);
 		usdMesh.CreateNormalsAttr(VtValue(normals), true);
-				
+		
 				
 		auto displayColorPrimvar = usdMesh.CreateDisplayColorPrimvar();
 		displayColorPrimvar.Set(vCols_unique);

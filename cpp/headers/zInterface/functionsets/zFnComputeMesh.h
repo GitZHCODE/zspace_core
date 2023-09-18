@@ -46,8 +46,6 @@ namespace  zSpace
 	class ZSPACE_API zFnComputeMesh : public zFn
 	{
 	protected:
-		/*!	\brief core utilities Object  */
-		zUtilsCore coreUtils;
 
 		/*! \brief Pointer to a zObjComputeMesh object*/
 		zObjComputeMesh* compMeshObj;

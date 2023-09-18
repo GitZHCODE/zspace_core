@@ -176,9 +176,10 @@ namespace zSpace
 		*  	\param	[out]	planarityDeviations		- output container of planarity deviations per face.
 		*  	\param	[out]	forceDir				- output container of planarity force direction per vertex.
 		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*  	\param	[out]	constrainType			- input constraints for the force directions.
 		*	\since version 0.0.4
 		*/
-		void addPlanarityForce(double strength, double tolerance, zPlanarSolverType type, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit);
+		void addPlanarityForce(double strength, double tolerance, zPlanarSolverType type, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit, zSolverForceConstraints constrainType = zConstraintFree);
 
 		/*! \brief This method adds the forces to the keep the input vertex groups to the target planes specified by target centers and normals.
 		*
@@ -229,14 +230,14 @@ namespace zSpace
 		/*! \brief This method adds the forces to keep the input vertex pairs aligned to each other.
 		*	\details based on http://courses.cms.caltech.edu/cs177/hmw/Hmw2.pdf , https://github.com/Dan-Piker/K2Goals/blob/master/SoapFilm.cs
 		* 	\param	[in]	strength				- input strength of the force.
-		*  	\param	[in]	maintainDistance		- input distance to be maintained between vertex pairs of the force.
+		*  	\param	[in]	vertexDistances			- input distance to be maintained between vertex pairs of the force.
 		*	\param	[in]	vertexIDs				- input container of vertex pairs to be kept aligned.
 		*  	\param	[out]	deviations				- output container of deviations per vertex.
 		*  	\param	[out]	forceDir				- output container of planarity force direction per vertex.
 		*  	\param	[out]	exit					- output boolean true if all the vertex gaussian deviations are below tolerance.
 		*	\since version 0.0.4
 		*/
-		void addRigidLineForce(double strength, double maintainDistance, zIntPairArray& vertexIDs, zDoubleArray& deviations, zVectorArray& forceDir, bool& exit);
+		void addRigidLineForce(double strength, double tolerance, zIntPairArray& vertexIDs,zDoubleArray &vertexDistances, zDoubleArray& deviations, zVectorArray& forceDir, bool& exit);
 
 		//--------------------------
 		//---- UPDATE METHODS 

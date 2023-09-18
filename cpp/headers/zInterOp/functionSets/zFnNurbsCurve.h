@@ -50,8 +50,6 @@ namespace zSpace
 		/*!	\brief pointer to a graph object  */
 		zObjNurbsCurve *nurbsCurveObj;	
 
-		/*!	\brief core utilities Object  */
-		zUtilsCore coreUtils;
 
 	public:
 

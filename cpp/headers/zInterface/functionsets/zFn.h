@@ -21,10 +21,17 @@
 #include <depends/nlohmann/json.hpp>
 using json = nlohmann::json;;
 
+using namespace std;
+
 #if defined ZSPACE_USD_INTEROP
 #include <pxr/pxr.h>
 #include <pxr/usd/usd/schemaBase.h>
 #include <pxr/usd/usd/prim.h>
+
+#include <pxr/usd/usdGeom/mesh.h>
+#include <pxr/usd/usd/primRange.h>
+#include <pxr/usd/usdGeom/xform.h>
+#include <pxr/usd/usdGeom/subset.h>
 
 #if PXR_VERSION >= 2208
 #include <pxr/usd/usdGeom/primvarsAPI.h>
@@ -60,6 +67,9 @@ namespace zSpace
 		
 		/*!	\brief function type  */
 		zFnType fnType;
+
+		/*!	\brief core utilities Object  */
+		zUtilsCore coreUtils;
 		
 
 	public:
@@ -101,7 +111,7 @@ namespace zSpace
 		*	\param	[in]	staticGeom		- true if the object is static. Helps speed up display especially for meshes object. Default set to false.
 		*	\since version 0.0.2
 		*/
-		virtual void from(string path, zFileTpye type, bool staticGeom = false) = 0;
+		virtual void from(std::string path, zFileTpye type, bool staticGeom = false) = 0;
 
 		/*! \brief This method imports the object linked to function type.
 		*
@@ -117,7 +127,7 @@ namespace zSpace
 		*	\param [in]		type			- type of file to be exported.
 		*	\since version 0.0.2
 		*/
-		virtual void to(string path, zFileTpye type) = 0;
+		virtual void to(std::string path, zFileTpye type) = 0;
 
 		/*! \brief This method exports the object linked to JSON.
 		*
@@ -126,6 +136,27 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		virtual void to(json &j) = 0;
+
+		/*! \brief This method gets the attributes from the input json.
+		*
+		*	\param		[in]	j				- input JSON file if it exists.
+		*	\param		[in]	attributeKey	- input JSON attribute name.
+		*	\param		[in]	outAttribute	- input JSON attribute values.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		template <typename T>
+		bool readJSONAttribute(json& j, std::string attributeKey, T& outAttribute);
+
+		/*! \brief This method gets the JSON file from the input path if it exists.
+		*
+		*	\param		[in]	path			- input file path.
+		*	\param		[out]	j				- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		template <typename T>
+		void writeJSONAttribute(json& j, std::string attributeKey, T& outAttribute);
 
 #if defined ZSPACE_USD_INTEROP
 
@@ -144,9 +175,30 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		virtual void to(UsdPrim& usd) = 0;
+
+		/*! \brief This method returns the stage pointer if it exists.
+		*
+		*	\param [in]		path			-  file name including the directory path and extension.
+		*	\param [out]	gStage			-  usd stage pointer if it exists.
+		*	\return 		bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool usd_openStage(std::string path, UsdStageRefPtr uStage);
+
+		/*! \brief This method creates a new stage in the specified path.
+		*
+		*	\param [in]		path			- file name including the directory path and extension.
+		*	\param [out]	gStage			- usd stage pointer if it exists.
+		*	\return 		bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool usd_createStage(std::string path, UsdStageRefPtr uStage);
+
+		template <typename T>
+		void usd_createGeomPrim(UsdStageRefPtr uStage, string s_prim, T& geomPrim);
+		
+
 #endif
-
-
 		/*! \brief This method clears the dynamic and array memory the object holds.
 		*
 		*	\param [out]		minBB			- output minimum bounding box.
@@ -234,6 +286,38 @@ namespace zSpace
 	};
 
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+	//--------------------------
+	//---- TEMPLATE METHODS INLINE DEFINITIONS
+	//--------------------------
+
+	template<typename T>
+	inline bool zFn::readJSONAttribute(json& j, std::string attributeKey, T& outAttribute)
+	{		
+		return coreUtils.readJSONAttribute(j, attributeKey, outAttribute);
+	}
+
+	template<typename T>
+	inline void zFn::writeJSONAttribute(json& j, std::string attributeKey, T& outAttribute)
+	{
+		coreUtils.writeJSONAttribute(j, attributeKey, outAttribute);
+	}
+
+#if defined ZSPACE_USD_INTEROP
+
+	//---- UsdGeomMesh specilization for usd_createGeomPrim
+	template<>
+	inline void zFn::usd_createGeomPrim(UsdStageRefPtr uStage, string s_prim, UsdGeomMesh& geomPrim)
+	{
+		geomPrim = UsdGeomMesh::Define(uStage, SdfPath("/World/Geometry/" + s_prim));
+
+		if(!geomPrim) cout << " error creating UsdGeomMesh at  /World/Geometry/ " << s_prim.c_str() << endl;
+	}
+
+
+#endif
+
+#endif
 }
 
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)

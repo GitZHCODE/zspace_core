@@ -187,6 +187,12 @@ namespace zSpace
 	*/
 	enum zMSSolverType { zMinimiseArea = 270, zRestlength };
 
+	/*! \enum	zMSSolverType
+	*	\brief	Types of planarisation.
+	*	\since	version 0.0.4
+	*/
+	enum zSolverForceConstraints { zConstraintFree = 280, zConstraintXY, zConstraintYZ, zConstraintZX, zConstraintX, zConstraintY, zConstraintZ};
+
 	/** @}*/
 
 	/** @}*/

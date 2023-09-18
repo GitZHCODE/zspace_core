@@ -51,10 +51,7 @@ namespace zSpace
 		//--------------------------
 
 		/*!	\brief pointer to a graph object  */
-		zObjGraph *graphObj;	
-
-		/*!	\brief core utilities Object  */
-		zUtilsCore coreUtils;
+		zObjGraph *graphObj;			
 
 	public:
 

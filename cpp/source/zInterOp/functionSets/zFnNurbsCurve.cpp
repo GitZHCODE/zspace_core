@@ -65,18 +65,18 @@ namespace zSpace
 
 		// Curve Attributes
 		vector<zDoubleArray> cPoints;		
-		coreUtils.readJSONAttribute(j, "NC_controlPoints", cPoints);
+		readJSONAttribute(j, "NC_controlPoints", cPoints);
 
 		zDoubleArray cPointWeights;
-		coreUtils.readJSONAttribute(j, "NC_weights", cPointWeights);
+		readJSONAttribute(j, "NC_weights", cPointWeights);
 		
 
 		int cDegree;
-		coreUtils.readJSONAttribute(j, "NC_degree", cDegree);
+		readJSONAttribute(j, "NC_degree", cDegree);
 		nurbsCurveObj->degree = cDegree;
 
 		bool cPeriodic;
-		coreUtils.readJSONAttribute(j, "NC_periodic", cPeriodic);
+		readJSONAttribute(j, "NC_periodic", cPeriodic);
 		nurbsCurveObj->periodic = cPeriodic;
 		
 		//printf("\n vertexAttributes: %zi %zi", vertexAttributes.size(), vertexAttributes[0].size());

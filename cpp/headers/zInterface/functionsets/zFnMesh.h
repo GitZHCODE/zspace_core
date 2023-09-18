@@ -24,10 +24,10 @@
 #include<headers/zInterface/iterators/zItMesh.h>
 
 #if defined ZSPACE_USD_INTEROP
-#include <pxr/usd/usdGeom/mesh.h>
-#include <pxr/usd/usd/primRange.h>
-#include <pxr/usd/usdGeom/xform.h>
-#include <pxr/usd/usdGeom/subset.h>
+//#include <pxr/usd/usdGeom/mesh.h>
+//#include <pxr/usd/usd/primRange.h>
+//#include <pxr/usd/usdGeom/xform.h>
+//#include <pxr/usd/usdGeom/subset.h>
 
 #endif
 
@@ -56,9 +56,6 @@ namespace zSpace
 	{
 
 	protected:
-
-		/*!	\brief core utilities Object  */
-		zUtilsCore coreUtils;
 
 		/*!	\brief pointer to a mesh object  */
 		zObjMesh *meshObj;
