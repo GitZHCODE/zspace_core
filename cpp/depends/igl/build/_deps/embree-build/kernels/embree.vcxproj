@@ -1,0 +1,321 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BFD0195B-7DD5-3800-8D32-05BD70696663}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>embree</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">embree.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">embree3</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">embree.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">embree3</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">embree.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">embree3</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;DEBUG;TBB_USE_DEBUG;__SSE__;__SSE2__;EMBREE_LOWEST_ISA;TASKING_INTERNAL;EMBREE_TARGET_SSE2;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;DEBUG;TBB_USE_DEBUG;__SSE__;__SSE2__;EMBREE_LOWEST_ISA;TASKING_INTERNAL;EMBREE_TARGET_SSE2;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;DEBUG;TBB_USE_DEBUG;__SSE__;__SSE2__;EMBREE_LOWEST_ISA;TASKING_INTERNAL;EMBREE_TARGET_SSE2;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IncludePaths>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(IncludePaths)</IncludePaths>
+    </MASM>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;__SSE__;__SSE2__;EMBREE_LOWEST_ISA;TASKING_INTERNAL;EMBREE_TARGET_SSE2;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;__SSE__;__SSE2__;EMBREE_LOWEST_ISA;TASKING_INTERNAL;EMBREE_TARGET_SSE2;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;__SSE__;__SSE2__;EMBREE_LOWEST_ISA;TASKING_INTERNAL;EMBREE_TARGET_SSE2;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IncludePaths>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(IncludePaths)</IncludePaths>
+    </MASM>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Full</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;DEBUG;__SSE__;__SSE2__;EMBREE_LOWEST_ISA;TASKING_INTERNAL;EMBREE_TARGET_SSE2;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;DEBUG;__SSE__;__SSE2__;EMBREE_LOWEST_ISA;TASKING_INTERNAL;EMBREE_TARGET_SSE2;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;DEBUG;__SSE__;__SSE2__;EMBREE_LOWEST_ISA;TASKING_INTERNAL;EMBREE_TARGET_SSE2;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IncludePaths>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(IncludePaths)</IncludePaths>
+    </MASM>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\CMakeLists.txt">
+      <StdOutEncoding>UTF-8</StdOutEncoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/kernels/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/vishu.b/source/repos/libigl -BC:/Users/vishu.b/source/repos/libigl/precompile --check-stamp-file C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-build/kernels/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\kernels\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/kernels/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/vishu.b/source/repos/libigl -BC:/Users/vishu.b/source/repos/libigl/precompile --check-stamp-file C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-build/kernels/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\kernels\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/kernels/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/vishu.b/source/repos/libigl -BC:/Users/vishu.b/source/repos/libigl/precompile --check-stamp-file C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-build/kernels/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\kernels\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\embree.rc" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\device.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\stat.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\acceln.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\accelset.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\state.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\rtcore.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\rtcore_builder.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\alloc.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\geometry.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_user_geometry.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_instance.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_triangle_mesh.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_quad_mesh.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_curves.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_line_segments.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_grid_mesh.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_points.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\motion_derivative.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\bezier_curve.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\bspline_curve.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\catmullrom_curve.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\primitive4.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\instance_intersector.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_4v.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_4i.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_4i_mb.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_8v.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_8i.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_8i_mb.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\builders\primrefgen.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_statistics.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh4_factory.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh8_factory.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_collider.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_rotate.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_refit.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_hair.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_hair_mb.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_morton.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_sah.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_sah_spatial.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_sah_mb.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_twolevel.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_intersector1_bvh4.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_subdiv_mesh.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\tessellation_cache.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\subdivpatch1base.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\catmullclark_coefficients.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\grid_soa.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\subdivpatch1base_eval.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_subdiv.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_intersector_hybrid4_bvh4.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_intersector_stream_bvh4.cpp" />
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_intersector_stream_filters.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\vishu.b\source\repos\libigl\precompile\ZERO_CHECK.vcxproj">
+      <Project>{7E2E8A14-22EC-3F3D-AE60-5DF61BB37315}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\common\lexers\lexers.vcxproj">
+      <Project>{B169A450-82AB-3B97-AA33-3A8AFB3C4EE9}</Project>
+      <Name>lexers</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\common\math\math.vcxproj">
+      <Project>{E6516DC5-C78B-300D-B43E-136D2DCE9F61}</Project>
+      <Name>math</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\common\simd\simd.vcxproj">
+      <Project>{7F615039-7D7F-3784-A71C-777958C76DB1}</Project>
+      <Name>simd</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\common\sys\sys.vcxproj">
+      <Project>{99523606-1DA7-3AC3-ABC6-CA56C6CD9D8D}</Project>
+      <Name>sys</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-build\common\tasking\tasking.vcxproj">
+      <Project>{BB13CB4C-CCD3-3A8E-834A-8CBF6647305E}</Project>
+      <Name>tasking</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
+</Project>

@@ -20,8 +20,19 @@
 #include<headers/zInterface/objects/zObjGraph.h>
 
 #include<headers/zInterface/functionsets/zFn.h>
-
 #include<headers/zInterface/iterators/zItMesh.h>
+
+#include <igl/avg_edge_length.h>
+#include <igl/cotmatrix.h>
+#include <igl/invert_diag.h>
+#include <igl/massmatrix.h>
+#include <igl/parula.h>
+#include <igl/per_corner_normals.h>
+#include <igl/per_face_normals.h>
+#include <igl/per_vertex_normals.h>
+#include <igl/principal_curvature.h>
+#include <igl/gaussian_curvature.h>
+#include <igl/read_triangle_mesh.h>
 
 #if defined ZSPACE_USD_INTEROP
 //#include <pxr/usd/usdGeom/mesh.h>
@@ -344,6 +355,20 @@ namespace zSpace
 		*/
 		void makeConvexHull(zPointArray &pts);
 
+		/*! \brief This method checks if the mesh is a triangle mesh.
+		*
+		*	\return			bool			- true if its a triangle mesh .
+		*	\since version 0.0.4
+		*/
+		bool isTriMesh();
+
+		/*! \brief This method checks if the mesh is a quad mesh.
+		*
+		*	\return			bool			- true if its a quad mesh .
+		*	\since version 0.0.4
+		*/
+		bool isQuadMesh();
+
 		//--------------------------
 		//--- SET METHODS 
 		//--------------------------
@@ -652,14 +677,7 @@ namespace zSpace
 		*	\param		[out]	vertexCurvature		- container of vertex curvature.
 		*	\since version 0.0.2
 		*/
-		void getPrincipalCurvatures(zCurvatureArray &vertexCurvatures);
-
-		/*! \brief This method computes the principal curvatures of the mesh faces.
-		*
-		*	\param		[out]	faceCurvatures		- container of face curvature.
-		*	\since version 0.0.2
-		*/
-		void getPrincipalCurvaturesPerFace(zCurvatureArray& faceCurvatures);
+		void getPrincipalCurvatures(zCurvatureArray &vertexCurvatures, zVectorArray &pVector1, zVectorArray&pVector2);
 
 		/*! \brief This method computes the gaussian curvature of the mesh vertices.
 		*
@@ -667,6 +685,16 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void getGaussianCurvature(zDoubleArray &vertexCurvatures);
+
+		/*! \brief This method computes the planarity deviation of the mesh faces.
+		*
+		*	\param		[out]	planarityDevs		- container of planarity deviations per face.
+		*	\param		[in]	type				- input planarity type for tolernace check - zQuadPlanar or zVolumePlanar.
+		*	\param		[in]	colorFaces			- input boolean if the faces are to be colored.
+		*	\param		[in]	tolerance			- input tolerance for planarity.
+		*	\since version 0.0.4
+		*/
+		void getPlanarityDeviationPerFace(zDoubleArray& planarityDevs, zPlanarSolverType type, bool colorFaces = false, double tolerance = EPS);
 
 		/*! \brief This method computes the dihedral angle per edge of mesh.
 		*

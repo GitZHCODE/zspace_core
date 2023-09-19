@@ -1,0 +1,14 @@
+# Target labels
+ stb-populate
+# Source files and their labels
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/stb-populate
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/00a34ed0578f6d86401ea48453c0d29a/stb-populate.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/af14666650603c0123a9287a66b413dd/stb-populate-complete.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/6ce4c21fe29599b3f9e7dabe7296c2c4/stb-populate-build.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/6ce4c21fe29599b3f9e7dabe7296c2c4/stb-populate-configure.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/6ce4c21fe29599b3f9e7dabe7296c2c4/stb-populate-download.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/6ce4c21fe29599b3f9e7dabe7296c2c4/stb-populate-install.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/6ce4c21fe29599b3f9e7dabe7296c2c4/stb-populate-mkdir.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/6ce4c21fe29599b3f9e7dabe7296c2c4/stb-populate-patch.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/6ce4c21fe29599b3f9e7dabe7296c2c4/stb-populate-test.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/stb-subbuild/CMakeFiles/6ce4c21fe29599b3f9e7dabe7296c2c4/stb-populate-update.rule

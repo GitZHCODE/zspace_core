@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/tetgen-populate"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/474782b9cceb713258726f65b7d46281/tetgen-populate.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/ef0a22fe8be1ea8fedf6df9d225db030/tetgen-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/381494fc17bf151203ea95f1fd4565a8/tetgen-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/381494fc17bf151203ea95f1fd4565a8/tetgen-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/381494fc17bf151203ea95f1fd4565a8/tetgen-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/381494fc17bf151203ea95f1fd4565a8/tetgen-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/381494fc17bf151203ea95f1fd4565a8/tetgen-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/381494fc17bf151203ea95f1fd4565a8/tetgen-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/381494fc17bf151203ea95f1fd4565a8/tetgen-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tetgen-subbuild/CMakeFiles/381494fc17bf151203ea95f1fd4565a8/tetgen-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"tetgen-populate"
+		],
+		"name" : "tetgen-populate"
+	}
+}

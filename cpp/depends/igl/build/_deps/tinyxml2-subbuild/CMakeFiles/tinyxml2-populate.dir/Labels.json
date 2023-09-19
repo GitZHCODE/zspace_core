@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/tinyxml2-populate"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/c07a86ed4dec7921ea0a1a35ffa314f9/tinyxml2-populate.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/8f352fb2b3e9f60f02d7141eae5cb384/tinyxml2-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/166c082c5c966f24dce6d3af0eec9ab6/tinyxml2-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/166c082c5c966f24dce6d3af0eec9ab6/tinyxml2-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/166c082c5c966f24dce6d3af0eec9ab6/tinyxml2-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/166c082c5c966f24dce6d3af0eec9ab6/tinyxml2-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/166c082c5c966f24dce6d3af0eec9ab6/tinyxml2-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/166c082c5c966f24dce6d3af0eec9ab6/tinyxml2-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/166c082c5c966f24dce6d3af0eec9ab6/tinyxml2-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/tinyxml2-subbuild/CMakeFiles/166c082c5c966f24dce6d3af0eec9ab6/tinyxml2-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"tinyxml2-populate"
+		],
+		"name" : "tinyxml2-populate"
+	}
+}

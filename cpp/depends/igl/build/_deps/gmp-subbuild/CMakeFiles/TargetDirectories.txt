@@ -1,0 +1,3 @@
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/gmp-populate.dir
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/ALL_BUILD.dir
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/ZERO_CHECK.dir

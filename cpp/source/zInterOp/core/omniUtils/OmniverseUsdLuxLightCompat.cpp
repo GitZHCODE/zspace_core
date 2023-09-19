@@ -21,6 +21,8 @@
 #
 ###############################################################################*/
 
+#if defined ZSPACE_USD_INTEROP
+
 //#include "OmniverseUsdLuxLightCompat.h"
 #include<headers/zInterOp/core/omniUtils/OmniverseUsdLuxLightCompat.h>
 
@@ -390,3 +392,5 @@ inline pxr::UsdAttribute OmniverseUsdLuxLightCompat::SetNewAttr(pxr::UsdAttribut
     NewAttr.Set(Value);
     return NewAttr;
 }
+
+#endif

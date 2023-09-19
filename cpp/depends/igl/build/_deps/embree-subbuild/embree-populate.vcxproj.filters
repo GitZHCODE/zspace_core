@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\fc5ceac0a2cc0156264d0a796380b05a\embree-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\fc5ceac0a2cc0156264d0a796380b05a\embree-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\fc5ceac0a2cc0156264d0a796380b05a\embree-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\fc5ceac0a2cc0156264d0a796380b05a\embree-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\fc5ceac0a2cc0156264d0a796380b05a\embree-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\fc5ceac0a2cc0156264d0a796380b05a\embree-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\fc5ceac0a2cc0156264d0a796380b05a\embree-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\fc5ceac0a2cc0156264d0a796380b05a\embree-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\4892927350fbb5c94e2445d7b1ee071c\embree-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\f12fc358834d526fad31b191d086aee6\embree-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-subbuild\CMakeFiles\embree-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{167C138B-AD49-3342-AB04-FA08727969F9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

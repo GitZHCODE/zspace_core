@@ -21,6 +21,7 @@
 #
 ###############################################################################*/
 
+#if defined ZSPACE_USD_INTEROP
 //#include "LiveSessionConfigFile.h"
 #include <headers/zInterOp/core/omniUtils/LiveSessionConfigFile.h>
 #include "OmniClient.h"
@@ -150,3 +151,5 @@ LiveSessionConfigFile::Key LiveSessionConfigFile::StringToKey(const std::string&
     else if ("name" == keyString) return Key::Name;
     else return Key::Invalid;
 }
+
+#endif

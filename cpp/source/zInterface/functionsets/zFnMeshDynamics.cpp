@@ -30,6 +30,7 @@ namespace zSpace
 		meshObj = &_meshObj;
 
 
+
 	}
 
 	//---- DESTRUCTOR

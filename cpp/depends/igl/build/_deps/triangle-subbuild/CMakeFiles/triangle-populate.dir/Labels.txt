@@ -1,0 +1,14 @@
+# Target labels
+ triangle-populate
+# Source files and their labels
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/triangle-populate
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/37c60c1b3bdad5e197d975858d882774/triangle-populate.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/1f19f9f61161878be763aed9e2eac350/triangle-populate-complete.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/03785e5cfe439f7e79d8668685cacaf1/triangle-populate-build.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/03785e5cfe439f7e79d8668685cacaf1/triangle-populate-configure.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/03785e5cfe439f7e79d8668685cacaf1/triangle-populate-download.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/03785e5cfe439f7e79d8668685cacaf1/triangle-populate-install.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/03785e5cfe439f7e79d8668685cacaf1/triangle-populate-mkdir.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/03785e5cfe439f7e79d8668685cacaf1/triangle-populate-patch.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/03785e5cfe439f7e79d8668685cacaf1/triangle-populate-test.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/triangle-subbuild/CMakeFiles/03785e5cfe439f7e79d8668685cacaf1/triangle-populate-update.rule

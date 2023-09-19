@@ -21,6 +21,8 @@
 #
 ###############################################################################*/
 
+#if defined ZSPACE_USD_INTEROP
+
 //#include "LiveSessionInfo.h"
 #include <headers/zInterOp/core/omniUtils/LiveSessionInfo.h>
 #include <OmniClient.h>
@@ -168,3 +170,5 @@ bool LiveSessionInfo::fileExists(const char* fileUrl)
     ));
     return bFileExists;
 }
+
+#endif

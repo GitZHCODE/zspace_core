@@ -1,0 +1,3 @@
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-subbuild/CMakeFiles/embree-populate.dir
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-subbuild/CMakeFiles/ALL_BUILD.dir
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-subbuild/CMakeFiles/ZERO_CHECK.dir

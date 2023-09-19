@@ -111,7 +111,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)cpp\compiled\lib</OutDir>
+    <OutDir>$(SolutionDir)cpp\compiled\$(configuration)</OutDir>
     <TargetExt>$(TargetExt)</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unreal|x64'">
@@ -119,12 +119,12 @@
     <TargetExt>$(TargetExt)</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'">
-    <OutDir>$(SolutionDir)cpp\compiled\dll</OutDir>
+    <OutDir>$(SolutionDir)cpp\compiled\$(configuration)</OutDir>
     <TargetExt>$(TargetExt)</TargetExt>
     <TargetName>zSpace_Core</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL_OV|x64'">
-    <OutDir>$(SolutionDir)cpp\compiled\dll</OutDir>
+    <OutDir>$(SolutionDir)cpp\compiled\$(configuration)</OutDir>
     <TargetExt>$(TargetExt)</TargetExt>
     <TargetName>zSpace_Core</TargetName>
   </PropertyGroup>
