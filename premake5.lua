@@ -32,10 +32,12 @@ PropsDir["zSpace_Interface"] = {{{"zCore", "OV_203"}, {"Release_DLL_OV"}}, --rem
 --#############__GENERAL__CONFIGURATION__SETTINGS__#############
 function CommonConfigurationSettings()
     filter "configurations:Debug"
-        kind "ConsoleApp"
+        kind "StaticLib"
         objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("bin/%{cfg.architecture}/%{cfg.buildcfg}")
+        targetdir ("bin/lib/debug")
         targetname ("%{prj.name}")
+        defines {"ZSPACE_STATIC_LIBRARY",
+                "USING_ARMA"}
         symbols "On"
 
     filter "configurations:Debug_DLL"
