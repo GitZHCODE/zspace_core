@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/eigen-populate"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/f6892e480004db54b57661cc5bd0e512/eigen-populate.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/a36a8b4181d9b24fbe6d8931bc1fbcb5/eigen-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/18a51b6e55abe36a760ede4a44b2793a/eigen-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/18a51b6e55abe36a760ede4a44b2793a/eigen-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/18a51b6e55abe36a760ede4a44b2793a/eigen-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/18a51b6e55abe36a760ede4a44b2793a/eigen-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/18a51b6e55abe36a760ede4a44b2793a/eigen-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/18a51b6e55abe36a760ede4a44b2793a/eigen-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/18a51b6e55abe36a760ede4a44b2793a/eigen-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/eigen-subbuild/CMakeFiles/18a51b6e55abe36a760ede4a44b2793a/eigen-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"eigen-populate"
+		],
+		"name" : "eigen-populate"
+	}
+}

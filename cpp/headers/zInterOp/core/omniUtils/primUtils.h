@@ -21,8 +21,14 @@
 #
 ###############################################################################*/
 
-#pragma once
 
+
+#if defined(ZSPACE_USD_INTEROP) 
+
+#ifndef ZSPACE_INTEROP_OMNIPRIMUTILS_H
+#define ZSPACE_INTEROP_OMNIPRIMUTILS_H
+
+#pragma once
 #include <string>
 #ifdef _WIN32
 #include <filesystem>
@@ -1354,3 +1360,7 @@ namespace primUtils
     }
 
 } // namespace primUtils
+
+#endif
+
+#endif

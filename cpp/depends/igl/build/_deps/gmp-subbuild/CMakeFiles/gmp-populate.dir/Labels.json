@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/gmp-populate"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/336cd07942fce848b4d8a427fdc78712/gmp-populate.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/bd4833ce33b4a9ab2805437d4547780e/gmp-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/7605ec992030da443ca91810c6f718b2/gmp-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/7605ec992030da443ca91810c6f718b2/gmp-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/7605ec992030da443ca91810c6f718b2/gmp-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/7605ec992030da443ca91810c6f718b2/gmp-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/7605ec992030da443ca91810c6f718b2/gmp-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/7605ec992030da443ca91810c6f718b2/gmp-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/7605ec992030da443ca91810c6f718b2/gmp-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/gmp-subbuild/CMakeFiles/7605ec992030da443ca91810c6f718b2/gmp-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"gmp-populate"
+		],
+		"name" : "gmp-populate"
+	}
+}

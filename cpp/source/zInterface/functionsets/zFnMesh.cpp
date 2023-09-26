@@ -1438,6 +1438,38 @@ namespace zSpace
 		//computeMeshNormals();
 	}
 
+	ZSPACE_INLINE bool zFnMesh::isTriMesh()
+	{
+		bool out = true;
+
+		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		{
+			if (f.getNumVertices() != 3)
+			{
+				out = false;
+				break;
+			}
+		}
+
+		return out;
+	}
+
+	ZSPACE_INLINE bool zFnMesh::isQuadMesh()
+	{
+		bool out = true;
+
+		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		{
+			if (f.getNumVertices() != 4)
+			{
+				out = false;
+				break;
+			}
+		}
+
+		return out;
+	}
+
 	//--- SET METHODS 
 
 	ZSPACE_INLINE void zFnMesh::setVertexPositions(zPointArray& pos)
@@ -2246,46 +2278,153 @@ namespace zSpace
 		}
 	}
 
-	ZSPACE_INLINE void zFnMesh::getPrincipalCurvatures(zCurvatureArray &vertexCurvatures)
+	ZSPACE_INLINE void zFnMesh::getPrincipalCurvatures(zCurvatureArray &vertexCurvatures, zVectorArray& pVector1, zVectorArray& pVector2)
 	{
-		for (zItMeshVertex v(*meshObj); !v.end(); v++)
+		vertexCurvatures.clear();
+		pVector1.clear();
+		pVector2.clear();
+
+		bool quadMesh = isQuadMesh();
+		bool triMesh = isTriMesh();
+
+		if (quadMesh || triMesh)
 		{
-			int j = v.getId();
+			vertexCurvatures.assign(numVertices(), zCurvature());
+			pVector1.assign(numVertices(), zVector());
+			pVector2.assign(numVertices(), zVector());
 
-			if (v.isActive())
+			MatrixXd V;
+			MatrixXi F;
+
+			VectorXd PV1, PV2;
+			MatrixXd PD1, PD2;						
+
+			(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmesh(V, F);
+
+			igl::principal_curvature(V, F, PD1, PD2, PV1, PV2);
+
+			for (int i = 0; i < numVertices(); i++)
 			{
-				vertexCurvatures.push_back(v.getPrincipalCurvature());
-			}
+				vertexCurvatures[i].k1 = PV1(i);
+				vertexCurvatures[i].k2 = PV2(i);
 
-			else
-			{
-				zCurvature curv;
-
-				curv.k1 = -1;
-				curv.k2 = -1;
-
-				vertexCurvatures.push_back(curv);
+				pVector1[i] = zVector(PD1(i, 0), PD1(i, 1), PD1(i, 2));
+				pVector2[i] = zVector(PD2(i, 0), PD2(i, 1), PD2(i, 2));
 			}
 		}
+
+		else
+		{
+			for (zItMeshVertex v(*meshObj); !v.end(); v++)
+			{
+				int j = v.getId();
+
+				if (v.isActive())
+				{
+					vertexCurvatures.push_back(v.getPrincipalCurvature());
+				}
+
+				else
+				{
+					zCurvature curv;
+
+					curv.k1 = -1;
+					curv.k2 = -1;
+
+					vertexCurvatures.push_back(curv);
+				}
+			}
+		}
+		
 	}
 
-	ZSPACE_INLINE void zFnMesh::getPrincipalCurvaturesPerFace(zCurvatureArray& faceCurvatures)
-	{
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
-		{
-			faceCurvatures.push_back(f.getPrincipalCurvature());
-		}
-	}
 
 	ZSPACE_INLINE void zFnMesh::getGaussianCurvature(zDoubleArray &vertexCurvatures)
 	{	
 		vertexCurvatures.clear();
-		for (zItMeshVertex v(*meshObj); !v.end(); v++)
+
+		bool quadMesh = isQuadMesh();
+		bool triMesh = isTriMesh();
+
+		if (quadMesh || triMesh)
 		{
-			int j = v.getId();					
-			vertexCurvatures.push_back(v.getGaussianCurvature());
-		
+			vertexCurvatures.assign(numVertices(), -1);
+			MatrixXd V;
+			MatrixXi F;
+
+			VectorXd K;
+
+			(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmesh(V, F);
+
+			// Compute integral of Gaussian curvature
+			igl::gaussian_curvature(V, F, K);
+			// Compute mass matrix
+			SparseMatrix<double> M, Minv;
+			igl::massmatrix(V, F, igl::MASSMATRIX_TYPE_DEFAULT, M);
+			igl::invert_diag(M, Minv);
+			// Divide by area to get integral average
+			K = (Minv * K).eval();
+
+			for (int i = 0; i < numVertices(); i++)
+			{
+				vertexCurvatures[i] = K(i);
+			}
 		}		
+		else
+		{
+			for (zItMeshVertex v(*meshObj); !v.end(); v++)
+			{
+				int j = v.getId();
+				vertexCurvatures.push_back(v.getGaussianCurvature());
+
+			}
+		}
+			
+		
+	}
+
+	ZSPACE_INLINE void zFnMesh::getPlanarityDeviationPerFace(zDoubleArray& planarityDevs, zPlanarSolverType type, bool colorFaces, double tolerance)
+	{
+
+		if (planarityDevs.size() != numPolygons())
+		{
+			planarityDevs.clear();
+			planarityDevs.assign(numPolygons(), -1);
+		}
+
+		
+		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		{
+			int i = f.getId();
+
+			zPointArray fVerts;
+			f.getVertexPositions(fVerts);
+
+			if (type == zQuadPlanar)
+			{
+				double uA, uB;
+				zPoint pA, pB;
+
+				coreUtils.line_lineClosestPoints(fVerts[0], fVerts[2], fVerts[1], fVerts[3], uA, uB, pA, pB);
+				planarityDevs[i] = pA.distanceTo(pB);
+			}
+
+			if (type == zVolumePlanar)
+			{
+				zIntArray fTris;
+				zPoint fCenter = f.getCenter();
+				zVector fNorm = f.getNormal();
+				float dev = f.getVolume(fTris, fCenter, false);
+				planarityDevs[i] = abs(dev);
+			}
+
+
+			if (planarityDevs[i] < tolerance) f.setColor(zGREEN);
+			else f.setColor(zMAGENTA);
+		}
+			
+		
+
 		
 	}
 

@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\7605ec992030da443ca91810c6f718b2\gmp-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\7605ec992030da443ca91810c6f718b2\gmp-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\7605ec992030da443ca91810c6f718b2\gmp-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\7605ec992030da443ca91810c6f718b2\gmp-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\7605ec992030da443ca91810c6f718b2\gmp-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\7605ec992030da443ca91810c6f718b2\gmp-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\7605ec992030da443ca91810c6f718b2\gmp-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\7605ec992030da443ca91810c6f718b2\gmp-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\bd4833ce33b4a9ab2805437d4547780e\gmp-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\336cd07942fce848b4d8a427fdc78712\gmp-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\gmp-subbuild\CMakeFiles\gmp-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{EE97177F-7C60-350C-9E3C-3A64222DA78A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,3 @@
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/predicates-subbuild/CMakeFiles/predicates-populate.dir
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/predicates-subbuild/CMakeFiles/ALL_BUILD.dir
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/predicates-subbuild/CMakeFiles/ZERO_CHECK.dir

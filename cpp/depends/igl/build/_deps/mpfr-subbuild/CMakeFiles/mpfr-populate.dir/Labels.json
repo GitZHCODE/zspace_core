@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/mpfr-populate"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/f183cf292979a301746fc147616e2b5d/mpfr-populate.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/81a8d756a11137d8206b0df82cfaf92e/mpfr-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"mpfr-populate"
+		],
+		"name" : "mpfr-populate"
+	}
+}

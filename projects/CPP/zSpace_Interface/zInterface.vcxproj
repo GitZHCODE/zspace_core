@@ -95,6 +95,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\zSpace_Core\zCorePropertySheet.props" />
     <Import Project="..\zSpace_Core\OV_203.props" />
+    <Import Project="..\zSpace_Core\igl_2022.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unreal|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -103,11 +104,13 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\zSpace_Core\zCorePropertySheet.props" />
+    <Import Project="..\zSpace_Core\igl_2022.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL_OV|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\zSpace_Core\zCorePropertySheet.props" />
     <Import Project="..\zSpace_Core\OV_203.props" />
+    <Import Project="..\zSpace_Core\igl_2022.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_Make|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -116,7 +119,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetExt>$(TargetExt)</TargetExt>
-    <OutDir>$(SolutionDir)cpp\compiled\lib</OutDir>
+    <OutDir>$(SolutionDir)cpp\compiled\$(configuration)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unreal|x64'">
     <TargetExt>$(TargetExt)</TargetExt>
@@ -124,12 +127,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'">
     <TargetExt>$(TargetExt)</TargetExt>
-    <OutDir>$(SolutionDir)cpp\compiled\dll</OutDir>
+    <OutDir>$(SolutionDir)cpp\compiled\$(configuration)</OutDir>
     <TargetName>zSpace_Interface</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL_OV|x64'">
     <TargetExt>$(TargetExt)</TargetExt>
-    <OutDir>$(SolutionDir)cpp\compiled\dll</OutDir>
+    <OutDir>$(SolutionDir)cpp\compiled\$(configuration)</OutDir>
     <TargetName>zSpace_Interface</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Make|x64'">

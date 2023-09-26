@@ -1,0 +1,196 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\device.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\stat.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\acceln.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\accelset.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\state.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\rtcore.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\rtcore_builder.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\alloc.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\geometry.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_user_geometry.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_instance.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_triangle_mesh.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_quad_mesh.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_curves.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_line_segments.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_grid_mesh.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_points.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\motion_derivative.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\bezier_curve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\bspline_curve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\catmullrom_curve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\primitive4.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\instance_intersector.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_4v.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_4i.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_4i_mb.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_8v.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_8i.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\curve_intersector_virtual_8i_mb.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\builders\primrefgen.cpp">
+      <Filter>Source Files\builders</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_statistics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh4_factory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh8_factory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_collider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_rotate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_refit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_hair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_hair_mb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_morton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_sah.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_sah_spatial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_sah_mb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_twolevel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_intersector1_bvh4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\common\scene_subdiv_mesh.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\tessellation_cache.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\subdivpatch1base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\catmullclark_coefficients.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\geometry\grid_soa.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\subdiv\subdivpatch1base_eval.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_builder_subdiv.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_intersector_hybrid4_bvh4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_intersector_stream_bvh4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\bvh\bvh_intersector_stream_filters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\embree-src\kernels\embree.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{90190669-5C8C-369D-8780-5134BA9BDDCB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\builders">
+      <UniqueIdentifier>{D8FBE0F2-E62E-34F4-A5F7-353EB32C5399}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common">
+      <UniqueIdentifier>{F6E8CA6B-C37F-3973-AAF7-4CE6CA068321}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\geometry">
+      <UniqueIdentifier>{445AC236-5C23-3B32-B276-997C83D6DAF2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
