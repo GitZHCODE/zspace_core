@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <iglDir>C:\Users\vishu.b\source\repos\GitZHCODE\zspace_core\cpp\depends\igl</iglDir>
+    <iglDir>$(codeRepoDir)\zspace_core\cpp\depends\igl</iglDir>
   </PropertyGroup>
   <PropertyGroup>
     <_PropertySheetDisplayName>IGL_2022</_PropertySheetDisplayName>

@@ -47,11 +47,9 @@ namespace zSpace
 		//--------------------------
 		//---- PROTECTED ATTRIBUTES
 		//--------------------------
-		/*!	\brief container of particle function set  */
-		vector<zFnParticle> fnParticles;	
-
-		/*!	\brief container of  particle objects  */
-		vector<zObjParticle> particlesObj;
+		///*!	\brief container of particle function set  */
+		//vector<zFnParticle> fnParticles;	
+			
 		
 	public:	
 

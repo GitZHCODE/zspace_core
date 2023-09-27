@@ -51,7 +51,10 @@ namespace zSpace
 		//--------------------------
 
 		/*!	\brief pointer to a graph object  */
-		zObjGraph *graphObj;			
+		zObjGraph *graphObj;	
+
+		/*!	\brief container of  particle objects  */
+		vector<zObjParticle> particlesObj;
 
 	public:
 

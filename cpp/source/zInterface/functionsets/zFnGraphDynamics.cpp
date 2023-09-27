@@ -79,7 +79,7 @@ namespace zSpace
 	{
 		zFnGraph::clear();
 
-		fnParticles.clear();
+		//fnParticles.clear();
 		particlesObj.clear();
 	}
 
@@ -87,7 +87,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraphDynamics::makeDynamic(bool fixBoundary)
 	{
-		fnParticles.clear();
+		//fnParticles.clear();
 
 		for (zItGraphVertex v(*graphObj); !v.end(); v++)
 		{
@@ -102,10 +102,10 @@ namespace zSpace
 			if (!fixed) setVertexColor(zColor(0, 0, 1, 1));
 		}
 
-		for (int i = 0; i < particlesObj.size(); i++)
+		/*for (int i = 0; i < particlesObj.size(); i++)
 		{
 			fnParticles.push_back(zFnParticle(particlesObj[i]));
-		}
+		}*/
 	}
 
 	ZSPACE_INLINE void zFnGraphDynamics::create(zObjGraph &_graphObj, bool fixBoundary)
@@ -118,62 +118,68 @@ namespace zSpace
 
 	//---- FORCE METHODS 
 
-	ZSPACE_INLINE void zFnGraphDynamics::addGravityForce(zVector grav)
+	ZSPACE_INLINE void zFnGraphDynamics::addGravityForce(double strength, zVector& gForce)
 	{
-		for (int i = 0; i < fnParticles.size(); i++)
+		for (auto& oParticle : particlesObj)
 		{
-			fnParticles[i].addForce(grav);
+			zFnParticle fnParticle(oParticle);
+			zVector force = gForce * strength;
+			fnParticle.addForce(force);
 		}
 	}
 
-	ZSPACE_INLINE void zFnGraphDynamics::addEdgeForce(const zDoubleArray &weights)
+	ZSPACE_INLINE void zFnGraphDynamics::addDragForce(double strength, float drag)
 	{
-
-		if (weights.size() > 0 && weights.size() != graphObj->graph.vertices.size()) throw std::invalid_argument("cannot apply edge force.");
-
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
+		for (auto& oParticle : particlesObj)
 		{
-			int i = v.getId();
-
-			if (v.isActive())
-			{
-				if (fnParticles[i].getFixed()) continue;
-
-				vector<zItGraphHalfEdge> cEdges;
-				v.getConnectedHalfEdges(cEdges);
-
-				zVector eForce;
-
-				for (auto &he : cEdges)
-				{
-					int v1 = he.getVertex().getId();
-					zVector e = graphObj->graph.vertexPositions[v1] - graphObj->graph.vertexPositions[i];
-
-					double len = e.length();
-					e.normalize();
-
-					if (weights.size() > 0) e *= weights[i];
-
-					eForce += (e * len);
-				}
-
-				fnParticles[i].addForce(eForce);
-
-			}
-			else  fnParticles[i].setFixed(true);;
-
+			zFnParticle fnParticle(oParticle);
+			zVector v = fnParticle.getVelocity();
+			zVector pForce = v * drag * -strength;
+			fnParticle.addForce(pForce);
 		}
 
+	}
+
+	ZSPACE_INLINE void zFnGraphDynamics::addSpringForce(double strength, zFloatArray& restLength)
+	{
+		zPoint* vPositions = getRawVertexPositions();
+
+		for (zItGraphEdge e(*graphObj); !e.end(); e++)
+		{
+			zIntArray eVerts;
+			e.getVertices(eVerts);
+
+			zVector eVec = vPositions[eVerts[1]] - vPositions[eVerts[0]];
+			float eLen = e.getLength();
+			eVec.normalize();
+
+			float restLen = restLength[e.getId()];
+
+			float val = strength * (eLen - restLen);
+			zVector pForce_v1 = eVec * (val * 0.5);
+			pForce_v1 *= strength;
+
+			zVector pForce_v2 = pForce_v1 * -1;
+			pForce_v2 *= strength;
+
+			zFnParticle fnParticle1(particlesObj[eVerts[0]]);
+			zFnParticle fnParticle2(particlesObj[eVerts[1]]);
+
+
+			fnParticle1.addForce(pForce_v1);
+			fnParticle2.addForce(pForce_v2);
+		}
 	}
 
 	//---- UPDATE METHODS 
 
 	ZSPACE_INLINE void zFnGraphDynamics::update(double dT, zIntergrationType type, bool clearForce , bool clearVelocity, bool clearDerivatives)
 	{
-		for (int i = 0; i < fnParticles.size(); i++)
+		for (auto& oParticle : particlesObj)
 		{
-			fnParticles[i].integrateForces(dT, type);
-			fnParticles[i].updateParticle(clearForce, clearVelocity, clearDerivatives);
+			zFnParticle fnParticle(oParticle);
+			fnParticle.integrateForces(dT, type);
+			fnParticle.updateParticle(clearForce, clearVelocity, clearDerivatives);
 		}
 	}
 

@@ -19,6 +19,8 @@
 #include<headers/zInterface/objects/zObjMesh.h>
 #include<headers/zInterface/objects/zObjGraph.h>
 
+#include <headers/zInterface/objects/zObjParticle.h>
+
 #include<headers/zInterface/functionsets/zFn.h>
 #include<headers/zInterface/iterators/zItMesh.h>
 
@@ -70,6 +72,9 @@ namespace zSpace
 
 		/*!	\brief pointer to a mesh object  */
 		zObjMesh *meshObj;
+
+		/*!	\brief container of  particle objects  */
+		vector<zObjParticle> particlesObj;
 
 	public:
 		
@@ -368,6 +373,23 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		bool isQuadMesh();
+
+		/*! \brief This method computes the splits points on the input edge loop.
+		*
+		*	\param		[in]	_heLoop		- input container of halfedges, which make a continuous loop.
+		*	\param		[in]	divs		- input number of divisions.
+		*	\param		[out]	divPoints	- output contatiner of split points.
+		*	\since version 0.0.4
+		*/
+		void computeEdgeLoop_Split(vector<zItMeshHalfEdge> &_heLoop, int divs, vector<zPoint> &divPoints);
+
+		/*! \brief This method computes the length on the input edge loop.
+		*
+		*	\param		[in]	_heLoop		- input container of halfedges, which make a continuous loop.
+		*	\return				float		- output length of edge loop.
+		*	\since version 0.0.4
+		*/
+		float computeEdgeLoop_Length(vector<zItMeshHalfEdge>& _heLoop);
 
 		//--------------------------
 		//--- SET METHODS 

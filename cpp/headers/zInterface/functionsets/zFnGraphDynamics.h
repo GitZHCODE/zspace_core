@@ -47,10 +47,9 @@ namespace zSpace
 		//--------------------------
 
 		/*!	\brief container of particle function set  */
-		vector<zFnParticle> fnParticles;
+		//vector<zFnParticle> fnParticles;
 
-		/*!	\brief container of  particle objects  */
-		vector<zObjParticle> particlesObj;
+		
 
 	public:
 
@@ -118,20 +117,29 @@ namespace zSpace
 		//---- FORCE METHODS 
 		//--------------------------
 
-		/*! \brief This method adds the input gravity force to all the particles in the input container.
+		/*! \brief This method adds the gravitational force to the input graph.
 		*
-		*	\param		[in]		grav		- Input gravity force.
-		*	\since version 0.0.2
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	gForce					- gravitational force vector.
+		*	\since version 0.0.4
 		*/
-		void addGravityForce(zVector grav = zVector(0, 0, -9.8));
+		void addGravityForce(double strength, zVector& gForce);
 
-		/*! \brief This method adds the edge forces to all the particles in the input container based on the input graph/ mesh.
+		/*! \brief This method adds the drag force to the input graph.
 		*
-		*	\param		[in]	inHEDataStructure	- Input graph or mesh.
-		*	\param		[in]	weights				- Input container of weights per force.
-		*	\since version 0.0.2
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	drag					- drag constant.
+		*	\since version 0.0.4
 		*/
-		void addEdgeForce(const zDoubleArray &weights = zDoubleArray());
+		void addDragForce(double strength, float drag);
+
+		/*! \brief This method adds the drag force to the input graph.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	restLength				- input container of restlengths per edge.
+		*	\since version 0.0.4
+		*/
+		void addSpringForce(double strength, zFloatArray& restLength);
 
 		//--------------------------
 		//---- UPDATE METHODS 

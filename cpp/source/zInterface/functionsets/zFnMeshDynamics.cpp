@@ -67,10 +67,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMeshDynamics::clear()
 	{
-
 		zFnMesh::clear();
-
-		fnParticles.clear();
 		particlesObj.clear();
 	}
 
@@ -78,7 +75,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMeshDynamics::makeDynamic(bool fixBoundary)
 	{
-		fnParticles.clear();
+		//fnParticles.clear();
 		particlesObj.clear();
 
 		for (zItMeshVertex v(*meshObj); !v.end(); v++)
@@ -93,12 +90,7 @@ namespace zSpace
 
 			if (!fixed) setVertexColor(zColor(0, 0, 1, 1));
 		}
-
-		for (int i = 0; i < particlesObj.size(); i++)
-		{
-			fnParticles.push_back(zFnParticle(particlesObj[i]));
-		}
-
+				
 	}
 
 	ZSPACE_INLINE void zFnMeshDynamics::create(zObjMesh &_meshObj, bool fixBoundary)
@@ -114,9 +106,10 @@ namespace zSpace
 	{
 		for (int i = 0; i < vIDs.size(); i++)
 		{
-			if (vIDs[i] < fnParticles.size())
+			if (vIDs[i] < particlesObj.size())
 			{
-				fnParticles[vIDs[i]].setFixed(true);
+				zFnParticle fnParticle(particlesObj[vIDs[i]]);
+				fnParticle.setFixed(true);
 			}
 		}
 	}
@@ -127,9 +120,10 @@ namespace zSpace
 		{
 			if (v.onBoundary())
 			{
-				if (v.getId() < fnParticles.size())
+				if (v.getId() < particlesObj.size())
 				{
-					fnParticles[v.getId()].setFixed(true);
+					zFnParticle fnParticle(particlesObj[v.getId()]);
+					fnParticle.setFixed(true);
 				}
 			}
 			
@@ -140,20 +134,22 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMeshDynamics::addGravityForce(double strength, zVector& gForce)
 	{
-		for (auto &fnP : fnParticles)
+		for (auto &oParticle : particlesObj)
 		{
+			zFnParticle fnParticle(oParticle);
 			zVector force = gForce * strength;
-			fnP.addForce(force);
+			fnParticle.addForce(force);
 		}
 	}
 
 	ZSPACE_INLINE void zFnMeshDynamics::addDragForce(double strength, float drag)
 	{
-		for (auto& fnP : fnParticles)
+		for (auto& oParticle : particlesObj)
 		{
-			zVector v = fnP.getVelocity();
+			zFnParticle fnParticle(oParticle);
+			zVector v = fnParticle.getVelocity();
 			zVector pForce = v * drag * -strength;
-			fnP.addForce(pForce);
+			fnParticle.addForce(pForce);
 		}
 	
 	}
@@ -180,8 +176,12 @@ namespace zSpace
 			zVector pForce_v2 = pForce_v1 * -1;	
 			pForce_v2 *= strength;
 			
-			fnParticles[eVerts[0]].addForce(pForce_v1);
-			fnParticles[eVerts[1]].addForce(pForce_v2);
+			zFnParticle fnParticle1(particlesObj[eVerts[0]]);
+			zFnParticle fnParticle2(particlesObj[eVerts[1]]);
+
+
+			fnParticle1.addForce(pForce_v1);
+			fnParticle2.addForce(pForce_v2);
 		}
 	}
 
@@ -246,11 +246,17 @@ namespace zSpace
 					if (constrainType == zConstraintYZ) { pForceA.z = 0; pForceB.z = 0;  pForceA.y = 0; pForceB.y = 0; }
 					if (constrainType == zConstraintZX) { pForceA.x = 0; pForceB.x = 0;  pForceA.z = 0; pForceB.z = 0; }
 
-					fnParticles[fVerts[0]].addForce(pForceA);
-					fnParticles[fVerts[2]].addForce(pForceA);
 
-					fnParticles[fVerts[1]].addForce(pForceB);
-					fnParticles[fVerts[3]].addForce(pForceB);
+					zFnParticle fnParticle0(particlesObj[fVerts[0]]);
+					zFnParticle fnParticle1(particlesObj[fVerts[1]]);
+					zFnParticle fnParticle2(particlesObj[fVerts[2]]);
+					zFnParticle fnParticle3(particlesObj[fVerts[3]]);
+
+					fnParticle0.addForce(pForceA);
+					fnParticle2.addForce(pForceA);
+
+					fnParticle1.addForce(pForceB);
+					fnParticle3.addForce(pForceB);
 
 					forceDir[fVerts[0]] += pForceA;
 					forceDir[fVerts[2]] += pForceA;
@@ -304,7 +310,9 @@ namespace zSpace
 						if (constrainType == zConstraintYZ) { pForce.z = 0; pForce.y = 0; }
 						if (constrainType == zConstraintZX) { pForce.x = 0; pForce.z = 0; }
 
-						fnParticles[fVerts[k]].addForce(pForce);
+
+						zFnParticle fnParticle(particlesObj[fVerts[k]]);
+						fnParticle.addForce(pForce);
 
 						/*zVector pForce = fNorm * dev *-1;*/
 						forceDir[fVerts[k]] += pForce;
@@ -366,7 +374,9 @@ namespace zSpace
 						zVector pForce = targetNormals[i] * dist * -1.0;
 
 						pForce = pForce * strength;
-						fnParticles[vertexIDs[i][k]].addForce(pForce);											
+
+						zFnParticle fnParticle(particlesObj[vertexIDs[i][k]]);
+						fnParticle.addForce(pForce);											
 
 						forceDir[vertexIDs[i][k]] += pForce;						
 					}
@@ -429,7 +439,9 @@ namespace zSpace
 					zVector pForce = targetNormals[fID] * dist * -1.0;
 
 					pForce = pForce * strength;
-					fnParticles[fVerts[k]].addForce(pForce);
+
+					zFnParticle fnParticle(particlesObj[fVerts[k]]);
+					fnParticle.addForce(pForce);
 
 					forceDir[fVerts[k]] += pForce;
 				}
@@ -520,7 +532,9 @@ namespace zSpace
 					{
 						angGrad.normalize();
 						gForce = angGrad * (vGaussianCurvatures[vID]) * strength;
-						fnParticles[v.getId()].addForce(gForce);
+						
+						zFnParticle fnParticle(particlesObj[v.getId()]);
+						fnParticle.addForce(gForce);
 
 						forceDir[v.getId()] = angGrad * coreUtils.zSign(vGaussianCurvatures[v.getId()]);;
 					}
@@ -597,7 +611,9 @@ namespace zSpace
 				angGrad.normalize();
 				gForce = angGrad * vGaussianCurvatures[v.getId()] * strength ;
 				
-				fnParticles[v.getId()].addForce(gForce);
+				zFnParticle fnParticle(particlesObj[v.getId()]);
+				fnParticle.addForce(gForce);
+				
 				forceDir[v.getId()] = angGrad * coreUtils.zSign(vGaussianCurvatures[v.getId()]);
 
 			}
@@ -635,13 +651,16 @@ namespace zSpace
 				zVector V1 = (CA ^ Normal) * 0.5;
 
 				zVector pForce0 = V0 * strength;
-				fnParticles[faceTris[i][j + 0]].addForce(pForce0);
+				zFnParticle fnParticle0(particlesObj[faceTris[i][j + 0]]);			
+				fnParticle0.addForce(pForce0);
 
 				zVector pForce1 = V1 * strength;
-				fnParticles[faceTris[i][j + 1]].addForce(pForce1);
+				zFnParticle fnParticle1(particlesObj[faceTris[i][j + 1]]);
+				fnParticle1.addForce(pForce1);
 
 				zVector pForce2 = ((V0 * -1) - V1) * strength;
-				fnParticles[faceTris[i][j + 2]].addForce(pForce2);
+				zFnParticle fnParticle2(particlesObj[faceTris[i][j + 2]]);
+				fnParticle2.addForce(pForce2);
 			}
 		}
 	}
@@ -700,8 +719,11 @@ namespace zSpace
 				zVector pForceB = (diff < 0) ? dir_0 * deviations[i] * 0.5 : dir_1 * deviations[i] * 0.5;
 				pForceB *= strength;
 
-				fnParticles[v0].addForce(pForceA);
-				fnParticles[v1].addForce(pForceB);
+				zFnParticle fnParticle0(particlesObj[v0]);
+				fnParticle0.addForce(pForceA);
+
+				zFnParticle fnParticle1(particlesObj[v1]);
+				fnParticle1.addForce(pForceB);
 
 				forceDir[v0] += pForceA;
 				forceDir[v1] += pForceB;
@@ -719,13 +741,12 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMeshDynamics::update(double dT, zIntergrationType type, bool clearForce, bool clearVelocity, bool clearDerivatives)
 	{
-		for (int i = 0; i < fnParticles.size(); i++)
+		for (auto& oParticle : particlesObj)
 		{
-			
-			fnParticles[i].integrateForces(dT, type);
-			fnParticles[i].updateParticle(clearForce, clearVelocity, clearDerivatives);
-			
-		}
+			zFnParticle fnParticle(oParticle);
+			fnParticle.integrateForces(dT, type);
+			fnParticle.updateParticle(clearForce, clearVelocity, clearDerivatives);
+		}		
 
 		computeMeshNormals();
 	}

@@ -179,23 +179,31 @@ namespace zSpace
 		/*! \brief This method returns the stage pointer if it exists.
 		*
 		*	\param [in]		path			-  file name including the directory path and extension.
-		*	\param [out]	gStage			-  usd stage pointer if it exists.
+		*	\param [out]	uStage			-  usd stage pointer if it exists.
 		*	\return 		bool			- true if file exists, else false.
 		*	\since version 0.0.4
 		*/
-		bool usd_openStage(std::string path, UsdStageRefPtr uStage);
+		bool usd_openStage(std::string path, UsdStageRefPtr& uStage);
 
 		/*! \brief This method creates a new stage in the specified path.
 		*
 		*	\param [in]		path			- file name including the directory path and extension.
-		*	\param [out]	gStage			- usd stage pointer if it exists.
+		*	\param [out]	uStage			- usd stage pointer if it exists.
 		*	\return 		bool			- true if file exists, else false.
 		*	\since version 0.0.4
 		*/
-		bool usd_createStage(std::string path, UsdStageRefPtr uStage);
+		bool usd_createStage(std::string path, UsdStageRefPtr& uStage);
 
+		/*! \brief This method creates a new geometry prim with the input name & stage.
+		*
+		*	\param [in]		uStage				- usd stage pointer.
+		*	\param [in]		s_prim				- name of the geometry prim.
+		*	\param [out]	geomPrim			- output geometry prim.
+		*	\return 		bool				- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
 		template <typename T>
-		void usd_createGeomPrim(UsdStageRefPtr uStage, string s_prim, T& geomPrim);
+		void usd_createGeomPrim(UsdStageRefPtr& uStage, string s_prim, T& geomPrim);
 		
 
 #endif
@@ -307,11 +315,11 @@ namespace zSpace
 
 	//---- UsdGeomMesh specilization for usd_createGeomPrim
 	template<>
-	inline void zFn::usd_createGeomPrim(UsdStageRefPtr uStage, string s_prim, UsdGeomMesh& geomPrim)
+	inline void zFn::usd_createGeomPrim(UsdStageRefPtr& uStage, string s_prim, UsdGeomMesh& geomPrim)
 	{
 		geomPrim = UsdGeomMesh::Define(uStage, SdfPath("/World/Geometry/" + s_prim));
 
-		if(!geomPrim) cout << " error creating UsdGeomMesh at  /World/Geometry/ " << s_prim.c_str() << endl;
+		if(!geomPrim) cout << " error creating UsdGeomMesh at  /World/Geometry/" << s_prim.c_str() << endl;
 	}
 
 

@@ -778,11 +778,10 @@ namespace zSpace
 		
 
 
-		//set mesh attributes
-		UsdAttribute attr;
-
-		attr = usdMesh.AddTransformOp();
-		attr.Set(transform);
+		//set transform	
+		usdMesh.ClearXformOpOrder();
+		usdMesh.AddTransformOp().Set(transform);
+		
 
 			
 
@@ -1470,6 +1469,68 @@ namespace zSpace
 		return out;
 	}
 
+	ZSPACE_INLINE void zFnMesh::computeEdgeLoop_Split(vector<zItMeshHalfEdge> &_heLoop, int divs, vector<zPoint> &divPoints)
+	{
+		divPoints.clear();
+
+		float length = computeEdgeLoop_Length(_heLoop);
+		float actualWidth = length / divs;
+
+		
+		divPoints.push_back(_heLoop[0].getStartVertex().getPosition()); // first
+		int currentindex = 0;
+
+		//////////////////////// loop 
+		int currentIndex = 0;
+		zItMeshHalfEdge walkHe = _heLoop[currentIndex];
+		zPoint pOnCurve = walkHe.getStartVertex().getPosition();;
+		bool exit = false;
+
+		zPoint start;
+
+		float dStart = 0;
+		float dIncrement = actualWidth;
+		while (!exit)
+		{
+			zPoint eEndPoint = walkHe.getVertex().getPosition();
+			dStart += dIncrement;
+			float distance_increment = dIncrement;
+			while (pOnCurve.distanceTo(eEndPoint) < distance_increment)
+			{
+				distance_increment = distance_increment - pOnCurve.distanceTo(eEndPoint);
+				pOnCurve = eEndPoint;
+
+				currentIndex++;
+				walkHe = _heLoop[currentIndex];
+				eEndPoint = walkHe.getVertex().getPosition();
+			}
+
+			zVector he_vec = walkHe.getVector();
+			he_vec.normalize();
+
+			start = pOnCurve + he_vec * distance_increment;
+			pOnCurve = start;
+
+			divPoints.push_back(pOnCurve);
+
+			if (divPoints.size() == divs) exit = true;
+		}
+
+		///////////////////////////////////
+		currentIndex = _heLoop.size() - 1;
+		divPoints.push_back(_heLoop[currentIndex].getVertex().getPosition()); // last
+
+	}
+
+	ZSPACE_INLINE float zFnMesh::computeEdgeLoop_Length(vector<zItMeshHalfEdge> &_heLoop)
+	{
+		float outLength = 0;
+
+		for (auto& he : _heLoop) outLength += he.getLength();
+
+		return outLength;
+	}
+
 	//--- SET METHODS 
 
 	ZSPACE_INLINE void zFnMesh::setVertexPositions(zPointArray& pos)
@@ -1481,8 +1542,6 @@ namespace zSpace
 			meshObj->mesh.vertexPositions[i] = pos[i];
 		}
 	}
-
-
 
 	ZSPACE_INLINE void zFnMesh::setVertexColor(zColor col, bool setFaceColor)
 	{
