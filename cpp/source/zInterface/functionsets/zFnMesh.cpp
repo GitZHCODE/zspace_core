@@ -2367,8 +2367,8 @@ namespace zSpace
 				vertexCurvatures[i].k1 = PV1(i);
 				vertexCurvatures[i].k2 = PV2(i);
 
-				pVector1[i] = zVector(PD1(i, 0), PD1(i, 1), PD1(i, 2));
-				pVector2[i] = zVector(PD2(i, 0), PD2(i, 1), PD2(i, 2));
+				pVector1[i] = zVector(PV1(i, 0), PV1(i, 1), PV1(i, 2));
+				pVector2[i] = zVector(PV1(i, 0), PV1(i, 1), PV1(i, 2));
 			}
 		}
 
