@@ -185,6 +185,36 @@ namespace zSpace
 		}
 	}
 
+	ZSPACE_INLINE void zFnMeshDynamics::addLoadForce(double strength, int vId, zVector& vec)
+	{
+		vec.normalize();
+		zVector pForce = vec * strength;
+		for (auto& oParticle : particlesObj)
+		{
+			zFnParticle fnParticle(oParticle);
+			zVector force = pForce;
+			fnParticle.addForce(force);
+		}
+	}
+
+	ZSPACE_INLINE void zFnMeshDynamics::addPlaneForce(double strength, zIntArray vIds, zPoint& targetCenter, zVector& targetNormal)
+	{
+		zUtilsCore core;
+
+		for (auto& id : vIds)
+		{
+			zItMeshVertex v(*meshObj, id);
+
+			double dist = core.minDist_Point_Plane(*v.getRawPosition(), targetCenter, targetNormal);
+			zVector pForce = targetNormal * dist * -1.0;
+			pForce = pForce * strength;
+
+			zFnParticle fnParticle(particlesObj[id]);
+			fnParticle.addForce(pForce);
+		}
+	}
+
+
 	ZSPACE_INLINE void zFnMeshDynamics::addPlanarityForce(double strength, double tolerance, zPlanarSolverType type,  zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit, zSolverForceConstraints constrainType)
 	{
 		if (forceDir.size() != numVertices())
@@ -736,6 +766,101 @@ namespace zSpace
 		}
 	}
 
+	ZSPACE_INLINE void zFnMeshDynamics::addSpringForce(double strength, int eId, float restLength)
+	{
+		zItMeshEdge e(*meshObj, eId);
+		zIntArray vertices;
+		e.getVertices(vertices);
+		int v0 = vertices[0];
+		int v1 = vertices[1];
+
+		zFnParticle p0(particlesObj[v0]);
+		zFnParticle p1(particlesObj[v1]);
+
+		zPoint* pos_v0 = p0.getRawPosition();
+		zPoint* pos_v1 = p1.getRawPosition();
+		zPoint pos_mid = (*pos_v0 + *pos_v1) * 0.5;
+
+		zVector vec_v0 = *pos_v0 - *pos_v1;
+		zVector vec_v1 = vec_v0 * -1;
+
+		float displacement = restLength - vec_v0.length();
+		displacement /= 2;
+
+		vec_v0.normalize();
+		vec_v1.normalize();
+
+		zVector pForce_v0, pForce_v1;
+
+		pForce_v0 = vec_v0 * (displacement * strength);
+		pForce_v1 = vec_v1 * (displacement * strength);
+
+		p0.addForce(pForce_v0);
+		p1.addForce(pForce_v1);
+	}
+
+	ZSPACE_INLINE void zFnMeshDynamics::addAngleForce(double strength, int vId_center, int vId_first, int vId_second, float restAngle, bool moveHinge)
+	{
+		//zItMeshVertex v(*meshObj, vId_center);
+		//zIntArray connectedVertices;
+		//v.getConnectedVertices(connectedVertices);
+
+		int v0 = vId_first;
+		int v1 = vId_center;
+		int v2 = vId_second;
+
+		// Get positions
+		zFnParticle p0(particlesObj[v0]);
+		zFnParticle p1(particlesObj[v1]);
+		zFnParticle p2(particlesObj[v2]);
+
+		zPoint* pos_v0 = p0.getRawPosition();
+		zPoint* pos_v1 = p1.getRawPosition();
+		zPoint* pos_v2 = p2.getRawPosition();
+
+		// Calculate current vectors
+		zVector vec_v1_v0 = *pos_v0 - *pos_v1;
+		zVector vec_v1_v2 = *pos_v2 - *pos_v1;
+
+		// Normalize the vectors
+		vec_v1_v0.normalize();
+		vec_v1_v2.normalize();
+
+		// Calculate current angle
+		float currentAngle = vec_v1_v0.angle(vec_v1_v2);// acos(vec_v1_v0 * vec_v1_v2);
+		currentAngle *= DEG_TO_RAD;
+
+		// Calculate difference between current and rest angle
+		float angleDiff = restAngle - currentAngle;
+
+
+		zVector force_v1 = (vec_v1_v0 + vec_v1_v2) * angleDiff * strength;
+
+		if (moveHinge)
+		{
+			p1.addForce(force_v1);
+		}
+
+		else
+		{
+			zVector force_v0 = force_v1 * -1;
+			zVector force_v2 = force_v1 * -1;
+
+			p0.addForce(force_v0);
+			p1.addForce(force_v1);
+			p2.addForce(force_v2);
+		}
+	}
+
+	ZSPACE_INLINE void zFnMeshDynamics::addFittingForce_cone(double strength, double tolerance, int centerVertexId, bool& exit)
+	{
+
+	}
+
+	ZSPACE_INLINE void zFnMeshDynamics::addFittingForce_cylinder(double strength, double tolerance, int centerVertexId, bool& exit)
+	{
+
+	}
 
 	//---- UPDATE METHODS 
 
