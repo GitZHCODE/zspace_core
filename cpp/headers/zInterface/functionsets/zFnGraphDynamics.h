@@ -86,13 +86,24 @@ namespace zSpace
 		
 		zFnType getType() override;
 
-		void from(string path, zFileTpye type, bool staticGeom = false);
+		void from(std::string path, zFileTpye type, bool staticGeom = false);
 
-		void to(string path, zFileTpye type);
+		void to(std::string path, zFileTpye type);
 
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 
 		void clear() override;
+
+		//--------------------------
+		//---- SET METHODS 
+		//--------------------------
+
+		/*! \brief This method fix the input vertices.
+		*
+		*	\param		[in]	vIDs			- container of vertices which are to be fixed.
+		*	\since version 0.0.4
+		*/
+		void setFixed(zIntArray& vIDs);
 
 		//--------------------------
 		//---- CREATE METHODS
@@ -140,6 +151,63 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		void addSpringForce(double strength, zFloatArray& restLength);
+
+		/*! \brief This method adds the drag force to the input mesh.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vId						- input vertex id.
+		*	\param	[in]	vec						- input load direction.
+		*	\since version 0.0.4
+		*/
+		void addLoadForce(double strength, int vId, zVector& vec);
+
+		/*! \brief This method adds the drag force to the input edge.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	eId						- id of edge.
+		*	\param	[in]	restLength				- input value of restlength on edge.
+		*	\since version 0.0.4
+		*/
+		void addSpringForce(double strength, int eId, float restLength);
+
+		/*! \brief This method adds the drag force to all edges.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	restLength				- input value of restlengths on edges.
+		*	\param	[in]	eIds					- ids of edges.
+		*	\since version 0.0.4
+		*/
+		void addSpringForces(double strength, float& restLengths, const zIntArray& eIds = zIntArray());
+
+		/*! \brief This method adds the drag force to the input two edges to a given angle.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vId						- id of vertex shared by two edges.
+		*	\param	[in]	restAngle				- input value of restAngle between two edges.
+		*	\param	[in]	moveHinge				- if true add force to the particle at hinge/ false add force to the end particles.
+		*	\since version 0.0.4
+		*/
+		void addAngleForce(double strength, int vId, float restAngle, bool moveHinge = true);
+
+		/*! \brief This method adds the drag force to the input two edges to a given angle.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	restAngle				- input value of restAngle between two edges.
+		*	\param	[in]	moveHinge				- if true add force to the particle at hinge/ false add force to the end particles.
+		*	\param	[in]	vIds					- id of vertices shared by two edges.
+		*	\since version 0.0.4
+		*/
+		void addAngleForces(double strength, float& restAngle, bool& moveHinge, const zIntArray& vIds = zIntArray());
+
+		/*! \brief This method adds the drag force to the input vertex to a given vector.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vId						- id of vertex to drag.
+		*	\param	[in]	origin					- input position of align vector start.
+		*	\param	[in]	alignVector				- input align vector.
+		*	\since version 0.0.4
+		*/
+		void addVectorForce(double strength, int vId, zPoint& origin, zVector& alignVector);
 
 		//--------------------------
 		//---- UPDATE METHODS 
