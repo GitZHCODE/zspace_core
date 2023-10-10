@@ -166,6 +166,16 @@ namespace zSpace
 		*/
 		void addSmoothnessForce(double strength);
 
+		/*! \brief This method force the input vertices to a target plane.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vIds					- input planarisation type - zQuadPlanar or zVolumePlanar.
+		*  	\param	[out]	targetCenter			- input target plane center.
+		*  	\param	[out]	targetNormal			- input target plane normal.
+		*	\since version 0.0.4
+		*/
+		void addPlaneForce(double strength, zIntArray vIds, zPoint& targetCenter, zVector& targetNormal);
+
 		/*! \brief This method adds the planarisation forces to the input mesh.
 		*
 		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
