@@ -177,6 +177,16 @@ namespace zSpace
 		*/
 		void addSmoothnessForce(double strength);
 
+		/*! \brief This method force the input vertices to a target plane.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vIds					- input planarisation type - zQuadPlanar or zVolumePlanar.
+		*  	\param	[out]	targetCenter			- input target plane center.
+		*  	\param	[out]	targetNormal			- input target plane normal.
+		*	\since version 0.0.4
+		*/
+		void addPlaneForce(double strength, zIntArray vIds, zPoint& targetCenter, zVector& targetNormal);
+
 		/*! \brief This method adds the planarisation forces to the input mesh.
 		*
 		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
@@ -247,6 +257,63 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		void addRigidLineForce(double strength, double tolerance, zIntPairArray& vertexIDs,zDoubleArray &vertexDistances, zDoubleArray& deviations, zVectorArray& forceDir, bool& exit);
+
+		/*! \brief This method adds the drag force to the input edge.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	eId						- id of edge.
+		*	\param	[in]	restLength				- input value of restlength on edge.
+		*	\since version 0.0.4
+		*/
+		void addSpringForce(double strength, int eId, float restLength);
+
+
+		/*! \brief This method adds the drag force to the input mesh.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vId						- input vertex id.
+		*	\param	[in]	vec						- input load direction.
+		*	\since version 0.0.4
+		*/
+		void addLoadForce(double strength, int vId, zVector& vec);
+
+		/*! \brief This method adds the drag force to the input vertex to a given vector.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vId						- id of vertex to drag.
+		*	\param	[in]	origin					- input position of align vector start.
+		*	\param	[in]	alignVector				- input align vector.
+		*	\since version 0.0.4
+		*/
+		void addVectorForce(double strength, int vId, zPoint& origin, zVector& alignVector);
+
+		/*! \brief This method adds the drag force to the input two edges to a given angle.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vId						- id of vertex shared by two edges.
+		*	\param	[in]	restAngle				- input value of restAngle between two edges.
+		*	\param	[in]	moveHinge				- if true add force to the particle at hinge/ false add force to the end particles.
+		*	\since version 0.0.4
+		*/
+		void addAngleForce(double strength, int vId, int vId_first, int vId_second, float restAngle, bool moveHinge = true);
+
+		/*! \brief This method adds the forces to keep the input vertex pairs aligned to each other.
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		* 	\param	[in]	tolerance				- input tolerance value below which the force isnt applied.
+		* 	\param	[in]	centerVertexId			- input panel center vertex which shared by four panel faces.
+		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*	\NOT IMPLEMENT YET
+		*/
+		void addFittingForce_cone(double strength, double tolerance, int centerVertexId, bool& exit);
+
+		/*! \brief This method adds the forces to keep the input vertex pairs aligned to each other.
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		* 	\param	[in]	tolerance				- input tolerance value below which the force isnt applied.
+		* 	\param	[in]	centerVertexId			- input panel center vertex which shared by four panel faces.
+		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*	\NOT IMPLEMENT YET
+		*/
+		void addFittingForce_cylinder(double strength, double tolerance, int centerVertexId, bool& exit);
 
 		//--------------------------
 		//---- UPDATE METHODS 
