@@ -100,6 +100,11 @@ namespace zSpace
 
 	}
 
+	ZSPACE_INLINE int zFnMeshDynamics::numParticles()
+	{
+		return particlesObj.size();
+	}
+
 	//---- SET METHODS 
 
 	ZSPACE_INLINE void zFnMeshDynamics::setFixed(zIntArray& vIDs)

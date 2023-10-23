@@ -897,7 +897,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*	\warning	works only with vertex color gradients Red to Black.
 		*/
-		void getIsobandMesh(zObjMesh &coutourMeshObj, float inThresholdLow = 0.2, float inThresholdHigh = 0.5);
+		void getIsobandMesh(zScalarArray& vertexScalars, float inThresholdLow, float inThresholdHigh, zObjMesh& coutourMeshObj);
 
 		//--------------------------
 		//---- TRI-MESH MODIFIER METHODS
@@ -1105,7 +1105,7 @@ namespace zSpace
 		*/
 		int getIsolineCase_triangle(bool vertexBinary[3]);
 
-
+public:
 		/*! \brief This method gets the isoline case based on the input vertex binary values for quads.
 		*
 		*	\details based on https://en.wikipedia.org/wiki/Marching_squares. The sequencing is reversed as CCW windings are required.
@@ -1115,6 +1115,7 @@ namespace zSpace
 		*/
 		int getIsolineCase(bool vertexBinary[4]);
 
+protected:
 		/*! \brief This method gets the isoline case based on the input vertex ternary values.
 		*
 		*	\details based on https://en.wikipedia.org/wiki/Marching_squares. The sequencing is reversed as CCW windings are required.
@@ -1146,7 +1147,6 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void getIsoline(zScalarArray& vertexScalars, zItMeshFace& f, zPointArray& positions, zIntArray& edgeConnects, zColorArray& cVertexColor, unordered_map <string, int>& positionVertex, float& threshold, int precision, float distTolerance);
-
 
 		/*! \brief This method gets the isoline polygon for the input mesh at the given input face index.
 		*
@@ -1189,7 +1189,7 @@ namespace zSpace
 		*	\param	[in]	thresholdHigh	- field threshold domain maximum.
 		*	\since version 0.0.2
 		*/
-		void getIsobandPoly(zItMeshFace& f, zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float&thresholdLow, float&thresholdHigh);
+		void getIsobandPoly(zScalarArray& vertexScalars, zItMeshFace& f, zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float&thresholdLow, float&thresholdHigh);
 
 
 	private:

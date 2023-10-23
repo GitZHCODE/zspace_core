@@ -114,6 +114,17 @@ namespace zSpace
 		*/
 		void create(zObjMesh &_meshObj, bool fixBoundary = false);
 
+
+		//--------------------------
+		//--- TOPOLOGY QUERY METHODS 
+		//--------------------------
+
+		/*! \brief This method returns the number of particles in the mesh.
+		*	\return				int - number of particles.
+		*	\since version 0.0.4
+		*/
+		int numParticles();
+
 		//--------------------------
 		//---- SET METHODS 
 		//--------------------------

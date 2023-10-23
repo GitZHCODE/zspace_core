@@ -2730,7 +2730,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getDuplicate(zObjMesh &out)
 	{
-		vector<zVector> positions;
+		/*vector<zVector> positions;
 		vector<int> polyConnects;
 		vector<int> polyCounts;
 
@@ -2744,7 +2744,9 @@ namespace zSpace
 		tempFn.computeMeshNormals();
 		tempFn.setVertexColors(meshObj->mesh.vertexColors, false);
 		tempFn.setEdgeColors(meshObj->mesh.edgeColors, false);
-		tempFn.setFaceColors(meshObj->mesh.faceColors, false);
+		tempFn.setFaceColors(meshObj->mesh.faceColors, false);*/
+
+		out = zObjMesh(*meshObj);
 	}
 
 	ZSPACE_INLINE int zFnMesh::getVBOVertexIndex()
@@ -2899,7 +2901,7 @@ namespace zSpace
 		cVertexColor.clear();
 
 		unordered_map <string, int> positionVertex;
-
+				
 
 		for (zItMeshFace f(*meshObj); !f.end(); f++)
 		{
@@ -2909,8 +2911,10 @@ namespace zSpace
 					getIsoline(vertexScalars, f, positions, edgeConnects, cVertexColor, positionVertex, threshold, precision, distTolerance);
 			}
 			else getIsoline(vertexScalars, f, positions, edgeConnects, cVertexColor, positionVertex, threshold, precision, distTolerance);
+				
 		}
 		
+	
 
 	}
 
@@ -2943,7 +2947,7 @@ namespace zSpace
 
 	}
 	
-	ZSPACE_INLINE void zFnMesh::getIsobandMesh(zObjMesh & coutourMeshObj, float inThresholdLow, float inThresholdHigh)
+	ZSPACE_INLINE void zFnMesh::getIsobandMesh(zScalarArray& vertexScalars, float inThresholdLow, float inThresholdHigh, zObjMesh& coutourMeshObj)
 	{
 		zFnMesh tempFn(coutourMeshObj);
 		tempFn.clear(); // clear memory if the mobject exists.
@@ -2957,9 +2961,10 @@ namespace zSpace
 		
 		for (zItMeshFace f(*meshObj); !f.end(); f++)
 		{
-			getIsobandPoly(f, positions, polyConnects, polyCounts, positionVertex, (inThresholdLow < inThresholdHigh) ? inThresholdLow : inThresholdHigh, (inThresholdLow < inThresholdHigh) ? inThresholdHigh : inThresholdLow);
+			getIsobandPoly(vertexScalars, f, positions, polyConnects, polyCounts, positionVertex, (inThresholdLow < inThresholdHigh) ? inThresholdLow : inThresholdHigh, (inThresholdLow < inThresholdHigh) ? inThresholdHigh : inThresholdLow);
 		}
 
+		//printf("\n %i %i ", positions.size(), polyCounts.size());
 		tempFn.create(positions, polyCounts, polyConnects);;
 		
 	}
@@ -7711,7 +7716,7 @@ namespace zSpace
 	}
 
 
-	ZSPACE_INLINE void zFnMesh::getIsobandPoly(zItMeshFace & f, zPointArray & positions, zIntArray & polyConnects, zIntArray & polyCounts, unordered_map<string, int>& positionVertex, float& thresholdLow, float& thresholdHigh)
+	ZSPACE_INLINE void zFnMesh::getIsobandPoly(zScalarArray& vertexScalars, zItMeshFace & f, zPointArray & positions, zIntArray & polyConnects, zIntArray & polyCounts, unordered_map<string, int>& positionVertex, float& thresholdLow, float& thresholdHigh)
 
 	{
 		vector<zItMeshVertex> fVerts;
@@ -7727,23 +7732,26 @@ namespace zSpace
 
 		for (int j = 0; j < fVerts.size(); j++)
 		{
-			if (fVerts[j].getColor().r <= thresholdLow)
+			if (vertexScalars[fVerts[j].getId()] <= thresholdLow)
 			{
 				vertexTernary[j] = 0;
 			}
 
-			else if (fVerts[j].getColor().r >= thresholdHigh)
+			else if (vertexScalars[fVerts[j].getId()] >= thresholdHigh)
 			{
 				vertexTernary[j] = 2;
 			}
 			else vertexTernary[j] = 1;
 
-			averageScalar += fVerts[j].getColor().r;
+			averageScalar += vertexScalars[fVerts[j].getId()];
 		}
 
 		averageScalar /= fVerts.size();
 
+		
 		int MS_case = getIsobandCase(vertexTernary);
+
+		//if (MS_case != 0 && MS_case != 1) printf("\n f %i | case %i ",f.getId(), MS_case);
 				
 
 		vector<zVector> newPositions;
@@ -7772,10 +7780,10 @@ namespace zSpace
 			int prevID = (startID - 1 + fVerts.size()) % fVerts.size();
 
 			zVector v0 = fVerts[startID].getPosition();
-			float s0 = fVerts[startID].getColor().r;
+			float s0 = vertexScalars[fVerts[startID].getId()];
 
 			zVector v1 = fVerts[prevID].getPosition();
-			float s1 = fVerts[prevID].getColor().r;
+			float s1 = vertexScalars[fVerts[prevID].getId()];
 
 
 			zVector pos0 = (getContourPosition(threshold, v0, v1, s0, s1));
@@ -7784,7 +7792,7 @@ namespace zSpace
 
 
 			v1 = fVerts[nextID].getPosition();
-			s1 = fVerts[nextID].getColor().r;
+			s1 = vertexScalars[fVerts[nextID].getId()];
 
 			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
 
@@ -7820,10 +7828,10 @@ namespace zSpace
 			int prevID = (startID - 1 + fVerts.size()) % fVerts.size();
 
 			zVector v0 = fVerts[startID].getPosition();
-			float s0 = fVerts[startID].getColor().r;
+			float s0 = vertexScalars[fVerts[startID].getId()];
 
 			zVector v1 = fVerts[nextID].getPosition();
-			float s1 = fVerts[nextID].getColor().r;
+			float s1 = vertexScalars[fVerts[nextID].getId()];
 
 
 			zVector pos0 = (getContourPosition(threshold0, v0, v1, s0, s1));
@@ -7831,7 +7839,7 @@ namespace zSpace
 			zVector pos1 = (getContourPosition(threshold1, v0, v1, s0, s1));
 
 			v1 = fVerts[prevID].getPosition();
-			s1 = fVerts[prevID].getColor().r;
+			s1 = vertexScalars[fVerts[prevID].getId()];
 
 
 			zVector pos2 = (getContourPosition(threshold1, v0, v1, s0, s1));
@@ -7869,17 +7877,17 @@ namespace zSpace
 			zVector pos1 = fVerts[nextID].getPosition();
 
 			zVector v0 = fVerts[nextID].getPosition();
-			float s0 = fVerts[nextID].getColor().r;
+			float s0 = vertexScalars[fVerts[nextID].getId()];
 
 			zVector v1 = fVerts[next_nextID].getPosition();
-			float s1 = fVerts[next_nextID].getColor().r;
+			float s1 = vertexScalars[fVerts[next_nextID].getId()];
 
 			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
 
 			v0 = fVerts[startID].getPosition();
-			s0 = fVerts[startID].getColor().r;
+			s0 = vertexScalars[fVerts[startID].getId()];
 			v1 = fVerts[prevID].getPosition();
-			s1 = fVerts[prevID].getColor().r;
+			s1 = vertexScalars[fVerts[prevID].getId()];
 
 			zVector pos3 = (getContourPosition(threshold, v0, v1, s0, s1));
 
@@ -7907,18 +7915,18 @@ namespace zSpace
 			int next_nextID = (nextID + 1) % fVerts.size();
 
 			zVector v0 = fVerts[startID].getPosition();
-			float s0 = fVerts[startID].getColor().r;
+			float s0 = vertexScalars[fVerts[startID].getId()];
 
 			zVector v1 = fVerts[prevID].getPosition();
-			float s1 = fVerts[prevID].getColor().r;
+			float s1 = vertexScalars[fVerts[prevID].getId()];
 
 			zVector pos0 = (getContourPosition(thresholdLow, v0, v1, s0, s1));
 			zVector pos3 = (getContourPosition(thresholdHigh, v0, v1, s0, s1));
 
 			v0 = fVerts[nextID].getPosition();
-			s0 = fVerts[nextID].getColor().r;
+			s0 = vertexScalars[fVerts[nextID].getId()];
 			v1 = fVerts[next_nextID].getPosition();
-			s1 = fVerts[next_nextID].getColor().r;
+			s1 = vertexScalars[fVerts[next_nextID].getId()];
 
 
 			zVector pos1 = (getContourPosition(thresholdLow, v0, v1, s0, s1));
@@ -7959,17 +7967,17 @@ namespace zSpace
 			zVector pos1 = fVerts[nextID].getPosition();
 
 			zVector v0 = fVerts[nextID].getPosition();
-			float s0 = fVerts[nextID].getColor().r;
+			float s0 = vertexScalars[fVerts[nextID].getId()];
 
 			zVector v1 = fVerts[next_nextID].getPosition();
-			float s1 = fVerts[next_nextID].getColor().r;
+			float s1 = vertexScalars[fVerts[next_nextID].getId()];
 
 
       zVector pos2 = getContourPosition(threshold, v0, v1, s0, s1);
 
 
 			v0 = fVerts[prevID].getPosition();
-			s0 = fVerts[prevID].getColor().r;
+			s0 = vertexScalars[fVerts[prevID].getId()];
 
 			zVector pos3 = (getContourPosition(threshold, v0, v1, s0, s1));
 
@@ -8011,23 +8019,23 @@ namespace zSpace
 			zVector pos0 = fVerts[startID].getPosition();
 
 			zVector v0 = fVerts[startID].getPosition();
-			float s0 = fVerts[startID].getColor().r;
+			float s0 = vertexScalars[fVerts[startID].getId()];
 
 			zVector v1 = fVerts[nextID].getPosition();
-			float s1 = fVerts[nextID].getColor().r;
+			float s1 = vertexScalars[fVerts[nextID].getId()];
 
 			zVector pos1 = getContourPosition(threshold0, v0, v1, s0, s1);
 
 			v0 = fVerts[next_nextID].getPosition();
-			s0 = fVerts[next_nextID].getColor().r;
+			s0 = vertexScalars[fVerts[next_nextID].getId()];
 			v1 = fVerts[prevID].getPosition();
-			s1 = fVerts[prevID].getColor().r;
+			s1 = vertexScalars[fVerts[prevID].getId()];
 
 			zVector pos2 = (getContourPosition(threshold0, v0, v1, s0, s1));
 			zVector pos3 = (getContourPosition(threshold1, v0, v1, s0, s1));
 
 			v0 = fVerts[startID].getPosition();
-			s0 = fVerts[startID].getColor().r;
+			s0 = vertexScalars[fVerts[startID].getId()];
 
 			zVector pos4 = (getContourPosition(threshold1, v0, v1, s0, s1));
 
@@ -8067,24 +8075,24 @@ namespace zSpace
 			zVector pos0 = fVerts[startID].getPosition();
 
 			zVector v0 = fVerts[startID].getPosition();
-			float s0 = fVerts[startID].getColor().r;
+			float s0 = vertexScalars[fVerts[startID].getId()];
 			zVector v1 = fVerts[nextID].getPosition();
-			float s1 = fVerts[nextID].getColor().r;
+			float s1 = vertexScalars[fVerts[nextID].getId()];
 
 			zVector pos1 = getContourPosition(threshold1, v0, v1, s0, s1);
 
 			v0 = fVerts[nextID].getPosition();
-			s0 = fVerts[nextID].getColor().r;
+			s0 = vertexScalars[fVerts[nextID].getId()];
 			v1 = fVerts[next_nextID].getPosition();
-			s1 = fVerts[next_nextID].getColor().r;
+			s1 = vertexScalars[fVerts[next_nextID].getId()];
 
 			zVector pos2 = getContourPosition(threshold1, v0, v1, s0, s1);
 			zVector pos3 = getContourPosition(threshold0, v0, v1, s0, s1);
 
 			v0 = fVerts[startID].getPosition();
-			s0 = fVerts[startID].getColor().r;
+			s0 = vertexScalars[fVerts[startID].getId()];
 			v1 = fVerts[prevID].getPosition();
-			s1 = fVerts[prevID].getColor().r;
+			s1 = vertexScalars[fVerts[prevID].getId()];
 
 			zVector pos4 = getContourPosition(threshold0, v0, v1, s0, s1);
 
@@ -8125,20 +8133,20 @@ namespace zSpace
 			zVector pos1 = fVerts[nextID].getPosition();
 
 			zVector v0 = fVerts[nextID].getPosition();
-			float s0 = fVerts[nextID].getColor().r;
+			float s0 = vertexScalars[fVerts[nextID].getId()];
 			zVector v1 = fVerts[next_nextID].getPosition();
-			float s1 = fVerts[next_nextID].getColor().r;
+			float s1 = vertexScalars[fVerts[next_nextID].getId()];
 
 			zVector pos2 = getContourPosition(threshold1, v0, v1, s0, s1);
 
 			v0 = fVerts[prevID].getPosition();
-			s0 = fVerts[prevID].getColor().r;
+			s0 = vertexScalars[fVerts[prevID].getId()];
 
 			zVector pos3 = (getContourPosition(threshold1, v0, v1, s0, s1));
 			zVector pos4 = (getContourPosition(threshold0, v0, v1, s0, s1));
 
 			v1 = fVerts[startID].getPosition();
-			s1 = fVerts[startID].getColor().r;
+			s1 = vertexScalars[fVerts[startID].getId()];
 
 			zVector pos5 = getContourPosition(threshold0, v0, v1, s0, s1);
 
@@ -8177,26 +8185,26 @@ namespace zSpace
 			zVector pos0 = fVerts[startID].getPosition();
 
 			zVector v0 = fVerts[startID].getPosition();
-			float s0 = fVerts[startID].getColor().r;
+			float s0 = vertexScalars[fVerts[startID].getId()];
 			zVector v1 = fVerts[nextID].getPosition();
-			float s1 = fVerts[nextID].getColor().r;
+			float s1 = vertexScalars[fVerts[nextID].getId()];
 
 			zVector pos1 = getContourPosition(threshold0, v0, v1, s0, s1);
 
 			v0 = fVerts[next_nextID].getPosition();
-			s0 = fVerts[next_nextID].getColor().r;
+			s0 = vertexScalars[fVerts[next_nextID].getId()];
 
 			zVector pos2 = (getContourPosition(threshold0, v0, v1, s0, s1));
 
 			zVector pos3 = fVerts[next_nextID].getPosition();
 
 			v1 = fVerts[prevID].getPosition();
-			s1 = fVerts[prevID].getColor().r;
+			s1 = vertexScalars[fVerts[prevID].getId()];
 
 			zVector pos4 = (getContourPosition(threshold1, v0, v1, s0, s1));
 
 			v0 = fVerts[startID].getPosition();
-			s0 = fVerts[startID].getColor().r;
+			s0 = vertexScalars[fVerts[startID].getId()];
 
 			zVector pos5 = getContourPosition(threshold1, v0, v1, s0, s1);
 
@@ -8234,27 +8242,27 @@ namespace zSpace
 			int next_nextID = (nextID + 1) % fVerts.size();
 
 			zVector v0 = fVerts[startID].getPosition();
-			float s0 = fVerts[startID].getColor().r;
+			float s0 = vertexScalars[fVerts[startID].getId()];
 			zVector v1 = fVerts[nextID].getPosition();
-			float s1 = fVerts[nextID].getColor().r;
+			float s1 = vertexScalars[fVerts[nextID].getId()];
 
 			zVector pos0 = getContourPosition(threshold0, v0, v1, s0, s1);
 			zVector pos1 = getContourPosition(threshold1, v0, v1, s0, s1);
 
 			v0 = fVerts[next_nextID].getPosition();
-			s0 = fVerts[next_nextID].getColor().r;
+			s0 = vertexScalars[fVerts[next_nextID].getId()];
 
 			zVector pos2 = (getContourPosition(threshold1, v0, v1, s0, s1));
 			zVector pos3 = getContourPosition(threshold0, v0, v1, s0, s1);
 
 			v1 = fVerts[prevID].getPosition();
-			s1 = fVerts[prevID].getColor().r;
+			s1 = vertexScalars[fVerts[prevID].getId()];
 
 			zVector pos4 = (getContourPosition(threshold0, v0, v1, s0, s1));
 			zVector pos5 = (getContourPosition(threshold1, v0, v1, s0, s1));
 
 			v0 = fVerts[startID].getPosition();
-			s0 = fVerts[startID].getColor().r;
+			s0 = vertexScalars[fVerts[startID].getId()];
 
 			zVector pos6 = getContourPosition(threshold1, v0, v1, s0, s1);
 			zVector pos7 = (getContourPosition(threshold0, v0, v1, s0, s1));
@@ -8333,26 +8341,26 @@ namespace zSpace
 			zVector pos0 = fVerts[startID].getPosition();
 
 			zVector v0 = fVerts[startID].getPosition();
-			float s0 = fVerts[startID].getColor().r;
+			float s0 = vertexScalars[fVerts[startID].getId()];
 			zVector v1 = fVerts[nextID].getPosition();
-			float s1 = fVerts[nextID].getColor().r;
+			float s1 = vertexScalars[fVerts[nextID].getId()];
 
 			zVector pos1 = getContourPosition(threshold, v0, v1, s0, s1);
 
 			v0 = fVerts[next_nextID].getPosition();
-			s0 = fVerts[next_nextID].getColor().r;
+			s0 = vertexScalars[fVerts[next_nextID].getId()];
 
 			zVector pos2 = (getContourPosition(threshold, v0, v1, s0, s1));
 
 			zVector pos3 = fVerts[next_nextID].getPosition();
 
 			v1 = fVerts[prevID].getPosition();
-			s1 = fVerts[prevID].getColor().r;
+			s1 = vertexScalars[fVerts[prevID].getId()];
 
 			zVector pos4 = (getContourPosition(threshold, v0, v1, s0, s1));
 
 			v0 = fVerts[startID].getPosition();
-			s0 = fVerts[startID].getColor().r;
+			s0 = vertexScalars[fVerts[startID].getId()];
 
 			zVector pos5 = getContourPosition(threshold, v0, v1, s0, s1);
 
@@ -8416,27 +8424,27 @@ namespace zSpace
 			int next_nextID = (nextID + 1) % fVerts.size();
 
 			zVector v0 = fVerts[startID].getPosition();
-			float s0 = fVerts[startID].getColor().r;
+			float s0 = vertexScalars[fVerts[startID].getId()];
 			zVector v1 = fVerts[nextID].getPosition();
-			float s1 = fVerts[nextID].getColor().r;
+			float s1 = vertexScalars[fVerts[nextID].getId()];
 
 			zVector pos0 = getContourPosition(threshold0, v0, v1, s0, s1);
 			zVector pos1 = getContourPosition(threshold1, v0, v1, s0, s1);
 
 			v0 = fVerts[next_nextID].getPosition();
-			s0 = fVerts[next_nextID].getColor().r;
+			s0 = vertexScalars[fVerts[next_nextID].getId()];
 
 			zVector pos2 = (getContourPosition(threshold1, v0, v1, s0, s1));
 
 			zVector pos3 = fVerts[next_nextID].getPosition();
 
 			v1 = fVerts[prevID].getPosition();
-			s1 = fVerts[prevID].getColor().r;
+			s1 = vertexScalars[fVerts[prevID].getId()];
 
 			zVector pos4 = (getContourPosition(threshold1, v0, v1, s0, s1));
 
 			v0 = fVerts[startID].getPosition();
-			s0 = fVerts[startID].getColor().r;
+			s0 = vertexScalars[fVerts[startID].getId()];
 
 			zVector pos5 = getContourPosition(threshold1, v0, v1, s0, s1);
 			zVector pos6 = getContourPosition(threshold0, v0, v1, s0, s1);

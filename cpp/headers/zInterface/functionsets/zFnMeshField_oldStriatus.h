@@ -531,6 +531,66 @@ namespace zSpace
 		*/
 		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjGraph &inGraphObj, float offset, bool normalise = true);
 
+		//--------------------------
+		//----  2D SCALAR FIELD METHODS for 3DP
+		//--------------------------
+
+		void getScalars_3dp_depthPolygon(zScalarArray& scalars, zScalarArray& polygonScalars, zObjGraph& inGraphObj, int startVertexId, float offset, zVector planeNorm = zVector(0, 0, 1), bool normalise = true);
+
+		/*! \brief This method creates a variable edge distance Field from the input planar graph. Works on open curves ( with two valence 1 vertices).
+		*
+		*	\param	[out]	scalars			- container for storing scalar values.
+		*	\param	[in]	inGraphObj		- input graph object for distance calculations.
+		*	\param	[in]	startVertexId	- input graph start vertex ( valence 1 vertex).
+		*	\param	[in]	offset1			- input offset domain 1.
+		* 	\param	[in]	offset2			- input offset domain 2.
+		* 	\param	[in]	planeNorm		- input plane normal on which the graph lies.
+		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
+		*	\since version 0.0.4
+		*/
+		void getScalars_3dp_VariableDepth(zScalarArray& scalars, zObjGraph& inGraphObj, int startVertexId, zDomainFloat offset1 , zDomainFloat offset2, zVector planeNorm = zVector(0,0,1),  bool normalise = true);
+		
+		void getScalars_3dp_VariableDepth(zScalarArray& scalars, zObjGraph& inGraphObj, int startVertexId, vector<zDomainFloat> &thicknessOffsets1, vector<zDomainFloat>& thicknessOffsets2, vector<zDomainFloat> &intervals, zVector planeNorm = zVector(0, 0, 1), bool normalise = true);
+
+		void getScalars_3dp_VariableDepth(zScalarArray& scalars, zObjGraph& inGraphObj, int startVertexId, zObjGraph& inThkGraphObj, zVector planeNorm = zVector(0, 0, 1), bool normalise = true);
+
+		/*! \brief This method creates a variable edge distance Field from the input planar graph. Works on open curves ( with two valence 1 vertices).
+		*
+		*	\param	[out]	scalars			- container for storing scalar values.
+		*	\param	[in]	inGraphObj		- input graph object for distance calculations.
+		*	\param	[in]	startVertexId	- input graph start vertex ( valence 1 vertex).
+		*	\param	[in]	offset1			- input offset domain 1.
+		* 	\param	[in]	offset2			- input offset domain 2.
+		* 	\param	[in]	planeNorm		- input plane normal on which the graph lies.
+		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
+		*	\since version 0.0.4
+		*/
+		void getScalars_3dp_SineInfill(zScalarArray& scalars, zObjGraph& inGraphObj, int startVertexId, zDomainFloat offset1, zDomainFloat offset2, int numTriangles, float transY,  zVector planeNorm = zVector(0, 0, 1), bool normalise = true);
+
+		void getScalars_3dp_SineInfill(zScalarArray& scalars, zObjGraph& inGraphObj, int startVertexId, vector<zDomainFloat>& thicknessOffsets1, vector<zDomainFloat>& thicknessOffsets2, vector<zDomainFloat>& intervals , int numTriangles, float transY, zVector planeNorm = zVector(0, 0, 1), bool normalise = true);
+
+		void getScalars_3dp_SineInfill(zScalarArray& scalars, zScalarArray& polygonScalars, zObjGraph& inGraphObj, zObjGraph& inPolyObj, int startVertexId, float numTriangles, float offset, zVector planeNorm = zVector(0, 0, 1), bool normalise = true);
+
+		void getScalars_3dp_Infill(zScalarArray& scalars, zObjGraph& inPolyObj, zItGraphHalfEdgeArray& topHE, zItGraphHalfEdgeArray& bottomHE, float& topLength, float& bottomLength, int numTriangles, float maxTriangleLength, float printWidth,  bool normalise );
+
+		void getScalars_3dp_InfillBoundary(zScalarArray& scalars, zObjGraph& inPolyObj, zItGraphHalfEdgeArray& topHE, zItGraphHalfEdgeArray& bottomHE, float& topLength, float& bottomLength, int numTriangles, float maxTriangleLength, float printWidth, bool normalise );
+
+
+		void getScalars_3dp_topBottomTrim(zScalarArray& scalars, zObjGraph& inPolyObj, zItGraphHalfEdgeArray& topHE, zItGraphHalfEdgeArray& bottomHE, float offset,int type, bool normalise);
+
+
+		void getScalars_3dp_InfillTrim(zScalarArray& scalars, zObjGraph& inPolyObj, zItGraphHalfEdgeArray& topHE, zItGraphHalfEdgeArray& bottomHE, float& topLength, float& bottomLength, int numTriangles, float maxTriangleLength, float printWidth, bool normalise, zObjGraph &outGraph );
+
+		void getScalars_3dp_InfillTrimBoundary(zScalarArray& scalars, zObjGraph& inPolyObj, zItGraphHalfEdgeArray& topHE, zItGraphHalfEdgeArray& bottomHE, float& topLength, float& bottomLength, int numTriangles, float maxTriangleLength, float printWidth, bool stepTrim, bool normalise);
+
+		void getScalars_3dp_InfillInteriorTrimBoundary(zScalarArray& scalars, zObjGraph& inPolyObj, zItGraphHalfEdgeArray& topHE, zItGraphHalfEdgeArray& bottomHE, float& topLength, float& bottomLength, int numTriangles, float maxTriangleLength, float printWidth,bool stepTrim, bool normalise, zObjGraph& outGraph);
+
+
+		void getScalars_3dp_Pattern(zScalarArray& scalars, zObjGraph& inPolyObj, zItGraphHalfEdgeArray& topHE, zItGraphHalfEdgeArray& bottomHE, float& topLength, float& bottomLength, int numTriangles, float maxTriangleLength, float printWidth, bool normalise );
+
+		void getScalars_3dp_Triangle(zScalarArray& scalars, zObjGraph& inGraphObj, int startVertexId, zFloatArray& offsets, zFloatArray& intervals,  zVector startPlaneNorm = zVector(0, 0, 1), bool normalise = true);
+
+
 
 		//--------------------------
 		//----  2D SD FIELD METHODS
@@ -627,6 +687,9 @@ namespace zSpace
 		*/
 		void getScalars_Trapezoid(zScalarArray &scalars, float r1, float r2, float he, float annularVal = 0, bool normalise = true);
 
+
+		void getScalars_SinBands(zScalarArray& scalars, zObjGraph& inGraphObj, zVector &pNorm, zPoint &pCen, float scale);
+
 		//--------------------------
 		//--- COMPUTE METHODS 
 		//--------------------------
@@ -706,34 +769,18 @@ namespace zSpace
 		double F_of_r(double &r, double &a, double &b);
 
 		//--------------------------
-		//----  BLEND METHODS
-		//--------------------------
-
-		/*! \brief This method returns the blend between the two fields at the input current frame.
-		*
-		*	\param	[in]	currentFrame			- current frame value ( between 0 & totalFrames).
-		*	\param	[in]	totalFrames				- total number of frames for the blend.
-		*	\param	[in]	fieldValues_A			- field Values A.
-		*	\param	[in]	fieldValues_B			- field Values B.
-		*	\param	[in]	fieldValues_Result		- resultant field value.
-		*	\since version 0.0.4
-		*/
-		void blend_linear(int currentFrame, int totalFrames, zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result);
-
-
-		//--------------------------
 		//----  BOOLEAN METHODS
 		//--------------------------		
 		
 		/*! \brief This method creates a union of the fields at the input buffers and stores them in the result buffer.
 		*
-		*	\param	[in]	fieldValues_A			- field Values A.
-		*	\param	[in]	fieldValues_B			- field Values B.
-		*	\param	[in]	fieldValues_Result		- resultant field value.
+		*	\param	[in]	scalars0				- value of buffer.
+		*	\param	[in]	scalars1				- value of buffer.
+		*	\param	[in]	scalarsResult			- value of buffer to store the results.
 		*	\param	[in]	normalise				- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void boolean_union(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise = true);
+		void boolean_union(zScalarArray& scalars0, zScalarArray& scalars1, zScalarArray& scalarsResult, bool normalise = true);
 
 		/*! \brief This method creates a subtraction of the fields at the input buffers and stores them in the result buffer.
 		*
