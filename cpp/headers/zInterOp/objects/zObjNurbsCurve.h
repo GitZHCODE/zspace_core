@@ -60,19 +60,17 @@ namespace zSpace
 
 		/*!	\brief stores the start vertex color ID in the VBO, when attache to the zBufferObject.	*/
 		int VBO_CurveColorId;		
-		
 
 	protected:
 		
-		
+		/*!	\brief number of display positions.			*/
+		int numDisplayPositions;
 
-	public:
-		//--------------------------
-		//---- PUBLIC ATTRIBUTES
-		//--------------------------
-		
 		/*!	\brief container which stores positions of curve points for display.			*/
 		zPointArray displayPositions;
+
+		/*!	\brief container which stores positions of curve control points.			*/
+		zPointArray displayControlPointPositions;
 
 		/*!	\brief stores color of the curve.			*/
 		zColor displayColor;
@@ -80,18 +78,18 @@ namespace zSpace
 		/*!	\brief stores weight of the curve.			*/
 		double displayWeight;
 
-		/*!	\brief container which stores positions of curve points.			*/
-		zPointArray controlPoints;
-
-		/*!	\brief container which stores weights of curve points.			*/
-		zDoubleArray controlPointWeights;
-
-		/*!	\brief stores degree of the curve.			*/
+		/*!	\brief stores dimension of the curve.			*/
 		int degree;
 
-		/*!	\brief stores if the curve is perodic or not.			*/
+		/*!	\brief stores periodic of the curve.			*/
 		bool periodic;
 
+
+	public:
+		//--------------------------
+		//---- PUBLIC ATTRIBUTES
+		//--------------------------
+		
 		/*!	\brief OpenNURBS curve			*/
 		ON_NurbsCurve curve;
 
@@ -127,10 +125,72 @@ namespace zSpace
 		*/
 		void setDisplayElements(bool _displayControlPoints, bool _displayCurve);
 
+		/*! \brief This method sets display vertex positions.
+		*
+		*	\param		[in]	_positions		- input display on curve positions.
+		*	\since version 0.0.2
+		*/
+		void setDisplayPositions(zPointArray& _positions);
+
+		/*! \brief This method sets curve degree.
+		*
+		*	\param		[in]	_degree		- input curve degree.
+		*	\since version 0.0.2
+		*/
+		void setDegree(int _degree);
+
+		/*! \brief This method sets curve periodic.
+		*
+		*	\param		[in]	_degree		- input curve periodic.
+		*	\since version 0.0.2
+		*/
+		void setPeriodic(bool _periodic);
+
+		/*! \brief This method sets curve display color.
+		*
+		*	\param		[in]	_displayColor		- input display color.
+		*	\since version 0.0.2
+		*/
+		void setDisplayColor(zColor _displayColor);
+
+		/*! \brief This method sets curve display weight.
+		*
+		*	\param		[in]	_displayColor		- input display weight.
+		*	\since version 0.0.2
+		*/
+		void setDisplayWeight(double _displayWeight);
+
+		/*! \brief This method sets curve control points.
+		*
+		*	\param		[in]	_controlPoints		- input curve control points.
+		*	\since version 0.0.2
+		*/
+		void setDisplayControlPoints(zPointArray& _displayControlPoints);
+
+		/*! \brief This method sets curve control point weights.
+		*
+		*	\param		[in]	_controlPointWeights		- input curve control point weights.
+		*	\since version 0.0.2
+		*/
+		void setControlPointWeights(zDoubleArray& _controlPointWeights);
 
 		//--------------------------
 		//---- GET METHODS
 		//--------------------------
+
+		/*! \brief This method gets display vertex positions.
+		*
+		*	\param		[out]	_positions		- output display on curve positions.
+		*	\since version 0.0.2
+		*/
+		void getDisplayPositions(zPointArray& _positions);
+
+		/*! \brief This method gets number of display vertex positions.
+		*
+		*	\return			int				- num display positions.
+		*	\since version 0.0.2
+		*/
+		int getNumDisplayPositions();
 
 		/*! \brief This method gets the vertex VBO Index .
 		*
@@ -152,6 +212,20 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		int getVBO_CurveColorId();
+
+		/*! \brief This method gets curve dimension.
+		*
+		*	\return			int				- curve degree.
+		*	\since version 0.0.2
+		*/
+		int getDegree();
+
+		/*! \brief This method gets curve periodic.
+		*
+		*	\return			bool				- is periodic or not.
+		*	\since version 0.0.2
+		*/
+		bool isPeriodic();
 
 		//--------------------------
 		//---- OVERRIDE METHODS
