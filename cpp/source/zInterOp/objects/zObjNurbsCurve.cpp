@@ -42,9 +42,66 @@ namespace zSpace
 		displayCurve = _displayCurve;
 	}
 
+	ZSPACE_INLINE void zObjNurbsCurve::setDisplayPositions(zPointArray& _positions)
+	{
+		displayPositions = _positions;
+		numDisplayPositions = _positions.size();
+	}
 
+	ZSPACE_INLINE void zObjNurbsCurve::setDisplayColor(zColor _displayColor)
+	{
+		displayColor = _displayColor;
+	}
+
+	ZSPACE_INLINE void zObjNurbsCurve::setDisplayWeight(double _displayWeight)
+	{
+		displayWeight = _displayWeight;
+	}
+
+	ZSPACE_INLINE void zObjNurbsCurve::setDisplayControlPoints(zPointArray& _displayControlPoints)
+	{
+		displayControlPointPositions = _displayControlPoints;
+	}
+
+	ZSPACE_INLINE void zObjNurbsCurve::setControlPointWeights(zDoubleArray& _controlPointWeights)
+	{
+		for (int i = 0; i < _controlPointWeights.size(); i++)
+		{
+			curve.SetWeight(i, _controlPointWeights[i]);
+		}
+	}
+
+	ZSPACE_INLINE void zObjNurbsCurve::setDegree(int _degree)
+	{
+		degree = _degree;
+	}
+
+	ZSPACE_INLINE void zObjNurbsCurve::setPeriodic(bool _periodic)
+	{
+		periodic = _periodic;
+	}
 
 	//---- GET METHODS
+
+	ZSPACE_INLINE void zObjNurbsCurve::getDisplayPositions(zPointArray& _positions)
+	{
+		_positions = displayPositions;
+	}
+
+	ZSPACE_INLINE int zObjNurbsCurve::getNumDisplayPositions()
+	{
+		return numDisplayPositions;
+	}
+
+	ZSPACE_INLINE int zObjNurbsCurve::getDegree()
+	{
+		return curve.Dimension();
+	}
+
+	ZSPACE_INLINE bool zObjNurbsCurve::isPeriodic()
+	{
+		return curve.IsPeriodic();
+	}
 
 	ZSPACE_INLINE int zObjNurbsCurve::getVBO_ControlPointId()
 	{
@@ -99,8 +156,8 @@ namespace zSpace
 		// draw vertex
 		if (displayControlPoints)
 		{
-			displayUtils->drawPoints(&controlPoints[0], zColor(), 3, controlPoints.size());
-			displayUtils->drawCurve(&controlPoints[0], zColor(), 1, controlPoints.size(), periodic);
+			displayUtils->drawPoints(&displayControlPointPositions[0], zColor(), 3, displayControlPointPositions.size());
+			displayUtils->drawCurve(&displayControlPointPositions[0], zColor(), 1, displayControlPointPositions.size(), periodic);
 		}
 
 
