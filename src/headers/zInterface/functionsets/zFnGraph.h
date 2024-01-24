@@ -53,8 +53,8 @@ namespace zSpace
 		/*!	\brief pointer to a graph object  */
 		zObjGraph *graphObj;	
 
-		/*!	\brief core utilities Object  */
-		zUtilsCore coreUtils;
+		/*!	\brief container of  particle objects  */
+		vector<zObjParticle> particlesObj;
 
 	public:
 

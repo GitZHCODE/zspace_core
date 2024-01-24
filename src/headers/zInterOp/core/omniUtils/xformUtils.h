@@ -21,6 +21,12 @@
 #
 ###############################################################################*/
 
+
+#if defined(ZSPACE_USD_INTEROP) 
+
+#ifndef ZSPACE_INTEROP_OMNIXFORMUTILS_H
+#define ZSPACE_INTEROP_OMNIXFORMUTILS_H
+
 #pragma once
 
 #include "pxr/usd/usd/editContext.h"
@@ -887,3 +893,6 @@ bool setLocalTransformSRT(
 }
 
 } // namespace xformUtils
+
+#endif
+#endif

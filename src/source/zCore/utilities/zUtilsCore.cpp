@@ -510,9 +510,16 @@ namespace zSpace
 		{
 			double dist = (positions[i].distanceTo(inPos));
 
-			double r = pow(dist, power);
+			if (dist < EPS)
+			{
+				weights.push_back(1.0);
+			}
+			else
+			{
 
-			weights.push_back(1.0 / r);
+				double r = pow(dist, power);
+				weights.push_back(1.0 / r);
+			}
 
 
 		}
@@ -1046,6 +1053,9 @@ namespace zSpace
 
 	ZSPACE_INLINE double zUtilsCore::minDist_Edge_Point(zVector & pt, zVector & e0, zVector & e1, zVector & closest_Pt)
 	{
+		bool chk = pointOnLine(pt, e0, e1);
+		if (chk) return 0.0;
+
 		zVector temp = (e1 - pt) ^ (e0 - pt);
 		temp.normalize();
 		zVector n = (e1 - e0) ^ temp;

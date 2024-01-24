@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\CMakeFiles\950f6ce75aad93cdbf879c20e55dd1a9\RUN_TESTS_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{26512859-2B82-35D1-8CAF-75B75EBE0D23}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -47,11 +47,9 @@ namespace zSpace
 		//--------------------------
 		//---- PROTECTED ATTRIBUTES
 		//--------------------------
-		/*!	\brief container of particle function set  */
-		vector<zFnParticle> fnParticles;	
-
-		/*!	\brief container of  particle objects  */
-		vector<zObjParticle> particlesObj;
+		///*!	\brief container of particle function set  */
+		//vector<zFnParticle> fnParticles;	
+			
 		
 	public:	
 
@@ -116,6 +114,17 @@ namespace zSpace
 		*/
 		void create(zObjMesh &_meshObj, bool fixBoundary = false);
 
+
+		//--------------------------
+		//--- TOPOLOGY QUERY METHODS 
+		//--------------------------
+
+		/*! \brief This method returns the number of particles in the mesh.
+		*	\return				int - number of particles.
+		*	\since version 0.0.4
+		*/
+		int numParticles();
+
 		//--------------------------
 		//---- SET METHODS 
 		//--------------------------
@@ -161,12 +170,32 @@ namespace zSpace
 		*/
 		void addSpringForce(double strength, zFloatArray& restLength );
 
+		/*! \brief This method adds the drag force to snap two vertices to rest distance.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	v0						- input first vertex id.
+		*	\param	[in]	v1						- input second vertex id.
+		*	\param	[in]	restDistance			- input target distance.
+		*	\since version 0.0.4
+		*/
+		void addDistanceForce(double strength, int v0, int v1, float& restDistance);
+
 		/*! \brief This method adds the smoothness force to the mesh.
 		*	\details based on https://github.com/Dan-Piker/K2Goals/blob/master/TangentialSmooth.cs
 		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
 		*	\since version 0.0.4
 		*/
 		void addSmoothnessForce(double strength);
+
+		/*! \brief This method force the input vertices to a target plane.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vIds					- input planarisation type - zQuadPlanar or zVolumePlanar.
+		*  	\param	[out]	targetCenter			- input target plane center.
+		*  	\param	[out]	targetNormal			- input target plane normal.
+		*	\since version 0.0.4
+		*/
+		void addPlaneForce(double strength, zIntArray vIds, zPoint& targetCenter, zVector& targetNormal);
 
 		/*! \brief This method adds the planarisation forces to the input mesh.
 		*
@@ -176,9 +205,10 @@ namespace zSpace
 		*  	\param	[out]	planarityDeviations		- output container of planarity deviations per face.
 		*  	\param	[out]	forceDir				- output container of planarity force direction per vertex.
 		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*  	\param	[out]	constrainType			- input constraints for the force directions.
 		*	\since version 0.0.4
 		*/
-		void addPlanarityForce(double strength, double tolerance, zPlanarSolverType type, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit);
+		void addPlanarityForce(double strength, double tolerance, zPlanarSolverType type, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit, zSolverForceConstraints constrainType = zConstraintFree);
 
 		/*! \brief This method adds the forces to the keep the input vertex groups to the target planes specified by target centers and normals.
 		*
@@ -229,14 +259,71 @@ namespace zSpace
 		/*! \brief This method adds the forces to keep the input vertex pairs aligned to each other.
 		*	\details based on http://courses.cms.caltech.edu/cs177/hmw/Hmw2.pdf , https://github.com/Dan-Piker/K2Goals/blob/master/SoapFilm.cs
 		* 	\param	[in]	strength				- input strength of the force.
-		*  	\param	[in]	maintainDistance		- input distance to be maintained between vertex pairs of the force.
+		*  	\param	[in]	vertexDistances			- input distance to be maintained between vertex pairs of the force.
 		*	\param	[in]	vertexIDs				- input container of vertex pairs to be kept aligned.
 		*  	\param	[out]	deviations				- output container of deviations per vertex.
 		*  	\param	[out]	forceDir				- output container of planarity force direction per vertex.
 		*  	\param	[out]	exit					- output boolean true if all the vertex gaussian deviations are below tolerance.
 		*	\since version 0.0.4
 		*/
-		void addRigidLineForce(double strength, double maintainDistance, zIntPairArray& vertexIDs, zDoubleArray& deviations, zVectorArray& forceDir, bool& exit);
+		void addRigidLineForce(double strength, double tolerance, zIntPairArray& vertexIDs,zDoubleArray &vertexDistances, zDoubleArray& deviations, zVectorArray& forceDir, bool& exit);
+
+		/*! \brief This method adds the drag force to the input edge.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	eId						- id of edge.
+		*	\param	[in]	restLength				- input value of restlength on edge.
+		*	\since version 0.0.4
+		*/
+		void addSpringForce(double strength, int eId, float restLength);
+
+
+		/*! \brief This method adds the drag force to the input mesh.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vId						- input vertex id.
+		*	\param	[in]	vec						- input load direction.
+		*	\since version 0.0.4
+		*/
+		void addLoadForce(double strength, int vId, zVector& vec);
+
+		/*! \brief This method adds the drag force to the input vertex to a given vector.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vId						- id of vertex to drag.
+		*	\param	[in]	origin					- input position of align vector start.
+		*	\param	[in]	alignVector				- input align vector.
+		*	\since version 0.0.4
+		*/
+		void addVectorForce(double strength, int vId, zPoint& origin, zVector& alignVector);
+
+		/*! \brief This method adds the drag force to the input two edges to a given angle.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	vId						- id of vertex shared by two edges.
+		*	\param	[in]	restAngle				- input value of restAngle between two edges.
+		*	\param	[in]	moveHinge				- if true add force to the particle at hinge/ false add force to the end particles.
+		*	\since version 0.0.4
+		*/
+		void addAngleForce(double strength, int vId, int vId_first, int vId_second, float restAngle, bool moveHinge = true);
+
+		/*! \brief This method adds the forces to keep the input vertex pairs aligned to each other.
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		* 	\param	[in]	tolerance				- input tolerance value below which the force isnt applied.
+		* 	\param	[in]	centerVertexId			- input panel center vertex which shared by four panel faces.
+		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*	\NOT IMPLEMENT YET
+		*/
+		void addFittingForce_cone(double strength, double tolerance, int centerVertexId, bool& exit);
+
+		/*! \brief This method adds the forces to keep the input vertex pairs aligned to each other.
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		* 	\param	[in]	tolerance				- input tolerance value below which the force isnt applied.
+		* 	\param	[in]	centerVertexId			- input panel center vertex which shared by four panel faces.
+		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*	\NOT IMPLEMENT YET
+		*/
+		void addFittingForce_cylinder(double strength, double tolerance, int centerVertexId, bool& exit);
 
 		//--------------------------
 		//---- UPDATE METHODS 

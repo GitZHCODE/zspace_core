@@ -18,6 +18,10 @@
 #include<headers/zInterface/functionsets/zFn.h>
 #include<headers/zInterop/objects/zObjNurbsCurve.h>
 
+#include<headers/zInterface/objects/zObjGraph.h>
+#include<headers/zInterface/functionsets/zFnGraph.h>
+
+
 namespace zSpace
 {
 	/** \addtogroup zInterface
@@ -50,19 +54,12 @@ namespace zSpace
 		/*!	\brief pointer to a graph object  */
 		zObjNurbsCurve *nurbsCurveObj;	
 
-		/*!	\brief core utilities Object  */
-		zUtilsCore coreUtils;
 
 	public:
 
 		//--------------------------
 		//---- PUBLIC ATTRIBUTES
 		//--------------------------
-		/*!	\brief boolean true is its a planar graph  */
-		bool planarGraph;
-
-		/*!	\brief stores normal of the the graph if planar  */
-		zVector graphNormal;
 
 		//--------------------------
 		//---- CONSTRUCTOR
@@ -114,15 +111,29 @@ namespace zSpace
 		//---- CREATE METHODS
 		//--------------------------
 
-		/*! \brief This method creates a graph from the input containers.
+		/*! \brief This method creates a nurbs curve from the input control points.
 		*
-		*	\param		[in]	_positions		- container of type zPoint containing control point positions.
-		*	\param		[in]	edgeConnects	- container of edge connections with vertex ids for each edge
-		*	\param		[in]	staticGraph		- makes the graph fixed. Computes the static edge vertex positions if true.
+		*	\param		[in]	positions			- container of type zPoint containing control point positions.
+		*	\param		[in]	degree				- desired curve degree.
+		*	\param		[in]	periodic			- desired curve periodic.
+		*	\param		[in]	interpolate			- if true the method will create nurbs curve by interpolating the input positions.
+		*	\param		[in]	displayNumPoints	- approxiamte number of points for displaying the curve.
 		*	\since version 0.0.2
 		*/
-		void create(zPointArray(&_positions), int degree,  bool periodic, int displayNumPoints = 20);
-				
+		void create(zPointArray& positions, int degree,  bool periodic, bool interpolate, int displayNumPoints = 20);
+
+		/*! \brief This method creates a nurbs curve from the input obj graph.
+		*
+		*	\param		[in]	in_graph			- input obj graph.
+		*	\param		[in]	sampleDist			- sample distance used to re sample the obj graph. skip resampling if sampleDist = 0
+		*	\param		[in]	degree				- desired curve degree.
+		*	\param		[in]	periodic			- desired curve periodic.
+		*	\param		[in]	interpolate			- if true the method will create nurbs curve by interpolating the input positions.
+		*	\param		[in]	displayNumPoints	- approxiamte number of points for displaying the curve.
+		*	\warning	only works on a continuous polyline graph.
+		*	\since version 0.0.2
+		*/
+		void create(zObjGraph& in_graph, double sampleDist, int degree, bool periodic, bool interpolate, int displayNumPoints);
 
 		//--------------------------
 		//--- TOPOLOGY QUERY METHODS 
@@ -134,15 +145,97 @@ namespace zSpace
 		*/
 		int numControlVertices();
 
-		
-	
-
 		//--------------------------
-		//--- COMPUTE METHODS 
+		//--- COMPUTE METHODS
 		//--------------------------
 
-		void intersect(zPlane &plane, zPoint &intersectionPt, double &t);
+		/*! \brief This method computes the closest point on curve to the input test point.
+		*
+		*	\param		[in]	testPoint		- input point to test.
+		*	\param		[out]	closestPoint	- output point on curve.
+		*	\param		[out]	t				- output curve parameter of closest point.
+		*	\since version 0.0.2
+		*/
+		void closestPoint(zPoint& testPoint, zPoint& closestPoint, double& t);
+
+		/*! \brief This method computes the closest point between two curves .
+		*
+		*	\param		[in]	curveB			- input point to test.
+		*	\param		[out]	closestPoint_A	- output point on curve A.
+		*	\param		[out]	closestPoint_B	- output point on curve B.
+		* 	\param		[out]	t_A				- output curve parameter on curve A.
+		*	\param		[out]	t_B				- output curve parameter on curve B.
+		*	\since version 0.0.2
+		*/
+		void closestPoint(zObjNurbsCurve& curveB, zPoint& closestPoint_A, zPoint& closestPoint_B, double& t_A, double& t_B);
+
+		/*! \brief This method divides the curve by input segment count.
+		*
+		*	\param		[in]	numSegments		- input desired number of curve divisions.
+		*	\param		[out]	positions		- output points on curve.
+		*	\param		[out]	tParams			- output parameters at divisions.
+		*	\since version 0.0.2
+		*/
+		void divideByCount(int numSegments, zPointArray& positions, zDoubleArray& tParams);
+
+		/*! \brief This method divides the curve by input length.
+		*
+		*	\param		[in]	length			- input desired length of curve divisions.
+		*	\param		[out]	positions		- output points on curve.
+		*	\param		[out]	tParams			- output parameters at divisions.
+		*	\since version 0.0.2
+		*/
+		void divideByLength(double length, zPointArray& positions, zDoubleArray& tParams);
+
+		/*! \brief This method computes the sub curve from the input domain d0 to d1
+		*
+		*	\param		[in]	t0					- input domain start for subtraction.
+		*	\param		[in]	t1					- input domain end for subtraction.
+		*	\param		[in]	normalise			- normalise sub curve to (0,1) if true.
+		*	\param		[out]	out_SubCurve		- output sub curve.
+		*	\param		[in]	displayNumPoints	- output sub curve display num points.
+		*	\since version 0.0.2
+		*/
+		void computeSubCurve(double t0, double t1, bool normalise, zObjNurbsCurve& out_SubCurve, int displayNumPoints = 100);
+
+		/*! \brief This method reverses the curve direction.
+		*
+		*	\since version 0.0.2
+		*/
+		void reverse();
+
+		//--------------------------
+		//--- INTERSECT METHODS 
+		//--------------------------
+
+		/*! \brief This method computes the intersections to the input plane.
+		*
+		*	\param		[in]	plane			- input plane to intersect.
+		*	\param		[out]	intersectionPts	- output intersection points if valid.
+		*	\param		[out]	tParams			- output on curve parameters where intersections happened.
+		*	\since version 0.0.2
+		*/
+		void intersect(zPlane &plane, zPointArray &intersectionPts, zDoubleArray & tParams);
 		
+		/*! \brief This method computes the intersections to the input curve.
+		*
+		*	\param		[in]	curveB				- input curve to intersect.
+		*	\param		[out]	intersectionPts_A	- output intersection points on this curve if valid.
+		*	\param		[out]	tParams_A			- output on curve parameters on this curve where intersections happened.
+		*	\param		[out]	intersectionPts_B	- output intersection points on curveB if valid.
+		*	\param		[out]	tParams_B			- output on curve parameters on curveB where intersections happened.
+		*	\since version 0.0.2
+		*/
+		void intersect(zObjNurbsCurve& curveB, zPointArray& intersectionPts_A, zPointArray& intersectionPts_B, zDoubleArray& tParams_A, zDoubleArray& tParams_B);
+
+		/*! \brief This method computes the intersection on the curve itself.
+		*
+		*	\param		[out]	intersectionPts	- output intersection points if valid.
+		*	\param		[out]	tParams			- output on curve parameters where intersections happened.
+		*	\since version 0.0.2
+		*/
+		void intersectSelf(zPointArray& intersectionPts, zDoubleArray& tParams);
+
 
 		//--------------------------
 		//--- SET METHODS 
@@ -153,8 +246,14 @@ namespace zSpace
 		*	\param		[in]	_degree				- input degree.
 		*	\since version 0.0.2
 		*/
-		void setDegree(int _degree);
+		void setDegree(int _degree, int _displayNumPoints);
 
+		/*! \brief This method reparameterise the curve with new domain (t0, t1).
+		*	\param		[in]	t0			- input domain start.
+		*	\param		[in]	t1			- input domain end.
+		*	\since version 0.0.2
+		*/
+		void setDomain(double t0 = 0.0, double t1 = 1.0);
 
 		/*! \brief This method sets curve color to the input color.
 		*
@@ -190,6 +289,13 @@ namespace zSpace
 		*/
 		void getCurvePositions( int numPoints, zPointArray& positions);
 
+		/*! \brief This method gets the control points of the curve.
+		*
+		*	\param		[out]	positions			- output container of control points positions
+		*	\since version 0.0.4
+		*/
+		void getControlPoints(zPointArray& positions);
+
 		/*! \brief This method gets pointer to the internal curve positions container.
 		*
 		*	\return				zPoint*					- pointer to internal vertex position container.
@@ -224,11 +330,10 @@ namespace zSpace
 
 		/*! \brief This method gets pointer to the internal curve positions container.
 		*
-		*	\param		[out]	numPoints				- output number of points in container.
 		*	\return				zPoint*					- pointer to internal vertex position container.
 		*	\since version 0.0.4
 		*/
-		zPoint* getRawDisplayPositions(int& numPoints);
+		zPoint* getRawDisplayPositions();
 		
 		/*! \brief This method gets the center the curve.
 		*

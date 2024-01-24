@@ -1,0 +1,32 @@
+# CMake generation dependency list for this directory.
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/CPack.cmake
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/CPackComponent.cmake
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/CTest.cmake
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/CTestTargets.cmake
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/CTestUseLaunchers.cmake
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/DartConfiguration.tcl.in
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/FindGit.cmake
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/GNUInstallDirs.cmake
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Modules/InstallRequiredSystemLibraries.cmake
+C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.20/Templates/CPackConfig.cmake.in
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/CMakeLists.txt
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/CTestConfig.cmake
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/check_arm_neon.cpp
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/check_isa.cpp
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/check_isa_default.cmake
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/embree-config-builddir.cmake
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/embree-config-version.cmake
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/embree-config.cmake
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/ispc.cmake
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/msvc.cmake
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/msvc_post.cmake
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/package.cmake
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/test.cmake
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/common/cmake/uninstall.cmake.in
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/kernels/config.h.in
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/kernels/export.linux.map.in
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/kernels/export.macosx.map.in
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/kernels/hash.h.in
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/embree-src/kernels/rtcore_config.h.in

@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\03785e5cfe439f7e79d8668685cacaf1\triangle-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\03785e5cfe439f7e79d8668685cacaf1\triangle-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\03785e5cfe439f7e79d8668685cacaf1\triangle-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\03785e5cfe439f7e79d8668685cacaf1\triangle-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\03785e5cfe439f7e79d8668685cacaf1\triangle-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\03785e5cfe439f7e79d8668685cacaf1\triangle-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\03785e5cfe439f7e79d8668685cacaf1\triangle-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\03785e5cfe439f7e79d8668685cacaf1\triangle-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\1f19f9f61161878be763aed9e2eac350\triangle-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\37c60c1b3bdad5e197d975858d882774\triangle-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\triangle-subbuild\CMakeFiles\triangle-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{DA5E57EB-9D70-35ED-84F5-F29508A2612B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

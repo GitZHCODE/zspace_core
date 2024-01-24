@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\6ce4c21fe29599b3f9e7dabe7296c2c4\stb-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\6ce4c21fe29599b3f9e7dabe7296c2c4\stb-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\6ce4c21fe29599b3f9e7dabe7296c2c4\stb-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\6ce4c21fe29599b3f9e7dabe7296c2c4\stb-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\6ce4c21fe29599b3f9e7dabe7296c2c4\stb-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\6ce4c21fe29599b3f9e7dabe7296c2c4\stb-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\6ce4c21fe29599b3f9e7dabe7296c2c4\stb-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\6ce4c21fe29599b3f9e7dabe7296c2c4\stb-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\af14666650603c0123a9287a66b413dd\stb-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\00a34ed0578f6d86401ea48453c0d29a\stb-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\stb-subbuild\CMakeFiles\stb-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{1C1A1C27-E035-34DF-80EE-1BEC43F34416}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

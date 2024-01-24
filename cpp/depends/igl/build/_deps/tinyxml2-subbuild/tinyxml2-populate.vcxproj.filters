@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\166c082c5c966f24dce6d3af0eec9ab6\tinyxml2-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\166c082c5c966f24dce6d3af0eec9ab6\tinyxml2-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\166c082c5c966f24dce6d3af0eec9ab6\tinyxml2-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\166c082c5c966f24dce6d3af0eec9ab6\tinyxml2-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\166c082c5c966f24dce6d3af0eec9ab6\tinyxml2-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\166c082c5c966f24dce6d3af0eec9ab6\tinyxml2-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\166c082c5c966f24dce6d3af0eec9ab6\tinyxml2-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\166c082c5c966f24dce6d3af0eec9ab6\tinyxml2-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\8f352fb2b3e9f60f02d7141eae5cb384\tinyxml2-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\c07a86ed4dec7921ea0a1a35ffa314f9\tinyxml2-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\tinyxml2-subbuild\CMakeFiles\tinyxml2-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{FABE871B-3C4B-3CCF-8B44-37ABAD10E94B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

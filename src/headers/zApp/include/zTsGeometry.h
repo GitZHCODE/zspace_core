@@ -12,12 +12,12 @@
 
 //#include <headers/zToolsets/geometry/zTsMesh2Pix.h>
 
-#include <headers/zToolsets/geometry/zTsSDFBridge.h>
+//#include <headers/zToolsets/geometry/zTsSDFBridge.h>
 
 #include <headers/zToolsets/geometry/zTsSDFSlicer.h>
 
-#include <headers/zToolsets/geometry/zTsSpatialGraph.h>
+//#include <headers/zToolsets/geometry/zTsSpatialGraph.h>
 
 #include <headers/zToolsets/geometry/zTsMeshParameterization.h>
 
-#include <headers/zToolsets/geometry/zTsPaneling.h>
+//#include <headers/zToolsets/geometry/zTsPaneling.h>

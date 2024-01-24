@@ -1,0 +1,14 @@
+# Target labels
+ mpfr-populate
+# Source files and their labels
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/mpfr-populate
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/f183cf292979a301746fc147616e2b5d/mpfr-populate.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/81a8d756a11137d8206b0df82cfaf92e/mpfr-populate-complete.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-build.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-configure.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-download.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-install.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-mkdir.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-patch.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-test.rule
+C:/Users/vishu.b/source/repos/libigl/precompile/_deps/mpfr-subbuild/CMakeFiles/4de375d5dafc8458b265ea79c9bfefc4/mpfr-populate-update.rule

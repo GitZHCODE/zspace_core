@@ -19,15 +19,28 @@
 #include<zInterface/objects/zObjMesh.h>
 #include<zInterface/objects/zObjGraph.h>
 
-#include<zInterface/functionsets/zFn.h>
+#include <headers/zInterface/objects/zObjParticle.h>
 
-#include<zInterface/iterators/zItMesh.h>
+#include<headers/zInterface/functionsets/zFn.h>
+#include<headers/zInterface/iterators/zItMesh.h>
+
+#include <igl/avg_edge_length.h>
+#include <igl/cotmatrix.h>
+#include <igl/invert_diag.h>
+#include <igl/massmatrix.h>
+#include <igl/parula.h>
+#include <igl/per_corner_normals.h>
+#include <igl/per_face_normals.h>
+#include <igl/per_vertex_normals.h>
+#include <igl/principal_curvature.h>
+#include <igl/gaussian_curvature.h>
+#include <igl/read_triangle_mesh.h>
 
 #if defined ZSPACE_USD_INTEROP
-#include <pxr/usd/usdGeom/mesh.h>
-#include <pxr/usd/usd/primRange.h>
-#include <pxr/usd/usdGeom/xform.h>
-#include <pxr/usd/usdGeom/subset.h>
+//#include <pxr/usd/usdGeom/mesh.h>
+//#include <pxr/usd/usd/primRange.h>
+//#include <pxr/usd/usdGeom/xform.h>
+//#include <pxr/usd/usdGeom/subset.h>
 
 #endif
 
@@ -57,11 +70,11 @@ namespace zSpace
 
 	protected:
 
-		/*!	\brief core utilities Object  */
-		zUtilsCore coreUtils;
-
 		/*!	\brief pointer to a mesh object  */
 		zObjMesh *meshObj;
+
+		/*!	\brief container of  particle objects  */
+		vector<zObjParticle> particlesObj;
 
 	public:
 		
@@ -346,6 +359,37 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		void makeConvexHull(zPointArray &pts);
+
+		/*! \brief This method checks if the mesh is a triangle mesh.
+		*
+		*	\return			bool			- true if its a triangle mesh .
+		*	\since version 0.0.4
+		*/
+		bool isTriMesh();
+
+		/*! \brief This method checks if the mesh is a quad mesh.
+		*
+		*	\return			bool			- true if its a quad mesh .
+		*	\since version 0.0.4
+		*/
+		bool isQuadMesh();
+
+		/*! \brief This method computes the splits points on the input edge loop.
+		*
+		*	\param		[in]	_heLoop		- input container of halfedges, which make a continuous loop.
+		*	\param		[in]	divs		- input number of divisions.
+		*	\param		[out]	divPoints	- output contatiner of split points.
+		*	\since version 0.0.4
+		*/
+		void computeEdgeLoop_Split(vector<zItMeshHalfEdge> &_heLoop, int divs, vector<zPoint> &divPoints);
+
+		/*! \brief This method computes the length on the input edge loop.
+		*
+		*	\param		[in]	_heLoop		- input container of halfedges, which make a continuous loop.
+		*	\return				float		- output length of edge loop.
+		*	\since version 0.0.4
+		*/
+		float computeEdgeLoop_Length(vector<zItMeshHalfEdge>& _heLoop);
 
 		//--------------------------
 		//--- SET METHODS 
@@ -655,14 +699,7 @@ namespace zSpace
 		*	\param		[out]	vertexCurvature		- container of vertex curvature.
 		*	\since version 0.0.2
 		*/
-		void getPrincipalCurvatures(zCurvatureArray &vertexCurvatures);
-
-		/*! \brief This method computes the principal curvatures of the mesh faces.
-		*
-		*	\param		[out]	faceCurvatures		- container of face curvature.
-		*	\since version 0.0.2
-		*/
-		void getPrincipalCurvaturesPerFace(zCurvatureArray& faceCurvatures);
+		void getPrincipalCurvatures(zCurvatureArray &vertexCurvatures, zVectorArray &pVector1, zVectorArray&pVector2);
 
 		/*! \brief This method computes the gaussian curvature of the mesh vertices.
 		*
@@ -670,6 +707,16 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void getGaussianCurvature(zDoubleArray &vertexCurvatures);
+
+		/*! \brief This method computes the planarity deviation of the mesh faces.
+		*
+		*	\param		[out]	planarityDevs		- container of planarity deviations per face.
+		*	\param		[in]	type				- input planarity type for tolernace check - zQuadPlanar or zVolumePlanar.
+		*	\param		[in]	colorFaces			- input boolean if the faces are to be colored.
+		*	\param		[in]	tolerance			- input tolerance for planarity.
+		*	\since version 0.0.4
+		*/
+		void getPlanarityDeviationPerFace(zDoubleArray& planarityDevs, zPlanarSolverType type, bool colorFaces = false, double tolerance = EPS);
 
 		/*! \brief This method computes the dihedral angle per edge of mesh.
 		*
@@ -850,7 +897,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*	\warning	works only with vertex color gradients Red to Black.
 		*/
-		void getIsobandMesh(zObjMesh &coutourMeshObj, float inThresholdLow = 0.2, float inThresholdHigh = 0.5);
+		void getIsobandMesh(zScalarArray& vertexScalars, float inThresholdLow, float inThresholdHigh, zObjMesh& coutourMeshObj);
 
 		//--------------------------
 		//---- TRI-MESH MODIFIER METHODS
@@ -1058,7 +1105,7 @@ namespace zSpace
 		*/
 		int getIsolineCase_triangle(bool vertexBinary[3]);
 
-
+public:
 		/*! \brief This method gets the isoline case based on the input vertex binary values for quads.
 		*
 		*	\details based on https://en.wikipedia.org/wiki/Marching_squares. The sequencing is reversed as CCW windings are required.
@@ -1068,6 +1115,7 @@ namespace zSpace
 		*/
 		int getIsolineCase(bool vertexBinary[4]);
 
+protected:
 		/*! \brief This method gets the isoline case based on the input vertex ternary values.
 		*
 		*	\details based on https://en.wikipedia.org/wiki/Marching_squares. The sequencing is reversed as CCW windings are required.
@@ -1099,7 +1147,6 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void getIsoline(zScalarArray& vertexScalars, zItMeshFace& f, zPointArray& positions, zIntArray& edgeConnects, zColorArray& cVertexColor, unordered_map <string, int>& positionVertex, float& threshold, int precision, float distTolerance);
-
 
 		/*! \brief This method gets the isoline polygon for the input mesh at the given input face index.
 		*
@@ -1142,7 +1189,7 @@ namespace zSpace
 		*	\param	[in]	thresholdHigh	- field threshold domain maximum.
 		*	\since version 0.0.2
 		*/
-		void getIsobandPoly(zItMeshFace& f, zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float&thresholdLow, float&thresholdHigh);
+		void getIsobandPoly(zScalarArray& vertexScalars, zItMeshFace& f, zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float&thresholdLow, float&thresholdHigh);
 
 
 	private:

@@ -154,28 +154,28 @@ namespace zSpace
 	*/
 	
 	/** Red Color. */
-	#define zRED zColor(1,0,0,1);
+	inline zColor zRED(0.95, 0.0, 0.55, 1);
 
 	/** Green Color. */
-	#define zGREEN zColor(0,1,0,1);
+	inline zColor zGREEN(0, 0.95, 0.15, 1);
 
 	/** Blue Color. */
-	#define zBLUE zColor(0,0,1,1);
+	inline zColor zBLUE(0, 0.15, 0.95, 1);
 
 	/** White Color. */
-	#define zWHITE zColor(1,1,1,1);
+	inline zColor zWHITE(1, 1, 1, 1);
 
 	/** Black Color. */
-	#define zBLACK zColor(0,0,0,1);
+	inline zColor zBLACK(0, 0, 0, 1);
 
 	/** Magenta Color. */
-	#define zMAGENTA zColor(1,0,1,1);
+	inline zColor zMAGENTA(0.95, 0, 0.55, 1);
 
 	/** Yellow Color. */
-	#define zYELLOW zColor(1,1,0,1);
+	inline zColor zYELLOW(0.55, 0.95, 0, 1);
 
 	/** Cyan Color. */
-	#define zCYAN zColor(0,1,1,1);
+	inline zColor zCYAN(0.00, 0.95, 0.95, 1);
 
 	/** @}*/
 

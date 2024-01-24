@@ -5,8 +5,9 @@
     <RhinoDir>C:\Program Files\Rhino 7 SDK</RhinoDir>
     <MayaDir>C:\Program Files\Autodesk\Maya2020</MayaDir>
     <CudaCommonDir>C:\ProgramData\NVIDIA Corporation\CUDA Samples\v10.2\common\inc</CudaCommonDir>
-    <zspaceDeployDir>C:\Users\vishu.b\source\repos\GitZHCODE\zspace_alice\ALICE_PLATFORM\src\zspace</zspaceDeployDir>
-    <aliceEXEDir>C:\Users\vishu.b\source\repos\GitZHCODE\zspace_alice\ALICE_PLATFORM\x64\Release\EXE</aliceEXEDir>
+    <codeRepoDir>C:\Users\vishu.b\source\repos\GitZHCODE</codeRepoDir>
+    <zspaceDeployDir>$(codeRepoDir)\zspace_alice\ALICE_PLATFORM\src\zspace</zspaceDeployDir>
+    <aliceEXEDir>$(codeRepoDir)\zspace_alice\ALICE_PLATFORM\x64\Release\EXE</aliceEXEDir>
   </PropertyGroup>
   <PropertyGroup>
     <_PropertySheetDisplayName>zCore</_PropertySheetDisplayName>
@@ -14,7 +15,7 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>CALL "$(SolutionDir)scripts\"zspace_libdeploy.bat "$(outDir)" "$(zspaceDeployDir)\lib\$(configuration)"
-REM CALL "$(SolutionDir)scripts\"zspace_dlldeploy.bat "$(outDir)" "$(aliceEXEDir)"
+CALL "$(SolutionDir)scripts\"zspace_libdeploy.bat "$(outDir)" "$(aliceEXEDir)\lib_zspace\$(configuration)"
 CALL "$(SolutionDir)scripts\"zspace_includedeploy.bat "$(SolutionDir)\cpp\headers" "$(zspaceDeployDir)\headers"
 REM CALL "$(SolutionDir)scripts\"zspace_includedeploy.bat "$(SolutionDir)\cpp\depends" "$(zspaceDeployDir)\depends"</Command>
     </PostBuildEvent>
@@ -30,6 +31,10 @@ REM CALL "$(SolutionDir)scripts\"zspace_includedeploy.bat "$(SolutionDir)\cpp\de
     </BuildMacro>
     <BuildMacro Include="CudaCommonDir">
       <Value>$(CudaCommonDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="codeRepoDir">
+      <Value>$(codeRepoDir)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
     <BuildMacro Include="zspaceDeployDir">

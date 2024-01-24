@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ovConnectorDir)\_build\target-deps\python\include;$(ovConnectorDir)\_build\target-deps\usd\release\include;$(ovConnectorDir)\_build\target-deps\usd_ext_physics\release\include;$(ovConnectorDir)\_build\target-deps\omni_client_library\include;$(ovConnectorDir)\_build\target-deps\omni_usd_resolver\include;$(ovConnectorDir)\_build\target-deps\tinytoml\include;$(ovConnectorDir)\source\omniUtilsLib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ovConnectorDir)\_build\target-deps\python\include;$(ovConnectorDir)\_build\target-deps\usd\release\include;$(ovConnectorDir)\_build\target-deps\usd_ext_physics\release\include;$(ovConnectorDir)\_build\target-deps\omni_client_library\include;$(ovConnectorDir)\_build\target-deps\omni_usd_resolver\include;$(ovConnectorDir)\_build\target-deps\tinytoml\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ZSPACE_USD_INTEROP;BOOST_ALL_DYN_LINK;BOOST_LIB_TOOLSET="vc142";TBB_USE_DEBUG=0;_CRT_SECURE_NO_WARNINGS;NDEBUG;NOMINMAX;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

@@ -21,6 +21,7 @@
 #
 ###############################################################################*/
 
+#if defined ZSPACE_USD_INTEROP
 //#include "OmniChannel.h"
 #include <headers/zInterOp/core/omniUtils/OmniChannel.h>
 #include <cstring>
@@ -507,4 +508,4 @@ const OmniPeerUser& OmniChannel::GetUserAtIndex(size_t index) const
     return Pimpl()->GetUserAtIndex(index);
 }
 
-
+#endif

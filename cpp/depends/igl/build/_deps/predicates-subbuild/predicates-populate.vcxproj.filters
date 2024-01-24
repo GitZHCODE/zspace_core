@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\f289961b30d44f892b4263a58b6d93b9\predicates-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\f289961b30d44f892b4263a58b6d93b9\predicates-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\f289961b30d44f892b4263a58b6d93b9\predicates-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\f289961b30d44f892b4263a58b6d93b9\predicates-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\f289961b30d44f892b4263a58b6d93b9\predicates-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\f289961b30d44f892b4263a58b6d93b9\predicates-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\f289961b30d44f892b4263a58b6d93b9\predicates-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\f289961b30d44f892b4263a58b6d93b9\predicates-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\c3517df3abaf9f3747ac318c454f15fe\predicates-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\7049835e629da8c9b2a7f09fbdb153c3\predicates-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\vishu.b\source\repos\libigl\precompile\_deps\predicates-subbuild\CMakeFiles\predicates-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{37802DBE-94EF-3024-9E77-3F32EA20DEF0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
