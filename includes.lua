@@ -13,6 +13,8 @@ function get_include_dirs()
     IncludeDir["SPECTRA"] = "Dependencies/spectra/inlude"
     IncludeDir["SQLITE"] = "Dependencies/SQLITE"
     IncludeDir["TOOJPEG"] = "Dependencies/tooJPEG"
+    IncludeDir["IGL"] = "Dependencies/igl"
+    IncludeDir["OMNIVERSE"] = "Dependencies/omniverse"
     IncludeDir["SRC"] = "src"
     return IncludeDir
 end
