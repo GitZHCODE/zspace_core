@@ -11,7 +11,7 @@
 //
 
 
-#include<zInterface/iterators/zItMesh.h>
+#include<headers/zInterface/iterators/zItMesh.h>
 
 //---- ZIT_MESH_VERTEX ------------------------------------------------------------------------------
 

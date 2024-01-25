@@ -15,16 +15,16 @@
 
 #pragma once
 
-#include<zInterface/objects/zObjPointCloud.h>
-#include<zInterface/objects/zObjGraph.h>
-#include<zInterface/objects/zObjMesh.h>
-#include<zInterface/objects/zObjPointField.h>
+#include<headers/zInterface/objects/zObjPointCloud.h>
+#include<headers/zInterface/objects/zObjGraph.h>
+#include<headers/zInterface/objects/zObjMesh.h>
+#include<headers/zInterface/objects/zObjPointField.h>
 
-#include<zInterface/functionsets/zFnMesh.h>
-#include<zInterface/functionsets/zFnGraph.h>
-#include<zInterface/functionsets/zFnPointCloud.h>
+#include<headers/zInterface/functionsets/zFnMesh.h>
+#include<headers/zInterface/functionsets/zFnGraph.h>
+#include<headers/zInterface/functionsets/zFnPointCloud.h>
 
-#include<zInterface/iterators/zItPointField.h>
+#include<headers/zInterface/iterators/zItPointField.h>
 
 namespace zSpace
 {

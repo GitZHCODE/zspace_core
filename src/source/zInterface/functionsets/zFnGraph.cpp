@@ -11,7 +11,7 @@
 //
 
 
-#include<zInterface/functionsets/zFnGraph.h>
+#include<headers/zInterface/functionsets/zFnGraph.h>
 
 namespace zSpace
 {

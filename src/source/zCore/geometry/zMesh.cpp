@@ -11,7 +11,7 @@
 //
 
 
-#include<zCore/geometry/zMesh.h>
+#include<headers/zCore/geometry/zMesh.h>
 
 namespace zSpace
 {

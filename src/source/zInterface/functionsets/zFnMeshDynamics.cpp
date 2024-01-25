@@ -11,7 +11,7 @@
 //
 
 
-#include<zInterface/functionsets/zFnMeshDynamics.h>
+#include<headers/zInterface/functionsets/zFnMeshDynamics.h>
 
 namespace zSpace
 {

@@ -11,7 +11,7 @@
 //
 
 
-#include<zCore/geometry/zHEGeomTypes.h>
+#include<headers/zCore/geometry/zHEGeomTypes.h>
 
 //---- ZEDGE ------------------------------------------------------------------------------
 

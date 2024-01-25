@@ -11,7 +11,7 @@
 //
 
 
-#include<zCore/display/zObjBuffer.h>
+#include<headers/zCore/display/zObjBuffer.h>
 
 namespace zSpace
 {

@@ -11,7 +11,7 @@
 //
 
 
-#include <zInterface/objects/zObjComputeMesh.h>
+#include <headers/zInterface/objects/zObjComputeMesh.h>
 
 namespace zSpace
 {

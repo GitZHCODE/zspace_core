@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <iostream>
 
-#include<zCore/base/zInline.h>
+#include<headers/zCore/base/zInline.h>
 
 namespace zSpace
 {

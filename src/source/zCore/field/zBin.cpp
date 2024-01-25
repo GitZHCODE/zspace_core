@@ -10,7 +10,7 @@
 // Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
 //
 
-#include<zCore/field/zBin.h>
+#include<headers/zCore/field/zBin.h>
 
 namespace zSpace
 {

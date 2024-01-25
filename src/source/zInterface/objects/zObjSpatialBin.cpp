@@ -11,7 +11,7 @@
 //
 
 
-#include<zInterface/objects/zObjSpatialBin.h>
+#include<headers/zInterface/objects/zObjSpatialBin.h>
 
 namespace zSpace
 {

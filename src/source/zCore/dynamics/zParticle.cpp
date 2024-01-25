@@ -11,7 +11,7 @@
 //
 
 
-#include<zCore/dynamics/zParticle.h>
+#include<headers/zCore/dynamics/zParticle.h>
 
 namespace zSpace
 {

@@ -19,8 +19,8 @@
 #include <vector>
 using namespace std;
 
-#include "zCore/base/zDefinitions.h"
-#include "zCore/base/zMatrix.h"
+#include "headers/zCore/base/zDefinitions.h"
+#include "headers/zCore/base/zMatrix.h"
 
 namespace  zSpace
 {

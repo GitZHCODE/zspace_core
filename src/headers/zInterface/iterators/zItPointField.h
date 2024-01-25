@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include<zInterface/iterators/zItPointCloud.h>
-#include<zInterface/objects/zObjPointField.h>
+#include<headers/zInterface/iterators/zItPointCloud.h>
+#include<headers/zInterface/objects/zObjPointField.h>
 
 namespace zSpace
 {

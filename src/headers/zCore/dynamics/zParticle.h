@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include <zCore/base/zVector.h>
-#include <zCore/base/zMatrix.h>
-#include <zCore/base/zColor.h>
+#include <headers/zCore/base/zVector.h>
+#include <headers/zCore/base/zMatrix.h>
+#include <headers/zCore/base/zColor.h>
 
 namespace zSpace
 {

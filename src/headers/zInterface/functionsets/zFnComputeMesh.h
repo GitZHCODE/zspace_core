@@ -19,10 +19,10 @@
 #include <string>
 using namespace std;
 
-#include <zInterface/functionsets/zFn.h>
-#include <zInterface/functionsets/zFnParticle.h>
+#include <headers/zInterface/functionsets/zFn.h>
+#include <headers/zInterface/functionsets/zFnParticle.h>
 
-#include <zInterface/objects/zObjComputeMesh.h>
+#include <headers/zInterface/objects/zObjComputeMesh.h>
 
 namespace  zSpace
 {

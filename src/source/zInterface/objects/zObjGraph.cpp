@@ -11,7 +11,7 @@
 //
 
 
-#include<zInterface/objects/zObjGraph.h>
+#include<headers/zInterface/objects/zObjGraph.h>
 
 namespace zSpace
 {

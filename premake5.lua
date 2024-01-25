@@ -14,21 +14,6 @@ IncludeDir = get_include_dirs()
 
 LibDir = get_lib_dirs()
 
-PropsFiles = {}
-PropsFiles["zCore"] = "../../PropertySheets/zCorePropertySheet.props"
-PropsFiles["OV_203"] = "../../PropertySheets/OV_203.props"
-PropsFiles["zInterface"] = "../../PropertySheets/zInterfacePropertySheet.props"
-PropsFiles["zInterOp"] = "../../PropertySheets/zInterOpPropertySheet.props"
-
-PropsDir = {}
---          project        propfiles                   configurations
-PropsDir["zSpace_Core"] = {{{"zCore"}, {"Release_DLL", "Release_DLL_OV"}}}
-
-PropsDir["zSpace_Interface"] = {{{"zCore", "OV_203"}, {"Release_DLL_OV"}}, --removed "Release"
-                                {{"zCore"},           {"Debug", "Release_DLL"}},
-                                {{"zInterface"}, {"Release_Make", "Release_Unreal"}}}
-
-
 --#############__GENERAL__CONFIGURATION__SETTINGS__#############
 function CommonConfigurationSettings()
     filter "configurations:Debug"
@@ -105,23 +90,22 @@ project "zSpace_App"
         "src/source/zApp/**.cpp",
         --Source files of Includes
         "%{IncludeDir.ALGLIB}/**.cpp",
-        --Other Prj includes
     }
 
     includedirs
     {
         "%{IncludeDir.ARMADILLO}",
         "%{IncludeDir.ALGLIB}",
-        "Dependencies",
-        "src"
+        "%{IncludeDir.SRC}",
+        "%{IncludeDir.DEPS}",
     }
 
     libdirs
     {
         "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
-        "bin/dll",
-        "bin/lib"
+        "%{LibDir.OUTDLL}",
+        "%{LibDir.OUTLIB}",
     }
 
     links
@@ -169,7 +153,6 @@ project "zSpace_Core"
     {
         "%{IncludeDir.ARMADILLO}",
         "%{IncludeDir.ALGLIB}",
-        "$(MayaDir)/include",
         "%{IncludeDir.LODEPNG}",
         "%{IncludeDir.TOOJPEG}",
         "%{IncludeDir.EIGEN}",
@@ -178,14 +161,16 @@ project "zSpace_Core"
         "%{IncludeDir.FREEGLUT}",
         "%{IncludeDir.NLOHMANN}",
         "%{IncludeDir.QUICKHULL}",
-        "src/headers"
+        "%{IncludeDir.RHINOSDK}",
+        "%{IncludeDir.SRC}",
     }
 
     libdirs
     {
         "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
-        "%{LibDir.FREEGLUT}"
+        "%{LibDir.FREEGLUT}",
+        "%{LibDir.RHINOSDK}"
     }
 
     links
@@ -237,7 +222,9 @@ project "zSpace_Interface"
         "%{IncludeDir.QUICKHULL}",
         "%{IncludeDir.GLEW}",
         "%{IncludeDir.FREEGLUT}",
-        "src/headers"
+        "%{IncludeDir.IGL}",
+        "%{IncludeDir.SRC}",
+        "%{IncludeDir.DEPS}",
     }
 
     libdirs
@@ -245,8 +232,8 @@ project "zSpace_Interface"
         "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
         "%{LibDir.FREEGLUT}",
-        "bin/dll",
-        "bin/lib"
+        "%{LibDir.OUTDLL}",
+        "%{LibDir.OUTLIB}",
     }
 
     links
@@ -274,6 +261,11 @@ project "zSpace_InterOp"
 
     CommonConfigurationSettings()
 
+    -- Exclude zFnComputeMesh from builds
+    filter {"files:**zRhinoCore.*"}
+        flags {"ExcludeFromBuild"}
+    filter {}
+
     files
     {
         "src/headers/zInterOp/**.h",
@@ -286,18 +278,30 @@ project "zSpace_InterOp"
     {
         "%{IncludeDir.ARMADILLO}",
         "%{IncludeDir.ALGLIB}",
-        "Dependencies",
-        "src"
+        "%{IncludeDir.LODEPNG}",
+        "%{IncludeDir.TOOJPEG}",
+        "%{IncludeDir.EIGEN}",
+        "%{IncludeDir.SQLITE}",
+        "%{IncludeDir.GLEW}",
+        "%{IncludeDir.FREEGLUT}",
+        "%{IncludeDir.NLOHMANN}",
+        "%{IncludeDir.QUICKHULL}",
+        "%{IncludeDir.RHINOSDK}",
+        "%{IncludeDir.MAYA}",
+        "%{IncludeDir.IGL}",
+        "%{IncludeDir.SRC}",
+        "%{IncludeDir.DEPS}",
     }
 
     libdirs
     {
         "%{LibDir.GLEW}",
+        "%{LibDir.FREEGLUT}",
         "%{LibDir.SQLITE}",
-        "bin/dll",
-        "bin/lib",
-        "$(MayaDir)/lib",
-        "$(RhinoDir)/lib/Release"
+        "%{LibDir.RHINOSDK}",
+        "%{LibDir.MAYA}",
+        "%{LibDir.OUTDLL}",
+        "%{LibDir.OUTLIB}",
     }
 
     links
@@ -306,14 +310,14 @@ project "zSpace_InterOp"
         "zSpace_Interface.lib",
         "opennurbs.lib",
         "RhinoCore.lib",
-        "RhinoLibrary.lib",
-        "OpenMayaRender.lib",
-        "OpenMayaFX.lib",
-        "OpenMayaAnim.lib",
-        "OpenMaya.lib",
-        "OpenMayaUI.lib",
-        "Foundation.lib",
+        --"OpenMayaRender.lib",
+        --"OpenMayaFX.lib",
+        --"OpenMayaAnim.lib",
+        --"OpenMaya.lib",
+        --"OpenMayaUI.lib",
+        --"Foundation.lib",
         "sqlite3.lib",
+        "freeglut.lib",
     }
 
     --ZPACE_INTEROP_SPECIFIC_CONFIGURATION_SETTINGS
@@ -326,7 +330,9 @@ project "zSpace_InterOp"
                 "UNICODE"}
     
     filter "configurations:Release_DLL"
-        defines {"ZSPACE_RHINO_INTEROP",
+        defines {
+                "ZSPACE_RHINO_INTEROP",
+                "ZSPACE_DYNAMIC_LIBRARY",
                  "NDEBUG",
                  "WIN64",
                  "_UNICODE",
@@ -342,8 +348,7 @@ project "zSpace_InterOp"
                  "_HAS_STD_BYTE=0"}
 
     filter "configurations:Release_Unreal"
-        defines{"ZSPACE_MAYA_INTEROP",
-                "ZSPACE_RHINO_INTEROP",
+        defines{"ZSPACE_RHINO_INTEROP",
                 "NDEBUG",
                 "WIN64",
                 "_UNICODE",
@@ -356,38 +361,3 @@ project "zSpace_InterOp"
 
 --#########################################
 --CUSTOM FUNCTIONS
-
-function listContains(list, check)
-    for i, v in ipairs(list) do
-        if v == check then
-            return true
-        end
-    end
-    return false
-end
-
-function addPropsFiles(cfg)
-    for project, propsinfos in pairs(PropsDir) do
-        if cfg.project.name == project then
-            for _, propinfo in ipairs(propsinfos) do
-                propfiles, configs = propinfo[1], propinfo[2]
-                if listContains(configs, cfg.name) then
-                    for i = 1, #propfiles do
-                        premake.w('<Import Project="%s" />', PropsFiles[propfiles[i]])
-                    end
-                end    
-            end   
-        end 
-    end
-end 
-
---#########################################
---OVERRIDE CERTAIN FUNCTIONS IN PREMAKE
-
---Add .props file to correct project and config
-premake.override(premake.vstudio.vc2010, "propertySheets", function(base, cfg)
-    premake.push('<ImportGroup Label="PropertySheets" %s>', premake.vstudio.vc2010.condition(cfg))
-	premake.w('<Import Project="$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props" Condition="exists(\'$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props\')" Label="LocalAppDataPlatform" />')
-    addPropsFiles(cfg)
-	premake.pop('</ImportGroup>')
-end)

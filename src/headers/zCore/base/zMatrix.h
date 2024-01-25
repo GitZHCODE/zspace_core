@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "zCore/base/zInline.h"
+#include "headers/zCore/base/zInline.h"
 
 #include <stdexcept>
 #include <vector>

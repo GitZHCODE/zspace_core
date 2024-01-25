@@ -10,7 +10,7 @@
 // Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
 //
 
-#include<zCore/utilities/zUtilsCore.h>
+#include<headers/zCore/utilities/zUtilsCore.h>
 
 #ifndef ZSPACE_UTILS_CORE_JPEG
 #define ZSPACE_UTILS_CORE_JPEG

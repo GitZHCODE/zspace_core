@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include <zInterface/objects/zObj.h>
-#include <zCore/geometry/zPointCloud.h>
+#include <headers/zInterface/objects/zObj.h>
+#include <headers/zCore/geometry/zPointCloud.h>
 
 namespace zSpace
 {

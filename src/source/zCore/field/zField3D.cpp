@@ -10,7 +10,7 @@
 // Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
 //
 
-#include<zCore/field/zField3D.h>
+#include<headers/zCore/field/zField3D.h>
 
 namespace zSpace
 {

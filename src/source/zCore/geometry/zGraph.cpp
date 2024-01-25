@@ -11,7 +11,7 @@
 //
 
 
-#include<zCore/geometry/zGraph.h>
+#include<headers/zCore/geometry/zGraph.h>
 
 namespace zSpace
 {

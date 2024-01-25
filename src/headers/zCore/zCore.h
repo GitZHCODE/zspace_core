@@ -12,12 +12,12 @@
 
 #pragma once
 
-#include<zCore/base/zTypeDef.h>
-#include<zCore/base/zDefinitions.h>
-#include<zCore/base/zEnumerators.h>
-#include<zCore/base/zColor.h>
-#include<zCore/base/zDomain.h>
-#include<zCore/base/zMatrix.h>
-#include<zCore/base/zQuaternion.h>
-#include<zCore/base/zTransformationMatrix.h>
-#include<zCore/base/zVector.h>
+#include<headers/zCore/base/zTypeDef.h>
+#include<headers/zCore/base/zDefinitions.h>
+#include<headers/zCore/base/zEnumerators.h>
+#include<headers/zCore/base/zColor.h>
+#include<headers/zCore/base/zDomain.h>
+#include<headers/zCore/base/zMatrix.h>
+#include<headers/zCore/base/zQuaternion.h>
+#include<headers/zCore/base/zTransformationMatrix.h>
+#include<headers/zCore/base/zVector.h>

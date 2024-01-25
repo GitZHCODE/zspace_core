@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include <zInterface/objects/zObj.h>
+#include <headers/zInterface/objects/zObj.h>
 
 namespace zSpace
 {

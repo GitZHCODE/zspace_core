@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include <zInterface/objects/zObjPointCloud.h>
-#include <zCore/field/zField3D.h>
+#include <headers/zInterface/objects/zObjPointCloud.h>
+#include <headers/zCore/field/zField3D.h>
 
 #include <vector>
 using namespace std;

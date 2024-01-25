@@ -12,7 +12,7 @@
 
 
 
-#include <zInterface/functionsets/zFnComputeMesh.h>
+#include <headers/zInterface/functionsets/zFnComputeMesh.h>
 
 namespace  zSpace
 {

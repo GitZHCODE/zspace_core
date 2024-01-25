@@ -11,7 +11,7 @@
 //
 
 
-#include<zInterface/iterators/zItGraph.h>
+#include<headers/zInterface/iterators/zItGraph.h>
 
 //---- ZIT_GRAPH_VERTEX ------------------------------------------------------------------------------
 

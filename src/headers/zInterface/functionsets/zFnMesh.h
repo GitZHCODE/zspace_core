@@ -16,8 +16,8 @@
 #pragma once
 
 
-#include<zInterface/objects/zObjMesh.h>
-#include<zInterface/objects/zObjGraph.h>
+#include<headers/zInterface/objects/zObjMesh.h>
+#include<headers/zInterface/objects/zObjGraph.h>
 
 #include <headers/zInterface/objects/zObjParticle.h>
 

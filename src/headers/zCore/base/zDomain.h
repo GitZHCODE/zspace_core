@@ -15,11 +15,11 @@
 
 #pragma once
 
-#include<zCore/base/zDefinitions.h>
-#include<zCore/base/zMatrix.h>
-#include<zCore/base/zVector.h>
-#include<zCore/base/zColor.h>
-#include<zCore/base/zDate.h>
+#include<headers/zCore/base/zDefinitions.h>
+#include<headers/zCore/base/zMatrix.h>
+#include<headers/zCore/base/zVector.h>
+#include<headers/zCore/base/zColor.h>
+#include<headers/zCore/base/zDate.h>
 
 namespace  zSpace
 {
