@@ -21,6 +21,11 @@
 #include<headers/zInterface/objects/zObjGraph.h>
 #include<headers/zInterface/functionsets/zFnGraph.h>
 
+#include<headers/zInterOp/objects/zObjArc.h>
+#include<headers/zInterop/functionsets/zFnArc.h>
+#include<headers/zInterOp/objects/zObjPlane.h>
+#include<headers/zInterop/functionsets/zFnPlane.h>
+
 
 namespace zSpace
 {
@@ -134,6 +139,8 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void create(zObjGraph& in_graph, double sampleDist, int degree, bool periodic, bool interpolate, int displayNumPoints);
+
+		void create(zObjArc& o_arc, int cvNum, int displayNumPoints);
 
 		//--------------------------
 		//--- TOPOLOGY QUERY METHODS 
