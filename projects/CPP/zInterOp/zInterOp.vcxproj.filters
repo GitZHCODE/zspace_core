@@ -114,6 +114,21 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\xformUtils.h">
       <Filter>Header Files\core\omniUtils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjArc.h">
+      <Filter>Header Files\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zFnArc.h">
+      <Filter>Header Files\functionSets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjPlane.h">
+      <Filter>Header Files\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zFnPlane.h">
+      <Filter>Header Files\functionSets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjCurve.h">
+      <Filter>Header Files\objects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zRhinoCore.cpp">
@@ -166,6 +181,21 @@
     </ClCompile>
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\OmniverseUsdLuxLightCompat.cpp">
       <Filter>Source Files\core\omniUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjArc.cpp">
+      <Filter>Source Files\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zFnArc.cpp">
+      <Filter>Source Files\functionSets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjPlane.cpp">
+      <Filter>Source Files\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zFnPlane.cpp">
+      <Filter>Source Files\functionSets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjCurve.cpp">
+      <Filter>Source Files\objects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
