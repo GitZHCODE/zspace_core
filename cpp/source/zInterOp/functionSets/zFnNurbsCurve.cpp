@@ -13,6 +13,11 @@
 
 #include<headers/zInterop/functionsets/zFnNurbsCurve.h>
 
+#include<headers/zInterOp/objects/zObjArc.h>
+#include<headers/zInterop/functionsets/zFnArc.h>
+#include<headers/zInterOp/objects/zObjPlane.h>
+#include<headers/zInterop/functionsets/zFnPlane.h>
+
 namespace zSpace
 {
 	//---- CONSTRUCTOR
@@ -238,6 +243,14 @@ namespace zSpace
 		}
 
 		create(positions, degree, periodic, interpolate, displayNumPoints);
+	}
+
+	ZSPACE_INLINE void zFnNurbsCurve::create(zObjArc& o_arc, int cvNum, int displayNumPoints)
+	{
+		o_arc.on_arc.GetNurbForm(nurbsCurveObj->curve);
+
+		nurbsCurveObj->curve.SetDomain(0.0, 1.0);
+		setDisplayNumPoints(displayNumPoints);
 	}
 
 	//---- TOPOLOGY QUERY METHODS
