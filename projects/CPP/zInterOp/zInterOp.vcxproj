@@ -47,7 +47,6 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\interOp\zIONurbsCurve.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\interOp\zIONurbsSurface.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjArc.h" />
-    <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjCurve.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjNurbsCurve.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjPlane.h" />
   </ItemGroup>
@@ -71,7 +70,6 @@
     <ClCompile Include="..\..\..\cpp\source\zInterOp\interOp\zIONurbsCurve.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\interOp\zIONurbsSurface.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjArc.cpp" />
-    <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjCurve.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjNurbsCurve.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjPlane.cpp" />
   </ItemGroup>
