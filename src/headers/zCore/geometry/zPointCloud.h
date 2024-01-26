@@ -15,11 +15,11 @@
 
 #pragma once
 
-#include <headers/zCore/base/zVector.h>
-#include <headers/zCore/utilities/zUtilsCore.h>
-#include <headers/zCore/geometry/zHEGeomTypes.h>
+#include "zCore/base/zVector.h"
+#include "zCore/utilities/zUtilsCore.h"
+#include "zCore/geometry/zHEGeomTypes.h"
 
-#include <headers/zCore/base/zTypeDef.h>
+#include "zCore/base/zTypeDef.h"
 
 namespace zSpace
 {

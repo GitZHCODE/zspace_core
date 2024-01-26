@@ -17,11 +17,11 @@
 
 #pragma once
 
-#include <headers/zInterOp/core/zRhinoCore.h>
+#include "zInterOp/core/zRhinoCore.h"
 
-#include <headers/zInterOp/interOp/zIOMesh.h>
-#include <headers/zInterOp/interOp/zIONurbsCurve.h>
-#include <headers/zInterOp/interOp/zIONurbsSurface.h>
+#include "zInterOp/interOp/zIOMesh.h"
+#include "zInterOp/interOp/zIONurbsCurve.h"
+#include "zInterOp/interOp/zIONurbsSurface.h"
 
 namespace zSpace
 {

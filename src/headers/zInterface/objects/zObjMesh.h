@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include <headers/zInterface/objects/zObj.h>
-#include <headers/zCore/geometry/zMesh.h>
+#include "zInterface/objects/zObj.h"
+#include "zCore/geometry/zMesh.h"
 
 namespace zSpace
 {

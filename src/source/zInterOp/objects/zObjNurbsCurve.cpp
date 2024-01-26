@@ -11,7 +11,7 @@
 //
 
 
-#include<headers/zInterOp/objects/zObjNurbsCurve.h>
+#include "zInterOp/objects/zObjNurbsCurve.h"
 
 namespace zSpace
 {

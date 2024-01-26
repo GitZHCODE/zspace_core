@@ -11,7 +11,7 @@
 //
 
 
-#include<headers/zInterface/functionsets/zFnParticle.h>
+#include "zInterface/functionsets/zFnParticle.h"
 
 namespace zSpace
 {

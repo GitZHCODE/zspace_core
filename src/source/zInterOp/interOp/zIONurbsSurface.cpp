@@ -11,7 +11,7 @@
 //
 
 
-#include<headers/zInterOp/interOp/zIONurbsSurface.h>
+#include "zInterOp/interOp/zIONurbsSurface.h"
 
 #if defined(ZSPACE_MAYA_INTEROP)  && defined(ZSPACE_RHINO_INTEROP)
 

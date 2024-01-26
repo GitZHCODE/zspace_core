@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include <headers/zInterOp/functionsets/zMayaFnMesh.h>
-#include <headers/zInterOp/functionsets/zRhinoFnMesh.h>
+#include "zInterOp/functionsets/zMayaFnMesh.h"
+#include "zInterOp/functionsets/zRhinoFnMesh.h"
 
 namespace zSpace
 {

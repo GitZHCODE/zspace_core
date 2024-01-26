@@ -15,16 +15,16 @@
 
 #pragma once
 
-#include <headers/zCore/utilities/zUtilsCore.h>
+#include "zCore/utilities/zUtilsCore.h"
 
 #ifndef __CUDACC__
-	#include <headers/zCore/utilities/zUtilsJson.h>
+	#include "zCore/utilities/zUtilsJson.h"
 #endif
 
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing
 #else
-	#include <headers/zCore/utilities/zUtilsDisplay.h>
+	#include "zCore/utilities/zUtilsDisplay.h"
 #endif 
 
 namespace zSpace

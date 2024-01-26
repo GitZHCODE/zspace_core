@@ -14,7 +14,7 @@
 #define ZSPACE_MODEL_H
 
 #pragma once
-#include <headers/zInterface/objects/zObj.h>
+#include "zInterface/objects/zObj.h"
 
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing

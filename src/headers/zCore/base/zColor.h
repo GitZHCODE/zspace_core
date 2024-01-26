@@ -17,8 +17,8 @@
 
 #include <stdexcept>
 
-#include<headers/zCore/base/zInline.h>
-#include<headers/zCore/base/zEnumerators.h>
+#include "zCore/base/zInline.h"
+#include "zCore/base/zEnumerators.h"
 
 using namespace std;
 

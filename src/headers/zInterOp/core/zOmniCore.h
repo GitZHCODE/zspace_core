@@ -16,7 +16,7 @@
 #define ZSPACE_INTEROP_OMNICORE_H
 
 #pragma once
-#include "headers/zCore/base/zInline.h"
+#include "zCore/base/zInline.h"
 
 /// OV
 #include "headers/zInterOp/core/omniUtils/xformUtils.h"

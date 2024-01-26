@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include <headers/zInterOp/functionsets/zMayaFnGraph.h>
-#include <headers/zInterOp/functionsets/zRhinoFnGraph.h>
+#include "zInterOp/functionsets/zMayaFnGraph.h"
+#include "zInterOp/functionsets/zRhinoFnGraph.h"
 
 namespace zSpace
 {

@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include<headers/zInterface/functionsets/zFn.h>
-#include<headers/zInterop/objects/zObjPlane.h>
+#include "zInterface/functionsets/zFn.h"
+#include "zInterop/objects/zObjPlane.h"
 
 namespace zSpace
 {

@@ -18,9 +18,9 @@
 #pragma once
 
 
-#include <headers/zInterOp/include/zRhinoInclude.h>
+#include "zInterOp/include/zRhinoInclude.h"
 #include <delayimp.h>
-#include "headers/zInterOp/core/zRhinoCore.h"
+#include "zInterOp/core/zRhinoCore.h"
 
 
 

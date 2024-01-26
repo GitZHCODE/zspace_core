@@ -4,18 +4,18 @@
 //---- z2DGRAPHICSTATICS
 //--------------------------
 
-#include <headers/zToolsets/statics/zTsVault.h>
+#include "zToolsets/statics/zTsVault.h"
 
 //--------------------------
 //---- z3DGRAPHICSTATICS
 //--------------------------
 
-#include <headers/zToolsets/statics/zTsPolytopal.h>
+#include "zToolsets/statics/zTsPolytopal.h"
 
-#include <headers/zToolsets/statics/zTsSpatialStructure.h>
+#include "zToolsets/statics/zTsSpatialStructure.h"
 
 //--------------------------
 //---- zTOPOPT
 //--------------------------
 
-#include <headers/zToolsets/statics/zTsTopOpt.h>
+#include "zToolsets/statics/zTsTopOpt.h"

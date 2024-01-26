@@ -10,7 +10,7 @@
 // Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
 //
 
-#include<headers/zCore/utilities/zUtilsBMP.h>
+#include "zCore/utilities/zUtilsBMP.h"
 
 namespace zSpace
 {

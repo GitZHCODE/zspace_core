@@ -15,9 +15,7 @@ function get_include_dirs()
     IncludeDir["TOOJPEG"] = "Dependencies/tooJPEG"
     IncludeDir["IGL"] = "Dependencies/igl/headers"
     IncludeDir["OMNIVERSE"] = "Dependencies/omniverse"
-    IncludeDir["RHINOSDK"] = "C:/Program Files/Rhino 7 SDK/inc"
-    IncludeDir["MAYA"] = "C:/Program Files/Autodesk/Maya2020"
-    IncludeDir["SRC"] = "src"
+    IncludeDir["SRC"] = "src/headers"
     IncludeDir["DEPS"] = "Dependencies"
     return IncludeDir
 end
@@ -27,8 +25,6 @@ function get_lib_dirs()
     LibDir["FREEGLUT"] = "Dependencies/freeglut"
     LibDir["GLEW"] = "Dependencies/glew/lib"
     LibDir["SQLITE"] = "Dependencies/SQLITE/lib"
-    LibDir["RHINOSDK"] = "C:/Program Files/Rhino 7 SDK/lib/Release"
-    LibDir["MAYA"] = "C:/Program Files/Autodesk/Maya2020"
     LibDir["OUTDLL"] = "bin/dll"
     LibDir["OUTLIB"] = "bin/lib"
     return LibDir

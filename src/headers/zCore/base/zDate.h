@@ -20,7 +20,7 @@
 #include <time.h> 
 using namespace std;
 
-#include <headers/zCore/base/zInline.h>
+#include "zCore/base/zInline.h"
 
 namespace zSpace
 {

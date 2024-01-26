@@ -15,13 +15,13 @@
 
 #pragma once
 
-#include<headers/zInterface/objects/zObjSpatialBin.h>
+#include "zInterface/objects/zObjSpatialBin.h"
 
-#include<headers/zInterface/objects/zObjMesh.h>
-#include<headers/zInterface/objects/zObjGraph.h>
-#include<headers/zInterface/objects/zObjPointCloud.h>
+#include "zInterface/objects/zObjMesh.h"
+#include "zInterface/objects/zObjGraph.h"
+#include "zInterface/objects/zObjPointCloud.h"
 
-#include<headers/zInterface/functionsets/zFnPointCloud.h>
+#include "zInterface/functionsets/zFnPointCloud.h"
 
 
 namespace  zSpace

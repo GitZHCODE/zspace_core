@@ -16,7 +16,7 @@
 #define ZSPACE_INTEROP_RHINOCORE_H
 
 #pragma once
-#include "headers/zCore/base/zInline.h"
+#include "zCore/base/zInline.h"
 
 namespace zSpace
 {

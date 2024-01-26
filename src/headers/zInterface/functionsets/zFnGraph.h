@@ -16,10 +16,10 @@
 #pragma once
 
 
-#include<headers/zInterface/objects/zObjGraph.h>
-#include<headers/zInterface/functionsets/zFnMesh.h>
+#include "zInterface/objects/zObjGraph.h"
+#include "zInterface/functionsets/zFnMesh.h"
 
-#include<headers/zInterface/iterators/zItGraph.h>
+#include "zInterface/iterators/zItGraph.h"
 
 namespace zSpace
 {

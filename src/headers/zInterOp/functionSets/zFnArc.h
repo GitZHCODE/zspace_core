@@ -15,11 +15,11 @@
 
 #pragma once
 
-#include<headers/zInterface/functionsets/zFn.h>
-#include<headers/zInterop/objects/zObjArc.h>
-#include<headers/zInterOp/objects/zObjPlane.h>
-#include<headers/zInterOp/objects/zObjNurbsCurve.h>
-#include<headers/zInterop/functionsets/zFnNurbsCurve.h>
+#include "zInterface/functionsets/zFn.h"
+#include "zInterop/objects/zObjArc.h"
+#include "zInterOp/objects/zObjPlane.h"
+#include "zInterOp/objects/zObjNurbsCurve.h"
+#include "zInterop/functionsets/zFnNurbsCurve.h"
 
 namespace zSpace
 {

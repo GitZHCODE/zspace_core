@@ -11,7 +11,7 @@
 //
 
 
-#include<headers/zInterOp/functionSets/zMayaFnMesh.h>
+#include "zInterOp/functionSets/zMayaFnMesh.h"
 
 #if defined(ZSPACE_MAYA_INTEROP) 
 

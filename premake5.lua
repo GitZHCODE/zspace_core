@@ -81,6 +81,7 @@ end
 project "zSpace_App"
     location "%{project_path}/zSpace_App"
     language "C++"
+    cppdialect "C++17"
 
     CommonConfigurationSettings()
 
@@ -161,7 +162,7 @@ project "zSpace_Core"
         "%{IncludeDir.FREEGLUT}",
         "%{IncludeDir.NLOHMANN}",
         "%{IncludeDir.QUICKHULL}",
-        "%{IncludeDir.RHINOSDK}",
+        "C:/Program Files/Rhino 7 SDK/inc",
         "%{IncludeDir.SRC}",
     }
 
@@ -170,7 +171,7 @@ project "zSpace_Core"
         "%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
         "%{LibDir.FREEGLUT}",
-        "%{LibDir.RHINOSDK}"
+        "C:/Program Files/Rhino 7 SDK/lib/Release"
     }
 
     links
@@ -286,7 +287,7 @@ project "zSpace_InterOp"
         "%{IncludeDir.FREEGLUT}",
         "%{IncludeDir.NLOHMANN}",
         "%{IncludeDir.QUICKHULL}",
-        "%{IncludeDir.RHINOSDK}",
+        "C:/Program Files/Rhino 7 SDK/inc",
         "%{IncludeDir.MAYA}",
         "%{IncludeDir.IGL}",
         "%{IncludeDir.SRC}",
@@ -298,8 +299,8 @@ project "zSpace_InterOp"
         "%{LibDir.GLEW}",
         "%{LibDir.FREEGLUT}",
         "%{LibDir.SQLITE}",
-        "%{LibDir.RHINOSDK}",
-        "%{LibDir.MAYA}",
+        "C:/Program Files/Rhino 7 SDK/lib/Release",
+        "C:/Program Files/Autodesk/Maya2020",
         "%{LibDir.OUTDLL}",
         "%{LibDir.OUTLIB}",
     }

@@ -22,9 +22,9 @@ using namespace std;
 
 #include <sqlite3.h>
 
-#include <headers/zCore/base/zEnumerators.h>
-#include <headers/zCore/base/zInline.h>
-#include <headers/zCore/base/zTypeDef.h>
+#include "zCore/base/zEnumerators.h"
+#include "zCore/base/zInline.h"
+#include "zCore/base/zTypeDef.h"
 
 namespace  zSpace
 {

@@ -11,7 +11,7 @@
 //
 
 
-#include<headers/zInterface/functionsets/zFnSpatialBin.h>
+#include "zInterface/functionsets/zFnSpatialBin.h"
 
 namespace zSpace
 {

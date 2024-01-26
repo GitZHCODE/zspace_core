@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include <headers/zCore/geometry/zGraph.h>
+#include "zCore/geometry/zGraph.h"
 #include <set>
 
 namespace zSpace

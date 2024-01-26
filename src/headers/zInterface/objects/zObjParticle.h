@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include <headers/zInterface/objects/zObj.h>
-#include <headers/zCore/dynamics/zParticle.h>
+#include "zInterface/objects/zObj.h"
+#include "zCore/dynamics/zParticle.h"
 
 
 namespace zSpace

@@ -4,18 +4,18 @@
 //---- zOBJECTS
 //--------------------------
 
-#include <headers/zInterface/objects/zObj.h>
+#include "zInterface/objects/zObj.h"
 
-#include <headers/zInterface/objects/zObjPointCloud.h>
+#include "zInterface/objects/zObjPointCloud.h"
 
-#include <headers/zInterface/objects/zObjGraph.h>
+#include "zInterface/objects/zObjGraph.h"
 
-#include <headers/zInterface/objects/zObjMesh.h>
+#include "zInterface/objects/zObjMesh.h"
 
-#include <headers/zInterface/objects/zObjParticle.h>
+#include "zInterface/objects/zObjParticle.h"
 
-#include <headers/zInterface/objects/zObjMeshField.h>
+#include "zInterface/objects/zObjMeshField.h"
 
-#include <headers/zInterface/objects/zObjPointField.h>
+#include "zInterface/objects/zObjPointField.h"
 
-#include <headers/zInterface/objects/zObjComputeMesh.h>
+#include "zInterface/objects/zObjComputeMesh.h"

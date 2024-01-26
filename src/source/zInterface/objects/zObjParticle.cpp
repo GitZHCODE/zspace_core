@@ -11,7 +11,7 @@
 //
 
 
-#include<headers/zInterface/objects/zObjParticle.h>
+#include "zInterface/objects/zObjParticle.h"
 
 namespace zSpace
 {

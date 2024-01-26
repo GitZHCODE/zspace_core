@@ -11,7 +11,7 @@
 //
 
 
-#include<headers/zInterOp/interOp/zIONurbsCurve.h>
+#include "zInterOp/interOp/zIONurbsCurve.h"
 
 #if defined(ZSPACE_MAYA_INTEROP)  && defined(ZSPACE_RHINO_INTEROP)
 

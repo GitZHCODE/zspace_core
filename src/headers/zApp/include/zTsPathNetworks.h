@@ -4,7 +4,7 @@
 //---- zPATHNETWORKS
 //--------------------------
 
-#include <headers/zToolsets/pathNetworks/zTsShortestPath.h>
+#include "zToolsets/pathNetworks/zTsShortestPath.h"
 
-#include <headers/zToolsets/pathNetworks/zTsSlimeMould.h>
+#include "zToolsets/pathNetworks/zTsSlimeMould.h"
 

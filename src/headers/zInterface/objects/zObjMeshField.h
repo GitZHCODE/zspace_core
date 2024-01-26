@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include <headers/zInterface/objects/zObjMesh.h>
-#include <headers/zCore/field/zField2D.h>
+#include "zInterface/objects/zObjMesh.h"
+#include "zCore/field/zField2D.h"
 
 #include <vector>
 using namespace std;

@@ -17,11 +17,11 @@
 
 #pragma once
 
-#include<headers/zInterface/objects/zObjGraph.h>
-#include<headers/zInterface/functionsets/zFnGraph.h>
-#include<headers/zInterface/iterators/zItGraph.h>
+#include "zInterface/objects/zObjGraph.h"
+#include "zInterface/functionsets/zFnGraph.h"
+#include "zInterface/iterators/zItGraph.h"
 
-#include <headers/zInterOp/include/zMayaInclude.h>
+#include "zInterOp/include/zMayaInclude.h"
 
 
 namespace zSpace

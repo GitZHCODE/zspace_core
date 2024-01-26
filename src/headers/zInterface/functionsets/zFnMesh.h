@@ -16,13 +16,13 @@
 #pragma once
 
 
-#include<headers/zInterface/objects/zObjMesh.h>
-#include<headers/zInterface/objects/zObjGraph.h>
+#include "zInterface/objects/zObjMesh.h"
+#include "zInterface/objects/zObjGraph.h"
 
-#include <headers/zInterface/objects/zObjParticle.h>
+#include "zInterface/objects/zObjParticle.h"
 
-#include<headers/zInterface/functionsets/zFn.h>
-#include<headers/zInterface/iterators/zItMesh.h>
+#include "zInterface/functionsets/zFn.h"
+#include "zInterface/iterators/zItMesh.h"
 
 #include <igl/avg_edge_length.h>
 #include <igl/cotmatrix.h>

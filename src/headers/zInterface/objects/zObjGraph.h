@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include <headers/zInterface/objects/zObj.h>
-#include <headers/zCore/geometry/zGraph.h>
+#include "zInterface/objects/zObj.h"
+#include "zCore/geometry/zGraph.h"
 
 #include <vector>
 using namespace std;

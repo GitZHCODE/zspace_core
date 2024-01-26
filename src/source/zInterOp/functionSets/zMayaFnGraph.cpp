@@ -11,7 +11,7 @@
 //
 
 
-#include<headers/zInterOp/functionSets/zMayaFnGraph.h>
+#include "zInterOp/functionSets/zMayaFnGraph.h"
 
 #if defined(ZSPACE_MAYA_INTEROP) 
 

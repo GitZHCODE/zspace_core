@@ -11,7 +11,7 @@
 //
 
 
-#include<headers/zInterOp/interOp/zIOMeshSurface.h>
+#include "zInterOp/interOp/zIOMeshSurface.h"
 
 #if defined(ZSPACE_MAYA_INTEROP)  && defined(ZSPACE_RHINO_INTEROP)
 

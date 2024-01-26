@@ -13,7 +13,7 @@
 
 #if defined ZSPACE_USD_INTEROP
 
-#include "headers/zInterOp/core/zOmniCore.h"
+#include "zInterOp/core/zOmniCore.h"
 
 namespace zSpace
 {

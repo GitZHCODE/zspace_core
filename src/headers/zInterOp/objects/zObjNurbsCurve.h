@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include <headers/zInterface/objects/zObj.h>
-#include <headers/zInterOp/include/zRhinoInclude.h>
+#include "zInterface/objects/zObj.h"
+#include "zInterOp/include/zRhinoInclude.h"
 
 #include <vector>
 //using namespace std;

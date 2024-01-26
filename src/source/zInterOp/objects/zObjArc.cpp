@@ -11,9 +11,9 @@
 //
 
 
-#include<headers/zInterOp/objects/zObjArc.h>
-#include<headers/zInterOp/objects/zObjPlane.h>
-#include<headers/zInterOp/objects/zObjNurbsCurve.h>
+#include "zInterOp/objects/zObjArc.h"
+#include "zInterOp/objects/zObjPlane.h"
+#include "zInterOp/objects/zObjNurbsCurve.h"
 
 namespace zSpace
 {

@@ -15,10 +15,10 @@
 
 #pragma once
 
-#include<headers/zInterface/objects/zObj.h>
-#include<headers/zInterOp/include/zRhinoInclude.h>
-#include<headers/zInterOp/objects/zObjPlane.h>
-#include<headers/zInterOp/objects/zObjNurbsCurve.h>
+#include "zInterface/objects/zObj.h"
+#include "zInterOp/include/zRhinoInclude.h"
+#include "zInterOp/objects/zObjPlane.h"
+#include "zInterOp/objects/zObjNurbsCurve.h"
 
 #include <vector>
 //using namespace std;

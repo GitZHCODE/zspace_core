@@ -17,11 +17,11 @@
 
 #pragma once
 
-#include<headers/zInterface/objects/zObjMesh.h>
-#include<headers/zInterface/functionsets/zFnMesh.h>
-#include<headers/zInterface/iterators/zItMesh.h>
+#include "zInterface/objects/zObjMesh.h"
+#include "zInterface/functionsets/zFnMesh.h"
+#include "zInterface/iterators/zItMesh.h"
 
-#include <headers/zInterOp/include/zMayaInclude.h>
+#include "zInterOp/include/zMayaInclude.h"
 
 
 namespace zSpace

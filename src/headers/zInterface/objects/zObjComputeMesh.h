@@ -22,10 +22,10 @@
 #include <string>
 using namespace std;
 
-#include <headers/zInterface/objects/zObj.h>
-#include<headers/zInterface/objects/zObjParticle.h>
+#include "zInterface/objects/zObj.h"
+#include "zInterface/objects/zObjParticle.h"
 
-//#include<headers/zInterface/functionsets/zFnParticle.h>
+//#include "zInterface/functionsets/zFnParticle.h"
 
 
 namespace  zSpace

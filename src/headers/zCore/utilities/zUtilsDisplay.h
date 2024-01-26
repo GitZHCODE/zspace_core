@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include<headers/zCore/display/zObjBuffer.h>
+#include "zCore/display/zObjBuffer.h"
 
 #if defined(__CUDACC__)  || defined(ZSPACE_UNREAL_INTEROP) || defined(ZSPACE_MAYA_INTEROP)
 	// All defined OK so do nothing

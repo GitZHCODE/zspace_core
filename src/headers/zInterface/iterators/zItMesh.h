@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include<headers/zInterface/iterators/zIt.h>
-#include<headers/zInterface/objects/zObjMesh.h>
+#include "zInterface/iterators/zIt.h"
+#include "zInterface/objects/zObjMesh.h"
 
 namespace zSpace
 {

@@ -28,11 +28,11 @@
 //#include <windows.h>		// Header File For Windows
 //#include <stdio.h>
 
-#include <headers/zCore/base/zDefinitions.h>
-#include <headers/zCore/base/zVector.h>
-#include <headers/zCore/base/zColor.h>
-#include <headers/zCore/base/zTransformationMatrix.h>
-#include <headers/zCore/base/zTypeDef.h>
+#include "zCore/base/zDefinitions.h"
+#include "zCore/base/zVector.h"
+#include "zCore/base/zColor.h"
+#include "zCore/base/zTransformationMatrix.h"
+#include "zCore/base/zTypeDef.h"
 
 #include<freeglut_std.h>
 

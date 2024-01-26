@@ -11,12 +11,12 @@
 //
 
 
-#include<headers/zInterop/functionsets/zFnNurbsCurve.h>
+#include "zInterop/functionsets/zFnNurbsCurve.h"
 
-#include<headers/zInterOp/objects/zObjArc.h>
-#include<headers/zInterop/functionsets/zFnArc.h>
-#include<headers/zInterOp/objects/zObjPlane.h>
-#include<headers/zInterop/functionsets/zFnPlane.h>
+#include "zInterOp/objects/zObjArc.h"
+#include "zInterop/functionsets/zFnArc.h"
+#include "zInterOp/objects/zObjPlane.h"
+#include "zInterop/functionsets/zFnPlane.h"
 
 namespace zSpace
 {

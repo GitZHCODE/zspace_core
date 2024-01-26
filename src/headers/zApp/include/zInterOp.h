@@ -5,8 +5,8 @@
 //--------------------------
 //---- zMayaFNSETS
 //--------------------------
-#include <headers/zInterOp/functionSets/zMayaFnMesh.h>
-#include <headers/zInterOp/functionSets/zMayaFnGraph.h>
+#include "zInterOp/functionSets/zMayaFnMesh.h"
+#include "zInterOp/functionSets/zMayaFnGraph.h"
 
 #endif
 
@@ -21,15 +21,15 @@
 //--------------------------
 //---- zRhinoObjects
 //--------------------------
-#include <headers/zInterOp/objects/zObjNurbsCurve.h>
+#include "zInterOp/objects/zObjNurbsCurve.h"
 
 //--------------------------
 //---- zRhinoFNSETS
 //--------------------------
-#include <headers/zInterOp/functionSets/zRhinoFnMesh.h>
-#include <headers/zInterOp/functionSets/zRhinoFnGraph.h>
+#include "zInterOp/functionSets/zRhinoFnMesh.h"
+#include "zInterOp/functionSets/zRhinoFnGraph.h"
 
-#include <headers/zInterOp/functionSets/zFnNurbsCurve.h>
+#include "zInterOp/functionSets/zFnNurbsCurve.h"
 
 #endif
 
@@ -39,10 +39,10 @@
 //---- zInterOp
 //--------------------------
 
-#include <headers/zInterOp/interOp/zIOMesh.h>
-#include <headers/zInterOp/interOp/zIOMeshSurface.h>
-#include <headers/zInterOp/interOp/zIONurbsCurve.h>
-#include <headers/zInterOp/interOp/zIONurbsSurface.h>
+#include "zInterOp/interOp/zIOMesh.h"
+#include "zInterOp/interOp/zIOMeshSurface.h"
+#include "zInterOp/interOp/zIONurbsCurve.h"
+#include "zInterOp/interOp/zIONurbsSurface.h"
 
 
 #endif
