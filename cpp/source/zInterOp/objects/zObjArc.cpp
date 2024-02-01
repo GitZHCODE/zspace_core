@@ -45,6 +45,31 @@ namespace zSpace
 		displayPlane = _displayPlane;
 	}
 
+	ZSPACE_INLINE void zObjArc::setArcDisplayColor(zColor _arcDisplayColor)
+	{
+		arcDisplayColor = _arcDisplayColor;
+	}
+
+	ZSPACE_INLINE void zObjArc::setControlPointsColor(zColor _controlPointsColor)
+	{
+		controlPointsColor = _controlPointsColor;
+	}
+
+	ZSPACE_INLINE void zObjArc::setControlPolyColor(zColor _controlPolyColor)
+	{
+		controlPolyColor = _controlPolyColor;
+	}
+
+	ZSPACE_INLINE void zObjArc::setControlPointsWeight(double _controlPointsWeight)
+	{
+		controlPointsWeight = _controlPointsWeight;
+	}
+
+	ZSPACE_INLINE void zObjArc::setControlPolyWeight(double _controlPolyWeight)
+	{
+		controlPolyWeight = _controlPolyWeight;
+	}
+
 	//---- GET METHODS
 
 	ZSPACE_INLINE int zObjArc::getVBO_ControlPointId()
@@ -60,6 +85,21 @@ namespace zSpace
 	ZSPACE_INLINE int zObjArc::getVBO_CurveColorId()
 	{
 		return VBO_CurveColorId;
+	}
+
+	ZSPACE_INLINE void zObjArc::getRawRadius(double _radius)
+	{
+		_radius = radius;
+	}
+
+	ZSPACE_INLINE void zObjArc::getRawAngleRadian(double _angle)
+	{
+		_angle = angle;
+	}
+
+	ZSPACE_INLINE void zObjArc::getRawPlane(zObjPlane _oPlane)
+	{
+		_oPlane = oPlane;
 	}
 
 	//---- OVERRIDE METHODS
@@ -103,7 +143,7 @@ namespace zSpace
 
 		if (displayControlPoints)
 		{
-			displayUtils->drawPoints(&controlPoints[0], controlPointsColor, controlPointWeight, controlPoints.size());
+			displayUtils->drawPoints(&controlPoints[0], controlPointsColor, controlPointsWeight, controlPoints.size());
 			displayUtils->drawCurve(&controlPoints[0], controlPolyColor, controlPolyWeight, controlPoints.size(), false);
 		}
 

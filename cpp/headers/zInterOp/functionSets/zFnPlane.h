@@ -16,12 +16,15 @@
 
 #pragma once
 
+
+#include <headers/zInterface/objects/zObj.h>
+#include <headers/zInterOp/include/zRhinoInclude.h>
 #include<headers/zInterface/functionsets/zFn.h>
 #include<headers/zInterop/objects/zObjPlane.h>
 
 namespace zSpace
 {
-	/** \addtogroup zInterface
+	/** \addtogroup zInterOp
 	*	\brief The Application Program Interface of the library.
 	*  @{
 	*/
@@ -31,7 +34,7 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \class zFnNurbsCUrve
+	/*! \class zFnPlane
 	*	\brief An arc function set.
 	*	\since version 0.0.4
 	*/
@@ -48,7 +51,7 @@ namespace zSpace
 		//---- PROTECTED ATTRIBUTES
 		//--------------------------
 
-		/*!	\brief pointer to a graph object  */
+		/*!	\brief pointer to a zObjPlane object  */
 		zObjPlane *planeObj;	
 
 	public:
@@ -63,14 +66,14 @@ namespace zSpace
 
 		/*! \brief Default constructor.
 		*
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
 		zFnPlane();
 
 		/*! \brief Overloaded constructor.
 		*
-		*	\param		[in]	_nurbsCurveObj			- input nurbscurve object.
-		*	\since version 0.0.2
+		*	\param		[in]	_planeObj			- input zObjPlane object.
+		*	\since version 0.0.4
 		*/
 		zFnPlane(zObjPlane& _planeObj);
 
@@ -81,7 +84,7 @@ namespace zSpace
 
 		/*! \brief Default destructor.
 		*
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
 		~zFnPlane();
 
@@ -99,6 +102,13 @@ namespace zSpace
 
 		void to(json& j) override;
 
+#if defined ZSPACE_USD_INTEROP
+
+		void from(UsdPrim& usd, bool staticGeom = false)override;
+
+		void to(UsdPrim& usd)override;
+#endif
+
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 
 		void clear() override;
@@ -107,19 +117,42 @@ namespace zSpace
 		//---- CREATE METHODS
 		//--------------------------
 
-		/*! \brief This method creates a graph from the input containers.
+		/*! \brief This method creates a graph from the input origin, xAxis, yAxis containers.
 		*
-		*	\param		[in]	_positions		- container of type zPoint containing control point positions.
-		*	\param		[in]	edgeConnects	- container of edge connections with vertex ids for each edge
-		*	\param		[in]	staticGraph		- makes the graph fixed. Computes the static edge vertex positions if true.
-		*	\since version 0.0.2
+		*	\param		[in]	origin		- container of input origin, zPoint(0,0,0) by default.
+		*	\param		[in]	xAxis	    - container of input xAxis, zVector(1,0,0) by default.
+		*	\param		[in]	yAxis		- container of input yAxis, zVector(0,1,0) by default.
+		* 	\return		        bool		- boolean of success or not
+		*	\since version 0.0.4
 		*/
 		bool create(zPoint origin = zPoint(0,0,0), zVector xAxis = zVector(1,0,0), zVector yAxis = zVector(0,1,0));
 
+		/*! \brief This method creates a graph from the input origin, xAxis, yAxis containers.
+		*
+		*	\param		[in]	_plane		- container of input Eigen::Matrix4f.
+		*   \return		        bool		- boolean of success or not
+		*	\since version 0.0.4
+		*/
 		bool createFromMatrix(Eigen::Matrix4f & _plane);
 
+		/*! \brief This method creates a graph from the input origin, xAxis, yAxis containers.
+		*
+		*	\param		[in]	origin		- container of input origin.
+		* 	\param		[in]	normal		- container of input normal vector.
+		* 	\param		[in]	yUp		    - container of input yUp vector, zVector(0,1,0) by default.
+		*   \return		        bool		- boolean of success or not
+		*	\since version 0.0.4
+		*/
 		bool createFromNormal(zPoint origin, zVector normal, zVector yUp = zVector(0,1,0));
 
+		/*! \brief This method creates a graph from the input 3 points position.
+		*
+		*	\param		[in]	p0			- container of point 0, used as origin of plane.
+		*	\param		[in]	p1	    	- container of point 1, used as xAxis direction.
+		*	\param		[in]	p2			- container of point 2, used as yAxis direction.
+		*   \return		        bool		- boolean of success or not
+		*	\since version 0.0.4
+		*/
 		bool createFromPoints(zPoint p0, zPoint p1, zPoint p2);				
 
 		//--------------------------
@@ -138,45 +171,73 @@ namespace zSpace
 
 		/*! \brief This method sets curve color to the input color.
 		*
-		*	\param		[in]	_col				- input color.
-		*	\since version 0.0.2
+		*	\param		[in]	xCol				- input color of xAxis, zColor(1.0, 0.0, 0.0, 1.0) by default.
+		*   \param		[in]	yCol				- input color of yAxis, zColor(0.0, 1.0, 0.0, 1.0) by default.
+		*   \param		[in]	zCol				- input color of zAxis, zColor(0.0, 0.0, 1.0, 1.0) by default.
+		*	\since version 0.0.4
 		*/
-		void setDisplayColor(zColor xCol, zColor yCol, zColor zCol);
+		void setDisplayColor(zColor xCol = zColor(1.0, 0.0, 0.0, 1.0), zColor yCol = zColor(0.0, 1.0, 0.0, 1.0), zColor zCol = zColor(0.0, 0.0, 1.0, 1.0));
 
 	
-		/*! \brief This method sets edge weight of the curve to the input weight.
+		/*! \brief This method sets Display Weight of plane.
 		*
-		*	\param		[in]	_wt				- input weight.
-		*	\since version 0.0.2
+		*	\param		[in]	_wt				     - input Display Weight of plane.
+		*	\since version 0.0.4
 		*/
 		void setDisplayWeight(double _wt);
 
+		/*! \brief This method sets origin position of the plane.
+		*
+		*	\param		[in]	origin				 - input origin position.
+		*	\since version 0.0.4
+		*/
 		void setOrigin(zPoint origin);
 
+		/*! \brief This method sets xAxis, yAxis and noral of the plane.
+		*
+		*	\param		[in]	xAxis				 - input xAxis vector.
+		*   \param		[in]	yAxis				 - input yAxis vector.
+		*   \param		[in]	normal				 - input normal vector.
+		*	\since version 0.0.4
+		*/
 		void setAxis(zVector xAxis, zVector yAxis, zVector normal);
 
 		//--------------------------
 		//--- GET METHODS 
 		//--------------------------
 
-		/*! \brief This method gets the center the curve.
+		/*! \brief This method gets the origin the plane.
 		*
-		*	\return		zPoint					- center .
+		*	\return		zPoint					     - origin of the plane.
 		*	\since version 0.0.4
 		*/
 		zPoint getOrigin();
 
+		/*! \brief This method gets the xAxis the plane.
+		*
+		*	\return		zPoint					     - xAxis of the plane.
+		*	\since version 0.0.4
+		*/
 		zVector getXAxis();
 
+		/*! \brief This method gets the yAxis the plane.
+		*
+		*	\return		zPoint					     - yAxis of the plane.
+		*	\since version 0.0.4
+		*/
 		zVector getYAxis();
 
+		/*! \brief This method gets the Normal the plane.
+		*
+		*	\return		zPoint					     - Normal of the plane.
+		*	\since version 0.0.4
+		*/
 		zVector getNormal();
 		
-		/*! \brief This method computes the lengths of all the half edges of a the graph.
+		/*! \brief This method gets the Raw OpenNurbs Plane object.
 		*
-		*	\param		[out]	halfEdgeLengths				- vector of halfedge lengths.
-		*	\return				double						- total edge lengths.
-		*	\since version 0.0.2
+		*	\return				ON_Plane			-  Raw OpenNurbs Plane object.
+		*	\since version 0.0.4
 		*/
 		ON_Plane* getRawON_Plane();
 

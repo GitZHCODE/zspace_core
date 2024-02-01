@@ -23,7 +23,7 @@
 
 namespace zSpace
 {
-	/** \addtogroup zInterface
+	/** \addtogroup zInterOp
 	*	\brief The Application Program Interface of the library.
 	*  @{
 	*/
@@ -33,7 +33,7 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \class zFnNurbsCUrve
+	/*! \class zFnArc
 	*	\brief An arc function set.
 	*	\since version 0.0.4
 	*/
@@ -49,7 +49,7 @@ namespace zSpace
 		//--------------------------
 		//---- PROTECTED ATTRIBUTES
 		//--------------------------
-		/*!	\brief pointer to a graph object  */
+		/*!	\brief pointer to a arc object  */
 		zObjArc *arcObj;
 
 	public:
@@ -64,14 +64,14 @@ namespace zSpace
 
 		/*! \brief Default constructor.
 		*
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
 		zFnArc();
 
 		/*! \brief Overloaded constructor.
 		*
-		*	\param		[in]	_nurbsCurveObj			- input nurbscurve object.
-		*	\since version 0.0.2
+		*	\param		[in]	_arcObj			- input arcObj object.
+		*	\since version 0.0.4
 		*/
 		zFnArc(zObjArc& _arcObj);
 
@@ -82,7 +82,7 @@ namespace zSpace
 
 		/*! \brief Default destructor.
 		*
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
 		~zFnArc();
 
@@ -100,6 +100,13 @@ namespace zSpace
 
 		void to(json& j) override;
 
+#if defined ZSPACE_USD_INTEROP
+
+		void from(UsdPrim& usd, bool staticGeom = false)override;
+
+		void to(UsdPrim& usd)override;
+#endif
+
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 
 		void clear() override;
@@ -113,27 +120,27 @@ namespace zSpace
 		*	\param		[in]	_plane		- container of zObjPlane.
 		*	\param		[in]	_radius	    - container of radius.
 		*	\param		[in]	_angle		- container of angle.
-		*  	\return				boolean of success or not
+		*  	\return				bool        - boolean of success or not
 		*	\since version 0.0.4
 		*/
 		bool create(zObjPlane& _plane, double _radius, double _angle = Z_TWO_PI);			
 
 		/*! \brief This method creates a circle through three 3d points.
 		*
-		*	\param		[in]	p0		- container of first point.
-		*	\param		[in]	p1	    - container of second point.
-		*	\param		[in]	p2		- container of third point.
-		*  	\return				boolean of success or not
+		*	\param		[in]	p0		    - container of first point.
+		*	\param		[in]	p1	        - container of second point.
+		*	\param		[in]	p2		    - container of third point.
+		*  	\return				bool        - boolean of success or not
 		*	\since version 0.0.2
 		*/ 
 		bool createFromPoints(zPoint p0, zPoint p1, zPoint p2);
 
 		/*! \brief This method creates a circle from two 3d points and a  tangent at the first point.
 		*
-		*	\param		[in]	p0		- container of first point.
-		*	\param		[in]	t1	    - container of tangent vector of first point.
-		*	\param		[in]	p1		- container of second point.
-		*  	\return				boolean of success or not
+		*	\param		[in]	p0		    - container of first point.
+		*	\param		[in]	t1	        - container of tangent vector of first point.
+		*	\param		[in]	p1		    - container of second point.
+		*  	\return				bool        - boolean of success or not
 		*	\since version 0.0.4
 		*/
 		bool createFromTangent(zPoint p0, zVector t1, zPoint p1);
@@ -145,7 +152,7 @@ namespace zSpace
 		//--------------------------
 		
 		/*! \brief This method returns the number of control vertices of the curve.
-		*	\return				number of control vertices.
+		*	\return				int         - number of control vertices.
 		*	\since version 0.0.4
 		*/
 		int numControlVertices();	
@@ -162,28 +169,28 @@ namespace zSpace
 
 		/*! \brief This method sets curve color to the input color.
 		*
-		*	\param		[in]	_col				- input color.
+		*	\param		[in]	_col		 - input color.
 		*	\since version 0.0.4
 		*/
 		void setArcDisplayColor(zColor _col);
 	
 		/*! \brief This method sets edge weight of the curve to the input weight.
 		*
-		*	\param		[in]	_wt				- input weight.
+		*	\param		[in]	_wt		     - input weight.
 		*	\since version 0.0.4
 		*/
 		void setArcDisplayWeight(double _wt);
 
 		/*! \brief This method sets angle of arc to the input number.
 		*
-		*	\param		[in]	_angle			- input angle between 0 and two PI.
+		*	\param		[in]	_angle		 - input angle between 0 and two PI.
 		*	\since version 0.0.4
 		*/
 		void setAngle(double _angle);
 
 		/*! \brief This method sets radius of arc to the input number.
 		*
-		*	\param		[in]	_radius			- input radius.
+		*	\param		[in]	_radius		 - input radius.
 		*	\since version 0.0.4
 		*/
 		void setRadius(double _radius);
@@ -192,23 +199,22 @@ namespace zSpace
 		//--- COMPUTE METHODS 
 		//--------------------------
 
-		/*! \brief This method computes the points on the curve.
+		/*! \brief This method computes the display points on the arc.
 		*
-		*	\param		[in]	numPoints			- number of points required.
+		*	\param		[in]	numPoints	 - number of display points required, 180 by default.
 		*	\since version 0.0.4
 		*/
 		void computeArcPositions(int numPoints = 180);
 
-		/*! \brief This method computes the points on the curve.
+		/*! \brief This method computes the control points of the arc.
 		*
-		*	\param		[in]	numPoints			- number of points required.
 		*	\since version 0.0.4
 		*/
 		void computeControlPoints();
 
 		/*! \brief This method checks if this arc is a circle.
 		*
-		*	\return			bool				- is circle or not
+		*	\return			bool			 - boolean of isCircle or not
 		*	\since version 0.0.4
 		*/
 		bool isCircle();		
@@ -219,93 +225,98 @@ namespace zSpace
 
 		/*! \brief This method gets the angle of arc.
 		*
-		*	\return			double				- angle of arc
+		*	\return			double			 - angle of arc
 		*	\since version 0.0.4
 		*/
 		double getAngle();
 
+
+		/*! \brief This method gets the Radius of arc.
+		*
+		*	\return			double			 - Radius of arc
+		*	\since version 0.0.4
+		*/
 		double getRadius();
 
 		/*! \brief This method gets pointer to the internal curve positions container.
 		*
-		*	\return				zPoint*					- pointer to internal vertex position container.
+		*	\return				zPoint*		 - pointer to internal vertex position container.
 		*	\since version 0.0.4
 		*/
 		zPoint* getRawControlPoints();
 
 		/*! \brief This method gets pointer to the internal curve positions container.
 		*
-		*	\param		[out]	numPoints				- output number of points in container.
-		*	\return				zPoint*					- pointer to internal vertex position container.
+		*	\param		[out]	numPoints	 - output number of points in container.
+		*	\return				zPoint*		 - pointer to internal vertex position container.
 		*	\since version 0.0.4
 		*/
 		zPoint* getRawArcPositions(int& numPoints);
 
 		/*! \brief This method gets point at the specified parameter value.
 		*
-		*	\param		[in]	t						- parameter value ( between 0 & 1).
-		*	\return				zPoint					- point at parameter value.
+		*	\param		[in]	t			 - parameter value ( between 0 & 1).
+		*	\return				zPoint		 - point at parameter value.
 		*	\since version 0.0.4
 		*/
 		zPoint getPointAt(double t);
 
 		/*! \brief This method gets tangent at the specified parameter value.
 		*
-		*	\param		[in]	t						- parameter value ( between 0 & 1).
-		*	\return				zVector					- tangent at parameter value.
+		*	\param		[in]	t			 - parameter value ( between 0 & 1).
+		*	\return				zVector		 - tangent at parameter value.
 		*	\since version 0.0.4
 		*/
 		zVector getTangentAt(double t);
 
 		/*! \brief This method gets tangent at the specified parameter value.
 		*
-		*	\param		[in]	t						- parameter value ( between 0 & 1).
-		*	\param		[out]	p						- point at parameter value.
-		*	\param		[out]	tan						- tangent at parameter value.
+		*	\param		[in]	t			 - parameter value between 0 & 1.
+		*	\param		[out]	p			 - point at parameter value.
+		*	\param		[out]	tan			 - tangent at parameter value.
 		*	\since version 0.0.4
 		*/
 		void getPointTangentAt(double t, zPoint &p, zVector &tan);
 						
-		/*! \brief This method gets the center the curve.
+		/*! \brief This method gets the center of the arc curve.
 		*
-		*	\return		zPoint					- center .
+		*	\return		zPoint				 - the center of the arc curve.
 		*	\since version 0.0.4
 		*/
 		zPoint getCenter();
 
 		/*! \brief This method gets the length of the curve.
 		*
-		*	\return		double					- length of the curve .
+		*	\return		double				 - length of the arc curve .
 		*	\since version 0.0.4
 		*/
 		double getLength();
 
 		/*! \brief This method gets the domain of the curve.
 		*
-		*	\return		zDomainDouble					- domain of the curve .
+		*	\return		zDomainDouble		 - domain of the curve .
 		*	\since version 0.0.4
 		*/
 		//zDomainDouble getDomain();
 
 		/*! \brief This method gets the knot of the curve.
 		*
-		*	\return		zDoubleArray					- container of knot vector of the curve .
+		*	\return		zDoubleArray		 - container of knot vector of the curve .
 		*	\since version 0.0.4
 		*/
 		//zDoubleArray getKnotVector();
 
 		/*! \brief This method gets the degree of the curve.
 		*
-		*	\return		int					- degree of the curve .
+		*	\return		int					 - degree of the curve.
 		*	\since version 0.0.4
 		*/
 		//int getDegree();
 		
-		/*! \brief This method computes the lengths of all the half edges of a the graph.
+		/*! \brief This method gets the Raw OpenNurbs Arc object.
 		*
-		*	\param		[out]	halfEdgeLengths				- vector of halfedge lengths.
-		*	\return				double						- total edge lengths.
-		*	\since version 0.0.2
+		*	\return		ON_Circle	         - the Raw OpenNurbs Arc object.
+		*	\since version 0.0.4
 		*/
 		ON_Circle* getRawON_Arc();
 

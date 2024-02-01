@@ -144,6 +144,18 @@ namespace zSpace
 		
 	}
 
+#if defined ZSPACE_USD_INTEROP
+
+	ZSPACE_INLINE void zFnNurbsCurve::from(UsdPrim& usd, bool staticGeom)
+	{
+	}
+
+	ZSPACE_INLINE void zFnNurbsCurve::to(UsdPrim& usd)
+	{
+	}
+
+#endif
+
 	ZSPACE_INLINE void zFnNurbsCurve::getBounds(zPoint &minBB, zPoint &maxBB)
 	{
 		nurbsCurveObj->getBounds(minBB, maxBB);
