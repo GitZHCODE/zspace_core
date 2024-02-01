@@ -159,6 +159,18 @@ namespace zSpace
 		*/
 	}
 
+#if defined ZSPACE_USD_INTEROP
+
+	ZSPACE_INLINE void zFnArc::from(UsdPrim& usd, bool staticGeom)
+	{
+	}
+
+	ZSPACE_INLINE void zFnArc::to(UsdPrim& usd)
+	{
+	}
+
+#endif
+
 	ZSPACE_INLINE void zFnArc::getBounds(zPoint &minBB, zPoint &maxBB)
 	{
 		arcObj->getBounds(minBB, maxBB);
