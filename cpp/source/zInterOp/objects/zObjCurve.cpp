@@ -7,17 +7,17 @@
 // If a copy of the MIT License was not distributed with this file, You can 
 // obtain one at https://opensource.org/licenses/MIT.
 //
-// Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
+// Author : Ling Mao <Ling.Mao@zaha-hadid.com>
 //
 
 
-#include<headers/zInterOp/objects/zObjNurbsCurve.h>
+#include<headers/zInterOp/objects/zObjCurve.h>
 
 namespace zSpace
 {
 	//---- CONSTRUCTOR
 
-	ZSPACE_INLINE zObjNurbsCurve::zObjNurbsCurve()
+	ZSPACE_INLINE zObjCurve::zObjCurve()
 	{
 
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
@@ -32,95 +32,95 @@ namespace zSpace
 
 	//---- DESTRUCTOR
 
-	ZSPACE_INLINE zObjNurbsCurve::~zObjNurbsCurve() {}
+	ZSPACE_INLINE zObjCurve::~zObjCurve() {}
 
 	//---- SET METHODS
 
-	ZSPACE_INLINE void zObjNurbsCurve::setDisplayElements(bool _displayControlPoints, bool _displayCurve)
+	ZSPACE_INLINE void zObjCurve::setDisplayElements(bool _displayControlPoints, bool _displayCurve)
 	{
 		displayControlPoints = _displayControlPoints;
 		displayCurve = _displayCurve;
 	}
 
-	ZSPACE_INLINE void zObjNurbsCurve::setDisplayPositions(zPointArray& _positions)
+	ZSPACE_INLINE void zObjCurve::setDisplayPositions(zPointArray& _positions)
 	{
 		displayPositions = _positions;
 		numDisplayPositions = _positions.size();
 	}
 
-	ZSPACE_INLINE void zObjNurbsCurve::setDisplayColor(zColor _displayColor)
+	ZSPACE_INLINE void zObjCurve::setDisplayColor(zColor _displayColor)
 	{
 		displayColor = _displayColor;
 	}
 
-	ZSPACE_INLINE void zObjNurbsCurve::setDisplayWeight(double _displayWeight)
+	ZSPACE_INLINE void zObjCurve::setDisplayWeight(double _displayWeight)
 	{
 		displayWeight = _displayWeight;
 	}
 
-	ZSPACE_INLINE void zObjNurbsCurve::setDisplayControlPoints(zPointArray& _displayControlPoints)
+	ZSPACE_INLINE void zObjCurve::setDisplayControlPoints(zPointArray& _displayControlPoints)
 	{
 		displayControlPointPositions = _displayControlPoints;
 	}
 
-	ZSPACE_INLINE void zObjNurbsCurve::setControlPointWeights(zDoubleArray& _controlPointWeights)
+	ZSPACE_INLINE void zObjCurve::setControlPointWeights(zDoubleArray& _controlPointWeights)
 	{
 		for (int i = 0; i < _controlPointWeights.size(); i++)
 		{
-			curve.SetWeight(i, _controlPointWeights[i]);
+			on_curve.SetWeight(i, _controlPointWeights[i]);
 		}
 	}
 
-	ZSPACE_INLINE void zObjNurbsCurve::setDegree(int _degree)
+	ZSPACE_INLINE void zObjCurve::setDegree(int _degree)
 	{
 		degree = _degree;
 	}
 
-	ZSPACE_INLINE void zObjNurbsCurve::setPeriodic(bool _periodic)
+	ZSPACE_INLINE void zObjCurve::setPeriodic(bool _periodic)
 	{
 		periodic = _periodic;
 	}
 
 	//---- GET METHODS
 
-	ZSPACE_INLINE void zObjNurbsCurve::getDisplayPositions(zPointArray& _positions)
+	ZSPACE_INLINE void zObjCurve::getDisplayPositions(zPointArray& _positions)
 	{
 		_positions = displayPositions;
 	}
 
-	ZSPACE_INLINE int zObjNurbsCurve::getNumDisplayPositions()
+	ZSPACE_INLINE int zObjCurve::getNumDisplayPositions()
 	{
 		return numDisplayPositions;
 	}
 
-	ZSPACE_INLINE int zObjNurbsCurve::getDegree()
+	ZSPACE_INLINE int zObjCurve::getDegree()
 	{
-		return curve.Dimension();
+		return on_curve.Dimension();
 	}
 
-	ZSPACE_INLINE bool zObjNurbsCurve::isPeriodic()
+	ZSPACE_INLINE bool zObjCurve::isPeriodic()
 	{
-		return curve.IsPeriodic();
+		return on_curve.IsPeriodic();
 	}
 
-	ZSPACE_INLINE int zObjNurbsCurve::getVBO_ControlPointId()
+	ZSPACE_INLINE int zObjCurve::getVBO_ControlPointId()
 	{
 		return VBO_ControlPointId;
 	}
 
-	ZSPACE_INLINE int zObjNurbsCurve::getVBO_CurvePointId()
+	ZSPACE_INLINE int zObjCurve::getVBO_CurvePointId()
 	{
 		return VBO_CurvePointId;
 	}
 
-	ZSPACE_INLINE int zObjNurbsCurve::getVBO_CurveColorId()
+	ZSPACE_INLINE int zObjCurve::getVBO_CurveColorId()
 	{
 		return VBO_CurveColorId;
 	}
 
 	//---- OVERRIDE METHODS
 
-	ZSPACE_INLINE void zObjNurbsCurve::getBounds(zPoint &minBB, zPoint &maxBB)
+	ZSPACE_INLINE void zObjCurve::getBounds(zPoint &minBB, zPoint &maxBB)
 	{
 		coreUtils.getBounds(displayPositions, minBB, maxBB);
 	}
@@ -129,7 +129,7 @@ namespace zSpace
 	// Do Nothing
 #else
 	   
-	ZSPACE_INLINE void zObjNurbsCurve::draw()
+	ZSPACE_INLINE void zObjCurve::draw()
 	{
 		if (displayObject)
 		{

@@ -99,7 +99,7 @@ namespace zSpace
 			p.particle = zParticle(*v.getRawPosition(), fixed);
 			particlesObj.push_back(p);
 
-			if (!fixed) setVertexColor(zColor(0, 0, 1, 1));
+			//if (!fixed) setVertexColor(zColor(0, 0, 1, 1));
 		}
 
 		/*for (int i = 0; i < particlesObj.size(); i++)
@@ -216,6 +216,33 @@ namespace zSpace
 		zVector vec_v1 = vec_v0 * -1;
 
 		float displacement = restLength - vec_v0.length();
+		displacement /= 2;
+
+		vec_v0.normalize();
+		vec_v1.normalize();
+
+		zVector pForce_v0, pForce_v1;
+
+		pForce_v0 = vec_v0 * (displacement * strength);
+		pForce_v1 = vec_v1 * (displacement * strength);
+
+		p0.addForce(pForce_v0);
+		p1.addForce(pForce_v1);
+	}
+
+	ZSPACE_INLINE void zFnGraphDynamics::addDistanceForce(double strength, int v0, int v1, float& restDistance)
+	{
+		zFnParticle p0(particlesObj[v0]);
+		zFnParticle p1(particlesObj[v1]);
+
+		zPoint* pos_v0 = p0.getRawPosition();
+		zPoint* pos_v1 = p1.getRawPosition();
+		zPoint pos_mid = (*pos_v0 + *pos_v1) * 0.5;
+
+		zVector vec_v0 = *pos_v0 - *pos_v1;
+		zVector vec_v1 = vec_v0 * -1;
+
+		float displacement = restDistance - vec_v0.length();
 		displacement /= 2;
 
 		vec_v0.normalize();

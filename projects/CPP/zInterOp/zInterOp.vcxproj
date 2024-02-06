@@ -31,7 +31,9 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\omniUtils\xformUtils.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\zOmniCore.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\core\zRhinoCore.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zFnArc.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zFnNurbsCurve.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zFnPlane.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zMayaFnGraph.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zMayaFnMesh.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\functionSets\zRhinoFnGraph.h" />
@@ -44,7 +46,9 @@
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\interOp\zIOMeshSurface.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\interOp\zIONurbsCurve.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\interOp\zIONurbsSurface.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjArc.h" />
     <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjNurbsCurve.h" />
+    <ClInclude Include="..\..\..\cpp\headers\zInterOp\objects\zObjPlane.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\LiveSessionConfigFile.cpp" />
@@ -53,7 +57,9 @@
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\OmniverseUsdLuxLightCompat.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zOmniCore.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zRhinoCore.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zFnArc.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zFnNurbsCurve.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zFnPlane.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zMayaFnGraph.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zMayaFnMesh.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zRhinoFnGraph.cpp" />
@@ -63,7 +69,9 @@
     <ClCompile Include="..\..\..\cpp\source\zInterOp\interOp\zIOMeshSurface.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\interOp\zIONurbsCurve.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\interOp\zIONurbsSurface.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjArc.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjNurbsCurve.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\objects\zObjPlane.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

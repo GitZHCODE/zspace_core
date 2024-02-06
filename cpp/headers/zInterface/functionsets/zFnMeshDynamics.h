@@ -171,6 +171,16 @@ namespace zSpace
 		*/
 		void addSpringForce(double strength, zFloatArray& restLength, zSolverForceConstraints constrainType = zConstraintFree);
 
+		/*! \brief This method adds the drag force to snap two vertices to rest distance.
+		*
+		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
+		*	\param	[in]	v0						- input first vertex id.
+		*	\param	[in]	v1						- input second vertex id.
+		*	\param	[in]	restDistance			- input target distance.
+		*	\since version 0.0.4
+		*/
+		void addDistanceForce(double strength, int v0, int v1, float& restDistance);
+
 		/*! \brief This method adds the smoothness force to the mesh.
 		*	\details based on https://github.com/Dan-Piker/K2Goals/blob/master/TangentialSmooth.cs
 		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.

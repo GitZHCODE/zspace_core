@@ -7,11 +7,11 @@
 // If a copy of the MIT License was not distributed with this file, You can 
 // obtain one at https://opensource.org/licenses/MIT.
 //
-// Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
+// AAuthor : Ling Mao <Ling.Mao@zaha-hadid.com>
 //
 
-#ifndef ZSPACE_OBJ_NURBSCURVE_H
-#define ZSPACE_OBJ_NURBSCURVE_H
+#ifndef ZSPACE_OBJ_CURVE_H
+#define ZSPACE_OBJ_CURVE_H
 
 #pragma once
 
@@ -43,7 +43,7 @@ namespace zSpace
 	
 	/** @}*/
 
-	class ZSPACE_API zObjNurbsCurve : public zObj
+	class ZSPACE_API zObjCurve : public zObj
 	{
 	private:
 		/*! \brief boolean for displaying the vertices */
@@ -91,7 +91,7 @@ namespace zSpace
 		//--------------------------
 		
 		/*!	\brief OpenNURBS curve			*/
-		ON_NurbsCurve curve;
+		ON_Curve on_curve;
 
 		//--------------------------
 		//---- CONSTRUCTOR
@@ -101,7 +101,7 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		zObjNurbsCurve();
+		zObjCurve();
 
 		//--------------------------
 		//---- DESTRUCTOR
@@ -111,7 +111,7 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		~zObjNurbsCurve();
+		~zObjCurve();
 
 		//--------------------------
 		//---- SET METHODS
@@ -286,14 +286,14 @@ namespace zSpace
 	*
 	*	\since version 0.0.4
 	*/
-	typedef vector<zObjNurbsCurve> zObjNurbsCurveArray;
+	typedef vector<zObjCurve> zObjNurbsCurveArray;
 
 	/*! \typedef zObjNurbsCurvePointerArray
 	*	\brief A vector of zObjNurbsCurve pointers.
 	*
 	*	\since version 0.0.4
 	*/
-	typedef vector<zObjNurbsCurve*>zObjNurbsCurvePointerArray;
+	typedef vector<zObjCurve*>zObjNurbsCurvePointerArray;
 
 	/** @}*/
 	/** @}*/
@@ -304,7 +304,7 @@ namespace zSpace
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
 // All defined OK so do nothing
 #else
-#include<source/zInterOp/objects/zObjNurbsCurve.cpp>
+#include<source/zInterOp/objects/zObjCurve.cpp>
 #endif
 
 #endif
