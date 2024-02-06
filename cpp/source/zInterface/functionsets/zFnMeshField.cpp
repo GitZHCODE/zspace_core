@@ -2186,7 +2186,7 @@ namespace zSpace
 	template<>
 	ZSPACE_INLINE void zFnMeshField<zScalar>::blend_linear(int currentFrame, int totalFrames, zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result)
 	{
-		float weight = currentFrame / totalFrames;
+		float weight = (float) currentFrame / (float) totalFrames;
 
 		if (currentFrame <= 0) weight = 0;
 		if (currentFrame >= totalFrames) weight = 1;

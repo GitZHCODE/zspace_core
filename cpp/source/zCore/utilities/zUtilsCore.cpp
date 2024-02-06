@@ -345,21 +345,6 @@ namespace zSpace
 		return out;
 	}
 
-	ZSPACE_INLINE zVector zUtilsCore::fromMatrix4Row(zMatrix4 &inMatrix, int rowIndex)
-	{
-		zMatrix4Row rVals;
-		inMatrix.getRow(rowIndex, rVals);
-		return zVector(rVals[0], rVals[1], rVals[2]);
-	}
-
-
-	ZSPACE_INLINE zVector zUtilsCore::fromMatrix4Column(zMatrix4 &inMatrix, int colIndex)
-	{
-		zMatrix4Col cVals;
-		inMatrix.getCol(colIndex, cVals);
-		return zVector(cVals[0], cVals[1], cVals[2]);
-	}
-
 	ZSPACE_INLINE zVector zUtilsCore::factorise(zVector &inVector, int precision)
 	{
 
@@ -1123,96 +1108,11 @@ namespace zSpace
 		altitude = acos(inVec.z / radius);
 	}
 
-	//---- 4x4 zMATRIX  TRANSFORMATION METHODS
-
-	ZSPACE_INLINE void zUtilsCore::setColfromVector(zMatrix4 &inMatrix, zVector &inVec, int index)
-	{
-		inMatrix(0, index) = inVec.x; inMatrix(1, index) = inVec.y; inMatrix(2, index) = inVec.z;
-	}
-
-	ZSPACE_INLINE void zUtilsCore::setRowfromVector(zMatrix4 &inMatrix, zVector &inVec, int index)
-	{
-		inMatrix(index, 0) = inVec.x; inMatrix(index, 1) = inVec.y; inMatrix(index, 2) = inVec.z;
-	}
-
-	ZSPACE_INLINE void zUtilsCore::setTransformfromVectors(zMatrix4 &inMatrix, zVector &X, zVector &Y, zVector &Z, zVector &O)
-	{
-		inMatrix.setIdentity();
-
-		setColfromVector(inMatrix, X, 0);
-		setColfromVector(inMatrix, Y, 1);
-		setColfromVector(inMatrix, Z, 2);
-		setColfromVector(inMatrix, O, 3);
-	}
-
-
-	ZSPACE_INLINE zMatrix4 zUtilsCore::toWorldMatrix(zMatrix4 &inMatrix)
-	{
-		zMatrix4 outMatrix;
-		outMatrix.setIdentity();
-
-		zVector X(inMatrix(0, 0), inMatrix(1, 0), inMatrix(2, 0));
-		zVector Y(inMatrix(0, 1), inMatrix(1, 1), inMatrix(2, 1));
-		zVector Z(inMatrix(0, 2), inMatrix(1, 2), inMatrix(2, 2));
-		zVector Cen(inMatrix(0, 3), inMatrix(1, 3), inMatrix(2, 3));
-
-
-		outMatrix(0, 0) = X.x; outMatrix(0, 1) = Y.x; outMatrix(0, 2) = Z.x;
-		outMatrix(1, 0) = X.y; outMatrix(1, 1) = Y.y; outMatrix(1, 2) = Z.y;
-		outMatrix(2, 0) = X.z; outMatrix(2, 1) = Y.z; outMatrix(2, 2) = Z.z;
-
-		outMatrix(0, 3) = Cen.x; outMatrix(1, 3) = Cen.y; outMatrix(2, 3) = Cen.z;
-
-		return outMatrix;
-	}
-
-	ZSPACE_INLINE zMatrix4 zUtilsCore::toLocalMatrix(zMatrix4 &inMatrix)
-	{
-		zMatrix4 outMatrix;
-		outMatrix.setIdentity();
-
-		zVector X(inMatrix(0, 0), inMatrix(1, 0), inMatrix(2, 0));
-		zVector Y(inMatrix(0, 1), inMatrix(1, 1), inMatrix(2, 1));
-		zVector Z(inMatrix(0, 2), inMatrix(1, 2), inMatrix(2, 2));
-		zVector Cen(inMatrix(0, 3), inMatrix(1, 3), inMatrix(2, 3));
-
-		zVector orig(0, 0, 0);
-		zVector d = Cen - orig;
-
-		outMatrix(0, 0) = X.x; outMatrix(0, 1) = X.y; outMatrix(0, 2) = X.z;
-		outMatrix(1, 0) = Y.x; outMatrix(1, 1) = Y.y; outMatrix(1, 2) = Y.z;
-		outMatrix(2, 0) = Z.x; outMatrix(2, 1) = Z.y; outMatrix(2, 2) = Z.z;
-
-		outMatrix(0, 3) = -(X*d); outMatrix(1, 3) = -(Y*d); outMatrix(2, 3) = -(Z*d);
-
-
-
-		return outMatrix;
-	}
-
-	ZSPACE_INLINE zMatrix4 zUtilsCore::PlanetoPlane(zMatrix4 &from, zMatrix4 &to)
-	{
-		zMatrix4 world = toWorldMatrix(to);
-		zMatrix4 local = toLocalMatrix(from);
-		zMatrix4 out = world * local;
-		return out;
-	}
-
-
-	ZSPACE_INLINE zMatrix4 zUtilsCore::ChangeBasis(zMatrix4 &from, zMatrix4 &to)
-	{
-		zMatrix4 world = toWorldMatrix(from);
-		zMatrix4 local = toLocalMatrix(to);
-		zMatrix4 out = local * world;
-		return out;
-	}
-	
-	
 	//---- VECTOR METHODS GEOMETRY
 
 	ZSPACE_INLINE void zUtilsCore::getEllipse(double radius, int numPoints, zPointArray &Pts, zMatrix4 worldPlane, double xFactor, double yFactor)
 	{
-		double theta = 0;
+		/*double theta = 0;
 
 		zMatrix4 localPlane;
 		zMatrix4 trans = PlanetoPlane(localPlane, worldPlane);
@@ -1227,12 +1127,12 @@ namespace zSpace
 			Pts.push_back(pos * trans);
 
 			theta += (Z_TWO_PI / (numPoints+1));
-		}
+		}*/
 	}
 
 	ZSPACE_INLINE void zUtilsCore::getRectangle(zVector dims, zPointArray &rectanglePts, zMatrix4 localPlane)
 	{
-		dims.x *= 0.5;
+		/*dims.x *= 0.5;
 		dims.y *= 0.5;
 
 		zVector v0 = zVector(-dims.x, -dims.y, 0);
@@ -1246,7 +1146,7 @@ namespace zSpace
 		rectanglePts.push_back(v0 * trans);
 		rectanglePts.push_back(v1* trans);
 		rectanglePts.push_back(v2* trans);
-		rectanglePts.push_back(v3* trans);
+		rectanglePts.push_back(v3* trans);*/
 
 	}
 
@@ -1775,8 +1675,9 @@ namespace zSpace
 		
 
 #endif
+		zPlane temp = out.transpose();
 
-		return out;
+		return temp;
 	}
 
 
@@ -1805,7 +1706,12 @@ namespace zSpace
 		zPlane bPlane_Mat = getBestFitPlane(points);
 
 		// translate points to local frame
-		zTransform bPlane_Mat_local = toLocalMatrix(bPlane_Mat);
+		zTransformationMatrix tMat_bPlane;
+		tMat_bPlane.setTransform(bPlane_Mat);
+
+		zTransform bPlane_Mat_local = tMat_bPlane.getLocalMatrix();
+
+		//zTransform bPlane_Mat_local = toLocalMatrix(bPlane_Mat);
 
 		for (int i = 0; i < points.size(); i++)
 		{
@@ -1819,7 +1725,8 @@ namespace zSpace
 
 
 		// translate points to world frame
-		zTransform bPlane_Mat_world = toWorldMatrix(bPlane_Mat);
+		zTransform bPlane_Mat_world = tMat_bPlane.getWorldMatrix();
+		//zTransform bPlane_Mat_world = toWorldMatrix(bPlane_Mat);
 
 		for (int i = 0; i < points.size(); i++)
 		{
@@ -1833,60 +1740,60 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE zTransform zUtilsCore::toWorldMatrix(zTransform &inMatrix)
-	{
+	//ZSPACE_INLINE zTransform zUtilsCore::toWorldMatrix(zTransform &inMatrix)
+	//{
 
-		zTransform outMatrix;
-		outMatrix.setIdentity();
+	//	zTransform outMatrix;
+	//	outMatrix.setIdentity();
 
-		zVector X(inMatrix(0, 0), inMatrix(1, 0), inMatrix(2, 0));
-		zVector Y(inMatrix(0, 1), inMatrix(1, 1), inMatrix(2, 1));
-		zVector Z(inMatrix(0, 2), inMatrix(1, 2), inMatrix(2, 2));
-		zVector Cen(inMatrix(0, 3), inMatrix(1, 3), inMatrix(2, 3));
-
-
-		outMatrix(0, 0) = X.x; outMatrix(0, 1) = Y.x; outMatrix(0, 2) = Z.x;
-		outMatrix(1, 0) = X.y; outMatrix(1, 1) = Y.y; outMatrix(1, 2) = Z.y;
-		outMatrix(2, 0) = X.z; outMatrix(2, 1) = Y.z; outMatrix(2, 2) = Z.z;
-
-		outMatrix(0, 3) = Cen.x; outMatrix(1, 3) = Cen.y; outMatrix(2, 3) = Cen.z;
-
-		return outMatrix;
-	}
-
-	ZSPACE_INLINE zTransform zUtilsCore::toLocalMatrix(zTransform &inMatrix)
-	{
-
-		zTransform outMatrix;
-		outMatrix.setIdentity();
-
-		zVector X(inMatrix(0, 0), inMatrix(1, 0), inMatrix(2, 0));
-		zVector Y(inMatrix(0, 1), inMatrix(1, 1), inMatrix(2, 1));
-		zVector Z(inMatrix(0, 2), inMatrix(1, 2), inMatrix(2, 2));
-		zVector Cen(inMatrix(0, 3), inMatrix(1, 3), inMatrix(2, 3));
-
-		zVector orig(0, 0, 0);
-		zVector d = Cen - orig;
-
-		outMatrix(0, 0) = X.x; outMatrix(0, 1) = X.y; outMatrix(0, 2) = X.z;
-		outMatrix(1, 0) = Y.x; outMatrix(1, 1) = Y.y; outMatrix(1, 2) = Y.z;
-		outMatrix(2, 0) = Z.x; outMatrix(2, 1) = Z.y; outMatrix(2, 2) = Z.z;
-
-		outMatrix(0, 3) = -(X*d); outMatrix(1, 3) = -(Y*d); outMatrix(2, 3) = -(Z*d);
+	//	zVector X(inMatrix(0, 0), inMatrix(1, 0), inMatrix(2, 0));
+	//	zVector Y(inMatrix(0, 1), inMatrix(1, 1), inMatrix(2, 1));
+	//	zVector Z(inMatrix(0, 2), inMatrix(1, 2), inMatrix(2, 2));
+	//	zVector Cen(inMatrix(0, 3), inMatrix(1, 3), inMatrix(2, 3));
 
 
-		return outMatrix;
-	}
+	//	outMatrix(0, 0) = X.x; outMatrix(0, 1) = Y.x; outMatrix(0, 2) = Z.x;
+	//	outMatrix(1, 0) = X.y; outMatrix(1, 1) = Y.y; outMatrix(1, 2) = Z.y;
+	//	outMatrix(2, 0) = X.z; outMatrix(2, 1) = Y.z; outMatrix(2, 2) = Z.z;
 
-	ZSPACE_INLINE zTransform zUtilsCore::PlanetoPlane(zTransform &from, zTransform &to)
-	{
-		zTransform world = toWorldMatrix(to);
-		zTransform local = toLocalMatrix(from);
+	//	outMatrix(0, 3) = Cen.x; outMatrix(1, 3) = Cen.y; outMatrix(2, 3) = Cen.z;
 
-		zTransform out = world * local;
+	//	return outMatrix;
+	//}
 
-		return out;
-	}
+	//ZSPACE_INLINE zTransform zUtilsCore::toLocalMatrix(zTransform &inMatrix)
+	//{
+
+	//	zTransform outMatrix;
+	//	outMatrix.setIdentity();
+
+	//	zVector X(inMatrix(0, 0), inMatrix(1, 0), inMatrix(2, 0));
+	//	zVector Y(inMatrix(0, 1), inMatrix(1, 1), inMatrix(2, 1));
+	//	zVector Z(inMatrix(0, 2), inMatrix(1, 2), inMatrix(2, 2));
+	//	zVector Cen(inMatrix(0, 3), inMatrix(1, 3), inMatrix(2, 3));
+
+	//	zVector orig(0, 0, 0);
+	//	zVector d = Cen - orig;
+
+	//	outMatrix(0, 0) = X.x; outMatrix(0, 1) = X.y; outMatrix(0, 2) = X.z;
+	//	outMatrix(1, 0) = Y.x; outMatrix(1, 1) = Y.y; outMatrix(1, 2) = Y.z;
+	//	outMatrix(2, 0) = Z.x; outMatrix(2, 1) = Z.y; outMatrix(2, 2) = Z.z;
+
+	//	outMatrix(0, 3) = -(X*d); outMatrix(1, 3) = -(Y*d); outMatrix(2, 3) = -(Z*d);
+
+
+	//	return outMatrix;
+	//}
+
+	//ZSPACE_INLINE zTransform zUtilsCore::PlanetoPlane(zTransform &from, zTransform &to)
+	//{
+	//	zTransform world = toWorldMatrix(to);
+	//	zTransform local = toLocalMatrix(from);
+
+	//	zTransform out = world * local;
+
+	//	return out;
+	//}
 
 	ZSPACE_INLINE float zUtilsCore::getEuclideanDistance(MatrixXf & m1, MatrixXf & m2, double tolerance)
 	{
@@ -1909,7 +1816,6 @@ namespace zSpace
 
 		return out;
 	}
-
 	
 	ZSPACE_INLINE zTransform zUtilsCore::getTransformFromArray(zFloatArray& rowMajorVals)
 	{
@@ -1954,47 +1860,6 @@ namespace zSpace
 		X.normalize();
 
 		return getTransformFromVectors(O, X, Y, Z);
-	}
-
-	//---- JSON  METHODS USING MODERN JSON
-
-	ZSPACE_INLINE bool zUtilsCore::readJSON(string path, json& outJSON)
-	{
-		outJSON.clear();
-		ifstream in_myfile;
-		in_myfile.open(path.c_str());
-
-		int lineCnt = 0;
-
-		if (in_myfile.fail())
-		{
-			cout << " error in opening file  " << path.c_str() << endl;
-			return false;
-		}
-
-		in_myfile >> outJSON;
-		in_myfile.close();
-
-		return true;
-	}
-
-	ZSPACE_INLINE bool zUtilsCore::writeJSON(string path, json& outJSON)
-	{
-		ofstream myfile;
-		myfile.open(path.c_str());
-
-		if (myfile.fail())
-		{
-			cout << " error in opening file  " << path.c_str() << endl;
-			return false;
-		}
-		else cout << endl << " JSON exported. File:   " << path.c_str() << endl;
-
-
-		//myfile.precision(16);
-		myfile << outJSON.dump();
-		myfile.close();
-		return true;
 	}
 
 	//---- MATRIX  METHODS USING ARMADILLO

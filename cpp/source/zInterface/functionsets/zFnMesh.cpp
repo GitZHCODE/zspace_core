@@ -54,7 +54,7 @@ namespace zSpace
 		{
 			json j;
 
-			bool chk = coreUtils.readJSON(path, j);
+			bool chk = json_read(path, j);
 			if(chk) from(j, staticGeom);
 			//if (chk && staticGeom) setStaticContainers();
 		}
@@ -418,7 +418,7 @@ namespace zSpace
 		{
 			json j;
 			to(j);
-			bool chk = coreUtils.writeJSON(path, j);
+			bool chk = json_write(path, j);
 		}
 
 #if defined ZSPACE_USD_INTEROP
@@ -1276,7 +1276,7 @@ namespace zSpace
 			{
 				// get face vertices and correspondiing positions
 
-				//printf("\n f %i :", i);
+				//printf("\n f %i :", f.getId());
 				vector<int> fVerts;
 				f.getVertices(fVerts);
 
@@ -1469,6 +1469,29 @@ namespace zSpace
 		return out;
 	}
 
+	ZSPACE_INLINE void zFnMesh::computeEdgeLoop(zItMeshHalfEdge& heStart, vector<zItMeshHalfEdge>& _heLoop)
+	{
+		_heLoop.clear();
+
+		bool heBoundary = heStart.onBoundary();
+
+		bool exit = false;
+		zItMeshHalfEdge he = heStart;
+
+		do
+		{
+			_heLoop.push_back(he);
+			
+			if (he.getVertex().onBoundary()) exit = true;
+			if (he.getVertex().getValence() != 4 ) exit = true;
+
+			if (!exit) he = (heBoundary)? he.getNext() :  he.getNext().getSym().getNext();
+
+			if (he == heStart) exit = true;
+
+		} while (!exit);
+	}
+
 	ZSPACE_INLINE void zFnMesh::computeEdgeLoop_Split(vector<zItMeshHalfEdge> &_heLoop, int divs, vector<zPoint> &divPoints)
 	{
 		divPoints.clear();
@@ -1514,6 +1537,59 @@ namespace zSpace
 			divPoints.push_back(pOnCurve);
 
 			if (divPoints.size() == divs) exit = true;
+		}
+
+		///////////////////////////////////
+		currentIndex = _heLoop.size() - 1;
+		divPoints.push_back(_heLoop[currentIndex].getVertex().getPosition()); // last
+
+	}
+
+	ZSPACE_INLINE void zFnMesh::computeEdgeLoop_SplitLength(vector<zItMeshHalfEdge>& _heLoop, float divLength, vector<zPoint>& divPoints)
+	{
+		divPoints.clear();
+
+		float length = computeEdgeLoop_Length(_heLoop);
+		int numInternalPts = floor(length / divLength);
+
+
+		divPoints.push_back(_heLoop[0].getStartVertex().getPosition()); // first
+		int currentindex = 0;
+
+		//////////////////////// loop 
+		int currentIndex = 0;
+		zItMeshHalfEdge walkHe = _heLoop[currentIndex];
+		zPoint pOnCurve = walkHe.getStartVertex().getPosition();;
+		bool exit = false;
+
+		zPoint start;
+
+		float dStart = 0;
+		float dIncrement = divLength;
+		while (!exit)
+		{
+			zPoint eEndPoint = walkHe.getVertex().getPosition();
+			dStart += dIncrement;
+			float distance_increment = dIncrement;
+			while (pOnCurve.distanceTo(eEndPoint) < distance_increment)
+			{
+				distance_increment = distance_increment - pOnCurve.distanceTo(eEndPoint);
+				pOnCurve = eEndPoint;
+
+				currentIndex++;
+				walkHe = _heLoop[currentIndex];
+				eEndPoint = walkHe.getVertex().getPosition();
+			}
+
+			zVector he_vec = walkHe.getVector();
+			he_vec.normalize();
+
+			start = pOnCurve + he_vec * distance_increment;
+			pOnCurve = start;
+
+			divPoints.push_back(pOnCurve);
+
+			if (divPoints.size() == numInternalPts + 1) exit = true;
 		}
 
 		///////////////////////////////////
@@ -2461,11 +2537,17 @@ namespace zSpace
 
 			if (type == zQuadPlanar)
 			{
-				double uA, uB;
-				zPoint pA, pB;
+				if (fVerts.size() == 3)planarityDevs[i] = 0.0;
 
-				coreUtils.line_lineClosestPoints(fVerts[0], fVerts[2], fVerts[1], fVerts[3], uA, uB, pA, pB);
-				planarityDevs[i] = pA.distanceTo(pB);
+				if (fVerts.size() == 4)
+				{
+					double uA, uB;
+					zPoint pA, pB;
+
+					coreUtils.line_lineClosestPoints(fVerts[0], fVerts[2], fVerts[1], fVerts[3], uA, uB, pA, pB);
+					planarityDevs[i] = pA.distanceTo(pB);
+				}
+				
 			}
 
 			if (type == zVolumePlanar)
@@ -2477,7 +2559,7 @@ namespace zSpace
 				planarityDevs[i] = abs(dev);
 			}
 
-
+			if (planarityDevs[i] == -1) continue;
 			if (planarityDevs[i] < tolerance) f.setColor(zGREEN);
 			else f.setColor(zMAGENTA);
 		}
@@ -2672,9 +2754,9 @@ namespace zSpace
 			zIntArray fVerts;
 			f.getVertices(fVerts);
 
-			FTris(i, 0) = fVerts[0];
-			FTris(i, 1) = fVerts[1];
-			FTris(i, 2) = fVerts[2];
+			FTris(i, 0) = fVerts[0] ;
+			FTris(i, 1) = fVerts[1] ;
+			FTris(i, 2) = fVerts[2] ;
 		}
 
 		F = FTris;

@@ -159,7 +159,7 @@ namespace zSpace
 	
 	}
 
-	ZSPACE_INLINE void zFnMeshDynamics::addSpringForce(double strength, zFloatArray& restLength)
+	ZSPACE_INLINE void zFnMeshDynamics::addSpringForce(double strength, zFloatArray& restLength, zSolverForceConstraints constrainType)
 	{
 		zPoint* vPositions = getRawVertexPositions();
 
@@ -175,19 +175,34 @@ namespace zSpace
 			float restLen = restLength[e.getId()];
 
 			float val = strength * (eLen - restLen);
-			zVector pForce_v1 = eVec * (val * 0.5);
-			pForce_v1 *= strength;
+			zVector pForceA = eVec * (val * 0.5);
+			pForceA *= strength;
 
-			zVector pForce_v2 = pForce_v1 * -1;	
-			pForce_v2 *= strength;
+			zVector pForceB = pForceA * -1;
+			pForceB *= strength;
 			
 			zFnParticle fnParticle1(particlesObj[eVerts[0]]);
 			zFnParticle fnParticle2(particlesObj[eVerts[1]]);
 
+			if (constrainType == zConstraintX) { pForceA.x = 0; pForceB.x = 0; }
+			if (constrainType == zConstraintY) { pForceA.y = 0; pForceB.y = 0; }
+			if (constrainType == zConstraintZ) { pForceA.z = 0; pForceB.z = 0; }
+			if (constrainType == zConstraintXY) { pForceA.x = 0; pForceB.x = 0;  pForceA.y = 0; pForceB.y = 0; }
+			if (constrainType == zConstraintYZ) { pForceA.z = 0; pForceB.z = 0;  pForceA.y = 0; pForceB.y = 0; }
+			if (constrainType == zConstraintZX) { pForceA.x = 0; pForceB.x = 0;  pForceA.z = 0; pForceB.z = 0; }
 
-			fnParticle1.addForce(pForce_v1);
-			fnParticle2.addForce(pForce_v2);
+
+			fnParticle1.addForce(pForceA);
+			fnParticle2.addForce(pForceB);
 		}
+
+		/*for (auto& oParticle : particlesObj)
+		{
+			zFnParticle fnParticle(oParticle);
+
+			cout << endl << fnParticle.getForce();
+		}*/
+
 	}
 
 	ZSPACE_INLINE void zFnMeshDynamics::addLoadForce(double strength, int vId, zVector& vec)
@@ -213,6 +228,7 @@ namespace zSpace
 			double dist = core.minDist_Point_Plane(*v.getRawPosition(), targetCenter, targetNormal);
 			zVector pForce = targetNormal * dist * -1.0;
 			pForce = pForce * strength;
+
 
 			zFnParticle fnParticle(particlesObj[id]);
 			fnParticle.addForce(pForce);
@@ -427,7 +443,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zFnMeshDynamics::addPlanarityForce_targetPlane(double strength, double& tolerance, zPointArray& targetCenters, zVectorArray& targetNormals, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit)
+	ZSPACE_INLINE void zFnMeshDynamics::addPlanarityForce_targetPlane(double strength, double tolerance, zPointArray& targetCenters, zVectorArray& targetNormals, zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit, zSolverForceConstraints constrainType)
 	{
 		if (forceDir.size() != numVertices())
 		{
@@ -474,6 +490,13 @@ namespace zSpace
 					zVector pForce = targetNormals[fID] * dist * -1.0;
 
 					pForce = pForce * strength;
+
+					if (constrainType == zConstraintX) { pForce.x = 0; }
+					if (constrainType == zConstraintY) { pForce.y = 0; }
+					if (constrainType == zConstraintZ) { pForce.z = 0; }
+					if (constrainType == zConstraintXY) { pForce.x = 0; pForce.y = 0; }
+					if (constrainType == zConstraintYZ) { pForce.z = 0; pForce.y = 0; }
+					if (constrainType == zConstraintZX) { pForce.x = 0; pForce.z = 0; }
 
 					zFnParticle fnParticle(particlesObj[fVerts[k]]);
 					fnParticle.addForce(pForce);

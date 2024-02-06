@@ -166,9 +166,10 @@ namespace zSpace
 		*
 		*	\param	[in]	strength				- input strength of the force. Typically between 0 and 1.
 		*	\param	[in]	restLength				- input container of restlengths per edge.
+		*  	\param	[out]	constrainType			- input constraints for the force directions.
 		*	\since version 0.0.4
 		*/
-		void addSpringForce(double strength, zFloatArray& restLength );
+		void addSpringForce(double strength, zFloatArray& restLength, zSolverForceConstraints constrainType = zConstraintFree);
 
 		/*! \brief This method adds the smoothness force to the mesh.
 		*	\details based on https://github.com/Dan-Piker/K2Goals/blob/master/TangentialSmooth.cs
@@ -221,9 +222,10 @@ namespace zSpace
 		*  	\param	[out]	planarityDeviations		- output container of planarity deviations per face.
 		*  	\param	[out]	forceDir				- output container of planarity force direction per vertex.
 		*  	\param	[out]	exit					- output boolean true if all the planarity deviations are below tolerance.
+		*  	\param	[out]	constrainType			- input constraints for the force directions.
 		*	\since version 0.0.4
 		*/
-		void addPlanarityForce_targetPlane(double strength, double& tolerance, zPointArray& targetCenters, zVectorArray& targetNormals,  zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit);
+		void addPlanarityForce_targetPlane(double strength, double tolerance, zPointArray& targetCenters, zVectorArray& targetNormals,  zDoubleArray& planarityDeviations, zVectorArray& forceDir, bool& exit, zSolverForceConstraints constrainType = zConstraintFree);
 
 		/*! \brief This method adds the developability forces to the input mesh.
 		*	\details based on Desburn et.al(2002) http://www.geometry.caltech.edu/pubs/DMA02.pdf

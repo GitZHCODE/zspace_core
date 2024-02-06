@@ -31,6 +31,45 @@ namespace zSpace
 
 	//---- OVERRIDE METHODS
 
+	ZSPACE_INLINE bool zFn::json_read(string path, json& j)
+	{
+		j.clear();
+		ifstream in_myfile;
+		in_myfile.open(path.c_str());
+
+		int lineCnt = 0;
+
+		if (in_myfile.fail())
+		{
+			cout << " error in opening file  " << path.c_str() << endl;
+			return false;
+		}
+
+		in_myfile >> j;
+		in_myfile.close();
+
+		return true;
+	}
+
+	ZSPACE_INLINE bool zFn::json_write(string path, json& j)
+	{
+		ofstream myfile;
+		myfile.open(path.c_str());
+
+		if (myfile.fail())
+		{
+			cout << " error in opening file  " << path.c_str() << endl;
+			return false;
+		}
+		else cout << endl << " JSON exported. File:   " << path.c_str() << endl;
+
+
+		//myfile.precision(16);
+		myfile << j.dump();
+		myfile.close();
+		return true;
+	}
+
 #if defined ZSPACE_USD_INTEROP
 	ZSPACE_INLINE bool zFn::usd_openStage(std::string path, UsdStageRefPtr& uStage)
 	{
@@ -62,4 +101,5 @@ namespace zSpace
 	}
 
 #endif
+	
 }

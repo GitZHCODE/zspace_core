@@ -376,12 +376,31 @@ namespace zSpace
 
 		/*! \brief This method computes the splits points on the input edge loop.
 		*
+		*	\param		[in]	heStart		- input start halfedge.
+		*	\param		[in]	_heLoop		- output container of halfedges, which make a continuous loop.
+		*	\since version 0.0.4
+		*	\warning works only with quad meshes
+		*/
+		void computeEdgeLoop(zItMeshHalfEdge & heStart, vector<zItMeshHalfEdge>& _heLoop);
+
+
+		/*! \brief This method computes the splits points on the input edge loop.
+		*
 		*	\param		[in]	_heLoop		- input container of halfedges, which make a continuous loop.
 		*	\param		[in]	divs		- input number of divisions.
 		*	\param		[out]	divPoints	- output contatiner of split points.
 		*	\since version 0.0.4
 		*/
 		void computeEdgeLoop_Split(vector<zItMeshHalfEdge> &_heLoop, int divs, vector<zPoint> &divPoints);
+
+		/*! \brief This method computes the splits points on the input edge loop.
+		*
+		*	\param		[in]	_heLoop		- input container of halfedges, which make a continuous loop.
+		*	\param		[in]	divLength	- input length of divisions.
+		*	\param		[out]	divPoints	- output contatiner of split points.
+		*	\since version 0.0.4
+		*/
+		void computeEdgeLoop_SplitLength(vector<zItMeshHalfEdge>& _heLoop, float divLength, vector<zPoint>& divPoints);
 
 		/*! \brief This method computes the length on the input edge loop.
 		*

@@ -154,13 +154,13 @@ namespace zSpace
 	*/
 	
 	/** Red Color. */
-	inline zColor zRED(0.95, 0.0, 0.55, 1);
+	inline zColor zRED(1, 0.0, 0, 1);
 
 	/** Green Color. */
-	inline zColor zGREEN(0, 0.95, 0.15, 1);
+	inline zColor zGREEN(0, 1, 0, 1);
 
 	/** Blue Color. */
-	inline zColor zBLUE(0, 0.15, 0.95, 1);
+	inline zColor zBLUE(0, 0, 1, 1);
 
 	/** White Color. */
 	inline zColor zWHITE(1, 1, 1, 1);
@@ -169,13 +169,13 @@ namespace zSpace
 	inline zColor zBLACK(0, 0, 0, 1);
 
 	/** Magenta Color. */
-	inline zColor zMAGENTA(0.95, 0, 0.55, 1);
+	inline zColor zMAGENTA(1, 0, 1, 1);
 
 	/** Yellow Color. */
-	inline zColor zYELLOW(0.55, 0.95, 0, 1);
+	inline zColor zYELLOW(1, 1, 0, 1);
 
 	/** Cyan Color. */
-	inline zColor zCYAN(0.00, 0.95, 0.95, 1);
+	inline zColor zCYAN(0.00, 1, 1, 1);
 
 	/** @}*/
 

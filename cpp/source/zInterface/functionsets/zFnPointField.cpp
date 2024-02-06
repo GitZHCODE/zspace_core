@@ -1321,19 +1321,19 @@ namespace zSpace
 		int i = 0;
 		for (zItPointCloudVertex v(*fieldObj); !v.end(); v++, i++)
 		{
-			zVector O = coreUtils.fromMatrix4Column(clipPlane, 3);
-			zVector Z = coreUtils.fromMatrix4Column(clipPlane, 2);
+			//zVector O = coreUtils.fromMatrix4Column(clipPlane, 3);
+			//zVector Z = coreUtils.fromMatrix4Column(clipPlane, 2);
 
-			zVector A = v.getPosition() - O;
-			double minDist_Plane = A * Z;
-			minDist_Plane /= Z.length();
+			//zVector A = v.getPosition() - O;
+			//double minDist_Plane = A * Z;
+			//minDist_Plane /= Z.length();
 
-			// printf("\n dist %1.2f ", minDist_Plane);
+			//// printf("\n dist %1.2f ", minDist_Plane);
 
-			if (minDist_Plane > 0)
-			{
-				scalars[i] = 1;
-			}
+			//if (minDist_Plane > 0)
+			//{
+			//	scalars[i] = 1;
+			//}
 
 		}
 

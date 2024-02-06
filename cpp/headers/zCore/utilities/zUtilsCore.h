@@ -418,24 +418,6 @@ namespace zSpace
 		*/
 		ZSPACE_CUDA_CALLABLE zVector ofMap(float value, zDomainFloat inputDomain, zDomainVector outDomain);
 
-		/*! \brief This method a zVector from the input matrix row.
-		*
-		*	\param		[in]		zMatrixd	- input matrix. number of columns need to be 3 or 4.
-		*	\param		[in]		rowIndex	- row index to be extracted.
-		*	\return					zVector		- zVector of the row matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zVector fromMatrix4Row(zMatrix4 &inMatrix, int rowIndex = 0);
-
-		/*! \brief This method returns extracts a zVector from the input matrix column.
-		*
-		*	\param		[in]		zMatrixd	- input matrix. number of rows need to be 3 or 4.
-		*	\param		[in]		rowIndex	- row index to be extracted.
-		*	\return					zVector		- zVector of the column matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zVector fromMatrix4Column(zMatrix4 &inMatrix, int colIndex);
-
 		/*! \brief This method returns the factorised vector to the input precision.
 		*
 		*	\param		[in]		inVector		- input vector.
@@ -727,76 +709,6 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		ZSPACE_CUDA_CALLABLE void cartesianToSpherical(zPoint &inVec, double &radius, double &azimuth, double &altitude);
-
-		//--------------------------
-		//---- 4x4 zMATRIX  TRANSFORMATION METHODS
-		//--------------------------
-
-		/*! \brief This method inputs the vector values at the input index of the 4X4 tranformation matrix.
-		*
-		*	\param		[in]	inMatrix	- input zMatrix .
-		*	\param		[in]	inVec		- input vector.
-		*	\param		[in]	index		- column index.
-		*	\return 			zMatrix		- transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE void setColfromVector(zMatrix4 &inMatrix, zVector &inVec, int index);
-
-		/*! \brief This method inputs the vector values at the input index of the 4X4 tranformation matrix.
-		*
-		*	\param		[in]	inMatrix	- input zMatrix .
-		*	\param		[in]	inVec		- input vector.
-		*	\param		[in]	index		- column index.
-		*	\return 			zMatrix		- transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE void setRowfromVector(zMatrix4 &inMatrix, zVector &inVec, int index);
-
-		/*! \brief This method returns the 4X4 tranformation matrix to change the origin to the input vector.
-		*
-		*	\param		[out]	inMatrix	- input zMatrix .
-		*	\param		[in]	X			- input X Axis as a vector.
-		*	\param		[in]	Y			- input Y Axis as a vector.
-		*	\param		[in]	Z			- input Z Axis as a vector.
-		*	\param		[in]	O			- input origin as a vector.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE void setTransformfromVectors(zMatrix4 &inMatrix, zVector &X, zVector &Y, zVector &Z, zVector &O);
-
-		/*! \brief This method computes the tranformation to the world space of the input 4x4 matrix.
-		*
-		*	\param		[in]	inMatrix	- input zMatrix to be transformed.
-		*	\return 			zMatrix		- world transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zMatrix4 toWorldMatrix(zMatrix4 &inMatrix);
-
-		/*! \brief This method computes the tranformation to the local space of the input 4x4 matrix.
-		*
-		*	\param		[in]	inMatrix	- input 4X4 zMatrix to be transformed.
-		*	\return 			zMatrix		- world transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zMatrix4 toLocalMatrix(zMatrix4 &inMatrix);
-
-		/*! \brief This method computes the tranformation from one 4X4 matrix to another.
-		*
-		*	\param		[in]	from		- input 4X4 zMatrix.
-		*	\param		[in]	to			- input 4X4 zMatrix.
-		*	\return 			zMatrix		- transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zMatrix4 PlanetoPlane(zMatrix4& from, zMatrix4& to);
-
-		/*! \brief This method computes the tranformation to change the baseis from one 4X4 matrix to another.
-		*
-		*	\tparam				T			- Type to work with standard c++ numerical datatypes.
-		*	\param		[in]	from		- input 4X4 zMatrix.
-		*	\param		[in]	to			- input 4X4 zMatrix.
-		*	\return 			zMatrix		- transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zMatrix4 ChangeBasis(zMatrix4 &from, zMatrix4 &to);
 		
 
 		//--------------------------
@@ -930,7 +842,7 @@ namespace zSpace
 		*	\return 			zTransform		- world transformation matrix.
 		*	\since version 0.0.2
 		*/
-		zTransform toWorldMatrix(zTransform &inMatrix);
+		//zTransform toWorldMatrix(zTransform &inMatrix);
 
 		/*! \brief This method computes the tranformation to the local space of the input 4x4 matrix.
 		*
@@ -938,7 +850,7 @@ namespace zSpace
 		*	\return 			zTransform		- world transformation matrix.
 		*	\since version 0.0.2
 		*/
-		zTransform toLocalMatrix(zTransform &inMatrix);
+		//zTransform toLocalMatrix(zTransform &inMatrix);
 
 		/*! \brief This method computes the tranformation from one 4X4 matrix to another.
 		*
@@ -947,7 +859,7 @@ namespace zSpace
 		*	\return 			zTransform		- transformation matrix.
 		*	\since version 0.0.2
 		*/
-		zTransform PlanetoPlane(zTransform &from, zTransform &to);
+		//zTransform PlanetoPlane(zTransform &from, zTransform &to);
 
 		/*! \brief This method computes the euclidean distance between two input row matricies.  The number of columns of m1 and m2 need to be equal.
 		*
@@ -989,50 +901,7 @@ namespace zSpace
 		*/
 		zTransform getTransformFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis = zVector(0, 1, 0));
 
-
-		//--------------------------
-		//---- JSON  METHODS USING MODERN JSON
-		//--------------------------
-
-		/*! \brief This method gets the JSON file from the input path if it exists.
-		*
-		*	\param		[in]	path			- input file path.
-		*	\param		[out]	j				- output JSON file if it exists.
-		*	\return 			bool			- true if file exists, else false.
-		*	\since version 0.0.4
-		*/
-		bool readJSON(string path, json& j);
-
-		/*! \brief This method writes the JSON file to the output path.
-		*
-		*	\param		[out]	path			- output file path.
-		*	\param		[in]	j				- output JSON file if it exists.
-		*	\return 			bool			- true if file exists, else false.
-		*	\since version 0.0.4
-		*/
-		bool writeJSON(string path, json& j);
-		
-		/*! \brief This method gets the attributes from the input json.
-		*
-		*	\param		[in]	j				- input JSON file if it exists.
-		*	\param		[in]	attributeKey	- input JSON attribute name.
-		*	\param		[in]	outAttribute	- input JSON attribute values.
-		*	\return 			bool			- true if file exists, else false.
-		*	\since version 0.0.4
-		*/
-		template <typename T>
-		bool readJSONAttribute(json& j, string attributeKey , T &outAttribute);
-
-		/*! \brief This method gets the JSON file from the input path if it exists.
-		*
-		*	\param		[in]	path			- input file path.
-		*	\param		[out]	j				- output JSON file if it exists.
-		*	\return 			bool			- true if file exists, else false.
-		*	\since version 0.0.4
-		*/
-		template <typename T>
-		void writeJSONAttribute(json& j, string attributeKey, T& outAttribute);
-		
+				
 		//--------------------------
 		//---- MATRIX  METHODS USING ARMADILLO
 		//--------------------------
@@ -1276,7 +1145,7 @@ namespace zSpace
 		return out;
 	}
 
-	template<typename T>
+	/*template<typename T>
 	inline bool zUtilsCore::readJSONAttribute(json& j, string attributeKey, T& outAttribute)
 	{
 		bool out = j.contains(attributeKey);
@@ -1288,7 +1157,7 @@ namespace zSpace
 	inline void zUtilsCore::writeJSONAttribute(json& j, string attributeKey, T& outAttribute)
 	{
 		j[attributeKey] = outAttribute;		
-	}
+	}*/
 
 
 #endif
