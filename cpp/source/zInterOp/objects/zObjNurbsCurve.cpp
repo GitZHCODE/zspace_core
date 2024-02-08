@@ -63,24 +63,6 @@ namespace zSpace
 		displayControlPointPositions = _displayControlPoints;
 	}
 
-	ZSPACE_INLINE void zObjNurbsCurve::setControlPointWeights(zDoubleArray& _controlPointWeights)
-	{
-		for (int i = 0; i < _controlPointWeights.size(); i++)
-		{
-			curve.SetWeight(i, _controlPointWeights[i]);
-		}
-	}
-
-	ZSPACE_INLINE void zObjNurbsCurve::setDegree(int _degree)
-	{
-		degree = _degree;
-	}
-
-	ZSPACE_INLINE void zObjNurbsCurve::setPeriodic(bool _periodic)
-	{
-		periodic = _periodic;
-	}
-
 	//---- GET METHODS
 
 	ZSPACE_INLINE void zObjNurbsCurve::getDisplayPositions(zPointArray& _positions)
@@ -91,16 +73,6 @@ namespace zSpace
 	ZSPACE_INLINE int zObjNurbsCurve::getNumDisplayPositions()
 	{
 		return numDisplayPositions;
-	}
-
-	ZSPACE_INLINE int zObjNurbsCurve::getDegree()
-	{
-		return curve.Dimension();
-	}
-
-	ZSPACE_INLINE bool zObjNurbsCurve::isPeriodic()
-	{
-		return curve.IsPeriodic();
 	}
 
 	ZSPACE_INLINE int zObjNurbsCurve::getVBO_ControlPointId()
@@ -123,6 +95,13 @@ namespace zSpace
 	ZSPACE_INLINE void zObjNurbsCurve::getBounds(zPoint &minBB, zPoint &maxBB)
 	{
 		coreUtils.getBounds(displayPositions, minBB, maxBB);
+	}
+
+	//---- OPERATOR
+	ZSPACE_INLINE zObjNurbsCurve& zObjNurbsCurve::operator=(const ON_NurbsCurve& rhs)
+	{
+		ON_NurbsCurve::operator=(rhs);
+		return *this;
 	}
 
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
@@ -157,14 +136,14 @@ namespace zSpace
 		if (displayControlPoints)
 		{
 			displayUtils->drawPoints(&displayControlPointPositions[0], zColor(), 3, displayControlPointPositions.size());
-			displayUtils->drawCurve(&displayControlPointPositions[0], zColor(), 1, displayControlPointPositions.size(), periodic);
+			displayUtils->drawCurve(&displayControlPointPositions[0], zColor(), 1, displayControlPointPositions.size(), this->IsPeriodic());
 		}
 
 
 		// draw edges
 		if (displayCurve)
 		{
-			displayUtils->drawCurve(&displayPositions[0], displayColor, displayWeight, displayPositions.size(),periodic);
+			displayUtils->drawCurve(&displayPositions[0], displayColor, displayWeight, displayPositions.size(), this->IsPeriodic();
 		}
 
 	
