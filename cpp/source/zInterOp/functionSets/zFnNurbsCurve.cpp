@@ -111,24 +111,24 @@ namespace zSpace
 	ZSPACE_INLINE void zFnNurbsCurve::to(json& j)
 	{
 		vector<zDoubleArray> cPoints;
-		cPoints.assign(nurbsCurveObj->curve.CVCount(), zDoubleArray());
+		cPoints.assign(nurbsCurveObj->CVCount(), zDoubleArray());
 
 		zDoubleArray cPointWeights;
-		cPointWeights.assign(nurbsCurveObj->curve.CVCount(), -1);
+		cPointWeights.assign(nurbsCurveObj->CVCount(), -1);
 
 		zPointArray cvs;
 		getControlPoints(cvs);
-		for (int i = 0; i < nurbsCurveObj->curve.CVCount(); i++)
+		for (int i = 0; i < nurbsCurveObj->CVCount(); i++)
 		{
 			cPoints[i].push_back(cvs[i].x);
 			cPoints[i].push_back(cvs[i].y);
 			cPoints[i].push_back(cvs[i].z);
 
-			cPointWeights[i] = nurbsCurveObj->curve.Weight(i);
+			cPointWeights[i] = nurbsCurveObj->Weight(i);
 		}
 
-		int cDegree = nurbsCurveObj->getDegree();
-		bool cPeriodic = nurbsCurveObj->isPeriodic();		
+		int cDegree = getDegree();
+		bool cPeriodic = isPeriodic();		
 
 		zDomainDouble domain = getDomain();
 		zDoubleArray cDomain = { domain.min, domain.max};
@@ -167,7 +167,7 @@ namespace zSpace
 	{
 		zPointArray empty;
 		nurbsCurveObj->setDisplayPositions(empty);
-		nurbsCurveObj->curve = ON_NurbsCurve();
+		//nurbsCurveObj = ON_NurbsCurve();
 
 	}
 
@@ -185,9 +185,9 @@ namespace zSpace
 		if (!interpolate)
 		{
 			if (periodic)
-				nurbsCurveObj->curve.CreatePeriodicUniformNurbs(degree, degree + 1, points.Count(), points);
+				nurbsCurveObj->CreatePeriodicUniformNurbs(degree, degree + 1, points.Count(), points);
 			else
-				nurbsCurveObj->curve.CreateClampedUniformNurbs(degree, degree + 1, points.Count(), points);
+				nurbsCurveObj->CreateClampedUniformNurbs(degree, degree + 1, points.Count(), points);
 		}
 		else
 		{
@@ -197,19 +197,28 @@ namespace zSpace
 				knotStyle = 4;
 				points.Append(points[0]);
 			}
-			nurbsCurveObj->curve = *RhinoInterpCurve(degree, points, (ON_3dVector*)nullptr, (ON_3dVector*)nullptr, knotStyle);
+			
+			*nurbsCurveObj = *RhinoInterpCurve(degree, points, (ON_3dVector*)nullptr, (ON_3dVector*)nullptr, knotStyle);
+
+			//if (temp)
+			//{
+			//	nurbsCurveObj = <zObjNurbsCurve*>(temp);
+			//	cout << "temp successed" << endl;
+
+			//}
+
+			//if (nurbsCurveObj)
+			//	cout << "cast successed" << endl;
 		}
 
 		//curve properties
-		//cout << endl << "cv_count:" << nurbsCurveObj->curve.CVCount() << endl;
+		//cout << endl << "cv_count:" << nurbsCurveObj->CVCount() << endl;
 
 		//double len;
-		//nurbsCurveObj->curve.GetLength(&len);
+		//nurbsCurveObj->GetLength(&len);
 		//cout << "curve length:" << len << endl;
 
-		nurbsCurveObj->curve.SetDomain(0.0, 1.0);
-		nurbsCurveObj->setDegree(degree);
-		nurbsCurveObj->setPeriodic(periodic);
+		nurbsCurveObj->SetDomain(0.0, 1.0);
 		nurbsCurveObj->setDisplayControlPoints(positions);
 
 		// display points 
@@ -259,11 +268,11 @@ namespace zSpace
 		create(positions, degree, periodic, interpolate, displayNumPoints);
 	}
 
-	ZSPACE_INLINE void zFnNurbsCurve::create(zObjArc& o_arc, int cvNum, int displayNumPoints)
+	ZSPACE_INLINE void zFnNurbsCurve::create(zObjArc& o_arc, int displayNumPoints)
 	{
-		o_arc.on_arc.GetNurbForm(nurbsCurveObj->curve);
+		o_arc.on_arc.GetNurbForm(*nurbsCurveObj);
 
-		nurbsCurveObj->curve.SetDomain(0.0, 1.0);
+		nurbsCurveObj->SetDomain(0.0, 1.0);
 		setDisplayNumPoints(displayNumPoints);
 	}
 
@@ -271,15 +280,15 @@ namespace zSpace
 	
 	ZSPACE_INLINE int zFnNurbsCurve::numControlVertices()
 	{
-		return nurbsCurveObj->curve.CVCount();
+		return nurbsCurveObj->CVCount();
 	}
 
 	//---- COMPUTE METHODS
 	ZSPACE_INLINE void zFnNurbsCurve::closestPoint(zPoint& testPoint, zPoint& closestPoint, double& t)
 	{
 		const ON_3dPoint p(testPoint.x, testPoint.y, testPoint.z);
-		nurbsCurveObj->curve.GetClosestPoint(p, &t);
-		const ON_3dPoint p_curve = nurbsCurveObj->curve.PointAt(t);
+		nurbsCurveObj->GetClosestPoint(p, &t);
+		const ON_3dPoint p_curve = nurbsCurveObj->PointAt(t);
 
 		closestPoint = zPoint(p_curve.x, p_curve.y, p_curve.z);
 	}
@@ -287,21 +296,21 @@ namespace zSpace
 	ZSPACE_INLINE void zFnNurbsCurve::closestPoint(zObjNurbsCurve& curveB, zPoint& closestPoint_A, zPoint& closestPoint_B, double& t_A, double& t_B)
 	{
 		ON_SimpleArray<const ON_Geometry*> testCrvs;
-		const ON_Geometry* geo = &curveB.curve;
+		const ON_Geometry* geo = &curveB;
 		testCrvs.Append(geo);
 
 		int obj_index;
 		ON_COMPONENT_INDEX comp_index;
 		double u_param, v_param;
 
-		bool b =RhinoGetClosestPoint(nurbsCurveObj->curve, t_A, testCrvs, obj_index, comp_index, u_param, v_param);
+		bool b =RhinoGetClosestPoint(*nurbsCurveObj, t_A, testCrvs, obj_index, comp_index, u_param, v_param);
 
 		if (b)
 		{
 			t_B = u_param;
 			ON_3dPoint pA, pB;
-			pA = nurbsCurveObj->curve.PointAt(t_A);
-			pB = curveB.curve.PointAt(t_B);
+			pA = nurbsCurveObj->PointAt(t_A);
+			pB = curveB.PointAt(t_B);
 			closestPoint_A = zPoint(pA.x, pA.y, pA.z);
 			closestPoint_B = zPoint(pB.x, pB.y, pB.z);
 		}
@@ -314,7 +323,7 @@ namespace zSpace
 		ON_SimpleArray<ON_3dPoint> p;
 		ON_SimpleArray<double> t;
 
-		RhinoDivideCurve(nurbsCurveObj->curve, numSegments, 0, false, true, &p, &t);
+		RhinoDivideCurve(*nurbsCurveObj, numSegments, 0, false, true, &p, &t);
 
 		for (int i = 0; i < p.Count(); i++)
 		{
@@ -330,7 +339,7 @@ namespace zSpace
 		ON_SimpleArray<ON_3dPoint> p;
 		ON_SimpleArray<double> t;
 
-		RhinoDivideCurve(nurbsCurveObj->curve, 0, length, false, true, &p, &t);
+		RhinoDivideCurve(*nurbsCurveObj, 0, length, false, true, &p, &t);
 
 		for (int i = 0; i < p.Count(); i++)
 		{
@@ -343,21 +352,20 @@ namespace zSpace
 	{
 		ON_Interval interval(t0, t1);
 
-		nurbsCurveObj->curve.NurbsCurve(&out_SubCurve.curve, 0.0, &interval);
+		nurbsCurveObj->NurbsCurve(&out_SubCurve, 0.0, &interval);
 
 		zPointArray positions;
 		zFnNurbsCurve fn_out(out_SubCurve);
 
 		if (normalise) fn_out.setDomain(0.0, 1.0);
-		fn_out.setDegree(nurbsCurveObj->curve.Degree(), displayNumPoints);
-		out_SubCurve.setPeriodic(nurbsCurveObj->curve.IsPeriodic());
+		fn_out.setDegree(nurbsCurveObj->Degree(), displayNumPoints);
 		fn_out.getControlPoints(positions);
 		out_SubCurve.setDisplayControlPoints(positions);
 	}
 
 	ZSPACE_INLINE void zFnNurbsCurve::reverse()
 	{
-		nurbsCurveObj->curve.Reverse();
+		nurbsCurveObj->Reverse();
 	}
 
 	//---- INTERSECT METHODS
@@ -375,7 +383,7 @@ namespace zSpace
 		on_plane.Create(O, Z);
 
 		ON_SimpleArray<ON_X_EVENT> intersectionEvents;
-		nurbsCurveObj->curve.IntersectPlane(on_plane, intersectionEvents);
+		nurbsCurveObj->IntersectPlane(on_plane, intersectionEvents);
 
 		ON_3dPoint cx_pt;
 		double cx_param;
@@ -402,7 +410,7 @@ namespace zSpace
 		tParams_B.clear();
 		
 		ON_SimpleArray<ON_X_EVENT> intersectionEvents;
-		nurbsCurveObj->curve.IntersectCurve(&curveB.curve, intersectionEvents);
+		nurbsCurveObj->IntersectCurve(&curveB, intersectionEvents);
 
 		ON_3dPoint cx_pt_a, cx_pt_b;
 		double cx_param_a, cx_param_b;
@@ -432,7 +440,7 @@ namespace zSpace
 		tParams.clear();
 
 		ON_SimpleArray<ON_X_EVENT> intersectionEvents;
-		nurbsCurveObj->curve.IntersectSelf(intersectionEvents);
+		nurbsCurveObj->IntersectSelf(intersectionEvents);
 
 		ON_3dPoint cx_pt;
 		double cx_param;
@@ -455,24 +463,13 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnNurbsCurve::setDegree(int _degree, int _displayNumPoints)
 	{
-		nurbsCurveObj->setDegree(_degree);
-		nurbsCurveObj->curve.IncreaseDegree(_degree);
+		nurbsCurveObj->IncreaseDegree(_degree);
 		setDisplayNumPoints(_displayNumPoints);
 	}
 
 	ZSPACE_INLINE void zFnNurbsCurve::setDomain(double t0, double t1)
 	{
-		nurbsCurveObj->curve.SetDomain(t0, t1);
-	}
-
-	ZSPACE_INLINE void zFnNurbsCurve::setDisplayColor(zColor _col)
-	{
-		nurbsCurveObj->setDisplayColor(_col);
-	}
-
-	ZSPACE_INLINE void zFnNurbsCurve::setDisplayWeight(double _wt)
-	{
-		nurbsCurveObj->setDisplayWeight(_wt);
+		nurbsCurveObj->SetDomain(t0, t1);
 	}
 
 	ZSPACE_INLINE void zFnNurbsCurve::setDisplayNumPoints(int _numPoints)
@@ -482,19 +479,26 @@ namespace zSpace
 		nurbsCurveObj->setDisplayPositions(displayPositions);
 	}
 
+	ZSPACE_INLINE void zFnNurbsCurve::setControlPointWeights(zDoubleArray& _controlPointWeights)
+	{
+		for (int i = 0; i < _controlPointWeights.size(); i++)
+		{
+			nurbsCurveObj->SetWeight(i, _controlPointWeights[i]);
+		}
+	}
 
 	//--- GET METHODS 
 
 	ZSPACE_INLINE void zFnNurbsCurve::getControlPoints(zPointArray& positions)
 	{
 		positions.clear();
-		int numCV = nurbsCurveObj->curve.CVCount();
+		int numCV = nurbsCurveObj->CVCount();
 		positions.assign(numCV, zPoint());
 
 		for (int i = 0; i < numCV; i++)
 		{
 			ON_3dPoint p;
-			nurbsCurveObj->curve.GetCV(i, p);
+			nurbsCurveObj->GetCV(i, p);
 			positions[i] = zPoint(p.x, p.y, p.z);
 		}
 	}
@@ -511,7 +515,7 @@ namespace zSpace
 	{
 		positions.clear();
 
-		if (nurbsCurveObj->curve.Dimension() == 1)
+		if (nurbsCurveObj->Dimension() == 1)
 		{
 			 getControlPoints(positions);
 		}
@@ -524,9 +528,9 @@ namespace zSpace
 			//{
 			//	const double s = (1.0 / (numPoints - 1)) * i;
 			//	double t = 0.0;
-			//	nurbsCurveObj->curve.GetNormalizedArcLengthPoint(s,&t);
-			//	//const ON_3dPoint p = nurbsCurveObj->curve.PointAt(t);
-			//	const ON_3dPoint p = nurbsCurveObj->curve.PointAt(s);
+			//	nurbsCurveObj->GetNormalizedArcLengthPoint(s,&t);
+			//	//const ON_3dPoint p = nurbsCurveObj->PointAt(t);
+			//	const ON_3dPoint p = nurbsCurveObj->PointAt(s);
 			//	cout << "s:" << s << endl;
 			//	cout << "t:" << t << endl;
 
@@ -537,13 +541,13 @@ namespace zSpace
 
 	ZSPACE_INLINE zPoint zFnNurbsCurve::getPointAt(double t)
 	{
-		ON_3dPoint p = nurbsCurveObj->curve.PointAt(t);
+		ON_3dPoint p = nurbsCurveObj->PointAt(t);
 		return zPoint(p.x, p.y, p.z);
 	}
 
 	ZSPACE_INLINE zVector zFnNurbsCurve::getTangentAt(double t)
 	{
-		ON_3dVector tan = nurbsCurveObj->curve.TangentAt(t);
+		ON_3dVector tan = nurbsCurveObj->TangentAt(t);
 		return zVector(tan.x, tan.y, tan.z);
 	}
 
@@ -562,18 +566,18 @@ namespace zSpace
 
 	ZSPACE_INLINE zPoint zFnNurbsCurve::getCenter()
 	{
-		ON_3dPoint p = nurbsCurveObj->curve.PointAt(0.5);
+		ON_3dPoint p = nurbsCurveObj->PointAt(0.5);
 		return zPoint(p.x, p.y, p.z);
 	}
 
 	ZSPACE_INLINE double zFnNurbsCurve::getLength()
 	{
 		//double len = 0.0;
-		//ON_NurbsCurve nCurve = nurbsCurveObj->curve;
+		//ON_NurbsCurve nCurve = nurbsCurveObj;
 		//nCurve.GetLength(&len);
 		//ON_NurbsCurve_GetLength(nCurve, &len);
 		double len;
-		nurbsCurveObj->curve.GetLength(&len);
+		nurbsCurveObj->GetLength(&len);
 		return len;
 	
 	}
@@ -581,7 +585,7 @@ namespace zSpace
 	ZSPACE_INLINE zDomainDouble zFnNurbsCurve::getDomain()
 	{
 		zDomainDouble out;
-		nurbsCurveObj->curve.GetDomain(&out.min, &out.max);
+		nurbsCurveObj->GetDomain(&out.min, &out.max);
 
 		return out;
 	}
@@ -589,11 +593,11 @@ namespace zSpace
 	ZSPACE_INLINE zDoubleArray zFnNurbsCurve::getKnotVector()
 	{
 		zDoubleArray out;
-		out.assign(nurbsCurveObj->curve.KnotCount(), -1);
+		out.assign(nurbsCurveObj->KnotCount(), -1);
 		
-		for (int i = 0; i < nurbsCurveObj->curve.KnotCount(); i++)
+		for (int i = 0; i < nurbsCurveObj->KnotCount(); i++)
 		{
-			out[i] = nurbsCurveObj->curve.m_knot[i];
+			out[i] = nurbsCurveObj->m_knot[i];
 		}
 		
 
@@ -602,12 +606,17 @@ namespace zSpace
 
 	ZSPACE_INLINE int zFnNurbsCurve::getDegree()
 	{
-		return nurbsCurveObj->curve.Dimension();
+		return nurbsCurveObj->Dimension();
+	}
+
+	ZSPACE_INLINE bool zFnNurbsCurve::isPeriodic()
+	{
+		return nurbsCurveObj->IsPeriodic();
 	}
 
 	ZSPACE_INLINE ON_NurbsCurve* zFnNurbsCurve::getRawON_Curve()
 	{
-		return &nurbsCurveObj->curve;
+		return nurbsCurveObj;
 	}
 
 
@@ -742,7 +751,7 @@ namespace zSpace
 			zVector newPos = pos[i] * transform;
 			pos[i] = newPos;
 			ON_3dPoint p(pos[i].x, pos[i].y, pos[i].z);
-			nurbsCurveObj->curve.SetCV(i, p);
+			nurbsCurveObj->SetCV(i, p);
 		}
 
 		// display points 
