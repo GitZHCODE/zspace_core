@@ -7,7 +7,7 @@
 // If a copy of the MIT License was not distributed with this file, You can 
 // obtain one at https://opensource.org/licenses/MIT.
 //
-// Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
+// Author : Taizhong Chen <taizhong.chen@zaha-hadid.com>
 //
 
 #ifndef ZSPACE_OBJ_NURBSCURVE_H
@@ -43,7 +43,7 @@ namespace zSpace
 	
 	/** @}*/
 
-	class ZSPACE_API zObjNurbsCurve : public zObj
+	class ZSPACE_API zObjNurbsCurve : public ON_NurbsCurve, public zObj
 	{
 	private:
 		/*! \brief boolean for displaying the vertices */
@@ -78,20 +78,13 @@ namespace zSpace
 		/*!	\brief stores weight of the curve.			*/
 		double displayWeight;
 
-		/*!	\brief stores dimension of the curve.			*/
-		int degree;
-
-		/*!	\brief stores periodic of the curve.			*/
-		bool periodic;
-
-
 	public:
 		//--------------------------
 		//---- PUBLIC ATTRIBUTES
 		//--------------------------
 		
 		/*!	\brief OpenNURBS curve			*/
-		ON_NurbsCurve curve;
+		//ON_NurbsCurve curve;
 
 		//--------------------------
 		//---- CONSTRUCTOR
@@ -132,20 +125,6 @@ namespace zSpace
 		*/
 		void setDisplayPositions(zPointArray& _positions);
 
-		/*! \brief This method sets curve degree.
-		*
-		*	\param		[in]	_degree		- input curve degree.
-		*	\since version 0.0.2
-		*/
-		void setDegree(int _degree);
-
-		/*! \brief This method sets curve periodic.
-		*
-		*	\param		[in]	_degree		- input curve periodic.
-		*	\since version 0.0.2
-		*/
-		void setPeriodic(bool _periodic);
-
 		/*! \brief This method sets curve display color.
 		*
 		*	\param		[in]	_displayColor		- input display color.
@@ -166,13 +145,6 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void setDisplayControlPoints(zPointArray& _displayControlPoints);
-
-		/*! \brief This method sets curve control point weights.
-		*
-		*	\param		[in]	_controlPointWeights		- input curve control point weights.
-		*	\since version 0.0.2
-		*/
-		void setControlPointWeights(zDoubleArray& _controlPointWeights);
 
 		//--------------------------
 		//---- GET METHODS
@@ -213,19 +185,15 @@ namespace zSpace
 		*/
 		int getVBO_CurveColorId();
 
-		/*! \brief This method gets curve dimension.
-		*
-		*	\return			int				- curve degree.
-		*	\since version 0.0.2
-		*/
-		int getDegree();
+		//--------------------------
+		//---- OPERATORS
+		//--------------------------
 
-		/*! \brief This method gets curve periodic.
+		/*! \brief assignment operator
 		*
-		*	\return			bool				- is periodic or not.
 		*	\since version 0.0.2
 		*/
-		bool isPeriodic();
+		zObjNurbsCurve& operator=(const ON_NurbsCurve& rhs);
 
 		//--------------------------
 		//---- OVERRIDE METHODS

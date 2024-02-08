@@ -147,7 +147,13 @@ namespace zSpace
 		*/
 		void create(zObjGraph& in_graph, double sampleDist, int degree, bool periodic, bool interpolate, int displayNumPoints);
 
-		void create(zObjArc& o_arc, int cvNum, int displayNumPoints);
+		/*! \brief This method creates a nurbs curve from the input obj arc.
+		*
+		*	\param		[in]	o_arc				- input obj arc.
+		*	\param		[in]	displayNumPoints	- approxiamte number of points for displaying the curve.
+		*	\since version 0.0.2
+		*/
+		void create(zObjArc& o_arc, int displayNumPoints);
 
 		//--------------------------
 		//--- TOPOLOGY QUERY METHODS 
@@ -269,27 +275,19 @@ namespace zSpace
 		*/
 		void setDomain(double t0 = 0.0, double t1 = 1.0);
 
-		/*! \brief This method sets curve color to the input color.
-		*
-		*	\param		[in]	_col				- input color.
-		*	\since version 0.0.2
-		*/
-		void setDisplayColor(zColor _col);
-
-	
-		/*! \brief This method sets edge weight of the curve to the input weight.
-		*
-		*	\param		[in]	_wt				- input weight.
-		*	\since version 0.0.2
-		*/
-		void setDisplayWeight(double _wt);
-
 		/*! \brief This method sets number of sample points of the curve for display.
 		*
 		*	\param		[in]	_numPoints				- input num points.
 		*	\since version 0.0.2
 		*/
 		void setDisplayNumPoints(int _numPoints = 100);
+
+		/*! \brief This method sets weight on all control points.
+		*
+		*	\param		[in]	_controlPointWeights	- input control point weights.
+		*	\since version 0.0.2
+		*/
+		void setControlPointWeights(zDoubleArray& _controlPointWeights);
 
 		//--------------------------
 		//--- GET METHODS 
@@ -384,6 +382,13 @@ namespace zSpace
 		*/
 		int getDegree();
 		
+		/*! \brief This method gets the periodic property of the curve.
+		*
+		*	\return		bool				- periodic property of the curve .
+		*	\since version 0.0.4
+		*/
+		bool isPeriodic();
+
 		/*! \brief This method computes the lengths of all the half edges of a the graph.
 		*
 		*	\param		[out]	halfEdgeLengths				- vector of halfedge lengths.
