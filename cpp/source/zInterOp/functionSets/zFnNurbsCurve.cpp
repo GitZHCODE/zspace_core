@@ -54,7 +54,7 @@ namespace zSpace
 		{
 			json j;
 
-			bool chk = coreUtils.readJSON(path, j);
+			bool chk =  coreUtils.readJSON(path, j);
 			if (chk) from(j, staticGeom);			
 		}
 
@@ -135,12 +135,12 @@ namespace zSpace
 
 
 		// Json file 
-		coreUtils.writeJSONAttribute(j, "NC_controlPoints", cPoints);
-		coreUtils.writeJSONAttribute(j, "NC_weights", cPointWeights);
-		coreUtils.writeJSONAttribute(j, "NC_degree", cDegree);
-		coreUtils.writeJSONAttribute(j, "NC_domain", cDomain);
-		coreUtils.writeJSONAttribute(j, "NC_knots", cKnots);
-		coreUtils.writeJSONAttribute(j, "NC_periodic", cPeriodic);
+		writeJSONAttribute(j, "NC_controlPoints", cPoints);
+		writeJSONAttribute(j, "NC_weights", cPointWeights);
+		writeJSONAttribute(j, "NC_degree", cDegree);
+		writeJSONAttribute(j, "NC_domain", cDomain);
+		writeJSONAttribute(j, "NC_knots", cKnots);
+		writeJSONAttribute(j, "NC_periodic", cPeriodic);
 		
 	}
 

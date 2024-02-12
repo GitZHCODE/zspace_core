@@ -122,9 +122,9 @@ namespace zSpace
 		_radius = arcObj->radius;
 		_angle = arcObj->angle;
 
-		coreUtils.writeJSONAttribute(j, "Plane", planeArray);
-		coreUtils.writeJSONAttribute(j, "Radius", _radius);
-		coreUtils.writeJSONAttribute(j, "Angle", _angle);
+		writeJSONAttribute(j, "Plane", planeArray);
+		writeJSONAttribute(j, "Radius", _radius);
+		writeJSONAttribute(j, "Angle", _angle);
 
 		/*
 		vector<zDoubleArray> cPoints;
