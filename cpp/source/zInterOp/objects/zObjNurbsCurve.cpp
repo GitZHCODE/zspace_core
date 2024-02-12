@@ -143,7 +143,7 @@ namespace zSpace
 		// draw edges
 		if (displayCurve)
 		{
-			displayUtils->drawCurve(&displayPositions[0], displayColor, displayWeight, displayPositions.size(), this->IsPeriodic();
+			displayUtils->drawCurve(&displayPositions[0], displayColor, displayWeight, displayPositions.size(), this->IsPeriodic());
 		}
 
 	
