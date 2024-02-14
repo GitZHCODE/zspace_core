@@ -178,6 +178,10 @@ namespace zSpace
 		//---- GET METHODS
 		//--------------------------
 
+		const zPointArray& GetDisplayPositions() const { return displayPositions; }
+		const zPointArray& GetControlPositions() const { return displayControlPointPositions; }
+		const zColor& GetCurveColor() const { return displayColor; }
+
 		/*! \brief This method gets display vertex positions.
 		*
 		*	\param		[out]	_positions		- output display on curve positions.

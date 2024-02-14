@@ -1,5 +1,4 @@
-require('vstudio')
-
+include("./premake/delay_load.lua")
 include("includes.lua")
 
 workspace "zSpace_core"
@@ -82,6 +81,7 @@ project "zSpace_App"
     location "%{project_path}/zSpace_App"
     language "C++"
     cppdialect "C++17"
+    dependson("zSpace_Interface")
 
     CommonConfigurationSettings()
 
@@ -197,6 +197,7 @@ project "zSpace_Interface"
     location "%{project_path}/zSpace_Interface"
     language "C++"
     cppdialect "C++17"
+    dependson("zSpace_Core")
 
     CommonConfigurationSettings()
 
@@ -259,13 +260,9 @@ project "zSpace_InterOp"
     location "%{project_path}/zInterOp"
     language "C++"
     cppdialect "C++17"
+    dependson("zSpace_Interface")
 
     CommonConfigurationSettings()
-
-    -- Exclude zFnComputeMesh from builds
-    filter {"files:**zRhinoCore.*"}
-        flags {"ExcludeFromBuild"}
-    filter {}
 
     files
     {
@@ -288,7 +285,7 @@ project "zSpace_InterOp"
         "%{IncludeDir.NLOHMANN}",
         "%{IncludeDir.QUICKHULL}",
         "C:/Program Files/Rhino 7 SDK/inc",
-        "%{IncludeDir.MAYA}",
+        "C:/Program Files/Autodesk/Maya2020/include",
         "%{IncludeDir.IGL}",
         "%{IncludeDir.SRC}",
         "%{IncludeDir.DEPS}",
@@ -300,9 +297,16 @@ project "zSpace_InterOp"
         "%{LibDir.FREEGLUT}",
         "%{LibDir.SQLITE}",
         "C:/Program Files/Rhino 7 SDK/lib/Release",
-        "C:/Program Files/Autodesk/Maya2020",
+        "C:/Program Files/Autodesk/Maya2020/lib",
         "%{LibDir.OUTDLL}",
         "%{LibDir.OUTLIB}",
+    }
+
+    delayloaddlls
+    {
+        "opennurbs.dll",
+        "RhinoCore.dll",
+        "RhinoLibrary.dll",
     }
 
     links
@@ -311,12 +315,13 @@ project "zSpace_InterOp"
         "zSpace_Interface.lib",
         "opennurbs.lib",
         "RhinoCore.lib",
-        --"OpenMayaRender.lib",
-        --"OpenMayaFX.lib",
-        --"OpenMayaAnim.lib",
-        --"OpenMaya.lib",
-        --"OpenMayaUI.lib",
-        --"Foundation.lib",
+        "RhinoLibrary.lib", --This lib should be in Rhino 7 SDK, if it's not ask Vishu
+        "OpenMayaRender.lib",
+        "OpenMayaFX.lib",
+        "OpenMayaAnim.lib",
+        "OpenMaya.lib",
+        "OpenMayaUI.lib",
+        "Foundation.lib",
         "sqlite3.lib",
         "freeglut.lib",
     }
@@ -334,19 +339,19 @@ project "zSpace_InterOp"
         defines {
                 "ZSPACE_RHINO_INTEROP",
                 "ZSPACE_DYNAMIC_LIBRARY",
-                 "NDEBUG",
-                 "WIN64",
-                 "_UNICODE",
-                 "UNICODE",
-                 "_HAS_STD_BYTE=0"}
+                "NDEBUG",
+                "WIN64",
+                "_UNICODE",
+                "UNICODE",
+                "_HAS_STD_BYTE=0"}
 
     filter "configurations:Release_DLL_OV"
         defines {"ZSPACE_RHINO_INTEROP",
-                 "NDEBUG",
-                 "WIN64",
-                 "_UNICODE",
-                 "UNICODE",
-                 "_HAS_STD_BYTE=0"}
+                "NDEBUG",
+                "WIN64",
+                "_UNICODE",
+                "UNICODE",
+                "_HAS_STD_BYTE=0"}
 
     filter "configurations:Release_Unreal"
         defines{"ZSPACE_RHINO_INTEROP",
