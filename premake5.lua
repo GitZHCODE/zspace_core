@@ -85,6 +85,10 @@ project "zSpace_App"
 
     CommonConfigurationSettings()
 
+    filter {"files:**zArchGeom.h"}
+        flags {"ExcludeFromBuild"}
+    filter {}
+
     files
     {
         "src/headers/zApp/**.h",
@@ -227,6 +231,12 @@ project "zSpace_Interface"
         "%{IncludeDir.IGL}",
         "%{IncludeDir.SRC}",
         "%{IncludeDir.DEPS}",
+        --Omniverse
+        "%{IncludeDir.OV_CLIENT}",
+        "%{IncludeDir.OV_USD_RES}",
+        "%{IncludeDir.OV_PYTHON}",
+        "%{IncludeDir.OV_TINYTOML}",
+        "%{IncludeDir.OV_USD}",
     }
 
     libdirs
@@ -236,13 +246,21 @@ project "zSpace_Interface"
         "%{LibDir.FREEGLUT}",
         "%{LibDir.OUTDLL}",
         "%{LibDir.OUTLIB}",
+        --Omniverse
+        "%{LibDir.OV_CLIENT}",
+        "%{LibDir.OV_USD_RES}",
+        "%{LibDir.OV_PYTHON}",
+        "%{LibDir.OV_USD}",
     }
 
     links
     {
         "sqlite3.lib",
-        "zSpace_Core.lib"
+        "zSpace_Core.lib",
     }
+
+    --All of the Omniverse links
+    links {get_omniverse_links()}
 
     --ZPACE_INTERFACE_SPECIFIC_CONFIGURATION_SETTINGS
     filter "configurations:Release_Unreal"
@@ -253,6 +271,9 @@ project "zSpace_Interface"
         objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
         targetdir ("bin/make")
         targetname ("%{prj.name}")
+
+    filter "configurations:Release_DLL_OV"
+        defines {"ZSPACE_USD_INTEROP"}
 
 
 --#########################################        
@@ -272,6 +293,10 @@ project "zSpace_InterOp"
         "%{IncludeDir.ALGLIB}/**.cpp"
     }
 
+    filter {"files:**zObjCurve.*"}
+        flags {"ExcludeFromBuild"}
+    filter {}
+
     includedirs
     {
         "%{IncludeDir.ARMADILLO}",
@@ -289,6 +314,12 @@ project "zSpace_InterOp"
         "%{IncludeDir.IGL}",
         "%{IncludeDir.SRC}",
         "%{IncludeDir.DEPS}",
+        --Omniverse
+        "%{IncludeDir.OV_CLIENT}",
+        "%{IncludeDir.OV_USD_RES}",
+        "%{IncludeDir.OV_PYTHON}",
+        "%{IncludeDir.OV_TINYTOML}",
+        "%{IncludeDir.OV_USD}",
     }
 
     libdirs
@@ -300,6 +331,11 @@ project "zSpace_InterOp"
         "C:/Program Files/Autodesk/Maya2020/lib",
         "%{LibDir.OUTDLL}",
         "%{LibDir.OUTLIB}",
+        --Omniverse
+        "%{LibDir.OV_CLIENT}",
+        "%{LibDir.OV_USD_RES}",
+        "%{LibDir.OV_PYTHON}",
+        "%{LibDir.OV_USD}",
     }
 
     delayloaddlls
@@ -313,9 +349,11 @@ project "zSpace_InterOp"
     {
         "zSpace_Core.lib",
         "zSpace_Interface.lib",
+        --Rhino
         "opennurbs.lib",
         "RhinoCore.lib",
         "RhinoLibrary.lib", --This lib should be in Rhino 7 SDK, if it's not ask Vishu
+        --Maya
         "OpenMayaRender.lib",
         "OpenMayaFX.lib",
         "OpenMayaAnim.lib",
@@ -325,6 +363,9 @@ project "zSpace_InterOp"
         "sqlite3.lib",
         "freeglut.lib",
     }
+
+    --All of the Omniverse links
+    links {get_omniverse_links()}
 
     --ZPACE_INTEROP_SPECIFIC_CONFIGURATION_SETTINGS
     filter "configurations:Release"
@@ -347,11 +388,20 @@ project "zSpace_InterOp"
 
     filter "configurations:Release_DLL_OV"
         defines {"ZSPACE_RHINO_INTEROP",
+                "ZSPACE_USD_INTEROP",
+                "ZSPACE_DYNAMIC_LIBRARY",
                 "NDEBUG",
                 "WIN64",
                 "_UNICODE",
                 "UNICODE",
-                "_HAS_STD_BYTE=0"}
+                "_HAS_STD_BYTE=0",
+                "BOOST_ALL_DYN_LINK",
+                [[BOOST_LIB_TOOLSET="vc142"]],
+                "TBB_USE_DEBUG=0",
+                "_CRT_SECURE_NO_WARNINGS",
+                "NOMINMAX",
+                "_WINDLL"
+            }
 
     filter "configurations:Release_Unreal"
         defines{"ZSPACE_RHINO_INTEROP",
@@ -363,7 +413,3 @@ project "zSpace_InterOp"
 
     filter "configurations:Release_Make"
         kind "None"
-
-
---#########################################
---CUSTOM FUNCTIONS
