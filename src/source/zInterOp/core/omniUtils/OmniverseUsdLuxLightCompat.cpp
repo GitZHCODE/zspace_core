@@ -24,7 +24,7 @@
 #if defined ZSPACE_USD_INTEROP
 
 //#include "OmniverseUsdLuxLightCompat.h"
-#include<headers/zInterOp/core/omniUtils/OmniverseUsdLuxLightCompat.h>
+#include "zInterOp/core/omniUtils/OmniverseUsdLuxLightCompat.h"
 
 const pxr::TfTokenVector OmniverseUsdLuxLightCompat::CompatLightAttrs =
 {

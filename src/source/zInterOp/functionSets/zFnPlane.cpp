@@ -19,13 +19,13 @@ namespace zSpace
 
 	ZSPACE_INLINE zFnPlane::zFnPlane()
 	{
-		fnType = zFnType::zArcFn;
+		fnType = zFnType::zPlaneFn;
 		planeObj = nullptr;
 	}
 
 	ZSPACE_INLINE zFnPlane::zFnPlane(zObjPlane& _planeObj)
 	{
-		fnType = zFnType::zArcFn;
+		fnType = zFnType::zPlaneFn;
 		planeObj = &_planeObj;
 	}
 
@@ -37,7 +37,7 @@ namespace zSpace
 	
 	ZSPACE_INLINE zFnType zFnPlane::getType()
 	{
-		return zArcFn;
+		return zPlaneFn;
 	}
 
 	
@@ -163,6 +163,18 @@ namespace zSpace
 		//
 	}
 
+#if defined ZSPACE_USD_INTEROP
+
+	ZSPACE_INLINE void zFnPlane::from(UsdPrim& usd, bool staticGeom)
+	{
+	}
+
+	ZSPACE_INLINE void zFnPlane::to(UsdPrim& usd)
+	{
+	}
+
+#endif
+
 	ZSPACE_INLINE void zFnPlane::getBounds(zPoint &minBB, zPoint &maxBB)
 	{
 		planeObj->getBounds(minBB, maxBB);
@@ -182,9 +194,13 @@ namespace zSpace
 		xAxis.normalize();
 		yAxis.normalize();
 
-		if (xAxis == yAxis || xAxis.length() * xAxis.length() == 0)
+		if (xAxis.length() == 0 || yAxis.length() == 0)
 		{
-			return success;
+			return success = false;
+		}
+		else if ((xAxis - yAxis).length() == 0 || (xAxis + yAxis).length() == 0)
+		{
+			return success = false;
 		}
 		else
 		{
@@ -225,10 +241,14 @@ namespace zSpace
 
 		normal.normalize();
 		yUp.normalize();
-
-		if (normal == yUp || normal.length() * yUp.length() == 0)
+		
+		if (normal.length() == 0 || yUp.length() == 0)
 		{
-			return success;
+			return success = false;
+		}
+		else if ((normal - yUp).length() == 0 || (normal + yUp).length() == 0)
+		{
+			return success = false;
 		}
 		else
 		{

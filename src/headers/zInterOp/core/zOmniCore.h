@@ -19,9 +19,9 @@
 #include "zCore/base/zInline.h"
 
 /// OV
-#include "headers/zInterOp/core/omniUtils/xformUtils.h"
-#include "headers/zInterOp/core/omniUtils/primUtils.h"
-#include "headers/zInterOp/core/omniUtils/OmniverseUsdLuxLightCompat.h"
+#include "zInterOp/core/omniUtils/xformUtils.h"
+#include "zInterOp/core/omniUtils/primUtils.h"
+#include "zInterOp/core/omniUtils/OmniverseUsdLuxLightCompat.h"
 
 #include <chrono>
 #include <iostream>
@@ -45,9 +45,9 @@
 
 #include <OmniClient.h>
 #include <OmniUsdResolver.h>
-#include <headers/zInterOp/core/omniUtils/OmniChannel.h>
-#include <headers/zInterOp/core/omniUtils/LiveSessionInfo.h>
-#include <headers/zInterOp/core/omniUtils/LiveSessionConfigFile.h>
+#include "zInterOp/core/omniUtils/OmniChannel.h"
+#include "zInterOp/core/omniUtils/LiveSessionInfo.h"
+#include "zInterOp/core/omniUtils/LiveSessionConfigFile.h"
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/metrics.h>

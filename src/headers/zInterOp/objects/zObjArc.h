@@ -25,7 +25,7 @@
 
 namespace zSpace
 {
-	/** \addtogroup zInterface
+	/** \addtogroup zInterOp
 	*	\brief The Application Program Interface of the library.
 	*  @{
 	*/
@@ -35,8 +35,8 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \class zObjNurbsCurve
-	*	\brief The nurbs curve object class using OpenNURBS
+	/*! \class zObjArc
+	*	\brief The arc object class using OpenNURBS
 	*	\details https://github.com/mcneel/opennurbs
 	*	\since version 0.0.4
 	*/
@@ -93,7 +93,7 @@ namespace zSpace
 		zColor controlPolyColor = zColor(0, 0, 1, 0);
 
 		/*!	\brief container which stores weights of arc points.	 */
-		double controlPointWeight = 5;
+		double controlPointsWeight = 5;
 
 		/*!	\brief container which stores weights of arc points.	 */
 		double controlPolyWeight = 1;
@@ -104,13 +104,13 @@ namespace zSpace
 		/*!	\brief container which stores positions of arc for display.			*/
 		zPointArray arcPositions;
 
-		/*!	\brief stores color of the arc.			*/
+		/*!	\brief stores display color of the arc.	 */
 		zColor arcDisplayColor = zColor(1, 0, 0, 0);
 
-		/*!	\brief stores weight of the arc.			*/
+		/*!	\brief stores weight of the arc. */
 		double arcDisplayWeight = 3;
 
-		/*!	\brief OpenNURBS curve	*/
+		/*!	\brief OpenNURBS arc object	*/
 		ON_Arc on_arc;
 
 		//--------------------------
@@ -119,7 +119,7 @@ namespace zSpace
 
 		/*! \brief Default constructor.
 		*
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
 		zObjArc();
 
@@ -129,7 +129,7 @@ namespace zSpace
 
 		/*! \brief Default destructor.
 		*
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
 		~zObjArc();
 
@@ -137,14 +137,50 @@ namespace zSpace
 		//---- SET METHODS
 		//--------------------------
 
-		/*! \brief This method sets display vertices, edges and face booleans.
+		/*! \brief This method sets display arc, Control Points and Plane booleans.
 		*
-		*	\param		[in]	_displayControlPoints		- input display controlPoints booelan.
-		*	\param		[in]	_displayCurve				- input display curve booelan.
-		*	\since version 0.0.2
+		*	\param		[in]	_displayArc		            - input display arc booelan.
+		*	\param		[in]	_displayControlPoints		- input display Control Points booelan.
+		*   \param		[in]	_displayPlane				- input display Plane booelan.
+		*	\since version 0.0.4
 		*/
 		void setDisplayElements(bool _displayArc, bool _displayControlPoints, bool _displayPlane);
 
+
+		/*! \brief This method sets display arc color.
+		*
+		*	\param		[in]	_arcDisplayColor		    - input display arc color.
+		*	\since version 0.0.4
+		*/
+		void setArcDisplayColor(zColor _arcDisplayColor);
+
+		/*! \brief This method sets display control Points Color.
+		*
+		*	\param		[in]	_controlPointsColor		    - input display control Points Color.
+		*	\since version 0.0.4
+		*/
+		void setControlPointsColor(zColor _controlPointsColor);
+
+		/*! \brief This method sets display control Poly Color.
+		*
+		*	\param		[in]	_controlPolyColor		    - input control Poly Color.
+		*	\since version 0.0.4
+		*/
+		void setControlPolyColor(zColor _controlPolyColor);
+
+		/*! \brief This method sets display control Points Weight.
+		*
+		*	\param		[in]	_controlPointsColor		    - input display control Points Weight.
+		*	\since version 0.0.4
+		*/
+		void setControlPointsWeight(double _controlPointsWeight);
+
+		/*! \brief This method sets display control Poly Weight.
+		*
+		*	\param		[in]	_controlPolyColor		    - input control Poly Weight.
+		*	\since version 0.0.4
+		*/
+		void setControlPolyWeight(double _controlPolyWeight);
 
 		//--------------------------
 		//---- GET METHODS
@@ -171,6 +207,28 @@ namespace zSpace
 		*/
 		int getVBO_CurveColorId();
 
+		/*! \brief This method gets Raw radius vector of the arc.
+		*
+		*	\param		[out]	_Normal	         - stores Raw radius vector of the arc.
+		*	\since version 0.0.4
+		*/
+		void getRawRadius(double _radius);
+
+		/*! \brief This method gets Raw Angle in radian of the arc.
+		*
+		*	\param		[out]	_Normal	         - stores Raw Angle in radian of the arc.
+		*	\since version 0.0.4
+		*/
+		void getRawAngleRadian(double _angle);
+
+		/*! \brief This method gets Raw plane of the arc.
+		*
+		*	\param		[out]	_Normal	         - stores Raw plane of the arc.
+		*	\since version 0.0.4
+		*/
+		void getRawPlane(zObjPlane _oPlane);
+
+
 		//--------------------------
 		//---- OVERRIDE METHODS
 		//--------------------------
@@ -189,7 +247,7 @@ namespace zSpace
 
 		/*! \brief This method appends graph to the buffer.
 		*
-		*	\since version 0.0.1
+		*	\since version 0.0.4
 		*/
 		void appendToBuffer();
 
@@ -198,9 +256,9 @@ namespace zSpace
 		//---- PROTECTED DISPLAY METHODS
 		//--------------------------
 
-		/*! \brief This method displays the zGraph.
+		/*! \brief This method displays the zObjArc.
 		*
-		*	\since version 0.0.2
+		*	\since version 0.0.4
 		*/
 		void drawArc();
 	};

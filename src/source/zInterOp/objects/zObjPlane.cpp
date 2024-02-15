@@ -48,6 +48,13 @@ namespace zSpace
 		displayRectangleScale = _displayRectangleScale;		
 	}
 
+	ZSPACE_INLINE void zObjPlane::setDisplayColor(zColorArray _displayColorArray)
+	{
+		displayColor.clear();
+		displayColor = _displayColorArray;
+	}
+
+
 	//---- GET METHODS
 	
 	ZSPACE_INLINE zPlane zObjPlane::getPlaneMatrix()
@@ -92,6 +99,26 @@ namespace zSpace
 		planeArray.push_back(0);
 		planeArray.push_back(1);
 		return planeArray;
+	}
+
+	ZSPACE_INLINE void zObjPlane::getRawOrigin(zPoint& _origin)
+	{
+		_origin = origin;
+	}
+
+	ZSPACE_INLINE void zObjPlane::getRawXAxis(zVector& _xAxis)
+	{
+		_xAxis = xAxis;
+	}
+
+	ZSPACE_INLINE void zObjPlane::getRawYAxis(zVector& _yAxis)
+	{
+		_yAxis = yAxis;
+	}
+
+	ZSPACE_INLINE void zObjPlane::getRawNormal(zVector& _Normal)
+	{
+		_Normal = normal;
 	}
 
 	//---- OVERRIDE METHODS
@@ -142,15 +169,31 @@ namespace zSpace
 		// draw vertex
 		if (displayRectangle)
 		{
-			zPoint p0 = origin + (xAxis + yAxis) * displayAxisScale;
-			zPoint p1 = origin + (xAxis - yAxis) * displayAxisScale;
-			zPoint p2 = origin - (xAxis + yAxis) * displayAxisScale;
-			zPoint p3 = origin - (xAxis - yAxis) * displayAxisScale;
+			int divisionNum = 10;
+			zPointArray pU1;
+			zPointArray pU2;
+			zPointArray pV1;
+			zPointArray pV2;
 
-			displayUtils->drawLine(p0, p1, zColor(), 1);
-			displayUtils->drawLine(p1, p2, zColor(), 1);
-			displayUtils->drawLine(p2, p3, zColor(), 1);
-			displayUtils->drawLine(p3, p0, zColor(), 1);
+			zPoint p0 = origin + (xAxis + yAxis) * displayRectangleScale;
+			zPoint p1 = origin + (xAxis - yAxis) * displayRectangleScale;
+			zPoint p2 = origin - (xAxis + yAxis) * displayRectangleScale;
+			zPoint p3 = origin - (xAxis - yAxis) * displayRectangleScale;
+
+			for (int i = 0; i <= divisionNum; i++)
+			{
+				pU1.push_back(p0 * i / divisionNum + p1 * (divisionNum - i) / divisionNum);
+				pU2.push_back(p3 * i / divisionNum + p2 * (divisionNum - i) / divisionNum);
+				pV1.push_back(p1 * i / divisionNum + p2 * (divisionNum - i) / divisionNum);
+				pV2.push_back(p0 * i / divisionNum + p3 * (divisionNum - i) / divisionNum);
+			}
+					
+			for (int i = 0; i <= divisionNum; i++)
+			{
+				displayUtils->drawLine(pU1[i], pU2[i], zColor(), 1);
+				displayUtils->drawLine(pV1[i], pV2[i], zColor(), 1);
+			}
+			
 		}
 	}
 

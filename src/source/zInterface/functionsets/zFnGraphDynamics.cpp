@@ -99,7 +99,7 @@ namespace zSpace
 			p.particle = zParticle(*v.getRawPosition(), fixed);
 			particlesObj.push_back(p);
 
-			if (!fixed) setVertexColor(zColor(0, 0, 1, 1));
+			//if (!fixed) setVertexColor(zColor(0, 0, 1, 1));
 		}
 
 		/*for (int i = 0; i < particlesObj.size(); i++)

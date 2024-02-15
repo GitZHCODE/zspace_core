@@ -23,7 +23,7 @@
 
 #if defined ZSPACE_USD_INTEROP
 //#include "OmniChannel.h"
-#include <headers/zInterOp/core/omniUtils/OmniChannel.h>
+#include "zInterOp/core/omniUtils/OmniChannel.h"
 #include <cstring>
 #include <iostream>
 #include <map>
