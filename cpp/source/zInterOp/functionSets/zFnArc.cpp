@@ -50,7 +50,7 @@ namespace zSpace
 		{
 			json j;
 
-			bool chk = coreUtils.readJSON(path, j);
+			bool chk = json_read(path, j);
 			if (chk) from(j, staticGeom);			
 		}
 
@@ -68,9 +68,9 @@ namespace zSpace
 		double _radius;
 		double _angle;
 
-		readJSONAttribute(j, "Plane", planeArray);
-		readJSONAttribute(j, "Radius", _radius);
-		readJSONAttribute(j, "Angle", _angle);
+		json_readAttribute(j, "Plane", planeArray);
+		json_readAttribute(j, "Radius", _radius);
+		json_readAttribute(j, "Angle", _angle);
 
 		zPoint origin(planeArray[3], planeArray[7], planeArray[11]);
 		zVector xAxis(planeArray[0], planeArray[1], planeArray[2]);
@@ -105,7 +105,7 @@ namespace zSpace
 		{
 			json j;
 			to(j);
-			bool chk = coreUtils.writeJSON(path, j);
+			bool chk = json_write(path, j);
 			//toJSON(path);
 		}
 
@@ -122,9 +122,9 @@ namespace zSpace
 		_radius = arcObj->radius;
 		_angle = arcObj->angle;
 
-		coreUtils.writeJSONAttribute(j, "Plane", planeArray);
-		coreUtils.writeJSONAttribute(j, "Radius", _radius);
-		coreUtils.writeJSONAttribute(j, "Angle", _angle);
+		json_writeAttribute(j, "Plane", planeArray);
+		json_writeAttribute(j, "Radius", _radius);
+		json_writeAttribute(j, "Angle", _angle);
 
 		/*
 		vector<zDoubleArray> cPoints;

@@ -184,21 +184,21 @@ namespace  zSpace
 		*/
 		ZSPACE_CUDA_CALLABLE zVector operator *(float val);
 
-		/*! \brief This operator is used for 4x4 matrix muliplication of a vector.
-		*
-		*	\param		[in]	inMatrix	- input 4X4 matrix to be multiplied with the current vector.
-		*	\return				zVector		- resultant vector after the matrix multiplication.
-		*	\since version 0.0.1
-		*/
-		ZSPACE_CUDA_CALLABLE zVector operator*(zMatrix4 &inMatrix);
+		///*! \brief This operator is used for 4x4 matrix muliplication of a vector.
+		//*
+		//*	\param		[in]	inMatrix	- input 4X4 matrix to be multiplied with the current vector.
+		//*	\return				zVector		- resultant vector after the matrix multiplication.
+		//*	\since version 0.0.1
+		//*/
+		//ZSPACE_CUDA_CALLABLE zVector operator*(zMatrix4 &inMatrix);
 
-		/*! \brief This operator is used for 3X3 matrix muliplication of a vector.
-		*
-		*	\param		[in]	inMatrix	- input 3X3 matrix to be multiplied with the current vector.
-		*	\return				zVector		- resultant vector after the matrix multiplication.
-		*	\since version 0.0.1
-		*/
-		ZSPACE_CUDA_CALLABLE zVector operator*(zMatrix3 &inMatrix);
+		///*! \brief This operator is used for 3X3 matrix muliplication of a vector.
+		//*
+		//*	\param		[in]	inMatrix	- input 3X3 matrix to be multiplied with the current vector.
+		//*	\return				zVector		- resultant vector after the matrix multiplication.
+		//*	\since version 0.0.1
+		//*/
+		//ZSPACE_CUDA_CALLABLE zVector operator*(zMatrix3 &inMatrix);
 
 		/*! \brief This operator is used for scalar division of a vector.
 		*
@@ -346,69 +346,77 @@ namespace  zSpace
 		*/
 		ZSPACE_CUDA_CALLABLE zVector rotateAboutAxis(zVector axisVec, float angle = 0);
 
-		/*! \brief This method returns the row matrix of the current zVector.
-		*
-		*	\return				zMatrix4Row		- row matrix of the vector.
-		*	\since version 0.0.1
-		*/
-		ZSPACE_CUDA_CALLABLE void toRowMatrix4(zMatrix4Row &row);
+		///*! \brief This method returns the row matrix of the current zVector.
+		//*
+		//*	\return				zMatrix4Row		- row matrix of the vector.
+		//*	\since version 0.0.1
+		//*/
+		//ZSPACE_CUDA_CALLABLE void toRowMatrix4(zMatrix4Row &row);
 
-		/*! \brief This method returns the row matrix of the current zVector.
-		*
-		*	\return				zMatrix3Row		- row matrix of the vector.
-		*	\since version 0.0.1
-		*/
-		ZSPACE_CUDA_CALLABLE void toRowMatrix3(zMatrix3Row &row);
+		///*! \brief This method returns the row matrix of the current zVector.
+		//*
+		//*	\return				zMatrix3Row		- row matrix of the vector.
+		//*	\since version 0.0.1
+		//*/
+		//ZSPACE_CUDA_CALLABLE void toRowMatrix3(zMatrix3Row &row);
 
-		/*! \brief This method returns the column matrix of the current zVector.
-		*
-		*	\param		[in]	rows			- number of rows in the output vector.
-		*	\return				zMatrix4Col		- column matrix of the vector.
-		*	\since version 0.0.1
-		*/
-		ZSPACE_CUDA_CALLABLE void toColumnMatrix4(zMatrix4Col &col);
+		///*! \brief This method returns the column matrix of the current zVector.
+		//*
+		//*	\param		[in]	rows			- number of rows in the output vector.
+		//*	\return				zMatrix4Col		- column matrix of the vector.
+		//*	\since version 0.0.1
+		//*/
+		//ZSPACE_CUDA_CALLABLE void toColumnMatrix4(zMatrix4Col &col);
 
-		/*! \brief This method returns the column matrix of the current zVector.
-		*
-		*	\param		[in]	rows			- number of rows in the output vector.
-		*	\return				zMatrix3Col		- column matrix of the vector.
-		*	\since version 0.0.1
-		*/
-		ZSPACE_CUDA_CALLABLE void toColumnMatrix3(zMatrix3Col &col);
+		///*! \brief This method returns the column matrix of the current zVector.
+		//*
+		//*	\param		[in]	rows			- number of rows in the output vector.
+		//*	\return				zMatrix3Col		- column matrix of the vector.
+		//*	\since version 0.0.1
+		//*/
+		//ZSPACE_CUDA_CALLABLE void toColumnMatrix3(zMatrix3Col &col);
 
-		/*! \brief This method returns the vector from the input row matrix.
-		*
-		*	\param		[in]		zMatrix4Row	- input row matrix.
-		*	\return					zVector		- zVector of the row matrix.
-		*	\since version 0.0.1
-		*/
-		ZSPACE_CUDA_CALLABLE zVector fromRowMatrix4(zMatrix4Row &inMatrix);
+		///*! \brief This method returns the vector from the input row matrix.
+		//*
+		//*	\param		[in]		zMatrix4Row	- input row matrix.
+		//*	\return					zVector		- zVector of the row matrix.
+		//*	\since version 0.0.1
+		//*/
+		//ZSPACE_CUDA_CALLABLE zVector fromRowMatrix4(zMatrix4Row &inMatrix);
 
-		/*! \brief This method returns the vector from the input row matrix.
-		*
-		*	\param		[in]		zMatrix3Row	- input row matrix.
-		*	\return					zVector		- zVector of the row matrix.
-		*	\since version 0.0.1
-		*/
-		ZSPACE_CUDA_CALLABLE zVector fromRowMatrix3(zMatrix3Row &inMatrix);
+		///*! \brief This method returns the vector from the input row matrix.
+		//*
+		//*	\param		[in]		zMatrix3Row	- input row matrix.
+		//*	\return					zVector		- zVector of the row matrix.
+		//*	\since version 0.0.1
+		//*/
+		//ZSPACE_CUDA_CALLABLE zVector fromRowMatrix3(zMatrix3Row &inMatrix);
 
-		/*! \brief This method returns the vector from the input column matrix.
-		*
-		*	\param		[in]		zMatrix4Col	- input column matrix.
-		*	\return					zVector		- zVector of the column matrix.
-		*	\since version 0.0.1
-		*/
-		ZSPACE_CUDA_CALLABLE zVector fromColumnMatrix4(zMatrix4Col &inMatrix);
+		///*! \brief This method returns the vector from the input column matrix.
+		//*
+		//*	\param		[in]		zMatrix4Col	- input column matrix.
+		//*	\return					zVector		- zVector of the column matrix.
+		//*	\since version 0.0.1
+		//*/
+		//ZSPACE_CUDA_CALLABLE zVector fromColumnMatrix4(zMatrix4Col &inMatrix);
 
-		/*! \brief This method returns the vector from the input column matrix.
-		*
-		*	\param		[in]		zMatrix3Col	- input column matrix.
-		*	\return					zVector		- zVector of the column matrix.
-		*	\since version 0.0.1
-		*/
-		ZSPACE_CUDA_CALLABLE zVector fromColumnMatrix3(zMatrix3Col &inMatrix);
+		///*! \brief This method returns the vector from the input column matrix.
+		//*
+		//*	\param		[in]		zMatrix3Col	- input column matrix.
+		//*	\return					zVector		- zVector of the column matrix.
+		//*	\since version 0.0.1
+		//*/
+		//ZSPACE_CUDA_CALLABLE zVector fromColumnMatrix3(zMatrix3Col &inMatrix);
 
 #ifndef __CUDACC__
+
+		/*! \brief This operator is used for 3x3matrix muliplication of a vector.
+		*
+		*	\param		[in]	inMatrix	- input 4X4 zTransform to be multiplied with the current vector.
+		*	\return				zVector		- resultant vector after the matrix multiplication.
+		*	\since version 0.0.1
+		*/
+		zVector operator*(zRotationMatrix inTrans);
 
 		/*! \brief This operator is used for 4x4 matrix muliplication of a vector.
 		*
@@ -417,6 +425,7 @@ namespace  zSpace
 		*	\since version 0.0.1
 		*/
 		zVector operator*(zTransform inTrans);
+
 
 		//--------------------------
 		//---- STREAM OPERATORS

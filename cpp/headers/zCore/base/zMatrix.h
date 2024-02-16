@@ -1203,6 +1203,17 @@ namespace zSpace
 	typedef zSpace::zMatrix4 zTransform;
 #endif
 
+	/*! \typedef zRotationMatrix
+	*	\brief A 3x3 matrix.
+	*
+	*	\since version 0.0.2
+	*/
+#ifndef __CUDACC__
+	typedef Eigen::Matrix3f zRotationMatrix;
+#else
+	typedef zSpace::zMatrix3 zRotationMatrix;
+#endif
+
 	/*! \typedef zPlane
 	*	\brief A 4x4 matrix.
 	*

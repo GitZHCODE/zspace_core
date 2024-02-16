@@ -191,5 +191,11 @@
     <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zFnPlane.cpp">
       <Filter>Source Files\functionSets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\primUtils.cpp">
+      <Filter>Source Files\core\omniUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\xformUtils.cpp">
+      <Filter>Source Files\core\omniUtils</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

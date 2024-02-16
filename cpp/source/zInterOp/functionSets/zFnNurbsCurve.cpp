@@ -76,11 +76,11 @@ namespace zSpace
 		
 		int cDegree;
 		json_readAttribute(j, "NC_degree", cDegree);
-		nurbsCurveObj->degree = cDegree;
+		//nurbsCurveObj->degree = cDegree;
 
 		bool cPeriodic;
 		json_readAttribute(j, "NC_periodic", cPeriodic);
-		nurbsCurveObj->periodic = cPeriodic;
+		//nurbsCurveObj->periodic = cPeriodic;
 		
 		//printf("\n vertexAttributes: %zi %zi", vertexAttributes.size(), vertexAttributes[0].size());
 

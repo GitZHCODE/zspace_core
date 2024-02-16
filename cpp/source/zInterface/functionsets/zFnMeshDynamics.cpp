@@ -279,7 +279,7 @@ namespace zSpace
 		if (planarityDeviations.size() != numPolygons())
 		{
 			planarityDeviations.clear();
-			planarityDeviations.assign(numPolygons(), -1);
+			planarityDeviations.assign(numPolygons(), -10);
 		}
 
 		if (type == zQuadPlanar)

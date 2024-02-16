@@ -55,6 +55,8 @@
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\LiveSessionInfo.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\OmniChannel.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\OmniverseUsdLuxLightCompat.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\primUtils.cpp" />
+    <ClCompile Include="..\..\..\cpp\source\zInterOp\core\omniUtils\xformUtils.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zOmniCore.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\core\zRhinoCore.cpp" />
     <ClCompile Include="..\..\..\cpp\source\zInterOp\functionSets\zFnArc.cpp" />

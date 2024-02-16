@@ -47,7 +47,7 @@ namespace zSpace
 		{
 			json j;
 
-			bool chk = coreUtils.readJSON(path, j);
+			bool chk = json_read(path, j);
 			if (chk) from(j, staticGeom);			
 		}
 
@@ -120,7 +120,7 @@ namespace zSpace
 		{
 			json j;
 			to(j);
-			bool chk = coreUtils.writeJSON(path, j);
+			bool chk = json_write(path, j);
 			//toJSON(path);
 		}
 
