@@ -53,6 +53,23 @@ using namespace std;
 #include <depends/nlohmann/json.hpp>
 using json = nlohmann::json;;
 
+#if defined ZSPACE_USD_INTEROP
+#include <pxr/pxr.h>
+#include <pxr/usd/usd/schemaBase.h>
+#include <pxr/usd/usd/prim.h>
+
+#include <pxr/usd/usdGeom/mesh.h>
+#include <pxr/usd/usd/primRange.h>
+#include <pxr/usd/usdGeom/xform.h>
+#include <pxr/usd/usdGeom/subset.h>
+
+#if PXR_VERSION >= 2208
+#include <pxr/usd/usdGeom/primvarsAPI.h>
+#endif
+
+PXR_NAMESPACE_USING_DIRECTIVE;
+#endif
+
 #ifndef __CUDACC__	
 
 	#include <depends/tooJPEG/toojpeg.h>
@@ -190,7 +207,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE_HOST vector<string> splitString(const string& str, const string& delimiter);
-		
+				
 
 		//--------------------------
 		//---- NUMERICAL METHODS
@@ -772,6 +789,87 @@ namespace zSpace
 #ifndef __CUDACC__
 
 		//--------------------------
+		//---- JSON  METHODS USING MODERN JSON
+		//--------------------------
+
+		/*! \brief This method gets the JSON file from the input path if it exists.
+		*
+		*	\param		[in]	path			- input file path.
+		*	\param		[out]	j				- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool json_read(string path, json& j);
+
+		/*! \brief This method writes the JSON file to the output path.
+		*
+		*	\param		[out]	path			- output file path.
+		*	\param		[in]	j				- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool json_write(string path, json& j);
+
+		/*! \brief This method gets the attributes from the input json.
+		*
+		*	\param		[in]	j				- input JSON file if it exists.
+		*	\param		[in]	attributeKey	- input JSON attribute name.
+		*	\param		[in]	outAttribute	- input JSON attribute values.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		template <typename T>
+		bool json_readAttribute(json& j, std::string attributeKey, T& outAttribute);
+
+		/*! \brief This method gets the JSON file from the input path if it exists.
+		*
+		*	\param		[in]	path			- input file path.
+		*	\param		[out]	j				- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		template <typename T>
+		void json_writeAttribute(json& j, std::string attributeKey, T& outAttribute);
+
+		//--------------------------
+		//---- USD  METHODS 
+		//--------------------------
+
+#if defined ZSPACE_USD_INTEROP
+
+		/*! \brief This method returns the stage pointer if it exists.
+		*
+		*	\param [in]		path			-  file name including the directory path and extension.
+		*	\param [out]	uStage			-  usd stage pointer if it exists.
+		*	\return 		bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool usd_openStage(std::string path, UsdStageRefPtr& uStage);
+
+		/*! \brief This method creates a new stage in the specified path.
+		*
+		*	\param [in]		path			- file name including the directory path and extension.
+		*	\param [out]	uStage			- usd stage pointer if it exists.
+		*	\return 		bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool usd_createStage(std::string path, UsdStageRefPtr& uStage);
+
+		/*! \brief This method creates a new geometry prim with the input name & stage.
+		*
+		*	\param [in]		uStage				- usd stage pointer.
+		*	\param [in]		s_prim				- name of the geometry prim.
+		*	\param [out]	geomPrim			- output geometry prim.
+		*	\return 		bool				- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		template <typename T>
+		void usd_createGeomPrim(UsdStageRefPtr& uStage, string s_prim, T& geomPrim);
+
+
+#endif
+
+		//--------------------------
 		//---- IMAGE  METHODS
 		//--------------------------
 
@@ -1145,8 +1243,10 @@ namespace zSpace
 		return out;
 	}
 
-	/*template<typename T>
-	inline bool zUtilsCore::readJSONAttribute(json& j, string attributeKey, T& outAttribute)
+	//---- JSON METHODS
+
+	template<typename T>
+	inline bool zUtilsCore::json_readAttribute(json& j, std::string attributeKey, T& outAttribute)
 	{
 		bool out = j.contains(attributeKey);
 		if (out) outAttribute = j[attributeKey].get<T>();
@@ -1154,10 +1254,24 @@ namespace zSpace
 	}
 
 	template<typename T>
-	inline void zUtilsCore::writeJSONAttribute(json& j, string attributeKey, T& outAttribute)
+	inline void zUtilsCore::json_writeAttribute(json& j, std::string attributeKey, T& outAttribute)
 	{
-		j[attributeKey] = outAttribute;		
-	}*/
+		j[attributeKey] = outAttribute;
+	}
+
+#if defined ZSPACE_USD_INTEROP
+
+	//---- UsdGeomMesh specilization for usd_createGeomPrim
+	template<>
+	inline void zUtilsCore::usd_createGeomPrim(UsdStageRefPtr& uStage, string s_prim, UsdGeomMesh& geomPrim)
+	{
+		geomPrim = UsdGeomMesh::Define(uStage, SdfPath("/World/Geometry/" + s_prim));
+
+		if (!geomPrim) cout << " error creating UsdGeomMesh at  /World/Geometry/" << s_prim.c_str() << endl;
+	}
+
+
+#endif
 
 
 #endif

@@ -1294,6 +1294,81 @@ namespace zSpace
 
 #ifndef __CUDACC__
 
+	//---- JSON  METHODS
+
+	ZSPACE_INLINE bool zUtilsCore::json_read(string path, json& j)
+	{
+		j.clear();
+		ifstream in_myfile;
+		in_myfile.open(path.c_str());
+
+		int lineCnt = 0;
+
+		if (in_myfile.fail())
+		{
+			cout << " error in opening file  " << path.c_str() << endl;
+			return false;
+		}
+
+		in_myfile >> j;
+		in_myfile.close();
+
+		return true;
+	}
+
+	ZSPACE_INLINE bool zUtilsCore::json_write(string path, json& j)
+	{
+		ofstream myfile;
+		myfile.open(path.c_str());
+
+		if (myfile.fail())
+		{
+			cout << " error in opening file  " << path.c_str() << endl;
+			return false;
+		}
+		else cout << endl << " JSON exported. File:   " << path.c_str() << endl;
+
+
+		//myfile.precision(16);
+		myfile << j.dump();
+		myfile.close();
+		return true;
+	}
+
+
+	//---- USD  METHODS
+
+#if defined ZSPACE_USD_INTEROP
+	ZSPACE_INLINE bool zUtilsCore::usd_openStage(std::string path, UsdStageRefPtr& uStage)
+	{
+		uStage = UsdStage::Open(path);
+		if (!uStage) std::cout << "\n Failure to open stage." << std::endl;
+		else cout << "\n opened USD stage of file:  " << path.c_str() << endl;
+
+		return (uStage) ? true : false;
+	}
+
+	ZSPACE_INLINE bool zUtilsCore::usd_createStage(std::string path, UsdStageRefPtr& uStage)
+	{
+		uStage = UsdStage::CreateNew(path);
+
+		if (!uStage) cout << "\n error creating USD file  " << path.c_str() << endl;
+		else
+		{
+			uStage->SetMetadata(TfToken("defaultPrim"), VtValue("World"));
+			uStage->SetMetadata(TfToken("upAxis"), VtValue("Z"));
+			uStage->SetMetadata(TfToken("metersPerUnit"), VtValue(1.00));
+
+			UsdGeomXform root = UsdGeomXform::Define(uStage, SdfPath("/World"));
+			UsdGeomXform layer = UsdGeomXform::Define(uStage, SdfPath("/World/Geometry"));
+
+			cout << "\n creating USD file: " << path.c_str() << endl;
+		}
+
+		return (uStage) ? true : false;
+	}
+#endif
+
 	//---- BMP MATRIX  METHODS
 
 	ZSPACE_INLINE void zUtilsCore::matrixToBMP(vector<MatrixXf> &matrices, string path)
