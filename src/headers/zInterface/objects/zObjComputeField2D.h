@@ -192,7 +192,7 @@ namespace zSpace
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		void draw() override;
+		//void draw() override;
 #endif
 
 		//--------------------------

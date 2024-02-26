@@ -24,7 +24,7 @@ namespace zSpace
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		displayUtils = nullptr;
+		//displayUtils = nullptr;
 #endif
 
 		displayVertices = false;
@@ -40,11 +40,11 @@ namespace zSpace
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-	template<typename T>
-	ZSPACE_INLINE void zObjPointField<T>::draw()
-	{
-		zObjPointCloud::draw();
-	}
+	//template<typename T>
+	//ZSPACE_INLINE void zObjPointField<T>::draw()
+	//{
+	//	zObjPointCloud::draw();
+	//}
 
 #endif
 

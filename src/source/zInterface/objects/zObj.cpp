@@ -31,7 +31,7 @@ namespace zSpace
 
 	//---- VIRTUAL METHODS
 
-	ZSPACE_INLINE void zObj::draw() {};
+	//ZSPACE_INLINE void zObj::draw() {};
 
 	ZSPACE_INLINE void zObj::getBounds(zPoint &minBB, zPoint &maxBB) {};
 
@@ -58,10 +58,10 @@ namespace zSpace
 	// Do Nothing
 #else
 
-	ZSPACE_INLINE void zObj::setUtils(zUtilsDisplay &_displayUtils)
-	{
-		displayUtils = &_displayUtils;
-	}
+	//ZSPACE_INLINE void zObj::setUtils(zUtilsDisplay &_displayUtils)
+	//{
+	//	displayUtils = &_displayUtils;
+	//}
 
 #endif 
 

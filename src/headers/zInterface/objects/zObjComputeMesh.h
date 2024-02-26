@@ -127,7 +127,7 @@ namespace  zSpace
 		//--------------------------
 		//---- OVERRIDE METHODS
 		//--------------------------
-		void draw() override;
+		//void draw() override;
 		void getBounds(zPoint& minBB, zPoint& maxBB) override;
 
 		

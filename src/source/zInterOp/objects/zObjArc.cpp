@@ -25,7 +25,7 @@ namespace zSpace
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		displayUtils = nullptr;
+		//displayUtils = nullptr;
 #endif		
 		displayPlane = false;
 		displayControlPoints = false;
@@ -113,46 +113,46 @@ namespace zSpace
 	// Do Nothing
 #else
 	   
-	ZSPACE_INLINE void zObjArc::draw()
-	{
-		if (displayObject)
-		{
-			drawArc();
-		}
+	//ZSPACE_INLINE void zObjArc::draw()
+	//{
+	//	if (displayObject)
+	//	{
+	//		drawArc();
+	//	}
 
-		if (displayObjectTransform)
-		{
-			displayUtils->drawTransform(transformationMatrix);
-		}
-	}
+	//	if (displayObjectTransform)
+	//	{
+	//		displayUtils->drawTransform(transformationMatrix);
+	//	}
+	//}
 
 	//---- DISPLAY BUFFER METHODS
 
-	ZSPACE_INLINE void zObjArc::appendToBuffer()
-	{
-		
-	}
+	//ZSPACE_INLINE void zObjArc::appendToBuffer()
+	//{
+	//	
+	//}
 	
 	//---- PROTECTED DISPLAY METHODS
-	ZSPACE_INLINE void zObjArc::drawArc()
-	{
-		if (displayArc)
-		{
-			displayUtils->drawCurve(&arcPositions[0], arcDisplayColor, arcDisplayWeight, arcPositions.size(), false);
-		}
+	//ZSPACE_INLINE void zObjArc::drawArc()
+	//{
+	//	if (displayArc)
+	//	{
+	//		displayUtils->drawCurve(&arcPositions[0], arcDisplayColor, arcDisplayWeight, arcPositions.size(), false);
+	//	}
 
-		if (displayControlPoints)
-		{
-			displayUtils->drawPoints(&controlPoints[0], controlPointsColor, controlPointsWeight, controlPoints.size());
-			displayUtils->drawCurve(&controlPoints[0], controlPolyColor, controlPolyWeight, controlPoints.size(), false);
-		}
+	//	if (displayControlPoints)
+	//	{
+	//		displayUtils->drawPoints(&controlPoints[0], controlPointsColor, controlPointsWeight, controlPoints.size());
+	//		displayUtils->drawCurve(&controlPoints[0], controlPolyColor, controlPolyWeight, controlPoints.size(), false);
+	//	}
 
-		if (displayPlane)
-		{
-			oPlane.draw();
-		}
+	//	if (displayPlane)
+	//	{
+	//		oPlane.draw();
+	//	}
 
-	}
+	//}
 
 #endif // !ZSPACE_UNREAL_INTEROP
 }

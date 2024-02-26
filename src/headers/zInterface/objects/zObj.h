@@ -24,7 +24,7 @@
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing
 #else
-	#include "zCore/utilities/zUtilsDisplay.h"
+	//#include "zCore/utilities/zUtilsDisplay.h"
 #endif 
 
 namespace zSpace
@@ -99,7 +99,7 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		virtual void draw();
+		//virtual void draw();
 		
 		/*! \brief This method gets the bounds of the object.
 		*
@@ -148,12 +148,12 @@ namespace zSpace
 		*	\param		[in]	_coreUtils				- input core utils.
 		*	\since version 0.0.2
 		*/
-		void setUtils(zUtilsDisplay &_displayUtils);
+		//void setUtils(zUtilsDisplay &_displayUtils);
 
 	protected:
 
 		/*! \brief pointer to display utilities object	*/
-		zUtilsDisplay *displayUtils;
+		//zUtilsDisplay *displayUtils;
 #endif
 
 	};

@@ -77,25 +77,25 @@ namespace zSpace
 
 	//---- DRAW METHODS
 
-	ZSPACE_INLINE void zModel::draw()
-	{
-				
-		for (auto obj : sceneObjects)
-		{	
-			obj->draw();
-		}
+	//ZSPACE_INLINE void zModel::draw()
+	//{
+	//			
+	//	for (auto obj : sceneObjects)
+	//	{	
+	//		obj->draw();
+	//	}
 
-		// buffer display
+	//	// buffer display
 
-		if (showBufPoints) displayUtils.drawPointsFromBuffer(showBufPointColors);
+	//	if (showBufPoints) displayUtils.drawPointsFromBuffer(showBufPointColors);
 
-		if (showBufLines) displayUtils.drawLinesFromBuffer(showBufLinesColors);
+	//	if (showBufLines) displayUtils.drawLinesFromBuffer(showBufLinesColors);
 
-		if (showBufTris) displayUtils.drawTrianglesFromBuffer(showBufTrisColors);
+	//	if (showBufTris) displayUtils.drawTrianglesFromBuffer(showBufTrisColors);
 
-		if (showBufQuads) displayUtils.drawQuadsFromBuffer(showBufQuadsColors);
+	//	if (showBufQuads) displayUtils.drawQuadsFromBuffer(showBufQuadsColors);
 
-	}
+	//}
 
 	//---- SET METHODS
 

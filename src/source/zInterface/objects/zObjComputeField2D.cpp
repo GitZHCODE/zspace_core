@@ -108,19 +108,19 @@ namespace zSpace
 	// Do Nothing
 #else
 	   
-	ZSPACE_INLINE void zObjComputeField2D::draw()
-	{	
-		if (displayObject)
-		{
-			drawField2D();			
-		}
+	//ZSPACE_INLINE void zObjComputeField2D::draw()
+	//{	
+	//	if (displayObject)
+	//	{
+	//		drawField2D();			
+	//	}
 
-		if (displayObjectTransform)
-		{
-			displayUtils->drawTransform(transformationMatrix);
-		}
+	//	if (displayObjectTransform)
+	//	{
+	//		displayUtils->drawTransform(transformationMatrix);
+	//	}
 
-	}
+	//}
 
 	//---- DISPLAY BUFFER METHODS
 

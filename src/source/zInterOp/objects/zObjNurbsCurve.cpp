@@ -23,7 +23,7 @@ namespace zSpace
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		displayUtils = nullptr;
+		//displayUtils = nullptr;
 #endif
 
 		displayControlPoints = false;
@@ -129,46 +129,46 @@ namespace zSpace
 	// Do Nothing
 #else
 	   
-	ZSPACE_INLINE void zObjNurbsCurve::draw()
-	{
-		if (displayObject)
-		{
-			drawNurbsCurve();
-		}
+	//ZSPACE_INLINE void zObjNurbsCurve::draw()
+	//{
+	//	if (displayObject)
+	//	{
+	//		drawNurbsCurve();
+	//	}
 
-		if (displayObjectTransform)
-		{
-			displayUtils->drawTransform(transformationMatrix);
-		}
-	}
+	//	if (displayObjectTransform)
+	//	{
+	//		displayUtils->drawTransform(transformationMatrix);
+	//	}
+	//}
 
 	//---- DISPLAY BUFFER METHODS
 
-	ZSPACE_INLINE void zObjNurbsCurve::appendToBuffer()
-	{
-		
-	}
+	//ZSPACE_INLINE void zObjNurbsCurve::appendToBuffer()
+	//{
+	//	
+	//}
 	
 	//---- PROTECTED DISPLAY METHODS
 
-	ZSPACE_INLINE void zObjNurbsCurve::drawNurbsCurve()
-	{
-		// draw vertex
-		if (displayControlPoints)
-		{
-			displayUtils->drawPoints(&displayControlPointPositions[0], zColor(), 3, displayControlPointPositions.size());
-			displayUtils->drawCurve(&displayControlPointPositions[0], zColor(), 1, displayControlPointPositions.size(), periodic);
-		}
+	//ZSPACE_INLINE void zObjNurbsCurve::drawNurbsCurve()
+	//{
+	//	// draw vertex
+	//	if (displayControlPoints)
+	//	{
+	//		displayUtils->drawPoints(&displayControlPointPositions[0], zColor(), 3, displayControlPointPositions.size());
+	//		displayUtils->drawCurve(&displayControlPointPositions[0], zColor(), 1, displayControlPointPositions.size(), periodic);
+	//	}
 
 
-		// draw edges
-		if (displayCurve)
-		{
-			displayUtils->drawCurve(&displayPositions[0], displayColor, displayWeight, displayPositions.size(),periodic);
-		}
+	//	// draw edges
+	//	if (displayCurve)
+	//	{
+	//		displayUtils->drawCurve(&displayPositions[0], displayColor, displayWeight, displayPositions.size(),periodic);
+	//	}
 
-	
-	}
+	//
+	//}
 
 #endif // !ZSPACE_UNREAL_INTEROP
 }

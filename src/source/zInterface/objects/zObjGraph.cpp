@@ -23,7 +23,7 @@ namespace zSpace
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		displayUtils = nullptr;
+		//displayUtils = nullptr;
 #endif
 
 		displayVertices = false;
@@ -91,101 +91,101 @@ namespace zSpace
 	// Do Nothing
 #else
 	   
-	ZSPACE_INLINE void zObjGraph::draw()
-	{
-		if (displayObject)
-		{
-			drawGraph();
-		}
+	//ZSPACE_INLINE void zObjGraph::draw()
+	//{
+	//	if (displayObject)
+	//	{
+	//		drawGraph();
+	//	}
 
-		if (displayObjectTransform)
-		{
-			displayUtils->drawTransform(transformationMatrix);
-		}
-	}
+	//	if (displayObjectTransform)
+	//	{
+	//		displayUtils->drawTransform(transformationMatrix);
+	//	}
+	//}
 
 	//---- DISPLAY BUFFER METHODS
 
-	ZSPACE_INLINE void zObjGraph::appendToBuffer()
-	{
-		displayObject = displayEdges = displayVertices = false;
+	//ZSPACE_INLINE void zObjGraph::appendToBuffer()
+	//{
+	//	displayObject = displayEdges = displayVertices = false;
 
-		// Edge Indicies
-		zIntArray _edgeIndicies;
+	//	// Edge Indicies
+	//	zIntArray _edgeIndicies;
 
-		//for (int i = 0; i < graph.edgeActive.size(); i++)
-		for (auto &e : graph.halfEdges)
-		{
-			_edgeIndicies.push_back(e.getVertex()->getId() + displayUtils->bufferObj.nVertices);
-		}
+	//	//for (int i = 0; i < graph.edgeActive.size(); i++)
+	//	for (auto &e : graph.halfEdges)
+	//	{
+	//		_edgeIndicies.push_back(e.getVertex()->getId() + displayUtils->bufferObj.nVertices);
+	//	}
 
-		graph.VBO_EdgeId = displayUtils->bufferObj.appendEdgeIndices(_edgeIndicies);
+	//	graph.VBO_EdgeId = displayUtils->bufferObj.appendEdgeIndices(_edgeIndicies);
 
 
-		// Vertex Attributes
-		zVector* _dummynormals = nullptr;
+	//	// Vertex Attributes
+	//	zVector* _dummynormals = nullptr;
 
-		graph.VBO_VertexId = displayUtils->bufferObj.appendVertexAttributes(&graph.vertexPositions[0], _dummynormals, graph.vertexPositions.size());
-		graph.VBO_VertexColorId = displayUtils->bufferObj.appendVertexColors(&graph.vertexColors[0], graph.vertexColors.size());
-	}
+	//	graph.VBO_VertexId = displayUtils->bufferObj.appendVertexAttributes(&graph.vertexPositions[0], _dummynormals, graph.vertexPositions.size());
+	//	graph.VBO_VertexColorId = displayUtils->bufferObj.appendVertexColors(&graph.vertexColors[0], graph.vertexColors.size());
+	//}
 	
 	//---- PROTECTED DISPLAY METHODS
 
-	ZSPACE_INLINE void zObjGraph::drawGraph()
-	{
-		// draw vertex
-		if (displayVertices)
-		{
-			displayUtils->drawVertices(graph.vHandles, &graph.vertexPositions[0], &graph.vertexColors[0], &graph.vertexWeights[0]);
-		}
+	//ZSPACE_INLINE void zObjGraph::drawGraph()
+	//{
+	//	// draw vertex
+	//	if (displayVertices)
+	//	{
+	//		displayUtils->drawVertices(graph.vHandles, &graph.vertexPositions[0], &graph.vertexColors[0], &graph.vertexWeights[0]);
+	//	}
 
-		// draw vertex Ids
-		if (displayVertexIds)
-		{
-			zColor col(0.8, 0, 0, 1);
-			displayUtils->drawVertexIds(graph.n_v, &graph.vertexPositions[0], col);
-		}
+	//	// draw vertex Ids
+	//	if (displayVertexIds)
+	//	{
+	//		zColor col(0.8, 0, 0, 1);
+	//		displayUtils->drawVertexIds(graph.n_v, &graph.vertexPositions[0], col);
+	//	}
 
-		// draw edges
-		if (displayEdges)
-		{
-			if (graph.staticGeometry)
-			{
-				displayUtils->drawEdges(graph.eHandles, graph.edgeVertices, &graph.vertexPositions[0], &graph.edgeColors[0], &graph.edgeWeights[0]);
-			}
+	//	// draw edges
+	//	if (displayEdges)
+	//	{
+	//		if (graph.staticGeometry)
+	//		{
+	//			displayUtils->drawEdges(graph.eHandles, graph.edgeVertices, &graph.vertexPositions[0], &graph.edgeColors[0], &graph.edgeWeights[0]);
+	//		}
 
-			else
-			{
-				vector<zIntArray> edgeVertices;
-				edgeVertices.assign(graph.edges.size(), zIntArray(2) = { -1,-1 });
+	//		else
+	//		{
+	//			vector<zIntArray> edgeVertices;
+	//			edgeVertices.assign(graph.edges.size(), zIntArray(2) = { -1,-1 });
 
-				for (auto &e : graph.edges)
-				{
+	//			for (auto &e : graph.edges)
+	//			{
 
-					if (graph.eHandles[e.getId()].id != -1)
-					{
-						zIntArray eVerts;
-						edgeVertices[e.getId()][0] = e.getHalfEdge(0)->getVertex()->getId();
-						edgeVertices[e.getId()][1] = e.getHalfEdge(1)->getVertex()->getId();
+	//				if (graph.eHandles[e.getId()].id != -1)
+	//				{
+	//					zIntArray eVerts;
+	//					edgeVertices[e.getId()][0] = e.getHalfEdge(0)->getVertex()->getId();
+	//					edgeVertices[e.getId()][1] = e.getHalfEdge(1)->getVertex()->getId();
 
-					}
+	//				}
 
 
-				}
+	//			}
 
-				displayUtils->drawEdges(graph.eHandles, edgeVertices, &graph.vertexPositions[0], &graph.edgeColors[0], &graph.edgeWeights[0]);
-			}
-		}
+	//			displayUtils->drawEdges(graph.eHandles, edgeVertices, &graph.vertexPositions[0], &graph.edgeColors[0], &graph.edgeWeights[0]);
+	//		}
+	//	}
 
-		// draw edge Ids
-		if (displayEdgeIds)
-		{
-			if (edgeCenters.size() != graph.n_e) throw std::invalid_argument(" error: edge centers are not computed.");
+	//	// draw edge Ids
+	//	if (displayEdgeIds)
+	//	{
+	//		if (edgeCenters.size() != graph.n_e) throw std::invalid_argument(" error: edge centers are not computed.");
 
-			zColor col(0, 0.8, 0, 1);
-			displayUtils->drawEdgeIds(graph.n_e, &edgeCenters[0], col);
-		}
-	}
+	//		zColor col(0, 0.8, 0, 1);
+	//		displayUtils->drawEdgeIds(graph.n_e, &edgeCenters[0], col);
+	//	}
+	//}
 
 #endif // !ZSPACE_UNREAL_INTEROP
 }

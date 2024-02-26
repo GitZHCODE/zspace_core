@@ -100,7 +100,7 @@ namespace zSpace
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		void draw() override;
+		//void draw() override;
 #endif
 
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
@@ -114,13 +114,13 @@ namespace zSpace
 		*
 		*	\since version 0.0.3
 		*/
-		void drawBins();
+		//void drawBins();
 
 		/*! \brief This method displays the bounds of bins.
 		*
 		*	\since version 0.0.3
 		*/
-		void drawBounds();
+		//void drawBounds();
 
 	};
 

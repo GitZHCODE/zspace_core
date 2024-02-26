@@ -100,14 +100,14 @@ project "zSpace_App"
     includedirs
     {
         "%{IncludeDir.ARMADILLO}",
-        "%{IncludeDir.ALGLIB}",
+        --"%{IncludeDir.ALGLIB}",
         "%{IncludeDir.SRC}",
         "%{IncludeDir.DEPS}",
     }
 
     libdirs
     {
-        "%{LibDir.GLEW}",
+        --"%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
         "%{LibDir.OUTDLL}",
         "%{LibDir.OUTLIB}",
@@ -118,8 +118,8 @@ project "zSpace_App"
         "zSpace_Core.lib",
         "zSpace_Interface.lib",
         "sqlite3.lib",
-        "opengl32.lib",
-        "glew32.lib"
+        --"opengl32.lib",
+        --"glew32.lib"
     }
 
     --ZPACE_APP_SPECIFIC_CONFIGURATION_SETTINGS
@@ -143,12 +143,21 @@ project "zSpace_Core"
 
     CommonConfigurationSettings()
 
+    filter {"files:**zUtilsDisplay.*"}
+        flags {"ExcludeFromBuild"}
+    filter {}
+
+    filter {"files:**zObjBuffer.*"}
+        flags {"ExcludeFromBuild"}
+    filter {}
+
+
     files
     {
         "src/headers/zCore/**.h",
         "src/source/zCore/**.cpp",
         --Source files of Includes
-        "%{IncludeDir.ALGLIB}/**.cpp",
+        --"%{IncludeDir.ALGLIB}/**.cpp",
         "%{IncludeDir.LODEPNG}/lodepng.h",
         "%{IncludeDir.LODEPNG}/lodepng.cpp",
         "%{IncludeDir.TOOJPEG}/*.cpp"
@@ -157,13 +166,13 @@ project "zSpace_Core"
     includedirs
     {
         "%{IncludeDir.ARMADILLO}",
-        "%{IncludeDir.ALGLIB}",
+        --"%{IncludeDir.ALGLIB}",
         "%{IncludeDir.LODEPNG}",
         "%{IncludeDir.TOOJPEG}",
         "%{IncludeDir.EIGEN}",
         "%{IncludeDir.SQLITE}",
-        "%{IncludeDir.GLEW}",
-        "%{IncludeDir.FREEGLUT}",
+        --"%{IncludeDir.GLEW}",
+        --"%{IncludeDir.FREEGLUT}",
         "%{IncludeDir.NLOHMANN}",
         "%{IncludeDir.QUICKHULL}",
         "C:/Program Files/Rhino 7 SDK/inc",
@@ -172,17 +181,17 @@ project "zSpace_Core"
 
     libdirs
     {
-        "%{LibDir.GLEW}",
+        --"%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
-        "%{LibDir.FREEGLUT}",
+        --"%{LibDir.FREEGLUT}",
         "C:/Program Files/Rhino 7 SDK/lib/Release"
     }
 
     links
     {
         "sqlite3.lib",
-        "opengl32.lib",
-        "glew32.lib"
+        --"opengl32.lib",
+        --"glew32.lib"
     }
 
     --ZPACE_CORE_SPECIFIC_CONFIGURATION_SETTINGS
@@ -205,29 +214,38 @@ project "zSpace_Interface"
 
     CommonConfigurationSettings()
 
+    defines{
+        "_HAS_STD_BYTE=0",
+        "NOMINMAX",
+    }
+
     files
     {
         "src/headers/zInterface/**.h",
         "src/source/zInterface/**.cpp",
         --Source files of Includes
-        "%{IncludeDir.ALGLIB}/**.cpp"
+        --"%{IncludeDir.ALGLIB}/**.cpp"
     }
-    -- Exclude zFnComputeMesh from builds
-    filter {"files:**zFnComputeMesh.cpp"}
+
+    filter {"files:**zFnComputeMesh.*"}
+        flags {"ExcludeFromBuild"}
+    filter {}
+
+    filter {"files:**zModel.*"}
         flags {"ExcludeFromBuild"}
     filter {}
 
     includedirs
     {
         "%{IncludeDir.ARMADILLO}",
-        "%{IncludeDir.ALGLIB}",
+        --"%{IncludeDir.ALGLIB}",
         "%{IncludeDir.EIGEN}",
         "%{IncludeDir.NLOHMANN}",
         "%{IncludeDir.TOOJPEG}",
         "%{IncludeDir.LODEPNG}",
         "%{IncludeDir.QUICKHULL}",
-        "%{IncludeDir.GLEW}",
-        "%{IncludeDir.FREEGLUT}",
+        --"%{IncludeDir.GLEW}",
+        --"%{IncludeDir.FREEGLUT}",
         "%{IncludeDir.IGL}",
         "%{IncludeDir.SRC}",
         "%{IncludeDir.DEPS}",
@@ -241,9 +259,9 @@ project "zSpace_Interface"
 
     libdirs
     {
-        "%{LibDir.GLEW}",
+        --"%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
-        "%{LibDir.FREEGLUT}",
+        --"%{LibDir.FREEGLUT}",
         "%{LibDir.OUTDLL}",
         "%{LibDir.OUTLIB}",
         --Omniverse
@@ -278,7 +296,7 @@ project "zSpace_Interface"
 
 --#########################################        
 project "zSpace_InterOp"
-    location "%{project_path}/zInterOp"
+    location "%{project_path}/zSpace_InterOp"
     language "C++"
     cppdialect "C++17"
     dependson("zSpace_Interface")
@@ -290,9 +308,10 @@ project "zSpace_InterOp"
         "src/headers/zInterOp/**.h",
         "src/source/zInterOp/**cpp",
         --Source files of Includes
-        "%{IncludeDir.ALGLIB}/**.cpp"
+        --"%{IncludeDir.ALGLIB}/**.cpp"
     }
 
+    --Exclude zObjCurve
     filter {"files:**zObjCurve.*"}
         flags {"ExcludeFromBuild"}
     filter {}
@@ -300,13 +319,13 @@ project "zSpace_InterOp"
     includedirs
     {
         "%{IncludeDir.ARMADILLO}",
-        "%{IncludeDir.ALGLIB}",
+        --"%{IncludeDir.ALGLIB}",
         "%{IncludeDir.LODEPNG}",
         "%{IncludeDir.TOOJPEG}",
         "%{IncludeDir.EIGEN}",
         "%{IncludeDir.SQLITE}",
-        "%{IncludeDir.GLEW}",
-        "%{IncludeDir.FREEGLUT}",
+        --"%{IncludeDir.GLEW}",
+        --"%{IncludeDir.FREEGLUT}",
         "%{IncludeDir.NLOHMANN}",
         "%{IncludeDir.QUICKHULL}",
         "C:/Program Files/Rhino 7 SDK/inc",
@@ -324,7 +343,7 @@ project "zSpace_InterOp"
 
     libdirs
     {
-        "%{LibDir.GLEW}",
+        --"%{LibDir.GLEW}",
         "%{LibDir.FREEGLUT}",
         "%{LibDir.SQLITE}",
         "C:/Program Files/Rhino 7 SDK/lib/Release",
@@ -361,7 +380,7 @@ project "zSpace_InterOp"
         "OpenMayaUI.lib",
         "Foundation.lib",
         "sqlite3.lib",
-        "freeglut.lib",
+        --"freeglut.lib",
     }
 
     --All of the Omniverse links

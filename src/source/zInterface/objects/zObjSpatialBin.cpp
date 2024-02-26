@@ -23,7 +23,7 @@ namespace zSpace
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		displayUtils = nullptr;
+		//displayUtils = nullptr;
 #endif
 
 		displayBounds = false;
@@ -52,50 +52,50 @@ namespace zSpace
 	// Do Nothing
 #else
 
-	ZSPACE_INLINE void zObjSpatialBin::draw()
-	{
+	//ZSPACE_INLINE void zObjSpatialBin::draw()
+	//{
 
-		if (displayObject)
-		{
-			drawBins();
-		}
+	//	if (displayObject)
+	//	{
+	//		drawBins();
+	//	}
 
-		if (displayBounds)
-		{
-			drawBounds();
-		}
+	//	if (displayBounds)
+	//	{
+	//		drawBounds();
+	//	}
 
-		if (displayObjectTransform)
-		{
-			displayUtils->drawTransform(transformationMatrix);
-		}
-	}
+	//	if (displayObjectTransform)
+	//	{
+	//		displayUtils->drawTransform(transformationMatrix);
+	//	}
+	//}
 
 	//---- PROTECTED DISPLAY METHODS
 
-	ZSPACE_INLINE void zObjSpatialBin::drawBins()
-	{
-		glLineWidth(1);
+	//ZSPACE_INLINE void zObjSpatialBin::drawBins()
+	//{
+	//	glLineWidth(1);
 
-		zVector unit(field.unit_X, field.unit_Y, field.unit_Z);
+	//	zVector unit(field.unit_X, field.unit_Y, field.unit_Z);
 
-		for (int i = 0; i < pCloud.n_v; i++)
-		{
-			zVector bottom = pCloud.vertexPositions[i];
-			zVector top = pCloud.vertexPositions[i] + unit;
+	//	for (int i = 0; i < pCloud.n_v; i++)
+	//	{
+	//		zVector bottom = pCloud.vertexPositions[i];
+	//		zVector top = pCloud.vertexPositions[i] + unit;
 
-			if (bins[i].contains())
-			{
-				displayUtils->drawCube(bottom, top, zColor(0, 0, 0, 1));
-			}
-		}
-	}
+	//		if (bins[i].contains())
+	//		{
+	//			displayUtils->drawCube(bottom, top, zColor(0, 0, 0, 1));
+	//		}
+	//	}
+	//}
 
-	ZSPACE_INLINE void zObjSpatialBin::drawBounds()
-	{
-		glLineWidth(1);
-		displayUtils->drawCube(field.minBB, field.maxBB, zColor(0, 1, 0, 1));
-	}
+	//ZSPACE_INLINE void zObjSpatialBin::drawBounds()
+	//{
+	//	glLineWidth(1);
+	//	displayUtils->drawCube(field.minBB, field.maxBB, zColor(0, 1, 0, 1));
+	//}
 
 #endif //!ZSPACE_UNREAL_INTEROP
 

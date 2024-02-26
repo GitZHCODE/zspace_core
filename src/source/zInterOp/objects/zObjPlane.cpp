@@ -23,7 +23,7 @@ namespace zSpace
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		displayUtils = nullptr;
+		//displayUtils = nullptr;
 #endif
 
 		displayRectangle = false;
@@ -132,70 +132,70 @@ namespace zSpace
 	// Do Nothing
 #else
 	   
-	ZSPACE_INLINE void zObjPlane::draw()
-	{
-		if (displayObject)
-		{
-			drawPlane();
-		}
+	//ZSPACE_INLINE void zObjPlane::draw()
+	//{
+	//	if (displayObject)
+	//	{
+	//		drawPlane();
+	//	}
 
-		if (displayObjectTransform)
-		{
-			displayUtils->drawTransform(transformationMatrix);
-		}
-	}
+	//	if (displayObjectTransform)
+	//	{
+	//		displayUtils->drawTransform(transformationMatrix);
+	//	}
+	//}
 
 	//---- DISPLAY BUFFER METHODS
 
-	ZSPACE_INLINE void zObjPlane::appendToBuffer()
-	{
-		
-	}
+	//ZSPACE_INLINE void zObjPlane::appendToBuffer()
+	//{
+	//	
+	//}
 	
 	//---- PROTECTED DISPLAY METHODS
-	ZSPACE_INLINE void zObjPlane::drawPlane()
-	{
-		if(displayAxis)
-		{
-			zPoint p0 = origin + xAxis * displayAxisScale;
-			zPoint p1 = origin + yAxis * displayAxisScale;
-			zPoint p2 = origin + normal * displayAxisScale;
+	//ZSPACE_INLINE void zObjPlane::drawPlane()
+	//{
+	//	if(displayAxis)
+	//	{
+	//		zPoint p0 = origin + xAxis * displayAxisScale;
+	//		zPoint p1 = origin + yAxis * displayAxisScale;
+	//		zPoint p2 = origin + normal * displayAxisScale;
 
-			displayUtils->drawLine(origin, p0, displayColor[0], displayWeight);
-			displayUtils->drawLine(origin, p1, displayColor[1], displayWeight);
-			displayUtils->drawLine(origin, p2, displayColor[2], displayWeight);
-		}
+	//		displayUtils->drawLine(origin, p0, displayColor[0], displayWeight);
+	//		displayUtils->drawLine(origin, p1, displayColor[1], displayWeight);
+	//		displayUtils->drawLine(origin, p2, displayColor[2], displayWeight);
+	//	}
 
-		// draw vertex
-		if (displayRectangle)
-		{
-			int divisionNum = 10;
-			zPointArray pU1;
-			zPointArray pU2;
-			zPointArray pV1;
-			zPointArray pV2;
+	//	// draw vertex
+	//	if (displayRectangle)
+	//	{
+	//		int divisionNum = 10;
+	//		zPointArray pU1;
+	//		zPointArray pU2;
+	//		zPointArray pV1;
+	//		zPointArray pV2;
 
-			zPoint p0 = origin + (xAxis + yAxis) * displayRectangleScale;
-			zPoint p1 = origin + (xAxis - yAxis) * displayRectangleScale;
-			zPoint p2 = origin - (xAxis + yAxis) * displayRectangleScale;
-			zPoint p3 = origin - (xAxis - yAxis) * displayRectangleScale;
+	//		zPoint p0 = origin + (xAxis + yAxis) * displayRectangleScale;
+	//		zPoint p1 = origin + (xAxis - yAxis) * displayRectangleScale;
+	//		zPoint p2 = origin - (xAxis + yAxis) * displayRectangleScale;
+	//		zPoint p3 = origin - (xAxis - yAxis) * displayRectangleScale;
 
-			for (int i = 0; i <= divisionNum; i++)
-			{
-				pU1.push_back(p0 * i / divisionNum + p1 * (divisionNum - i) / divisionNum);
-				pU2.push_back(p3 * i / divisionNum + p2 * (divisionNum - i) / divisionNum);
-				pV1.push_back(p1 * i / divisionNum + p2 * (divisionNum - i) / divisionNum);
-				pV2.push_back(p0 * i / divisionNum + p3 * (divisionNum - i) / divisionNum);
-			}
-					
-			for (int i = 0; i <= divisionNum; i++)
-			{
-				displayUtils->drawLine(pU1[i], pU2[i], zColor(), 1);
-				displayUtils->drawLine(pV1[i], pV2[i], zColor(), 1);
-			}
-			
-		}
-	}
+	//		for (int i = 0; i <= divisionNum; i++)
+	//		{
+	//			pU1.push_back(p0 * i / divisionNum + p1 * (divisionNum - i) / divisionNum);
+	//			pU2.push_back(p3 * i / divisionNum + p2 * (divisionNum - i) / divisionNum);
+	//			pV1.push_back(p1 * i / divisionNum + p2 * (divisionNum - i) / divisionNum);
+	//			pV2.push_back(p0 * i / divisionNum + p3 * (divisionNum - i) / divisionNum);
+	//		}
+	//				
+	//		for (int i = 0; i <= divisionNum; i++)
+	//		{
+	//			displayUtils->drawLine(pU1[i], pU2[i], zColor(), 1);
+	//			displayUtils->drawLine(pV1[i], pV2[i], zColor(), 1);
+	//		}
+	//		
+	//	}
+	//}
 
 #endif // !ZSPACE_UNREAL_INTEROP
 }
