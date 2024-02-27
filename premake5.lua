@@ -4,7 +4,7 @@ include("includes.lua")
 workspace "zSpace_core"
     filename "zSpace_core"
     architecture "x64"
-    configurations {"Debug", "Debug_DLL", "Release", "Release_DLL", "Release_DLL_OV", "Release_Make", "Release_Unreal"}
+    configurations {"Debug", "Debug_DLL", "Release", "Release_DLL", "Release_DLL_OV", "Release_Unreal"}
     startproject "zSpace_Core"
 
 project_path = "projects"
@@ -40,7 +40,8 @@ function CommonConfigurationSettings()
                 "USING_ARMA"}
         optimize "Full"
         warnings "Off"
-        flags {"LinkTimeOptimization"}
+        flags {"LinkTimeOptimization",
+                "MultiProcessorCompile"}
 
     filter "configurations:Release_DLL"
         kind "SharedLib"
@@ -50,7 +51,8 @@ function CommonConfigurationSettings()
         defines {"ZSPACE_DYNAMIC_LIBRARY"}
         optimize "Speed"
         warnings "Off"
-        flags {"LinkTimeOptimization"}
+        flags {"LinkTimeOptimization",
+                "MultiProcessorCompile"}
 
     filter "configurations:Release_DLL_OV"
         kind "SharedLib"
@@ -60,7 +62,8 @@ function CommonConfigurationSettings()
         defines {"ZSPACE_DYNAMIC_LIBRARY"}
         optimize "Speed"
         warnings "Off"
-        flags {"LinkTimeOptimization"}
+        flags {"LinkTimeOptimization",
+                "MultiProcessorCompile"}
     
     filter "configurations:Release_Unreal"
         kind "StaticLib"
@@ -85,6 +88,8 @@ project "zSpace_App"
 
     CommonConfigurationSettings()
 
+    kind ("None")
+
     filter {"files:**zArchGeom.h"}
         flags {"ExcludeFromBuild"}
     filter {}
@@ -92,9 +97,8 @@ project "zSpace_App"
     files
     {
         "src/headers/zApp/**.h",
-        "src/source/zApp/**.cpp",
         --Source files of Includes
-        "%{IncludeDir.ALGLIB}/**.cpp",
+        --"%{IncludeDir.ALGLIB}/**.cpp",
     }
 
     includedirs
@@ -126,13 +130,6 @@ project "zSpace_App"
     filter "configurations:Release_Unreal"
         defines {"USING_ARMA"}
 
-    filter "configurations:Release_Make"
-        kind "SharedLib"
-        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("bin/dll/")
-        targetname ("%{prj.name}")
-    
-
 --#########################################
 project "zSpace_Core"
     location "%{project_path}/zSpace_Core"
@@ -151,6 +148,9 @@ project "zSpace_Core"
         flags {"ExcludeFromBuild"}
     filter {}
 
+    pchheader "zCore/zcorepch.h"
+    pchsource "src/source/zCore/zcorepch.cpp"
+    rawforceincludes "zCore/zcorepch.h"
 
     files
     {
@@ -198,12 +198,6 @@ project "zSpace_Core"
     filter "configurations:Release_Unreal"
         defines {"ZSPACE_UNREAL_INTEROP"}
 
-    filter "configurations:Release_Make"
-        kind "Makefile"
-        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("bin/make")
-        targetname ("%{prj.name}")
-
 
 --#########################################
 project "zSpace_Interface"
@@ -218,6 +212,10 @@ project "zSpace_Interface"
         "_HAS_STD_BYTE=0",
         "NOMINMAX",
     }
+
+    pchheader "zInterface/zinterfacepch.h"
+    pchsource "src/source/zInterface/zinterfacepch.cpp"
+    rawforceincludes "zInterface/zinterfacepch.h"
 
     files
     {
@@ -284,12 +282,6 @@ project "zSpace_Interface"
     filter "configurations:Release_Unreal"
         defines {"ZSPACE_UNREAL_INTEROP"}
 
-    filter "configurations:Release_Make"
-        kind "Makefile"
-        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("bin/make")
-        targetname ("%{prj.name}")
-
     filter "configurations:Release_DLL_OV"
         defines {"ZSPACE_USD_INTEROP"}
 
@@ -302,6 +294,10 @@ project "zSpace_InterOp"
     dependson("zSpace_Interface")
 
     CommonConfigurationSettings()
+
+    pchheader "zInterOp/zinteroppch.h"
+    pchsource "src/source/zInterOp/zinteroppch.cpp"
+    rawforceincludes "zInterOp/zinteroppch.h"
 
     files
     {
@@ -344,7 +340,7 @@ project "zSpace_InterOp"
     libdirs
     {
         --"%{LibDir.GLEW}",
-        "%{LibDir.FREEGLUT}",
+        --"%{LibDir.FREEGLUT}",
         "%{LibDir.SQLITE}",
         "C:/Program Files/Rhino 7 SDK/lib/Release",
         "C:/Program Files/Autodesk/Maya2020/lib",
@@ -429,6 +425,3 @@ project "zSpace_InterOp"
                 "_UNICODE",
                 "UNICODE",
                 "USING_ARMA"}
-
-    filter "configurations:Release_Make"
-        kind "None"

@@ -33,6 +33,7 @@ function get_lib_dirs()
     LibDir["FREEGLUT"]  = "Dependencies/freeglut"
     LibDir["GLEW"]      = "Dependencies/glew/lib"
     LibDir["SQLITE"]    = "Dependencies/SQLITE/lib"
+    LibDir["IGL"]       = "Dependencies/igl/build/lib"
     LibDir["OUTDLL"]    = "bin/dll"
     LibDir["OUTLIB"]    = "bin/lib"
 
