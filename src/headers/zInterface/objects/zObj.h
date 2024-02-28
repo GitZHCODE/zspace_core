@@ -130,12 +130,12 @@ namespace zSpace
 		//---- GET METHODS
 		//--------------------------
 
-		/*! \brief This method gets show object boolean.
+		/*! \brief This method gets show object boolean reference.
 		*
-		*	\return			boolean				-  show object boolean.
+		*	\return			boolean	reference			-  show object boolean.
 		*	\since version 0.0.2
 		*/
-		bool getDisplayObject();
+		bool& getDisplayObject() { return displayObject; }
 
 
 

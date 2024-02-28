@@ -111,26 +111,6 @@ namespace zSpace
 
 	//---- GET METHODS
 
-	ZSPACE_INLINE int zObjMesh::getVBO_VertexID()
-	{
-		return mesh.VBO_VertexId;
-	}
-
-	ZSPACE_INLINE int zObjMesh::getVBO_EdgeID()
-	{
-		return mesh.VBO_EdgeId;
-	}
-
-	ZSPACE_INLINE int zObjMesh::getVBO_FaceID()
-	{
-		return mesh.VBO_FaceId;
-	}
-
-	ZSPACE_INLINE int zObjMesh::getVBO_VertexColorID()
-	{
-		return mesh.VBO_VertexColorId;
-	}
-
 	//---- OVERRIDE METHODS
 
 	ZSPACE_INLINE void zObjMesh::getBounds(zPoint &minBB, zPoint &maxBB)

@@ -83,7 +83,18 @@ namespace zSpace
 		*	\param		[in]	_displayVerts				- input display vertices boolean.
 		*	\since version 0.0.2
 		*/
-		void setDisplayElements(bool _displayVerts);
+		void setDisplayVertices(bool _displayVerts);
+
+		//--------------------------
+		//---- GET METHODS
+		//--------------------------
+
+		/*! \brief This method gets display vertices booleans.
+		*
+		*	\return					bool					- input display vertices boolean.
+		*	\since version 0.0.4
+		*/
+		inline bool& getDisplayVertices() { return displayVertices; }
 
 		//--------------------------
 		//---- OVERRIDE METHODS

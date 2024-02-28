@@ -47,13 +47,6 @@ namespace zSpace
 		displayObjectTransform = _displayObjectTransform;
 	}
 
-	//---- GET METHODS
-
-	ZSPACE_INLINE bool zObj::getDisplayObject()
-	{
-		return displayObject;
-	}
-
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing
 #else

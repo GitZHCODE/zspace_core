@@ -1,6 +1,5 @@
 function get_include_dirs()
     local IncludeDir = {}
-    IncludeDir["ALGLIB"]            = "Dependencies/alglib/cpp/src"
     IncludeDir["ARMADILLO"]         = "Dependencies/Armadillo"
     IncludeDir["EIGEN"]             = "Dependencies/Eigen"
     IncludeDir["EIGEN_UNSUPPORTED"] = "Dependencies/Eigen_Unsupported/Eigen"
@@ -30,12 +29,14 @@ end
 
 function get_lib_dirs()
     local LibDir = {}
-    LibDir["FREEGLUT"]  = "Dependencies/freeglut"
-    LibDir["GLEW"]      = "Dependencies/glew/lib"
-    LibDir["SQLITE"]    = "Dependencies/SQLITE/lib"
-    LibDir["IGL"]       = "Dependencies/igl/build/lib"
-    LibDir["OUTDLL"]    = "bin/dll"
-    LibDir["OUTLIB"]    = "bin/lib"
+    LibDir["FREEGLUT"]        = "Dependencies/freeglut"
+    LibDir["GLEW"]            = "Dependencies/glew/lib"
+    LibDir["SQLITE"]          = "Dependencies/SQLITE/lib"
+    LibDir["IGL"]             = "Dependencies/igl/build/lib"
+    LibDir["OUTDLL"]          = "bin/dll"
+    LibDir["OUTLIB"]          = "bin/lib"
+    LibDir["DEBUG_OUTDLL"]    = "bin/dll/debug"
+    LibDir["DEBUG_OUTLIB"]    = "bin/lib/debug"
 
     --OV LIBS
     LibDir["OV_CLIENT"]         = "Dependencies/omniverse/omni_client_library/release"

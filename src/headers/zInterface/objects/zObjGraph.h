@@ -137,26 +137,33 @@ namespace zSpace
 		//---- GET METHODS
 		//--------------------------
 
-		/*! \brief This method gets the vertex VBO Index .
+		/*! \brief This method gets display vertices boolean.
 		*
-		*	\return			int				- vertex VBO Index.
-		*	\since version 0.0.2
+		*	\return						bool				- input display vertices boolean.
+		*	\since version 0.0.4
 		*/
-		int getVBO_VertexID();
+		inline bool& getDisplayVertices() { return displayVertices; }
 
-		/*! \brief This method gets the edge VBO Index .
+		/*! \brief This method gets display edges boolean.
 		*
-		*	\return			int				- edge VBO Index.
-		*	\since version 0.0.2
+		*	\return						bool				- input display edges boolean.
+		*	\since version 0.0.4
 		*/
-		int getVBO_EdgeID();
+		inline bool& getDisplayEdges() { return displayEdges; }
 
-		/*! \brief This method gets the vertex color VBO Index .
+		/*! \brief This method gets display vertex id boolean.
 		*
-		*	\return			int				- vertex color VBO Index.
-		*	\since version 0.0.2
+		*	\return						bool				- input display vertex id boolean.
+		*	\since version 0.0.4
 		*/
-		int getVBO_VertexColorID();
+		inline bool& getDisplayVertexIds() { return displayVertexIds; }
+
+		/*! \brief This method gets display edge id boolean.
+		*
+		*	\return						bool				- input display edge id boolean.
+		*	\since version 0.0.4
+		*/
+		inline bool& getDisplayEdgeIds() { return displayEdgeIds; }
 
 		//--------------------------
 		//---- OVERRIDE METHODS

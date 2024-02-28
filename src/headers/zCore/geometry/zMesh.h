@@ -68,9 +68,6 @@ namespace zSpace
 		/*!	\brief storesface handles. Used for container resizing only  */
 		vector<zFaceHandle> fHandles;
 
-		/*!	\brief stores the start face ID in the VBO, when attached to the zBufferObject.	*/
-		int VBO_FaceId;
-
 		/*! \brief container of face vertices . Used for display if it is a static geometry */
 		vector<zIntArray> faceVertices;
 		

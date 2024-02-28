@@ -103,21 +103,6 @@ namespace zSpace
 		return curve.IsPeriodic();
 	}
 
-	ZSPACE_INLINE int zObjNurbsCurve::getVBO_ControlPointId()
-	{
-		return VBO_ControlPointId;
-	}
-
-	ZSPACE_INLINE int zObjNurbsCurve::getVBO_CurvePointId()
-	{
-		return VBO_CurvePointId;
-	}
-
-	ZSPACE_INLINE int zObjNurbsCurve::getVBO_CurveColorId()
-	{
-		return VBO_CurveColorId;
-	}
-
 	//---- OVERRIDE METHODS
 
 	ZSPACE_INLINE void zObjNurbsCurve::getBounds(zPoint &minBB, zPoint &maxBB)

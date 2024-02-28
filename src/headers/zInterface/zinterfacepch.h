@@ -1,3 +1,5 @@
+#pragma once
+
 //C++ Stuff
 #include <string>
 #include <vector>

@@ -4,76 +4,86 @@ include("includes.lua")
 workspace "zSpace_core"
     filename "zSpace_core"
     architecture "x64"
-    configurations {"Debug", "Debug_DLL", "Release", "Release_DLL", "Release_DLL_OV", "Release_Unreal"}
+    configurations {
+                    --"Release",
+                    "Release_DLL",
+                    --"Debug",
+                    "Debug_DLL",
+                }
     startproject "zSpace_Core"
 
 project_path = "projects"
 
 IncludeDir = get_include_dirs()
-
 LibDir = get_lib_dirs()
 
 --#############__GENERAL__CONFIGURATION__SETTINGS__#############
 function CommonConfigurationSettings()
-    filter "configurations:Debug"
-        kind "StaticLib"
-        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("bin/lib/debug")
-        targetname ("%{prj.name}")
-        defines {"ZSPACE_STATIC_LIBRARY",
-                "USING_ARMA"}
-        symbols "On"
+
+    defines {
+            "ZSPACE_RHINO_INTEROP",
+            "ZSPACE_USD_INTEROP",
+            "WIN64",
+            "_UNICODE",
+            "UNICODE",
+            "_HAS_STD_BYTE=0",
+            "BOOST_ALL_DYN_LINK",
+            [[BOOST_LIB_TOOLSET="vc142"]],
+            "TBB_USE_DEBUG=0",
+            "_CRT_SECURE_NO_WARNINGS",
+            "NOMINMAX",
+            }
+
+--    filter "configurations:Debug"
+--        kind "StaticLib"
+--        objdir ("bin-int/%{cfg.buildcfg}")
+--        targetdir ("bin/lib/debug/")
+--        targetname ("%{prj.name}")
+--        defines {"ZSPACE_STATIC_LIBRARY"}
+--        optimize "Off"
+--        warnings "Off"
+--        --symbols "On"
+--        flags {"MultiProcessorCompile"}
+--        buildoptions {"/bigobj"}
 
     filter "configurations:Debug_DLL"
         kind "SharedLib"
-        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
+        objdir ("bin-int/%{cfg.buildcfg}")
+        targetdir ("bin/dll/debug/")
+        targetname ("%{prj.name}")
+        defines {"ZSPACE_DYNAMIC_LIBRARY",
+                 "_WINDLL"}
+        optimize "Off"
+        warnings "Off"
+        --symbols "On"
+        flags {"MultiProcessorCompile"}
+        buildoptions {"/bigobj"}
+
+--    filter "configurations:Release"
+--        kind "StaticLib"
+--        objdir ("bin-int/%{cfg.buildcfg}")
+--        targetdir ("bin/lib/")
+--        targetname ("%{prj.name}")
+--        defines {"ZSPACE_STATIC_LIBRARY",
+--                 "NDEBUG"}
+--        optimize "Full"
+--        warnings "Off"
+--        flags {"LinkTimeOptimization",
+--                "MultiProcessorCompile"}
+--        buildoptions {"/bigobj"}
+
+    filter "configurations:Release_DLL"
+        kind "SharedLib"
+        objdir ("bin-int/%{cfg.buildcfg}")
         targetdir ("bin/dll/")
         targetname ("%{prj.name}")
-        symbols "On"
-
-    filter "configurations:Release"
-        kind "StaticLib"
-        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("bin/lib/")
-        targetname ("%{prj.name}")
-        defines {"ZSPACE_STATIC_LIBRARY",
-                "USING_ARMA"}
+        defines {"ZSPACE_DYNAMIC_LIBRARY",
+                 "NDEBUG",
+                 "_WINDLL"}
         optimize "Full"
         warnings "Off"
         flags {"LinkTimeOptimization",
                 "MultiProcessorCompile"}
-
-    filter "configurations:Release_DLL"
-        kind "SharedLib"
-        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("bin/dll/")
-        targetname ("%{prj.name}")
-        defines {"ZSPACE_DYNAMIC_LIBRARY"}
-        optimize "Speed"
-        warnings "Off"
-        flags {"LinkTimeOptimization",
-                "MultiProcessorCompile"}
-
-    filter "configurations:Release_DLL_OV"
-        kind "SharedLib"
-        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("bin/dll/")
-        targetname ("%{prj.name}")
-        defines {"ZSPACE_DYNAMIC_LIBRARY"}
-        optimize "Speed"
-        warnings "Off"
-        flags {"LinkTimeOptimization",
-                "MultiProcessorCompile"}
-    
-    filter "configurations:Release_Unreal"
-        kind "StaticLib"
-        objdir ("bin-int/%{cfg.architecture}/%{cfg.buildcfg}")
-        targetdir ("bin/lib/")
-        targetname ("%{prj.name}")
-        defines {"ZSPACE_STATIC_LIBRARY"}
-        optimize "Speed"
-        warnings "Off"
-        flags {"LinkTimeOptimization"}
     
     filter {}
 end
@@ -97,38 +107,23 @@ project "zSpace_App"
     files
     {
         "src/headers/zApp/**.h",
-        --Source files of Includes
-        --"%{IncludeDir.ALGLIB}/**.cpp",
     }
 
     includedirs
     {
         "%{IncludeDir.ARMADILLO}",
-        --"%{IncludeDir.ALGLIB}",
         "%{IncludeDir.SRC}",
         "%{IncludeDir.DEPS}",
     }
 
     libdirs
     {
-        --"%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
         "%{LibDir.OUTDLL}",
         "%{LibDir.OUTLIB}",
+        "%{LibDir.DEBUG_OUTDLL}",
+        "%{LibDir.DEBUG_OUTLIB}",
     }
-
-    links
-    {
-        "zSpace_Core.lib",
-        "zSpace_Interface.lib",
-        "sqlite3.lib",
-        --"opengl32.lib",
-        --"glew32.lib"
-    }
-
-    --ZPACE_APP_SPECIFIC_CONFIGURATION_SETTINGS
-    filter "configurations:Release_Unreal"
-        defines {"USING_ARMA"}
 
 --#########################################
 project "zSpace_Core"
@@ -157,7 +152,6 @@ project "zSpace_Core"
         "src/headers/zCore/**.h",
         "src/source/zCore/**.cpp",
         --Source files of Includes
-        --"%{IncludeDir.ALGLIB}/**.cpp",
         "%{IncludeDir.LODEPNG}/lodepng.h",
         "%{IncludeDir.LODEPNG}/lodepng.cpp",
         "%{IncludeDir.TOOJPEG}/*.cpp"
@@ -166,13 +160,10 @@ project "zSpace_Core"
     includedirs
     {
         "%{IncludeDir.ARMADILLO}",
-        --"%{IncludeDir.ALGLIB}",
         "%{IncludeDir.LODEPNG}",
         "%{IncludeDir.TOOJPEG}",
         "%{IncludeDir.EIGEN}",
         "%{IncludeDir.SQLITE}",
-        --"%{IncludeDir.GLEW}",
-        --"%{IncludeDir.FREEGLUT}",
         "%{IncludeDir.NLOHMANN}",
         "%{IncludeDir.QUICKHULL}",
         "C:/Program Files/Rhino 7 SDK/inc",
@@ -181,22 +172,14 @@ project "zSpace_Core"
 
     libdirs
     {
-        --"%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
-        --"%{LibDir.FREEGLUT}",
         "C:/Program Files/Rhino 7 SDK/lib/Release"
     }
 
     links
     {
         "sqlite3.lib",
-        --"opengl32.lib",
-        --"glew32.lib"
     }
-
-    --ZPACE_CORE_SPECIFIC_CONFIGURATION_SETTINGS
-    filter "configurations:Release_Unreal"
-        defines {"ZSPACE_UNREAL_INTEROP"}
 
 
 --#########################################
@@ -221,8 +204,6 @@ project "zSpace_Interface"
     {
         "src/headers/zInterface/**.h",
         "src/source/zInterface/**.cpp",
-        --Source files of Includes
-        --"%{IncludeDir.ALGLIB}/**.cpp"
     }
 
     filter {"files:**zFnComputeMesh.*"}
@@ -236,14 +217,11 @@ project "zSpace_Interface"
     includedirs
     {
         "%{IncludeDir.ARMADILLO}",
-        --"%{IncludeDir.ALGLIB}",
         "%{IncludeDir.EIGEN}",
         "%{IncludeDir.NLOHMANN}",
         "%{IncludeDir.TOOJPEG}",
         "%{IncludeDir.LODEPNG}",
         "%{IncludeDir.QUICKHULL}",
-        --"%{IncludeDir.GLEW}",
-        --"%{IncludeDir.FREEGLUT}",
         "%{IncludeDir.IGL}",
         "%{IncludeDir.SRC}",
         "%{IncludeDir.DEPS}",
@@ -257,11 +235,11 @@ project "zSpace_Interface"
 
     libdirs
     {
-        --"%{LibDir.GLEW}",
         "%{LibDir.SQLITE}",
-        --"%{LibDir.FREEGLUT}",
         "%{LibDir.OUTDLL}",
         "%{LibDir.OUTLIB}",
+        "%{LibDir.DEBUG_OUTDLL}",
+        "%{LibDir.DEBUG_OUTLIB}",
         --Omniverse
         "%{LibDir.OV_CLIENT}",
         "%{LibDir.OV_USD_RES}",
@@ -277,13 +255,6 @@ project "zSpace_Interface"
 
     --All of the Omniverse links
     links {get_omniverse_links()}
-
-    --ZPACE_INTERFACE_SPECIFIC_CONFIGURATION_SETTINGS
-    filter "configurations:Release_Unreal"
-        defines {"ZSPACE_UNREAL_INTEROP"}
-
-    filter "configurations:Release_DLL_OV"
-        defines {"ZSPACE_USD_INTEROP"}
 
 
 --#########################################        
@@ -303,8 +274,6 @@ project "zSpace_InterOp"
     {
         "src/headers/zInterOp/**.h",
         "src/source/zInterOp/**cpp",
-        --Source files of Includes
-        --"%{IncludeDir.ALGLIB}/**.cpp"
     }
 
     --Exclude zObjCurve
@@ -315,13 +284,10 @@ project "zSpace_InterOp"
     includedirs
     {
         "%{IncludeDir.ARMADILLO}",
-        --"%{IncludeDir.ALGLIB}",
         "%{IncludeDir.LODEPNG}",
         "%{IncludeDir.TOOJPEG}",
         "%{IncludeDir.EIGEN}",
         "%{IncludeDir.SQLITE}",
-        --"%{IncludeDir.GLEW}",
-        --"%{IncludeDir.FREEGLUT}",
         "%{IncludeDir.NLOHMANN}",
         "%{IncludeDir.QUICKHULL}",
         "C:/Program Files/Rhino 7 SDK/inc",
@@ -339,13 +305,13 @@ project "zSpace_InterOp"
 
     libdirs
     {
-        --"%{LibDir.GLEW}",
-        --"%{LibDir.FREEGLUT}",
         "%{LibDir.SQLITE}",
         "C:/Program Files/Rhino 7 SDK/lib/Release",
         "C:/Program Files/Autodesk/Maya2020/lib",
         "%{LibDir.OUTDLL}",
         "%{LibDir.OUTLIB}",
+        "%{LibDir.DEBUG_OUTDLL}",
+        "%{LibDir.DEBUG_OUTLIB}",
         --Omniverse
         "%{LibDir.OV_CLIENT}",
         "%{LibDir.OV_USD_RES}",
@@ -376,52 +342,7 @@ project "zSpace_InterOp"
         "OpenMayaUI.lib",
         "Foundation.lib",
         "sqlite3.lib",
-        --"freeglut.lib",
     }
 
     --All of the Omniverse links
     links {get_omniverse_links()}
-
-    --ZPACE_INTEROP_SPECIFIC_CONFIGURATION_SETTINGS
-    filter "configurations:Release"
-        defines {"ZSPACE_UNREAL_INTEROP",
-                "ZSPACE_RHINO_INTEROP",
-                "NDEBUG",
-                "WIN64",
-                "_UNICODE",
-                "UNICODE"}
-    
-    filter "configurations:Release_DLL"
-        defines {
-                "ZSPACE_RHINO_INTEROP",
-                "ZSPACE_DYNAMIC_LIBRARY",
-                "NDEBUG",
-                "WIN64",
-                "_UNICODE",
-                "UNICODE",
-                "_HAS_STD_BYTE=0"}
-
-    filter "configurations:Release_DLL_OV"
-        defines {"ZSPACE_RHINO_INTEROP",
-                "ZSPACE_USD_INTEROP",
-                "ZSPACE_DYNAMIC_LIBRARY",
-                "NDEBUG",
-                "WIN64",
-                "_UNICODE",
-                "UNICODE",
-                "_HAS_STD_BYTE=0",
-                "BOOST_ALL_DYN_LINK",
-                [[BOOST_LIB_TOOLSET="vc142"]],
-                "TBB_USE_DEBUG=0",
-                "_CRT_SECURE_NO_WARNINGS",
-                "NOMINMAX",
-                "_WINDLL"
-            }
-
-    filter "configurations:Release_Unreal"
-        defines{"ZSPACE_RHINO_INTEROP",
-                "NDEBUG",
-                "WIN64",
-                "_UNICODE",
-                "UNICODE",
-                "USING_ARMA"}

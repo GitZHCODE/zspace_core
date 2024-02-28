@@ -52,15 +52,6 @@ namespace zSpace
 		/*! \brief boolean for displaying the edges */
 		bool displayCurve;
 
-		/*!	\brief stores the start vertex ID in the VBO, when attached to the zBufferObject.	*/
-		int VBO_ControlPointId;
-
-		/*!	\brief stores the start edge ID in the VBO, when attached to the zBufferObject.	*/
-		int VBO_CurvePointId;
-
-		/*!	\brief stores the start vertex color ID in the VBO, when attache to the zBufferObject.	*/
-		int VBO_CurveColorId;		
-
 	protected:
 		
 		/*!	\brief number of display positions.			*/
@@ -196,26 +187,19 @@ namespace zSpace
 		*/
 		int getNumDisplayPositions();
 
-		/*! \brief This method gets the vertex VBO Index .
+		/*! \brief This method gets display curve boolean.
 		*
-		*	\return			int				- vertex VBO Index.
-		*	\since version 0.0.2
+		*	\return			bool				- display curve.
+		*	\since version 0.0.4
 		*/
-		int getVBO_ControlPointId();
+		inline bool& getDisplayCurve() { return displayCurve; }
 
-		/*! \brief This method gets the edge VBO Index .
+		/*! \brief This method gets display control points boolean.
 		*
-		*	\return			int				- edge VBO Index.
-		*	\since version 0.0.2
+		*	\return			bool				- num display control points.
+		*	\since version 0.0.4
 		*/
-		int getVBO_CurvePointId();
-
-		/*! \brief This method gets the vertex color VBO Index .
-		*
-		*	\return			int				- vertex color VBO Index.
-		*	\since version 0.0.2
-		*/
-		int getVBO_CurveColorId();
+		inline bool& getDisplayControlPoints() { return displayControlPoints; }
 
 		/*! \brief This method gets curve dimension.
 		*

@@ -2749,28 +2749,6 @@ namespace zSpace
 		out = zObjMesh(*meshObj);
 	}
 
-	ZSPACE_INLINE int zFnMesh::getVBOVertexIndex()
-	{
-		return meshObj->mesh.VBO_VertexId;
-	}
-
-	ZSPACE_INLINE int zFnMesh::getVBOEdgeIndex()
-	{
-		return meshObj->mesh.VBO_EdgeId;
-	}
-
-	ZSPACE_INLINE int zFnMesh::getVBOFaceIndex()
-	{
-		return meshObj->mesh.VBO_FaceId;
-	}
-
-	ZSPACE_INLINE int zFnMesh::getVBOVertexColorIndex()
-	{
-		return meshObj->mesh.VBO_VertexColorId;
-	}
-
-	
-
 	//---- CONTOUR METHODS
 
 	ZSPACE_INLINE void zFnMesh::splitMesh_Mixed(zPointArray& splitPlanes_origins, zVectorArray& splitPlanes_normals, zObjMesh& resultMeshObj)

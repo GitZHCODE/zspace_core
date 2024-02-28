@@ -37,10 +37,12 @@ namespace zSpace
 
 	//---- SET METHODS
 
-	ZSPACE_INLINE void zObjPointCloud::setDisplayElements(bool _displayVerts)
+	ZSPACE_INLINE void zObjPointCloud::setDisplayVertices(bool _displayVerts)
 	{
 		displayVertices = _displayVerts;
 	}
+
+	//---- GET METHODS
 
 	//---- OVERRIDE METHODS
 	

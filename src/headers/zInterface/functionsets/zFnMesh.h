@@ -800,34 +800,6 @@ namespace zSpace
 		*/
 		void getDuplicate(zObjMesh &out);
 
-		/*! \brief This method gets VBO vertex index of the mesh.
-		*
-		*	\return				int			- VBO Vertex Index.
-		*	\since version 0.0.2
-		*/
-		int getVBOVertexIndex();
-		
-		/*! \brief This method gets VBO edge index of the mesh.
-		*
-		*	\return				int			- VBO Edge Index.
-		*	\since version 0.0.2
-		*/
-		int getVBOEdgeIndex();
-
-		/*! \brief This method gets VBO edge index of the mesh.
-		*
-		*	\return				int			- VBO Face Index.
-		*	\since version 0.0.2
-		*/
-		int getVBOFaceIndex();
-
-		/*! \brief This method gets VBO vertex color index of the mesh.
-		*
-		*	\return				int			- VBO Vertex Color Index.
-		*	\since version 0.0.2
-		*/
-		int getVBOVertexColorIndex();
-
 		//--------------------------
 		//---- CONTOUR METHODS
 		//--------------------------	

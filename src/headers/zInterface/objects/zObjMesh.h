@@ -201,38 +201,48 @@ namespace zSpace
 		//---- GET METHODS
 		//--------------------------
 		
-		/*! \brief This method gets the vertex VBO Index .
+		/*! \brief This method gets display vertices boolean reference.
 		*
-		*	\return			int				- vertex VBO Index.
-		*	\since version 0.0.2
+		*	\return						bool reference		- input display vertices booelan.
+		*	\since version 0.0.4
 		*/
-		int getVBO_VertexID();
+		inline bool& getDisplayVertices() { return displayVertices; }
 
-		/*! \brief This method gets the edge VBO Index .
+		/*! \brief This method gets display edges boolean reference.
 		*
-		*	\return			int				- edge VBO Index.
-		*	\since version 0.0.2
+		*	\return						bool reference		- input display edges booelan.
+		*	\since version 0.0.4
 		*/
-		int getVBO_EdgeID();
+		inline bool& getDisplayEdges() { return displayEdges; }
 
-		/*! \brief This method gets the face VBO Index .
+		/*! \brief This method gets display faces boolean reference.
 		*
-		*	\return			int				- face VBO Index.
-		*	\since version 0.0.2
+		*	\return						bool reference		- input display faces booelan.
+		*	\since version 0.0.4
 		*/
-		int getVBO_FaceID();
+		inline bool& getDisplayFaces() { return displayFaces; }
 
-		/*! \brief This method gets the vertex color VBO Index .
+		/*! \brief This method gets display vertex id boolean reference.
 		*
-		*	\return			int				- vertex color VBO Index.
-		*	\since version 0.0.2
+		*	\return						bool reference		- input display vertex id booelan.
+		*	\since version 0.0.4
 		*/
-		int getVBO_VertexColorID();		
+		inline bool& getDisplayVertexIds() { return displayVertexIds; }
 
-		//--------------------------
-		//---- OVERRIDE METHODS
-		//--------------------------
-		
+		/*! \brief This method gets display edge id boolean reference.
+		*
+		*	\return						bool refrence		- input display edge id booelan.
+		*	\since version 0.0.4
+		*/
+		inline bool& getDisplayEdgeIds() { return displayEdgeIds; }
+
+		/*! \brief This method gets display face id boolean reference.
+		*
+		*	\return						bool reference		- input display face id booelan.
+		*	\since version 0.0.4
+		*/
+		inline bool& getDisplayFaceIds() { return displayFaceIds; }
+
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 
 #if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/

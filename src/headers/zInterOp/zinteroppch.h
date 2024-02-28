@@ -1,3 +1,5 @@
+#pragma once
+
 //C++ Stuff
 #include <algorithm> //2
 //#include <chrono> //1

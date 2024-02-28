@@ -65,21 +65,6 @@ namespace zSpace
 
 	//---- GET METHODS
 
-	ZSPACE_INLINE int zObjGraph::getVBO_VertexID()
-	{
-		return graph.VBO_VertexId;
-	}
-
-	ZSPACE_INLINE int zObjGraph::getVBO_EdgeID()
-	{
-		return graph.VBO_EdgeId;
-	}
-
-	ZSPACE_INLINE int zObjGraph::getVBO_VertexColorID()
-	{
-		return graph.VBO_VertexColorId;
-	}
-
 	//---- OVERRIDE METHODS
 
 	ZSPACE_INLINE void zObjGraph::getBounds(zPoint &minBB, zPoint &maxBB)
