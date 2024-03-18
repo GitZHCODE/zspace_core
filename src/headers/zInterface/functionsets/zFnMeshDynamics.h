@@ -86,9 +86,9 @@ namespace zSpace
 		
 		zFnType getType() override;
 
-		void from(string path, zFileTpye type);
+		void from(string path, zFileType type);
 
-		void to(string path, zFileTpye type);
+		void to(string path, zFileType type);
 
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 

@@ -43,9 +43,9 @@ namespace  zSpace
 		return zComputeMeshFn;
 	}
 
-	ZSPACE_INLINE void zFnComputeMesh::from(string path, zFileTpye type, bool staticGeom) {}
+	ZSPACE_INLINE void zFnComputeMesh::from(string path, zFileType type, bool staticGeom) {}
 
-	ZSPACE_INLINE void zFnComputeMesh::to(string path, zFileTpye type) {}
+	ZSPACE_INLINE void zFnComputeMesh::to(string path, zFileType type) {}
 
 	ZSPACE_INLINE void zFnComputeMesh::clear() {}
 

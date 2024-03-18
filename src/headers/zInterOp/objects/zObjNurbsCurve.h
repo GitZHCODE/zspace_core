@@ -15,6 +15,8 @@
 
 #pragma once
 
+#if defined (ZSPACE_RHINO_INTEROP)
+
 #include "zInterface/objects/zObj.h"
 #include "zInterOp/include/zRhinoInclude.h"
 
@@ -295,4 +297,5 @@ namespace zSpace
 #include<source/zInterOp/objects/zObjNurbsCurve.cpp>
 #endif
 
+#endif
 #endif

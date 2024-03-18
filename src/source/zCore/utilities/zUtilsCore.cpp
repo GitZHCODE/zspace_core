@@ -55,7 +55,7 @@ namespace zSpace
 		return out;
 	}
 
-	ZSPACE_INLINE int zUtilsCore::getNumfiles_Type(string dirPath, zFileTpye type)
+	ZSPACE_INLINE int zUtilsCore::getNumfiles_Type(string dirPath, zFileType type)
 	{
 		int out = 0;
 
@@ -77,7 +77,7 @@ namespace zSpace
 		return out;
 	}
 
-	ZSPACE_INLINE void zUtilsCore::getFilesFromDirectory(zStringArray &fpaths, string dirPath, zFileTpye type)
+	ZSPACE_INLINE void zUtilsCore::getFilesFromDirectory(zStringArray &fpaths, string dirPath, zFileType type)
 	{
 		fpaths.clear();
 

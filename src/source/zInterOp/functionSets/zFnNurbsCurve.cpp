@@ -10,6 +10,7 @@
 // Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
 //
 
+#if defined (ZSPACE_RHINO_INTEROP)
 
 #include "zInterop/functionsets/zFnNurbsCurve.h"
 
@@ -48,7 +49,7 @@ namespace zSpace
 		return zNurbsCurveFn;
 	}
 
-	ZSPACE_INLINE void zFnNurbsCurve::from(string path, zFileTpye type, bool staticGeom)
+	ZSPACE_INLINE void zFnNurbsCurve::from(string path, zFileType type, bool staticGeom)
 	{
 		if (type == zJSON)
 		{
@@ -58,7 +59,7 @@ namespace zSpace
 			if (chk) from(j, staticGeom);			
 		}
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
 	ZSPACE_INLINE void zFnNurbsCurve::from(json& j, bool staticGeom)
@@ -93,7 +94,7 @@ namespace zSpace
 		create(positions, cDegree, cPeriodic, false);
 	}
 
-	ZSPACE_INLINE void zFnNurbsCurve::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnNurbsCurve::to(string path, zFileType type)
 	{
 		if (type == zJSON)
 		{
@@ -103,7 +104,7 @@ namespace zSpace
 			//toJSON(path);
 		}
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
 	ZSPACE_INLINE void zFnNurbsCurve::to(json& j)
@@ -764,3 +765,4 @@ namespace zSpace
 
 
 }
+#endif //ZSPACE_RHINO_INTEROP

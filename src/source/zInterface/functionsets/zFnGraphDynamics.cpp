@@ -41,7 +41,7 @@ namespace zSpace
 		return zFnType::zGraphDynamicsFn;
 	}
 
-	ZSPACE_INLINE void zFnGraphDynamics::from(std::string path, zFileTpye type, bool staticGeom)
+	ZSPACE_INLINE void zFnGraphDynamics::from(std::string path, zFileType type, bool staticGeom)
 	{
 		if (type == zTXT)
 		{
@@ -59,15 +59,15 @@ namespace zSpace
 			setStaticContainers();
 		}
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
-	ZSPACE_INLINE void zFnGraphDynamics::to(std::string path, zFileTpye type)
+	ZSPACE_INLINE void zFnGraphDynamics::to(std::string path, zFileType type)
 	{
 		if (type == zTXT) toTXT(path);
 		else if (type == zJSON) toJSON(path);
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
 	ZSPACE_INLINE void zFnGraphDynamics::getBounds(zPoint &minBB, zPoint &maxBB)

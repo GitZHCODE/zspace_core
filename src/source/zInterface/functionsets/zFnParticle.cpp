@@ -44,7 +44,7 @@ namespace zSpace
 		return zFnType::zParticleFn;
 	}
 
-	ZSPACE_INLINE void zFnParticle::from(string path, zFileTpye type, bool staticGeom)
+	ZSPACE_INLINE void zFnParticle::from(string path, zFileType type, bool staticGeom)
 	{
 		
 	}
@@ -55,7 +55,7 @@ namespace zSpace
 
 
 
-	ZSPACE_INLINE void zFnParticle::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnParticle::to(string path, zFileType type)
 	{
 		
 	}

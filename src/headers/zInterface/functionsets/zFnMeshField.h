@@ -150,7 +150,7 @@ namespace zSpace
 		*	\param	[in]		_triMesh					- boolean true if triangulated mesh in needed. Works only when _setValuesperVertex is false.
 		*	\since version 0.0.2
 		*/
-		void from(string path, zFileTpye type, bool _setValuesperVertex = true, bool _trimesh = true);
+		void from(string path, zFileType type, bool _setValuesperVertex = true, bool _trimesh = true);
 
 		/*! \brief This method imports the field to the given file type.
 		*
@@ -158,7 +158,7 @@ namespace zSpace
 		*	\param [in]		type			- type of file to be exported - zBMP
 		*	\since version 0.0.2
 		*/
-		void to(string path, zFileTpye type);
+		void to(string path, zFileType type);
 
 		/*! \brief This method clears the dynamic and array memory the object holds.
 		*

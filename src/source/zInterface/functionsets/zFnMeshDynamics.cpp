@@ -44,20 +44,20 @@ namespace zSpace
 		return zFnType::zMeshDynamicsFn;
 	}
 
-	ZSPACE_INLINE void zFnMeshDynamics::from(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnMeshDynamics::from(string path, zFileType type)
 	{
 		if (type == zOBJ) fromOBJ(path);
 		else if (type == zJSON) fromJSON(path);
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
-	ZSPACE_INLINE void zFnMeshDynamics::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnMeshDynamics::to(string path, zFileType type)
 	{
 		if (type == zOBJ) toOBJ(path);
 		else if (type == zJSON) toJSON(path);
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
 	ZSPACE_INLINE void zFnMeshDynamics::getBounds(zPoint &minBB, zPoint &maxBB)

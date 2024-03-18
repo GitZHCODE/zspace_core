@@ -1,28 +1,8 @@
-include("./premake/delay_load.lua")
-include("includes.lua")
-
-workspace "zSpace_core"
-    filename "zSpace_core"
-    architecture "x64"
-    configurations {
-                    --"Release",
-                    "Release_DLL",
-                    --"Debug",
-                    "Debug_DLL",
-                }
-    startproject "zSpace_Core"
-
-project_path = "projects"
-
-IncludeDir = get_include_dirs()
-LibDir = get_lib_dirs()
-
 --#############__GENERAL__CONFIGURATION__SETTINGS__#############
-function CommonConfigurationSettings()
+local function CommonConfigurationSettings()
+    GlobalCommonDefines()
 
     defines {
-            "ZSPACE_RHINO_INTEROP",
-            "ZSPACE_USD_INTEROP",
             "WIN64",
             "_UNICODE",
             "UNICODE",
@@ -46,7 +26,7 @@ function CommonConfigurationSettings()
 --        flags {"MultiProcessorCompile"}
 --        buildoptions {"/bigobj"}
 
-    filter "configurations:Debug_DLL"
+    filter "configurations:Debug_DLL*"
         kind "SharedLib"
         objdir ("bin-int/%{cfg.buildcfg}")
         targetdir ("bin/dll/debug/")
@@ -72,7 +52,7 @@ function CommonConfigurationSettings()
 --                "MultiProcessorCompile"}
 --        buildoptions {"/bigobj"}
 
-    filter "configurations:Release_DLL"
+    filter "configurations:Release_DLL*"
         kind "SharedLib"
         objdir ("bin-int/%{cfg.buildcfg}")
         targetdir ("bin/dll/")
@@ -88,10 +68,13 @@ function CommonConfigurationSettings()
     filter {}
 end
 
+--Redefine to stop interference
+CoreIncludeDir = prependPath(deps_path, get_include_dirs())
+CoreLibDir = prependPath(deps_path, get_lib_dirs())
 
---#########################################
+--#############__ZSPACE_APP__#############
 project "zSpace_App"
-    location "%{project_path}/zSpace_App"
+    location "projects/zSpace_App"
     language "C++"
     cppdialect "C++17"
     dependson("zSpace_Interface")
@@ -109,39 +92,29 @@ project "zSpace_App"
         "src/headers/zApp/**.h",
     }
 
+    --###__BASE__###
     includedirs
     {
-        "%{IncludeDir.ARMADILLO}",
-        "%{IncludeDir.SRC}",
-        "%{IncludeDir.DEPS}",
+        "%{CoreIncludeDir.ARMADILLO}",
+        "src/headers",
     }
 
     libdirs
     {
-        "%{LibDir.SQLITE}",
-        "%{LibDir.OUTDLL}",
-        "%{LibDir.OUTLIB}",
-        "%{LibDir.DEBUG_OUTDLL}",
-        "%{LibDir.DEBUG_OUTLIB}",
+        "%{CoreLibDir.SQLITE}",
+        "%{cfg.target}",
     }
 
---#########################################
+
+--#############__ZSPACE_CORE__#############
 project "zSpace_Core"
-    location "%{project_path}/zSpace_Core"
+    location "projects/zSpace_Core"
     language "C++"
     cppdialect "C++17"
 
     characterset("MBCS")
 
     CommonConfigurationSettings()
-
-    filter {"files:**zUtilsDisplay.*"}
-        flags {"ExcludeFromBuild"}
-    filter {}
-
-    filter {"files:**zObjBuffer.*"}
-        flags {"ExcludeFromBuild"}
-    filter {}
 
     pchheader "zCore/zcorepch.h"
     pchsource "src/source/zCore/zcorepch.cpp"
@@ -152,28 +125,29 @@ project "zSpace_Core"
         "src/headers/zCore/**.h",
         "src/source/zCore/**.cpp",
         --Source files of Includes
-        "%{IncludeDir.LODEPNG}/lodepng.h",
-        "%{IncludeDir.LODEPNG}/lodepng.cpp",
-        "%{IncludeDir.TOOJPEG}/*.cpp"
+        "%{CoreIncludeDir.LODEPNG}/lodepng.h",
+        "%{CoreIncludeDir.LODEPNG}/lodepng.cpp",
+        "%{CoreIncludeDir.TOOJPEG}/*.cpp"
     }
 
+    --###__BASE__###
     includedirs
     {
-        "%{IncludeDir.ARMADILLO}",
-        "%{IncludeDir.LODEPNG}",
-        "%{IncludeDir.TOOJPEG}",
-        "%{IncludeDir.EIGEN}",
-        "%{IncludeDir.SQLITE}",
-        "%{IncludeDir.NLOHMANN}",
-        "%{IncludeDir.QUICKHULL}",
-        "C:/Program Files/Rhino 7 SDK/inc",
-        "%{IncludeDir.SRC}",
+        "%{CoreIncludeDir.ARMADILLO}",
+        "%{CoreIncludeDir.LODEPNG}",
+        "%{CoreIncludeDir.TOOJPEG}",
+        "%{CoreIncludeDir.EIGEN}",
+        "%{CoreIncludeDir.SQLITE}",
+        "%{CoreIncludeDir.NLOHMANN}",
+        "%{CoreIncludeDir.QUICKHULL}",
+        --local
+        "src/headers",
     }
 
     libdirs
     {
-        "%{LibDir.SQLITE}",
-        "C:/Program Files/Rhino 7 SDK/lib/Release"
+        "%{CoreLibDir.SQLITE}",
+        "%{cfg.targetdir}",
     }
 
     links
@@ -182,9 +156,9 @@ project "zSpace_Core"
     }
 
 
---#########################################
+--#############__ZSPACE_INTERFACE__#############
 project "zSpace_Interface"
-    location "%{project_path}/zSpace_Interface"
+    location "projects/zSpace_Interface"
     language "C++"
     cppdialect "C++17"
     dependson("zSpace_Core")
@@ -206,60 +180,60 @@ project "zSpace_Interface"
         "src/source/zInterface/**.cpp",
     }
 
+    --WIP
     filter {"files:**zFnComputeMesh.*"}
         flags {"ExcludeFromBuild"}
     filter {}
 
-    filter {"files:**zModel.*"}
-        flags {"ExcludeFromBuild"}
-    filter {}
-
+    --###__BASE__###
     includedirs
     {
-        "%{IncludeDir.ARMADILLO}",
-        "%{IncludeDir.EIGEN}",
-        "%{IncludeDir.NLOHMANN}",
-        "%{IncludeDir.TOOJPEG}",
-        "%{IncludeDir.LODEPNG}",
-        "%{IncludeDir.QUICKHULL}",
-        "%{IncludeDir.IGL}",
-        "%{IncludeDir.SRC}",
-        "%{IncludeDir.DEPS}",
+        "%{CoreIncludeDir.DEPS}",
+        "%{CoreIncludeDir.ARMADILLO}",
+        "%{CoreIncludeDir.EIGEN}",
+        "%{CoreIncludeDir.NLOHMANN}",
+        "%{CoreIncludeDir.TOOJPEG}",
+        "%{CoreIncludeDir.LODEPNG}",
+        "%{CoreIncludeDir.QUICKHULL}",
+        "%{CoreIncludeDir.IGL}",
+        --local
+        "src/headers",
         --Omniverse
-        "%{IncludeDir.OV_CLIENT}",
-        "%{IncludeDir.OV_USD_RES}",
-        "%{IncludeDir.OV_PYTHON}",
-        "%{IncludeDir.OV_TINYTOML}",
-        "%{IncludeDir.OV_USD}",
+        "%{CoreIncludeDir.OV_CLIENT}",
+        "%{CoreIncludeDir.OV_USD_RES}",
+        "%{CoreIncludeDir.OV_PYTHON}",
+        "%{CoreIncludeDir.OV_TINYTOML}",
+        "%{CoreIncludeDir.OV_USD}",
     }
 
     libdirs
     {
-        "%{LibDir.SQLITE}",
-        "%{LibDir.OUTDLL}",
-        "%{LibDir.OUTLIB}",
-        "%{LibDir.DEBUG_OUTDLL}",
-        "%{LibDir.DEBUG_OUTLIB}",
+        "%{CoreLibDir.SQLITE}",
+        "%{CoreLibDir.IGL}",
+        "%{cfg.targetdir}",
         --Omniverse
-        "%{LibDir.OV_CLIENT}",
-        "%{LibDir.OV_USD_RES}",
-        "%{LibDir.OV_PYTHON}",
-        "%{LibDir.OV_USD}",
+        "%{CoreLibDir.OV_CLIENT}",
+        "%{CoreLibDir.OV_USD_RES}",
+        "%{CoreLibDir.OV_PYTHON}",
+        "%{CoreLibDir.OV_USD}",
     }
 
     links
     {
         "sqlite3.lib",
         "zSpace_Core.lib",
+        "igl.lib",
     }
 
-    --All of the Omniverse links
-    links {get_omniverse_links()}
+    --###__OMNIVERSE__###
+    filter {"options:interop=OV or interop=Full"}
+        links {get_omniverse_links()}
+    filter {}
 
 
---#########################################        
+--#############__ZSPACE_INTEROP__#############
 project "zSpace_InterOp"
-    location "%{project_path}/zSpace_InterOp"
+    location "projects/zSpace_InterOp"
     language "C++"
     cppdialect "C++17"
     dependson("zSpace_Interface")
@@ -276,64 +250,55 @@ project "zSpace_InterOp"
         "src/source/zInterOp/**cpp",
     }
 
-    --Exclude zObjCurve
+    --Exclude zObjCurve WIP
     filter {"files:**zObjCurve.*"}
         flags {"ExcludeFromBuild"}
     filter {}
 
+    --###__BASE__###
     includedirs
     {
-        "%{IncludeDir.ARMADILLO}",
-        "%{IncludeDir.LODEPNG}",
-        "%{IncludeDir.TOOJPEG}",
-        "%{IncludeDir.EIGEN}",
-        "%{IncludeDir.SQLITE}",
-        "%{IncludeDir.NLOHMANN}",
-        "%{IncludeDir.QUICKHULL}",
-        "C:/Program Files/Rhino 7 SDK/inc",
-        "C:/Program Files/Autodesk/Maya2020/include",
-        "%{IncludeDir.IGL}",
-        "%{IncludeDir.SRC}",
-        "%{IncludeDir.DEPS}",
+        "%{CoreIncludeDir.DEPS}",
+        "%{CoreIncludeDir.ARMADILLO}",
+        "%{CoreIncludeDir.LODEPNG}",
+        "%{CoreIncludeDir.TOOJPEG}",
+        "%{CoreIncludeDir.EIGEN}",
+        "%{CoreIncludeDir.SQLITE}",
+        "%{CoreIncludeDir.NLOHMANN}",
+        "%{CoreIncludeDir.QUICKHULL}",
+        "%{CoreIncludeDir.IGL}",
+        "%{maya_dir}/include",
+        --local
+        "src/headers",
         --Omniverse
-        "%{IncludeDir.OV_CLIENT}",
-        "%{IncludeDir.OV_USD_RES}",
-        "%{IncludeDir.OV_PYTHON}",
-        "%{IncludeDir.OV_TINYTOML}",
-        "%{IncludeDir.OV_USD}",
+        "%{CoreIncludeDir.OV_CLIENT}",
+        "%{CoreIncludeDir.OV_USD_RES}",
+        "%{CoreIncludeDir.OV_PYTHON}",
+        "%{CoreIncludeDir.OV_TINYTOML}",
+        "%{CoreIncludeDir.OV_USD}",
+        --Rhino
+        "%{rhino_dir}/inc"
     }
 
     libdirs
     {
-        "%{LibDir.SQLITE}",
-        "C:/Program Files/Rhino 7 SDK/lib/Release",
-        "C:/Program Files/Autodesk/Maya2020/lib",
-        "%{LibDir.OUTDLL}",
-        "%{LibDir.OUTLIB}",
-        "%{LibDir.DEBUG_OUTDLL}",
-        "%{LibDir.DEBUG_OUTLIB}",
+        "%{CoreLibDir.SQLITE}",
+        "%{maya_dir}/lib",
+        "%{cfg.targetdir}",
         --Omniverse
-        "%{LibDir.OV_CLIENT}",
-        "%{LibDir.OV_USD_RES}",
-        "%{LibDir.OV_PYTHON}",
-        "%{LibDir.OV_USD}",
-    }
-
-    delayloaddlls
-    {
-        "opennurbs.dll",
-        "RhinoCore.dll",
-        "RhinoLibrary.dll",
+        "%{CoreLibDir.OV_CLIENT}",
+        "%{CoreLibDir.OV_USD_RES}",
+        "%{CoreLibDir.OV_PYTHON}",
+        "%{CoreLibDir.OV_USD}",
+        --Rhino
+        "%{rhino_dir}/lib/Release"
     }
 
     links
     {
         "zSpace_Core.lib",
         "zSpace_Interface.lib",
-        --Rhino
-        "opennurbs.lib",
-        "RhinoCore.lib",
-        "RhinoLibrary.lib", --This lib should be in Rhino 7 SDK, if it's not ask Vishu
+        "sqlite3.lib",
         --Maya
         "OpenMayaRender.lib",
         "OpenMayaFX.lib",
@@ -341,8 +306,26 @@ project "zSpace_InterOp"
         "OpenMaya.lib",
         "OpenMayaUI.lib",
         "Foundation.lib",
-        "sqlite3.lib",
     }
 
-    --All of the Omniverse links
-    links {get_omniverse_links()}
+    --###__OMNIVERSE__###
+    filter {"options:interop=OV or interop=Full"}
+        links {get_omniverse_links()}
+
+    --###__RHINO__###
+    filter {"configurations:*Rhino"}
+        delayloaddlls
+        {
+            "opennurbs.dll",
+            "RhinoCore.dll",
+            "RhinoLibrary.dll",
+        }
+
+        links
+        {
+            "opennurbs.lib",
+            "RhinoCore.lib",
+            "RhinoLibrary.lib", --This lib should be in Rhino 7 SDK, if it's not ask Vishu
+        }
+    filter {}
+    

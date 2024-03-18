@@ -10,6 +10,7 @@
 // Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
 //
 
+#if defined (ZSPACE_RHINO_INTEROP)
 
 #include "zInterOp/objects/zObjNurbsCurve.h"
 
@@ -157,3 +158,4 @@ namespace zSpace
 
 #endif // !ZSPACE_UNREAL_INTEROP
 }
+#endif //!ZSPACE_RHINO_INTEROP

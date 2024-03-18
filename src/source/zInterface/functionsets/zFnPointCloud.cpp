@@ -42,7 +42,7 @@ namespace zSpace
 		return zFnType::zPointsFn;
 	}
 
-	ZSPACE_INLINE void zFnPointCloud::from(string path, zFileTpye type, bool staticGeom)
+	ZSPACE_INLINE void zFnPointCloud::from(string path, zFileType type, bool staticGeom)
 	{
 		if (type == zCSV) fromCSV(path);
 	}
@@ -54,7 +54,7 @@ namespace zSpace
 
 
 
-	ZSPACE_INLINE void zFnPointCloud::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnPointCloud::to(string path, zFileType type)
 	{
 		if (type == zCSV) toCSV(path);
 	}

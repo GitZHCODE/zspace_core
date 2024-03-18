@@ -17,12 +17,11 @@
 
 #pragma once
 
+#if defined (ZSPACE_RHINO_INTEROP)
 
 #include "zInterOp/include/zRhinoInclude.h"
 #include <delayimp.h>
 #include "zInterOp/core/zRhinoCore.h"
-
-
 
 #ifndef DLI_HOOK
 #define DLI_HOOK
@@ -67,4 +66,5 @@ namespace zSpace
 
 }
 
+#endif
 #endif

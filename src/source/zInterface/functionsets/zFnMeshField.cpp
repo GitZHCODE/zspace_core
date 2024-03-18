@@ -52,7 +52,7 @@ namespace zSpace
 	//---- zScalar &  zVector specilization for from
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::from(string path, zFileTpye type, bool _setValuesperVertex, bool _trimesh)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::from(string path, zFileType type, bool _setValuesperVertex, bool _trimesh)
 	{
 		setValuesperVertex = _setValuesperVertex;
 
@@ -64,12 +64,12 @@ namespace zSpace
 		else if (type == zOBJ) fnMesh.from(path, type, true);
 		else if (type == zJSON) fnMesh.from(path, type, true);
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::from(string path, zFileTpye type, bool _setValuesperVertex, bool _trimesh)
+	ZSPACE_INLINE void zFnMeshField<zVector>::from(string path, zFileType type, bool _setValuesperVertex, bool _trimesh)
 	{
 		setValuesperVertex = _setValuesperVertex;
 
@@ -79,29 +79,29 @@ namespace zSpace
 		if (type == zOBJ) fnMesh.from(path, type, true);
 		else if (type == zJSON) fnMesh.from(path, type, true);
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 
 	}
 
 	//---- zScalar &  zVector specilization for from
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::to(string path, zFileType type)
 	{
 		if (type == zBMP) toBMP(path);
 		else if (type == zOBJ) fnMesh.to(path, type);
 		else if (type == zJSON) fnMesh.to(path, type);
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnMeshField<zVector>::to(string path, zFileType type)
 	{
 		if (type == zOBJ) fnMesh.to(path, type);
 		else if (type == zJSON) fnMesh.to(path, type);
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
 	template<typename T>

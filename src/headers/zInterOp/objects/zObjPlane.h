@@ -13,6 +13,8 @@
 #ifndef ZSPACE_OBJ_PLANE_H
 #define ZSPACE_OBJ_PLANE_H
 
+#if defined (ZSPACE_RHINO_INTEROP)
+
 #pragma once
 
 #include "zInterface/objects/zObj.h"
@@ -253,4 +255,5 @@ namespace zSpace
 #include<source/zInterOp/objects/zObjPlane.cpp>
 #endif
 
+#endif
 #endif

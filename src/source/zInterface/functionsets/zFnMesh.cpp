@@ -42,7 +42,7 @@ namespace zSpace
 		return zMeshFn;
 	}
 
-	ZSPACE_INLINE void zFnMesh::from(string path, zFileTpye type, bool staticGeom )
+	ZSPACE_INLINE void zFnMesh::from(string path, zFileType type, bool staticGeom )
 	{
 		if (type == zOBJ)
 		{
@@ -79,7 +79,7 @@ namespace zSpace
 		}
 #endif
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
 	ZSPACE_INLINE void zFnMesh::from(json& j, bool staticGeom)
@@ -411,7 +411,7 @@ namespace zSpace
 
 
 
-	ZSPACE_INLINE void zFnMesh::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnMesh::to(string path, zFileType type)
 	{
 		if (type == zOBJ) toOBJ(path);
 		else if (type == zJSON)

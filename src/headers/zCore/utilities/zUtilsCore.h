@@ -145,21 +145,21 @@ namespace zSpace
 		/*! \brief This method returns the number of files in the input directory of the input file type.
 		*
 		*	\param		[in]	dirPath			- input directory path.
-		*	\param		[in]	type			- input zFileTpye.
+		*	\param		[in]	type			- input zFileType.
 		*	\return				int				- number of files in the input folder.
 		*	\since version 0.0.2
 		*/
-		ZSPACE_CUDA_CALLABLE_HOST int getNumfiles_Type(string dirPath, zFileTpye type);
+		ZSPACE_CUDA_CALLABLE_HOST int getNumfiles_Type(string dirPath, zFileType type);
 		
 			
 		/*! \brief This method gets all the files on the input file type in the input directory sorted by time of creation.
 		*
 		*	\param		[out]	fpaths			- container of file paths.
 		*	\param		[in]	dirPath			- input directory path.
-		*	\param		[in]	type			- input zFileTpye.
+		*	\param		[in]	type			- input zFileType.
 		*	\since version 0.0.2
 		*/
-		ZSPACE_CUDA_CALLABLE_HOST void getFilesFromDirectory(zStringArray &fpaths, string dirPath, zFileTpye type);
+		ZSPACE_CUDA_CALLABLE_HOST void getFilesFromDirectory(zStringArray &fpaths, string dirPath, zFileType type);
 
 		/*! \brief This method check if the file exists
 		*

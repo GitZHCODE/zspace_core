@@ -121,11 +121,11 @@ namespace zSpace
 	*/
 	enum zFieldStreamType { zForward = 140, zBackward, zForwardBackward};
 
-	/*! \enum	zFileTpye
+	/*! \enum	zFileType
 	*	\brief	input and ouput file types.
 	*	\since	version 0.0.2
 	*/
-	enum zFileTpye { zJSON = 150, zUSD, zOBJ, zTXT,zMAYATXT, zCSV, zBMP, zPNG, zJPEG, zMESH , zGRAPH};
+	enum zFileType { zJSON = 150, zUSD, zOBJ, zTXT,zMAYATXT, zCSV, zBMP, zPNG, zJPEG, zMESH , zGRAPH};
 
 	/*! \enum	zFnType
 	*	\brief	functionset types.

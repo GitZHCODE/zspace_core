@@ -86,9 +86,9 @@ namespace zSpace
 		
 		zFnType getType() override;
 
-		void from(std::string path, zFileTpye type, bool staticGeom = false);
+		void from(std::string path, zFileType type, bool staticGeom = false);
 
-		void to(std::string path, zFileTpye type);
+		void to(std::string path, zFileType type);
 
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 

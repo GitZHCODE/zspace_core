@@ -10,6 +10,7 @@
 // Author : Ling Mao <Ling.Mao@zaha-hadid.com>
 //
 
+#if defined (ZSPACE_RHINO_INTEROP)
 
 #include "zInterop/functionsets/zFnArc.h"
 #include "zInterOp/objects/zObjPlane.h"
@@ -44,7 +45,7 @@ namespace zSpace
 		return zArcFn;
 	}
 
-	ZSPACE_INLINE void zFnArc::from(string path, zFileTpye type, bool staticGeom)
+	ZSPACE_INLINE void zFnArc::from(string path, zFileType type, bool staticGeom)
 	{
 		if (type == zJSON)
 		{
@@ -54,7 +55,7 @@ namespace zSpace
 			if (chk) from(j, staticGeom);			
 		}
 
-		else throw std::invalid_argument("error: invalid zFileTpye type");
+		else throw std::invalid_argument("error: invalid zFileType type");
 	}
 
 	ZSPACE_INLINE void zFnArc::from(json& j, bool staticGeom)
@@ -99,7 +100,7 @@ namespace zSpace
 		computeControlPoints();
 	}
 	
-	ZSPACE_INLINE void zFnArc::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnArc::to(string path, zFileType type)
 	{
 		if (type == zJSON)
 		{
@@ -109,7 +110,7 @@ namespace zSpace
 			//toJSON(path);
 		}
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
 	ZSPACE_INLINE void zFnArc::to(json& j)
@@ -602,3 +603,4 @@ namespace zSpace
 
 	
 }
+#endif

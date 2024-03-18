@@ -10,6 +10,7 @@
 // Author : Ling Mao <Ling.Mao@zaha-hadid.com>
 //
 
+#if defined (ZSPACE_RHINO_INTEROP)
 
 #include "zInterOp/objects/zObjPlane.h"
 
@@ -199,3 +200,4 @@ namespace zSpace
 
 #endif // !ZSPACE_UNREAL_INTEROP
 }
+#endif // !ZSPACE_RHINO_INTEROP

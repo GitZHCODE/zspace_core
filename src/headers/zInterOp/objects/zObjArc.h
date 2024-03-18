@@ -13,6 +13,8 @@
 #ifndef ZSPACE_OBJ_Arc_H
 #define ZSPACE_OBJ_Arc_H
 
+#if defined (ZSPACE_RHINO_INTEROP)
+
 #pragma once
 
 #include "zInterface/objects/zObj.h"
@@ -309,4 +311,5 @@ namespace zSpace
 #include<source/zInterOp/objects/zObjArc.cpp>
 #endif
 
+#endif
 #endif

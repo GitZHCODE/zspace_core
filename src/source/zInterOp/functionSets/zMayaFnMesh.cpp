@@ -37,7 +37,7 @@ namespace zSpace
 		return zMeshFn;
 	}
 
-	ZSPACE_INLINE void zMayaFnMesh::from(string path, zFileTpye type, bool staticGeom)
+	ZSPACE_INLINE void zMayaFnMesh::from(string path, zFileType type, bool staticGeom)
 	{
 
 		zFnMesh::from(path, type, staticGeom);
@@ -50,7 +50,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zMayaFnMesh::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zMayaFnMesh::to(string path, zFileType type)
 	{
 		zFnMesh::to(path, type);
 

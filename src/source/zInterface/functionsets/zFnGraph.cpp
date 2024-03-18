@@ -44,7 +44,7 @@ namespace zSpace
 		return zGraphFn;
 	}
 
-	ZSPACE_INLINE void zFnGraph::from(string path, zFileTpye type, bool staticGeom)
+	ZSPACE_INLINE void zFnGraph::from(string path, zFileType type, bool staticGeom)
 	{
 		if (type == zTXT)
 		{
@@ -67,7 +67,7 @@ namespace zSpace
 			//if (chk && staticGeom) setStaticContainers();
 		}
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
 	ZSPACE_INLINE void zFnGraph::from(json& j, bool staticGeom)
@@ -231,7 +231,7 @@ namespace zSpace
 
 	
 
-	ZSPACE_INLINE void zFnGraph::to(string path, zFileTpye type)
+	ZSPACE_INLINE void zFnGraph::to(string path, zFileType type)
 	{
 		if (type == zTXT) toTXT(path);
 		else if (type == zJSON)
@@ -242,7 +242,7 @@ namespace zSpace
 			//toJSON(path);
 		}
 
-		else throw std::invalid_argument(" error: invalid zFileTpye type");
+		else throw std::invalid_argument(" error: invalid zFileType type");
 	}
 
 	ZSPACE_INLINE void zFnGraph::to(json& j)

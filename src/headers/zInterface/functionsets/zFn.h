@@ -111,7 +111,7 @@ namespace zSpace
 		*	\param	[in]	staticGeom		- true if the object is static. Helps speed up display especially for meshes object. Default set to false.
 		*	\since version 0.0.2
 		*/
-		virtual void from(std::string path, zFileTpye type, bool staticGeom = false) = 0;
+		virtual void from(std::string path, zFileType type, bool staticGeom = false) = 0;
 
 		/*! \brief This method imports the object linked to function type.
 		*
@@ -127,7 +127,7 @@ namespace zSpace
 		*	\param [in]		type			- type of file to be exported.
 		*	\since version 0.0.2
 		*/
-		virtual void to(std::string path, zFileTpye type) = 0;
+		virtual void to(std::string path, zFileType type) = 0;
 
 		/*! \brief This method exports the object linked to JSON.
 		*
