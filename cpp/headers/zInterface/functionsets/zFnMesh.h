@@ -173,7 +173,7 @@ namespace zSpace
 		*	\note	 The half edge pointers will need to be computed/ set.
 		*	\since version 0.0.2
 		*/
-		bool addEdges(int &v1, int &v2, bool checkDuplicates, zItMeshHalfEdge &halfEdge);
+		bool addEdges(int v1, int v2, bool checkDuplicates, zItMeshHalfEdge &halfEdge);
 
 		/*! \brief This method adds a face to the mesh.
 		*
@@ -985,6 +985,15 @@ namespace zSpace
 		*/
 		zItMeshVertex splitEdge(zItMeshEdge &edge, double edgeFactor = 0.5);
 
+		/*! \brief This method splits an edge and inserts a vertex along the edge at the input factor.
+		*
+		*	\param		[in]	hEdge			- iterator of half edge to be split.
+		*	\param		[in]	edgeFactor		- factor in the range [0,1] that represent how far along each edge must the split be done.
+		*	\return				zItMeshVertex	- iterator to new vertex added after splitting the edge.
+		*	\since version 0.0.2
+		*/
+		zItMeshVertex splitHalfEdge(zItMeshHalfEdge& hEdge, double edgeFactor = 0.5);
+
 		/*! \brief This method detaches an edge.
 		*
 		*	\param		[in]	index			- index of the edge to be split.
@@ -1006,6 +1015,17 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void splitFaces(vector<int> &edgeList, vector<double> &edgeFactor);
+
+		/*! \brief This method splits a face of a mesh.
+		*
+		*	\param		[in]	faceId			- index of the face to be split.
+		*	\param		[in]	e0				- index 0 of the edage to split. Note the index should be an edge of the input face. 
+		*	\param		[in]	e1				- index 1 of the edage to split. Note the index should be an edge of the input face.
+		*	\param		[in]	e0_factor		- factor for edge 0 in the range [0,1] that represent how far along each edge must the split be done. 
+		*	\param		[in]	e1_factor		- factor for edge 1 in the range [0,1] that represent how far along each edge must the split be done.
+		*	\since version 0.0.4
+		*/
+		void splitFace(int faceID, int egdeID0, int edgeID1, float edge0_factor, float edge1_factor);
 
 		/*! \brief This method subdivides all the faces and edges of the mesh.
 		*
