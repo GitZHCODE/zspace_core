@@ -16,8 +16,6 @@ local function CommonConfigurationSettings()
 
 --    filter "configurations:Debug"
 --        kind "StaticLib"
---        objdir ("bin-int/%{cfg.buildcfg}")
---        targetdir ("bin/lib/debug/")
 --        targetname ("%{prj.name}")
 --        defines {"ZSPACE_STATIC_LIBRARY"}
 --        optimize "Off"
@@ -28,8 +26,6 @@ local function CommonConfigurationSettings()
 
     filter "configurations:Debug_DLL*"
         kind "SharedLib"
-        objdir ("bin-int/%{cfg.buildcfg}")
-        targetdir ("bin/dll/debug/")
         targetname ("%{prj.name}")
         defines {"ZSPACE_DYNAMIC_LIBRARY",
                  "_WINDLL"}
@@ -41,8 +37,6 @@ local function CommonConfigurationSettings()
 
 --    filter "configurations:Release"
 --        kind "StaticLib"
---        objdir ("bin-int/%{cfg.buildcfg}")
---        targetdir ("bin/lib/")
 --        targetname ("%{prj.name}")
 --        defines {"ZSPACE_STATIC_LIBRARY",
 --                 "NDEBUG"}
@@ -54,8 +48,6 @@ local function CommonConfigurationSettings()
 
     filter "configurations:Release_DLL*"
         kind "SharedLib"
-        objdir ("bin-int/%{cfg.buildcfg}")
-        targetdir ("bin/dll/")
         targetname ("%{prj.name}")
         defines {"ZSPACE_DYNAMIC_LIBRARY",
                  "NDEBUG",
@@ -64,7 +56,7 @@ local function CommonConfigurationSettings()
         warnings "Off"
         flags {"LinkTimeOptimization",
                 "MultiProcessorCompile"}
-    
+
     filter {}
 end
 
@@ -226,9 +218,8 @@ project "zSpace_Interface"
     }
 
     --###__OMNIVERSE__###
-    filter {"options:interop=OV or interop=Full"}
-        links {get_omniverse_links()}
-    filter {}
+    --Omniverse is default
+    links {get_omniverse_links()}
 
 
 --#############__ZSPACE_INTEROP__#############
@@ -309,8 +300,8 @@ project "zSpace_InterOp"
     }
 
     --###__OMNIVERSE__###
-    filter {"options:interop=OV or interop=Full"}
-        links {get_omniverse_links()}
+    --Omniverse is default
+    links {get_omniverse_links()}
 
     --###__RHINO__###
     filter {"configurations:*Rhino"}
@@ -328,4 +319,3 @@ project "zSpace_InterOp"
             "RhinoLibrary.lib", --This lib should be in Rhino 7 SDK, if it's not ask Vishu
         }
     filter {}
-    
