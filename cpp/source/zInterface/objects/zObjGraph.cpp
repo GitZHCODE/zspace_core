@@ -116,7 +116,7 @@ namespace zSpace
 		//for (int i = 0; i < graph.edgeActive.size(); i++)
 		for (auto &e : graph.halfEdges)
 		{
-			_edgeIndicies.push_back(e.getVertex()->getId() + displayUtils->bufferObj.nVertices);
+			_edgeIndicies.push_back(e.getVertex() + displayUtils->bufferObj.nVertices);
 		}
 
 		graph.VBO_EdgeId = displayUtils->bufferObj.appendEdgeIndices(_edgeIndicies);
@@ -165,8 +165,8 @@ namespace zSpace
 					if (graph.eHandles[e.getId()].id != -1)
 					{
 						zIntArray eVerts;
-						edgeVertices[e.getId()][0] = e.getHalfEdge(0)->getVertex()->getId();
-						edgeVertices[e.getId()][1] = e.getHalfEdge(1)->getVertex()->getId();
+						edgeVertices[e.getId()][0] = graph.halfEdges[e.getHalfEdge(0)].getVertex();
+						edgeVertices[e.getId()][1] = graph.halfEdges[e.getHalfEdge(1)].getVertex();
 
 					}
 

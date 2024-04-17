@@ -22,8 +22,8 @@ namespace zSpace
 	ZSPACE_INLINE zEdge::zEdge()
 	{
 		index = -1;
-		he[0] = nullptr;
-		he[1] = nullptr;
+		he[0] = -1;
+		he[1] = -1;
 	}
 
 	//---- DESTRUCTOR
@@ -42,12 +42,12 @@ namespace zSpace
 		this->index = _edgeId;
 	}
 
-	ZSPACE_INLINE zHalfEdge* zEdge::getHalfEdge(int _index)
+	ZSPACE_INLINE int zEdge::getHalfEdge(int _index)
 	{
 		return this->he[_index];
 	}
 
-	ZSPACE_INLINE void zEdge::setHalfEdge(zHalfEdge* _he, int _index)
+	ZSPACE_INLINE void zEdge::setHalfEdge(int _he, int _index)
 	{
 		this->he[_index] = _he;
 	}
@@ -61,8 +61,8 @@ namespace zSpace
 
 	ZSPACE_INLINE void zEdge::reset()
 	{
-		he[0] = nullptr;
-		he[1] = nullptr;
+		he[0] = -1;
+		he[1] = -1;
 		index = -1;
 	}
 }
@@ -77,13 +77,13 @@ namespace zSpace
 	ZSPACE_INLINE zHalfEdge::zHalfEdge()
 	{
 		index = -1;
-		v = nullptr;
-		f = nullptr;
-		e = nullptr;
+		v = -1;
+		f = -1;
+		e = -1;
 
-		prev = nullptr;
-		next = nullptr;
-		sym = nullptr;
+		prev = -1;
+		next = -1;
+		sym = -1;
 	}
 
 	//---- DESTRUCTOR
@@ -97,70 +97,70 @@ namespace zSpace
 		return this->index;
 	}
 
-	ZSPACE_INLINE void zHalfEdge::setId(int _edgeId)
+	ZSPACE_INLINE void zHalfEdge::setId(int _halfedgeId)
 	{
-		this->index = _edgeId;
+		this->index = _halfedgeId;
 	}
 
-	ZSPACE_INLINE zHalfEdge* zHalfEdge::getSym()
+	ZSPACE_INLINE int zHalfEdge::getSym()
 	{
 		return this->sym;
 	}
 
-	ZSPACE_INLINE void zHalfEdge::setSym(zHalfEdge* _sym)
+	ZSPACE_INLINE void zHalfEdge::setSym(int _sym)
 	{
 		this->sym = _sym;
-		_sym->sym = this;
+		//_sym->sym = this->index;
 	}
 
-	ZSPACE_INLINE zHalfEdge* zHalfEdge::getPrev()
+	ZSPACE_INLINE int zHalfEdge::getPrev()
 	{
 		return this->prev;
 	}
 
-	ZSPACE_INLINE void zHalfEdge::setPrev(zHalfEdge* _prev)
+	ZSPACE_INLINE void zHalfEdge::setPrev(int _prev)
 	{
 		this->prev = _prev;
-		if (this->getPrev()) _prev->next = this;
+		//if (this->getPrev()) _prev->next = this;
 	}
 
-	ZSPACE_INLINE zHalfEdge* zHalfEdge::getNext()
+	ZSPACE_INLINE int zHalfEdge::getNext()
 	{
 		return this->next;
 	}
 
-	ZSPACE_INLINE void zHalfEdge::setNext(zHalfEdge* _next)
+	ZSPACE_INLINE void zHalfEdge::setNext(int _next)
 	{
 		this->next = _next;
-		if (this->getNext()) _next->prev = this;
+		//if (this->getNext()) _next->prev = this;
 	}
 
-	ZSPACE_INLINE zVertex* zHalfEdge::getVertex()
+	ZSPACE_INLINE int zHalfEdge::getVertex()
 	{
 		return this->v;
 	}
 
-	ZSPACE_INLINE void zHalfEdge::setVertex(zVertex* _v)
+	ZSPACE_INLINE void zHalfEdge::setVertex(int _v)
 	{
 		this->v = _v;
 	}
 
-	ZSPACE_INLINE zFace* zHalfEdge::getFace()
+	ZSPACE_INLINE int zHalfEdge::getFace()
 	{
 		return this->f;
 	}
 
-	ZSPACE_INLINE void zHalfEdge::setFace(zFace* _f)
+	ZSPACE_INLINE void zHalfEdge::setFace(int _f)
 	{
 		this->f = _f;
 	}
 
-	ZSPACE_INLINE zEdge* zHalfEdge::getEdge()
+	ZSPACE_INLINE int zHalfEdge::getEdge()
 	{
 		return this->e;
 	}
 
-	ZSPACE_INLINE void zHalfEdge::setEdge(zEdge* _e)
+	ZSPACE_INLINE void zHalfEdge::setEdge(int _e)
 	{
 		this->e = _e;
 	}
@@ -169,22 +169,22 @@ namespace zSpace
 
 	ZSPACE_INLINE void zHalfEdge::reset()
 	{
-		if (this->getNext()) this->getNext()->setPrev(this->getSym()->getPrev());
-		if (this->getPrev()) this->getPrev()->setNext(this->getSym()->getNext());
+		//if (this->getNext()) this->getNext()->setPrev(this->getSym()->getPrev());
+		//if (this->getPrev()) this->getPrev()->setNext(this->getSym()->getNext());
 
 
-		this->next = nullptr;
-		this->prev = nullptr;
-		this->v = nullptr;
-		this->f = nullptr;
+		this->next = -1;
+		this->prev = -1;
+		this->v = -1;
+		this->f = -1;
 
-		if (this->getSym())
+		/*if (this->getSym())
 		{
 			this->getSym()->next = nullptr;
 			this->getSym()->prev = nullptr;
 			this->getSym()->v = nullptr;
 			this->getSym()->f = nullptr;
-		}
+		}*/
 
 		index = -1;
 
@@ -207,7 +207,7 @@ namespace zSpace
 	ZSPACE_INLINE zVertex::zVertex()
 	{
 		index = -1;
-		he = nullptr;
+		he = -1;
 	}
 
 	//---- DESTRUCTOR
@@ -226,12 +226,12 @@ namespace zSpace
 		this->index = _vertexId;
 	}
 
-	ZSPACE_INLINE zHalfEdge* zVertex::getHalfEdge()
+	ZSPACE_INLINE int zVertex::getHalfEdge()
 	{
 		return this->he;
 	}
 
-	ZSPACE_INLINE void zVertex::setHalfEdge(zHalfEdge* _he)
+	ZSPACE_INLINE void zVertex::setHalfEdge(int _he)
 	{
 		this->he = _he;
 	}
@@ -240,7 +240,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zVertex::reset()
 	{
-		this->he = nullptr;
+		this->he = -1;
 		index = -1;
 	}
 
@@ -261,7 +261,7 @@ namespace zSpace
 	ZSPACE_INLINE zFace::zFace()
 	{
 		index = -1;
-		he = nullptr;
+		he = -1;
 	}
 
 	//---- DESTRUCTOR
@@ -280,12 +280,12 @@ namespace zSpace
 		this->index = _faceId;
 	}
 
-	ZSPACE_INLINE zHalfEdge* zFace::getHalfEdge()
+	ZSPACE_INLINE int zFace::getHalfEdge()
 	{
 		return this->he;
 	}
 
-	ZSPACE_INLINE void zFace::setHalfEdge(zHalfEdge* _he)
+	ZSPACE_INLINE void zFace::setHalfEdge(int _he)
 	{
 		this->he = _he;
 	}
@@ -294,7 +294,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFace::reset()
 	{
-		this->he = nullptr;
+		this->he = -1;
 		index = -1;
 	}
 

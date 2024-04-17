@@ -84,7 +84,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshVertex::getConnectedHalfEdges(zItMeshHalfEdgeArray& halfedges)
 	{
-		if (!this->iter->getHalfEdge()) return;
+		if (this->iter->getHalfEdge() == -1) return;
 
 		if (!getHalfEdge().isActive()) return;
 
@@ -103,7 +103,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshVertex::getConnectedHalfEdges(zIntArray& halfedgeIndicies)
 	{
-		if (!this->iter->getHalfEdge()) return;
+		if (this->iter->getHalfEdge() == -1) return;
 
 		if (!getHalfEdge().isActive()) return;
 
@@ -560,7 +560,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshVertex::getHalfEdge()
 	{
-		return zItMeshHalfEdge(*meshObj, iter->getHalfEdge()->getId());
+		return zItMeshHalfEdge(*meshObj, iter->getHalfEdge());
 	}
 
 	ZSPACE_INLINE zItVertex zItMeshVertex::getRawIter()
@@ -619,10 +619,12 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshVertex::setHalfEdge(zItMeshHalfEdge &he)
 	{
-		iter->setHalfEdge(&meshObj->mesh.halfEdges[he.getId()]);
+		
 
 		int id = getId();
 		int heId = he.getId();
+
+		iter->setHalfEdge(heId);
 
 		meshObj->mesh.vHandles[id].he = heId;
 	}
@@ -840,7 +842,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshEdge::getHalfEdge(int _index)
 	{	
-		return zItMeshHalfEdge(*meshObj, iter->getHalfEdge(_index)->getId());
+		return zItMeshHalfEdge(*meshObj, iter->getHalfEdge(_index));
 	}
 
 	ZSPACE_INLINE zItEdge  zItMeshEdge::getRawIter()
@@ -867,10 +869,11 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshEdge::setHalfEdge(zItMeshHalfEdge &he, int _index)
 	{
-		iter->setHalfEdge(&meshObj->mesh.halfEdges[he.getId()], _index);
+		
 
 		int id = getId();
 		int heId = he.getId();
+		iter->setHalfEdge(heId, _index);
 
 		if (_index == 0) meshObj->mesh.eHandles[id].he0 = heId;
 		if (_index == 1) meshObj->mesh.eHandles[id].he1 = heId;
@@ -1068,7 +1071,7 @@ namespace zSpace
 			zItMeshFaceArray eFaces;
 			he.getFaces(eFaces);
 
-			printf("\n eFaces %i", eFaces.size());
+			//printf("\n eFaces %i", eFaces.size());
 
 			for (int k = 0; k < eFaces.size(); k++)
 			{
@@ -1076,7 +1079,7 @@ namespace zSpace
 			}
 		}
 
-		printf("\n %i  e %i %i", getId(), cHEdges.size(), faces.size());
+		//printf("\n %i  e %i %i", getId(), cHEdges.size(), faces.size());
 	}
 
 	ZSPACE_INLINE void zItMeshFace::getConnectedFaces(zIntArray& faceIndicies)
@@ -1526,7 +1529,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshFace::getHalfEdge()
 	{
-		return zItMeshHalfEdge(*meshObj, iter->getHalfEdge()->getId());
+		return zItMeshHalfEdge(*meshObj, iter->getHalfEdge());
 	}
 
 	ZSPACE_INLINE zItFace  zItMeshFace::getRawIter()
@@ -1684,11 +1687,12 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshFace::setHalfEdge(zItMeshHalfEdge &he)
 	{
-		iter->setHalfEdge(&meshObj->mesh.halfEdges[he.getId()]);
+		
 
 		int id = getId();
 		int heId = he.getId();
 
+		iter->setHalfEdge(heId);
 		meshObj->mesh.fHandles[id].he = heId;
 	}
 
@@ -1921,7 +1925,7 @@ namespace zSpace
 
 	ZSPACE_INLINE bool zItMeshHalfEdge::onBoundary()
 	{
-		return !iter->getFace();
+		return (iter->getFace() == -1) ? true : false;
 	}
 
 	ZSPACE_INLINE zVector zItMeshHalfEdge::getCenter()
@@ -1957,32 +1961,32 @@ namespace zSpace
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshHalfEdge::getSym()
 	{
-		return zItMeshHalfEdge(*meshObj, iter->getSym()->getId());
+		return zItMeshHalfEdge(*meshObj, iter->getSym());
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshHalfEdge::getNext()
 	{
-		return zItMeshHalfEdge(*meshObj, iter->getNext()->getId());
+		return zItMeshHalfEdge(*meshObj, iter->getNext());
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshHalfEdge::getPrev()
 	{
-		return zItMeshHalfEdge(*meshObj, iter->getPrev()->getId());
+		return zItMeshHalfEdge(*meshObj, iter->getPrev());
 	}
 
 	ZSPACE_INLINE zItMeshVertex zItMeshHalfEdge::getVertex()
 	{
-		return zItMeshVertex(*meshObj, iter->getVertex()->getId());
+		return zItMeshVertex(*meshObj, iter->getVertex());
 	}
 
 	ZSPACE_INLINE zItMeshFace zItMeshHalfEdge::getFace()
 	{
-		return zItMeshFace(*meshObj, iter->getFace()->getId());
+		return zItMeshFace(*meshObj, iter->getFace());
 	}
 
 	ZSPACE_INLINE zItMeshEdge zItMeshHalfEdge::getEdge()
 	{
-		return zItMeshEdge(*meshObj, iter->getEdge()->getId());
+		return zItMeshEdge(*meshObj, iter->getEdge());
 	}
 
 	ZSPACE_INLINE zItHalfEdge  zItMeshHalfEdge::getRawIter()
@@ -1992,12 +1996,12 @@ namespace zSpace
 
 	ZSPACE_INLINE zColor zItMeshHalfEdge::getColor()
 	{
-		return meshObj->mesh.edgeColors[iter->getEdge()->getId()];
+		return meshObj->mesh.edgeColors[iter->getEdge()];
 	}
 
 	ZSPACE_INLINE zColor* zItMeshHalfEdge::getRawColor()
 	{
-		return &meshObj->mesh.edgeColors[iter->getEdge()->getId()];
+		return &meshObj->mesh.edgeColors[iter->getEdge()];
 	}
 
 	//---- SET METHODS
@@ -2009,15 +2013,20 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setSym(zItMeshHalfEdge &he)
 	{
-		iter->setSym(&meshObj->mesh.halfEdges[he.getId()]);
+		iter->setSym(he.getId());
+		he.iter->setSym(getId());
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setNext(zItMeshHalfEdge &he)
 	{
-		iter->setNext(&meshObj->mesh.halfEdges[he.getId()]);
+		
 
 		int id = getId();
 		int nextId = he.getId();
+
+		iter->setNext(nextId);
+		//he.setPrev(*this);
+		he.iter->setPrev(id);
 
 		meshObj->mesh.heHandles[id].n = nextId;
 		meshObj->mesh.heHandles[nextId].p = id;
@@ -2025,10 +2034,14 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setPrev(zItMeshHalfEdge &he)
 	{
-		iter->setPrev(&meshObj->mesh.halfEdges[he.getId()]);
+		
 
 		int id = getId();
 		int prevId = he.getId();
+
+		iter->setPrev(prevId);
+		//he.setNext(*this);
+		he.iter->setNext(id);
 
 		meshObj->mesh.heHandles[id].p = prevId;
 		meshObj->mesh.heHandles[prevId].n = id;
@@ -2036,7 +2049,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setVertex(zItMeshVertex &v)
 	{
-		iter->setVertex(&meshObj->mesh.vertices[v.getId()]);
+		iter->setVertex(v.getId());
 
 		int id = getId();
 		int vId = v.getId();
@@ -2046,7 +2059,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setEdge(zItMeshEdge &e)
 	{
-		iter->setEdge(&meshObj->mesh.edges[e.getId()]);
+		iter->setEdge(e.getId());
 
 		int id = getId();
 		int eId = e.getId();
@@ -2056,7 +2069,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setFace(zItMeshFace &f)
 	{
-		iter->setFace(&meshObj->mesh.faces[f.getId()]);
+		iter->setFace(f.getId());
 
 		int id = getId();
 		int fId = f.getId();
