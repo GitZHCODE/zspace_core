@@ -609,6 +609,22 @@ namespace zSpace
 		return &nurbsCurveObj->curve;
 	}
 
+	ZSPACE_INLINE void zFnNurbsCurve::updateObj()
+	{
+		//Update Display points
+		setDisplayNumPoints(nurbsCurveObj->getNumDisplayPositions());
+
+		int numCV = nurbsCurveObj->curve.CVCount();
+
+		//Update Contol points
+		for (int i = 0; i < numCV; i++)
+		{
+			ON_3dPoint p;
+			nurbsCurveObj->curve.GetCV(i, p);
+			nurbsCurveObj->GetControlPoint(i) = zPoint(p.x, p.y, p.z);
+		}
+	}
+
 
 	//---- TRANSFORM METHODS OVERRIDES
 

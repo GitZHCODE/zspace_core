@@ -171,6 +171,15 @@ namespace zSpace
 		//---- GET METHODS
 		//--------------------------
 
+		/*! \brief This method gives read/write access to individual control points in the zObjNurbsCurve storage
+		*	\details  Used for updating CV positions
+		*
+		*	\param		[in]	index		- index of contol point in displayContolPointPositions array.
+		*	\return		zPoint&				- reference to the specific zPoint.
+		*	\since version 0.0.x
+		*/
+		zPoint& GetControlPoint(int index);
+
 		const zPointArray& GetDisplayPositions() const { return displayPositions; }
 		const zPointArray& GetControlPositions() const { return displayControlPointPositions; }
 		const zColor& GetCurveColor() const { return displayColor; }

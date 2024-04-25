@@ -394,7 +394,12 @@ namespace zSpace
 		*/
 		ON_NurbsCurve* getRawON_Curve();
 
-		
+		/*! \brief This method updates control points and display points in the zObj
+		*
+		*	\since version 0.0.x
+		*/
+		void updateObj();
+
 		//--------------------------
 		//---- TRANSFORM METHODS OVERRIDES
 		//--------------------------

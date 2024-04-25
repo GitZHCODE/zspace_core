@@ -84,6 +84,11 @@ namespace zSpace
 
 	//---- GET METHODS
 
+	ZSPACE_INLINE zPoint& zObjNurbsCurve::GetControlPoint(int index)
+	{
+		return displayControlPointPositions[index];
+	}
+
 	ZSPACE_INLINE void zObjNurbsCurve::getDisplayPositions(zPointArray& _positions)
 	{
 		_positions = displayPositions;
