@@ -180,8 +180,8 @@ namespace zSpace
 		{			
 			zVector v2 = factoriseVector(values[i], precision);
 
-			if (v1 == v2)
-			{
+			if (v1.distanceTo(v2) < pow(10, -1 * precision))			{
+				
 				out = true;
 
 				index = i;
@@ -530,6 +530,13 @@ namespace zSpace
 				c2 /= detr;
 
 
+				float u1 = 0.1;
+				float u2 = 0.9;
+
+				outP1 = (nA * c1) + (nB * c2) + (nA * nB * u1);
+				outP2 = (nA * c2) + (nB * c2) + (nA * nB * u2);
+
+				out = true;
 			}
 
 

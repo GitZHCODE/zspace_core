@@ -413,6 +413,12 @@ namespace zSpace
 		*/
 		ZSPACE_CUDA_CALLABLE void decomposeS();
 
+		/*! \brief This method decomposes the transform matrix into pivot in x, y and z axis.
+		*
+		*	\since version 0.0.2
+		*/
+		ZSPACE_CUDA_CALLABLE void decomposeP();
+
 	};
 
 }

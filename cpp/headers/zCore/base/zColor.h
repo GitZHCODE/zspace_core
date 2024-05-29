@@ -165,6 +165,9 @@ namespace zSpace
 	/** White Color. */
 	inline zColor zWHITE(1, 1, 1, 1);
 
+	/** Grey Color. */
+	inline zColor zGREY(0.5, 0.5, 0.5, 1);
+
 	/** Black Color. */
 	inline zColor zBLACK(0, 0, 0, 1);
 

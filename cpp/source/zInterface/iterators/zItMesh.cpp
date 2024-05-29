@@ -1961,31 +1961,37 @@ namespace zSpace
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshHalfEdge::getSym()
 	{
+		if(iter->getSym() == -1) throw std::invalid_argument(" error: sym index is -1. "); 
 		return zItMeshHalfEdge(*meshObj, iter->getSym());
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshHalfEdge::getNext()
 	{
+		if (iter->getNext() == -1) throw std::invalid_argument(" error: next index is -1. ");
 		return zItMeshHalfEdge(*meshObj, iter->getNext());
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshHalfEdge::getPrev()
 	{
+		if (iter->getPrev() == -1) throw std::invalid_argument(" error: prev index is -1. ");
 		return zItMeshHalfEdge(*meshObj, iter->getPrev());
 	}
 
 	ZSPACE_INLINE zItMeshVertex zItMeshHalfEdge::getVertex()
 	{
+		if (iter->getVertex() == -1) throw std::invalid_argument(" error: vertex index is -1. ");
 		return zItMeshVertex(*meshObj, iter->getVertex());
 	}
 
 	ZSPACE_INLINE zItMeshFace zItMeshHalfEdge::getFace()
 	{
+		if (iter->getFace() == -1) throw std::invalid_argument(" error: face index is -1. ");
 		return zItMeshFace(*meshObj, iter->getFace());
 	}
 
 	ZSPACE_INLINE zItMeshEdge zItMeshHalfEdge::getEdge()
 	{
+		if (iter->getEdge() == -1) throw std::invalid_argument(" error: edge index is -1. ");
 		return zItMeshEdge(*meshObj, iter->getEdge());
 	}
 
