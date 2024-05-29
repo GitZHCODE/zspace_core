@@ -253,8 +253,10 @@ namespace zSpace
 		for (auto &f : fHandles)
 		{
 			if (f.id == -1) continue;
+			
 
 			int i = f.id;
+			//printf("\n %i %i ",i, faceVerts[i].size());
 
 			glColor3f(col[i].r, col[i].g, col[i].b);
 
@@ -263,6 +265,8 @@ namespace zSpace
 			for (int j = 0; j < faceVerts[i].size(); j++)
 			{
 				glVertex3f(pos[faceVerts[i][j]].x, pos[faceVerts[i][j]].y, pos[faceVerts[i][j]].z);
+
+				//printf("\n %i %i | %1.2f %1.2f %1.2f ",i,j, pos[faceVerts[i][j]].x, pos[faceVerts[i][j]].y, pos[faceVerts[i][j]].z);
 			}
 			glEnd();
 		}

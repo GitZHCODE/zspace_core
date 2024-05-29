@@ -187,6 +187,7 @@ namespace zSpace
 			{
 				zItMeshHalfEdge heSym(*meshObj, n_he - 1);
 				he.setSym(heSym);
+				//heSym.setSym(he);
 
 				zItMeshEdge e(*meshObj, n_e);
 				e.setId(n_e);
@@ -3805,8 +3806,6 @@ namespace zSpace
 		zItMeshVertex newVertex;
 		addVertex(newVertPos, true, newVertex);
 
-    //printf("\n newVert: %1.2f %1.2f %1.2f   %s ", newVertPos.x, newVertPos.y, newVertPos.z, (vExists)?"true":"false");
-
 		if (newVertex.getId() >= numOriginalVertices)
 		{
 			// remove from halfEdge vertices map
@@ -3821,27 +3820,19 @@ namespace zSpace
 
 			int newHeId = newHe.getId();
 
-			// recompute iterators if resize is true
-			if (edgesResize)
-			{
+			// recompute iterators as adding edges might have changed the address
+			edge = zItMeshEdge(*meshObj, edgeId);
 
-				//edge = zItMeshEdge(*meshObj, edge.getId());
-				edge = zItMeshEdge(*meshObj, edgeId);
+			he = edge.getHalfEdge(0);
+			heS = edge.getHalfEdge(1);
 
-				he = edge.getHalfEdge(0);
-				heS = edge.getHalfEdge(1);
+			he_next = he.getNext();
+			he_prev = he.getPrev();
 
-				he_next = he.getNext();
-				he_prev = he.getPrev();
+			heS_next = heS.getNext();
+			heS_prev = heS.getPrev();
 
-				heS_next = heS.getNext();
-				heS_prev = heS.getPrev();
-
-				newHe = zItMeshHalfEdge(*meshObj, newHeId);
-
-				//printf("\n working!");
-			}
-
+			newHe = zItMeshHalfEdge(*meshObj, newHeId);
 			zItMeshHalfEdge newHeS = newHe.getSym();
 
 			// update vertex pointers
@@ -3849,7 +3840,7 @@ namespace zSpace
 			he.getVertex().setHalfEdge(newHeS);
 
 			//// update pointers
-			he.setVertex(newVertex);		// current hedge vertex pointer updated to new added vertex
+			he.setVertex(newVertex); // current hedge vertex pointer updated to new added vertex
 
 			newHeS.setNext(heS); // new added symmetry hedge next pointer to point to the symmetry of current hedge
 			newHeS.setPrev(heS_prev);
@@ -3877,23 +3868,25 @@ namespace zSpace
 
 	ZSPACE_INLINE zItMeshVertex zFnMesh::splitHalfEdge(zItMeshHalfEdge& hEdge, double edgeFactor)
 	{
-		int edgeId = hEdge.getEdge().getId();
-		zItMeshEdge edge = hEdge.getEdge();
 
-		zItMeshHalfEdge he = hEdge;
+		zItMeshEdge edge = hEdge.getEdge();
+		int edgeId = edge.getId();
+
+		int heID = hEdge.getId();
+		//zItMeshHalfEdge he = hEdge;
 		zItMeshHalfEdge heS = hEdge.getSym();
 
-		zItMeshHalfEdge he_next = he.getNext();
-		zItMeshHalfEdge he_prev = he.getPrev();
+		zItMeshHalfEdge he_next = hEdge.getNext();
+		zItMeshHalfEdge he_prev = hEdge.getPrev();
 
-		zItMeshHalfEdge heS_next = heS.getNext();
-		zItMeshHalfEdge heS_prev = heS.getPrev();
+		zItMeshHalfEdge heS_next = hEdge.getSym().getNext();
+		zItMeshHalfEdge heS_prev = hEdge.getSym().getPrev();
 
-		zVector edgeDir = he.getVector();
+		zVector edgeDir = hEdge.getVector();
 		double  edgeLength = edgeDir.length();
 		edgeDir.normalize();
 
-		zVector newVertPos = he.getStartVertex().getPosition() + edgeDir * edgeFactor * edgeLength;
+		zVector newVertPos = hEdge.getStartVertex().getPosition() + edgeDir * edgeFactor * edgeLength;
 
 		int numOriginalVertices = numVertices();
 
@@ -3906,11 +3899,11 @@ namespace zSpace
 		if (newVertex.getId() >= numOriginalVertices)
 		{
 			// remove from halfEdge vertices map
-			removeFromHalfEdgesMap(he);
+			removeFromHalfEdgesMap(hEdge);
 
 			// add new edges
 			int v1 = newVertex.getId();
-			int v2 = he.getVertex().getId();
+			int v2 = hEdge.getVertex().getId();
 
 			zItMeshHalfEdge newHe;
 			bool edgesResize = addEdges(v1, v2, false, newHe);
@@ -3918,17 +3911,17 @@ namespace zSpace
 			int newHeId = newHe.getId();
 
 			// recompute iterators if resize is true
-			if (edgesResize)
-			{
+			//if (edgesResize)
+			//{
 
 				//edge = zItMeshEdge(*meshObj, edge.getId());
 				edge = zItMeshEdge(*meshObj, edgeId);
 
-				he = edge.getHalfEdge(0);
-				heS = edge.getHalfEdge(1);
+				hEdge = zItMeshHalfEdge(*meshObj, heID);
+				heS = hEdge.getSym();
 
-				he_next = he.getNext();
-				he_prev = he.getPrev();
+				he_next = hEdge.getNext();
+				he_prev = hEdge.getPrev();
 
 				heS_next = heS.getNext();
 				heS_prev = heS.getPrev();
@@ -3936,16 +3929,17 @@ namespace zSpace
 				newHe = zItMeshHalfEdge(*meshObj, newHeId);
 
 				//printf("\n working!");
-			}
+			//}
 
 			zItMeshHalfEdge newHeS = newHe.getSym();
 
 			// update vertex pointers
 			newVertex.setHalfEdge(newHe);
-			he.getVertex().setHalfEdge(newHeS);
+			hEdge.getVertex().setHalfEdge(newHeS);
 
 			//// update pointers
-			he.setVertex(newVertex);		// current hedge vertex pointer updated to new added vertex
+			hEdge.setVertex(newVertex);		// current hedge vertex pointer updated to new added vertex
+			//printf("\n he %i | %i %i ", hEdge.getId(), newVertex.getId(), hEdge.getVertex().getId());
 
 			newHeS.setNext(heS); // new added symmetry hedge next pointer to point to the symmetry of current hedge
 			newHeS.setPrev(heS_prev);
@@ -3956,18 +3950,23 @@ namespace zSpace
 				newHeS.setFace(heS_f);
 			}
 
-			newHe.setPrev(he);
+			newHe.setPrev(hEdge);
 			newHe.setNext(he_next);
 
-			if (!he.onBoundary())
+			if (!hEdge.onBoundary())
 			{
-				zItMeshFace he_f = he.getFace();
+				zItMeshFace he_f = hEdge.getFace();
 				newHe.setFace(he_f);
 			}
 
 			// update verticesEdge map
-			addToHalfEdgesMap(he);
+			addToHalfEdgesMap(hEdge);
+
+			
+
 		}
+
+		//printf("\n after he %i | %i %i ", hEdge.getId(), newVertex.getId(), hEdge.getVertex().getId());
 		return newVertex;
 	}
 
@@ -4145,49 +4144,37 @@ namespace zSpace
 		int numVerts_beforeSplit = numVertices();
 
 		zItMeshFace face(*meshObj, faceID);
-		zItMeshEdge e0(*meshObj, egdeID0);
-		zItMeshEdge e1(*meshObj, egdeID1);
-
-		zItMeshHalfEdge he0, he1;
-		if (e0.getHalfEdge(0).onBoundary())
-		{
-			he0 = e0.getHalfEdge(1);
-		}
-		else
-		{
-			if (e0.getHalfEdge(0).getFace().getId() == faceID) he0 = e0.getHalfEdge(0);
-			else he0 = e0.getHalfEdge(1);
-		}
-
-		if (e1.getHalfEdge(0).onBoundary())
-		{
-			he1 = e1.getHalfEdge(1);
-		}
-		else
-		{
-			if (e1.getHalfEdge(0).getFace().getId() == faceID) he1 = e1.getHalfEdge(0);
-			else he1 = e1.getHalfEdge(1);
-		}		
-
-		zItMeshHalfEdge face_he = face.getHalfEdge();
-		if (face_he == he0 )
-		{
-			face_he = face_he.getNext();
-			face.setHalfEdge(face_he);
-		}
-		if (face_he == he1)
-		{
-			face_he = face_he.getPrev();
-			face.setHalfEdge(face_he);
-		}
 		
+		int heID_0 = -1;
+		int heID_1 = -1;
+		
+		zItMeshHalfEdgeArray fHEdges;
+		face.getHalfEdges(fHEdges);
 
+		for (auto& he : fHEdges)
+		{
+			if (he.getEdge().getId() == egdeID0) heID_0 = he.getId();
+			if (he.getEdge().getId() == egdeID1) heID_1 = he.getId();
+		}
 
-		zItMeshVertex v0 = splitHalfEdge(he0, edge0_factor);
+		if (heID_0 == -1 || heID_1 == -1)
+		{
+			throw std::invalid_argument(" error: edge indicies provided are not part of the face. "); ; 
+			return;
+		}
+
+		zItMeshHalfEdge he0(*meshObj, heID_0);
+		zItMeshHalfEdge he1(*meshObj, heID_1);
+
+		zItMeshVertex v0 = splitHalfEdge(he0, edge0_factor);			
 		zItMeshVertex v1 = splitHalfEdge(he1, edge1_factor);
 
 		zItMeshHalfEdge he;
 		addEdges(v0.getId(), v1.getId(), true, he);
+
+		// recompute iterators, as adding edge might have moved the address
+		he0 = zItMeshHalfEdge(*meshObj, heID_0);
+		he1 = zItMeshHalfEdge(*meshObj, heID_1);
 
 		if (edge0_factor == 0.0) he0 = he0.getPrev();
 		if (edge1_factor == 0.0) he1 = he1.getPrev();
@@ -4197,62 +4184,72 @@ namespace zSpace
 
 		he.setPrev(he0);
 		he.setNext(he1_next);
-
+		
 		he.getSym().setNext(he0_next);
 		he.getSym().setPrev(he1);
 
+		zItMeshHalfEdge face_he = face.getHalfEdge();
 		zItMeshHalfEdge newFace_he;
 
-		
-		zIntArray fVerts0;
-		face.getVertices(fVerts0);
-
-		//printf("\n face verts Ids : ");
-		//for (auto fV : fVerts0) printf(" %i ", fV);
-
-		bool exit = false; 
-
+		bool exit = false;
 		do
 		{
 			if (he == face_he)
 			{
-				//face.setHalfEdge(he);
+				face.setHalfEdge(he);
 				newFace_he = he.getSym();
 				exit = true;
 			}
 
 			else if (he.getSym() == face_he )
 			{
-				//zItMeshHalfEdge newHE = he.getSym();
-				//face.setHalfEdge(newHE);
+				zItMeshHalfEdge newHE = he.getSym();
+				face.setHalfEdge(newHE);
 
 				newFace_he = he;
 				exit = true;
 			}
 
-			face_he = face_he.getNext();
+			if(!exit) face_he = face_he.getNext();
 
 		} while (!exit);
 
-		//printf("\n newFace_he verts Ids : %i %i | %i", newFace_he.getStartVertex().getId(), newFace_he.getVertex().getId(), newFace_he.getEdge().getId());
+		zItMeshHalfEdge tmp_he = face_he;
+		do
+		{
+			
+			tmp_he.setFace(face);
+			tmp_he = tmp_he.getNext();
+
+		} while (tmp_he != face_he);
+
+		zIntArray fVerts0;
+		face.getVertices(fVerts0);
+
+		/*printf("\n face verts Ids : ");
+		for (auto fV : fVerts0) printf(" %i ", fV);*/
 
 		// compute new face vertex
 		zIntArray fVerts;
+		zItMeshFace fNew;
+		addPolygon(fNew);
+		fNew.setHalfEdge(newFace_he);
 
 		zItMeshHalfEdge new_he = newFace_he;
 		do
 		{
-			fVerts.push_back(new_he.getStartVertex().getId());
+			fVerts.push_back(new_he.getSym().getVertex().getId());
+			new_he.setFace(fNew);
 			new_he = new_he.getNext();
 
 		} while (new_he != newFace_he);
 
-		//printf("\n new face vert Ids : ");
-		//for (auto fV : fVerts) printf(" %i ", fV);
+		/*printf("\n new face vert Ids : ");
+		for (auto fV : fVerts) printf(" %i ", fV);*/
 
-		zItMeshFace fNew;
-		addPolygon(fVerts, fNew);
-		//fNew.setHalfEdge(newFace_he);
+		
+		computeMeshNormals();
+		
 	}
 
 	ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)

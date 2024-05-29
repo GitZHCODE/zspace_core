@@ -73,10 +73,26 @@ namespace zSpace
 			R(1, 0) = inTransform(1, 0); R(1, 1) = inTransform(1, 1); R(1, 2) = inTransform(1, 2);
 			R(2, 0) = inTransform(2, 0); R(2, 1) = inTransform(2, 1); R(2, 2) = inTransform(2, 2);
 
+			// set pivot
+			//Eigen::Matrix3f r = inTransform.block<3, 3>(0, 0);
+			//Eigen::Vector3f s;
+			//s[0] = inTransform.block<3, 1>(0, 0).norm();
+			//s[1] = inTransform.block<3, 1>(0, 1).norm();
+			//s[2] = inTransform.block<3, 1>(0, 2).norm();
+
+			//// Compute pivot as the point that remains stationary after rotation and scaling
+			//Eigen::Vector3f p = inTransform.block<3, 1>(0, 3) - r * s.asDiagonal() * inTransform.block<3, 1>(0, 3);
+			//cout << "\n p \n " << inTransform.block<3, 1>(0, 3);
+
+			//P(3, 0) = p(0);
+			//P(3, 1) = p(1);
+			//P(3, 2) = p(2);
+
 			// compute components
 			decomposeR();
 			decomposeT();
 			decomposeS();
+			decomposeP();
 		}
 
 		Transform = inTransform;
@@ -125,7 +141,7 @@ namespace zSpace
 		if (scale[3] == 0)scale[3] = _scale[3];
 
 		computeS();
-
+		computeTransform();
 	}
 
 	ZSPACE_INLINE void zTransformationMatrix::setTranslation(zFloat4 &_translation, bool addValues)
@@ -157,7 +173,7 @@ namespace zSpace
 		pivot[3] = _pivot[3];
 
 		computeP();
-
+		computeTransform();
 	}
 
 	//---- GET METHODS
@@ -375,8 +391,9 @@ namespace zSpace
 	{
 		zTransform world = to.getWorldMatrix();
 		zTransform local = this->getLocalMatrix();
-
 		return world * local;
+
+		//return this->asInverseMatrix() * to.asMatrix();
 	}
 
 	ZSPACE_INLINE zTransform zTransformationMatrix::getToTransform(zTransformationMatrix& to)
@@ -426,6 +443,10 @@ namespace zSpace
 #endif
 
 		Transform = PS * PSInverse * R * T;
+
+		//Transform = T * P * S * R;
+
+		// translationMatrix * pivotMatrix * scaleMatrix * rotationMatrix
 
 	}
 
@@ -549,6 +570,14 @@ namespace zSpace
 		scale[0] = S(0, 0);
 		scale[1] = S(1, 1);
 		scale[2] = S(2, 2);
+	}
+
+
+	ZSPACE_INLINE void zTransformationMatrix::decomposeP()
+	{
+		pivot[0] = P(3, 0);
+		pivot[1] = P(3, 1);
+		pivot[2] = P(3, 2);
 	}
 
 }

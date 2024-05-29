@@ -389,7 +389,7 @@ namespace zSpace
 
 		Vector3f newP = inTrans * p;
 
-		zVector out(newP(0), newP(1), newP(2), newP(3));
+		zVector out(newP(0), newP(1), newP(2));
 
 		return out;
 	}

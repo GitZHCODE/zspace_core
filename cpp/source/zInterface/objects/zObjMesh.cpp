@@ -177,8 +177,8 @@ namespace zSpace
 			{
 				if (e.isActive())
 				{
-					_edgeIndicies.push_back(e.getHalfEdge(0)->getVertex()->getId() + displayUtils->bufferObj.nVertices);
-					_edgeIndicies.push_back(e.getHalfEdge(1)->getVertex()->getId() + displayUtils->bufferObj.nVertices);
+					_edgeIndicies.push_back(mesh.halfEdges[e.getHalfEdge(0)].getVertex() + displayUtils->bufferObj.nVertices);
+					_edgeIndicies.push_back(mesh.halfEdges[e.getHalfEdge(1)].getVertex() + displayUtils->bufferObj.nVertices);
 				}
 			}
 
@@ -197,8 +197,8 @@ namespace zSpace
 				{
 					if (abs(edge_dihedralAngles[e.getId()]) > angleThreshold || edge_dihedralAngles[e.getId()] == -1)
 					{
-						_edgeIndicies.push_back(e.getHalfEdge(0)->getVertex()->getId() + displayUtils->bufferObj.nVertices);
-						_edgeIndicies.push_back(e.getHalfEdge(1)->getVertex()->getId() + displayUtils->bufferObj.nVertices);
+						_edgeIndicies.push_back(mesh.halfEdges[e.getHalfEdge(0)].getVertex() + displayUtils->bufferObj.nVertices);
+						_edgeIndicies.push_back(mesh.halfEdges[e.getHalfEdge(1)].getVertex() + displayUtils->bufferObj.nVertices);
 					}
 				}
 
@@ -276,8 +276,8 @@ namespace zSpace
 					{
 						zIntArray eVerts;
 
-						edgeVertices[e.getId()][0] = e.getHalfEdge(0)->getVertex()->getId();
-						edgeVertices[e.getId()][1] = e.getHalfEdge(1)->getVertex()->getId();
+						edgeVertices[e.getId()][0] = mesh.halfEdges[e.getHalfEdge(0)].getVertex();
+						edgeVertices[e.getId()][1] = mesh.halfEdges[e.getHalfEdge(1)].getVertex();
 					}
 				}
 
@@ -351,8 +351,8 @@ namespace zSpace
 					if (mesh.edgeColors.size() > i)  col = mesh.edgeColors[i];
 					if (mesh.edgeWeights.size() > i) wt = mesh.edgeWeights[i];
 
-					int v1 = e.getHalfEdge(0)->getVertex()->getId();
-					int v2 = e.getHalfEdge(1)->getVertex()->getId();
+					int v1 = mesh.halfEdges[e.getHalfEdge(0)].getVertex();
+					int v2 = mesh.halfEdges[e.getHalfEdge(1)].getVertex();
 
 					displayUtils->drawLine(mesh.vertexPositions[v1], mesh.vertexPositions[v2], col, wt);
 				}
