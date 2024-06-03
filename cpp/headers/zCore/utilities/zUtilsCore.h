@@ -728,6 +728,16 @@ namespace zSpace
 		ZSPACE_CUDA_CALLABLE void cartesianToSpherical(zPoint &inVec, double &radius, double &azimuth, double &altitude);
 		
 
+		/*! \brief This method sorts the input point cyclically based on the 360 Angle to a reference X axis around a reference normal(Z).
+		*
+		*	\param		[in]	inPoints			- input container of points.
+		*	\param		[in]	refX				- input reference X axis.
+		*	\param		[out]	refZ			- int reference normal.
+		*	\param		[out]	outSortedPoints		- output sorted points.
+		*	\since version 0.0.4
+		*/
+		ZSPACE_CUDA_CALLABLE void cyclicalSortPoints(zPointArray& inPoints, zVector& refX, zVector &refZ, zPointArray& outSortedPoints);
+
 		//--------------------------
 		//---- VECTOR METHODS GEOMETRY
 		//--------------------------
