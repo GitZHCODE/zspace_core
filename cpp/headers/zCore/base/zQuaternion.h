@@ -18,8 +18,26 @@
 #include<headers/zCore/base/zDefinitions.h>
 #include<headers/zCore/base/zVector.h>
 
+#ifndef __CUDACC__
+#include<depends/Eigen/Core>
+#include<depends/Eigen/Dense>
+#include<depends/Eigen/Sparse>
+#include<depends/Eigen/Eigen>
+#include<depends/Eigen/Sparse>
+using namespace Eigen;
+
+#ifdef USING_ARMA
+#include <depends/Armadillo/armadillo>
+using namespace arma;
+#endif
+
+#endif
+
 namespace  zSpace
 {
+
+#ifdef __CUDACC__
+
 	/** \addtogroup zCore
 	*	\brief The core datastructures of the library.
 	*  @{
@@ -38,6 +56,7 @@ namespace  zSpace
 
 	/** @}*/
 	/** @}*/
+
 
 	class ZSPACE_CORE zQuaternion
 	{
@@ -245,7 +264,46 @@ namespace  zSpace
 
 	};
 
+#endif
+
 }
+
+
+/** \addtogroup zCore
+	*	\brief The core datastructures of the library.
+	*  @{
+	*/
+
+	/** \addtogroup zBase
+	*	\brief  The base classes, enumerators ,defintions of the library.
+	*  @{
+	*/
+
+	/** \addtogroup zTypeDefs
+	*	\brief  The type defintions of the library.
+	*  @{
+	*/
+
+
+	/** \addtogroup Quaternion
+	*	\brief  The quaternion typedef of the library.
+	*  @{
+	*/
+
+	/*! \typedef zQuaternion
+	*	\brief A quaternion.
+	*
+	*	\since version 0.0.4
+	*/
+#ifndef __CUDACC__
+typedef Eigen::Quaternionf zQuaternion;
+#endif
+
+/** @}*/
+/** @}*/
+/** @}*/
+/** @}*/
+// end of group zCore
 
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
 #else
