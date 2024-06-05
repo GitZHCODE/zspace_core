@@ -1976,6 +1976,77 @@ namespace zSpace
 		return getTransformFromVectors(O, X, Y, Z);
 	}
 
+	ZSPACE_INLINE zPlane zUtilsCore::getPlaneFromArray(zFloatArray& rowMajorVals)
+	{
+		return getTransformFromArray(rowMajorVals);
+	}
+
+	ZSPACE_INLINE zPlane zUtilsCore::getPlaneFromVectors(zPoint& O, zVector& X, zVector& Y, zVector& Z)
+	{
+		return getTransformFromVectors(O,X,Y,Z);
+	}
+
+	ZSPACE_INLINE zPlane zUtilsCore::getPlaneFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis)
+	{
+		return getTransformFromOrigin_Normal(O,Z, Basis);
+	}
+
+#ifndef __CUDACC__
+	
+	ZSPACE_INLINE zQuaternion zUtilsCore::planeToQuaternion(zPlane& plane)
+	{
+		zRotationMatrix rotMatrix = plane.block<3, 3>(0, 0);
+		zQuaternion quat(rotMatrix);
+		return quat.normalized();
+	}
+
+	ZSPACE_INLINE zPlane zUtilsCore::quaternionToPlane(zQuaternion& q, zPoint origin)
+	{
+		zRotationMatrix rotMatrix = q.normalized().toRotationMatrix();
+
+		zPlane outPlane = zPlane::Identity();
+		outPlane.block<3, 3>(0, 0) = rotMatrix;
+		outPlane(3, 0) = origin.x; outPlane(3, 1) = origin.y; outPlane(3, 2) = origin.z;
+
+		return outPlane;
+	}
+
+	ZSPACE_INLINE void zUtilsCore::interpolatePlanes_slerp(zPlane& p1, zPlane& p2, int numPlanes, zPointArray& origins, vector<zPlane>& outPlanes)
+	{
+		zQuaternion q1 = planeToQuaternion(p1);
+		zQuaternion q2 = planeToQuaternion(p2);
+
+		float increment = 1.0 / (numPlanes + 1);
+		float t = increment;
+		
+		outPlanes.clear();
+		outPlanes.assign(numPlanes, zPlane());
+
+		for (int i = 0; i < numPlanes; i++, t += increment)
+		{
+			zQuaternion qRes = q1.slerp(t, q2);
+			outPlanes[i] = quaternionToPlane(qRes, origins[i]);
+		}
+
+	}
+
+	ZSPACE_INLINE float zUtilsCore::dihedralAngleBetweenPlanes(zPlane& p1, zPlane& p2)
+	{
+		Vector3f normal1 = p1.block<1, 3>(2, 0);
+		Vector3f normal2 = p2.block<1, 3>(2, 0);
+
+		Vector3f n1 = normal1.normalized();
+		Vector3f n2 = normal2.normalized();
+
+		zQuaternion q = zQuaternion::FromTwoVectors(n1, n2);
+
+		return 2 * std::acos(q.w()) * RAD_TO_DEG;
+	}
+
+
+
+#endif
+
 	//---- MATRIX  METHODS USING ARMADILLO
 
 #ifdef USING_ARMA 
