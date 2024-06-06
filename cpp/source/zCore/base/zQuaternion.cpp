@@ -15,6 +15,7 @@
 
 namespace zSpace
 {
+#ifdef __CUDACC__
 	//---- CONSTRUCTOR
 
 	ZSPACE_INLINE zQuaternion::zQuaternion()
@@ -170,4 +171,5 @@ namespace zSpace
 		return p * m;
 	}
 
+#endif
 }
