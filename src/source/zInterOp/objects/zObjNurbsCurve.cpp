@@ -21,10 +21,10 @@ namespace zSpace
 	ZSPACE_INLINE zObjNurbsCurve::zObjNurbsCurve()
 	{
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		//displayUtils = nullptr;
+		displayUtils = nullptr;
 #endif
 
 		displayControlPoints = false;
@@ -109,6 +109,23 @@ namespace zSpace
 		return curve.IsPeriodic();
 	}
 
+#ifndef ZSPACE_VIEWER
+	ZSPACE_INLINE int zObjNurbsCurve::getVBO_ControlPointId()
+	{
+		return VBO_ControlPointId;
+	}
+
+	ZSPACE_INLINE int zObjNurbsCurve::getVBO_CurvePointId()
+	{
+		return VBO_CurvePointId;
+	}
+
+	ZSPACE_INLINE int zObjNurbsCurve::getVBO_CurveColorId()
+	{
+		return VBO_CurveColorId;
+	}
+#endif
+
 	//---- OVERRIDE METHODS
 
 	ZSPACE_INLINE void zObjNurbsCurve::getBounds(zPoint &minBB, zPoint &maxBB)
@@ -116,50 +133,50 @@ namespace zSpace
 		coreUtils.getBounds(displayPositions, minBB, maxBB);
 	}
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing
 #else
 	   
-	//ZSPACE_INLINE void zObjNurbsCurve::draw()
-	//{
-	//	if (displayObject)
-	//	{
-	//		drawNurbsCurve();
-	//	}
+	ZSPACE_INLINE void zObjNurbsCurve::draw()
+	{
+		if (displayObject)
+		{
+			drawNurbsCurve();
+		}
 
-	//	if (displayObjectTransform)
-	//	{
-	//		displayUtils->drawTransform(transformationMatrix);
-	//	}
-	//}
+		if (displayObjectTransform)
+		{
+			displayUtils->drawTransform(transformationMatrix);
+		}
+	}
 
 	//---- DISPLAY BUFFER METHODS
 
-	//ZSPACE_INLINE void zObjNurbsCurve::appendToBuffer()
-	//{
-	//	
-	//}
+	ZSPACE_INLINE void zObjNurbsCurve::appendToBuffer()
+	{
+		
+	}
 	
 	//---- PROTECTED DISPLAY METHODS
 
-	//ZSPACE_INLINE void zObjNurbsCurve::drawNurbsCurve()
-	//{
-	//	// draw vertex
-	//	if (displayControlPoints)
-	//	{
-	//		displayUtils->drawPoints(&displayControlPointPositions[0], zColor(), 3, displayControlPointPositions.size());
-	//		displayUtils->drawCurve(&displayControlPointPositions[0], zColor(), 1, displayControlPointPositions.size(), periodic);
-	//	}
+	ZSPACE_INLINE void zObjNurbsCurve::drawNurbsCurve()
+	{
+		// draw vertex
+		if (displayControlPoints)
+		{
+			displayUtils->drawPoints(&displayControlPointPositions[0], zColor(), 3, displayControlPointPositions.size());
+			displayUtils->drawCurve(&displayControlPointPositions[0], zColor(), 1, displayControlPointPositions.size(), periodic);
+		}
 
 
-	//	// draw edges
-	//	if (displayCurve)
-	//	{
-	//		displayUtils->drawCurve(&displayPositions[0], displayColor, displayWeight, displayPositions.size(),periodic);
-	//	}
+		// draw edges
+		if (displayCurve)
+		{
+			displayUtils->drawCurve(&displayPositions[0], displayColor, displayWeight, displayPositions.size(),periodic);
+		}
 
-	//
-	//}
+	
+	}
 
 #endif // !ZSPACE_UNREAL_INTEROP
 }

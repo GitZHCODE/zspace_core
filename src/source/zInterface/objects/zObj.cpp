@@ -31,7 +31,9 @@ namespace zSpace
 
 	//---- VIRTUAL METHODS
 
-	//ZSPACE_INLINE void zObj::draw() {};
+#ifndef ZSPACE_VIEWER
+	ZSPACE_INLINE void zObj::draw() {};
+#endif
 
 	ZSPACE_INLINE void zObj::getBounds(zPoint &minBB, zPoint &maxBB) {};
 
@@ -47,14 +49,14 @@ namespace zSpace
 		displayObjectTransform = _displayObjectTransform;
 	}
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing
 #else
 
-	//ZSPACE_INLINE void zObj::setUtils(zUtilsDisplay &_displayUtils)
-	//{
-	//	displayUtils = &_displayUtils;
-	//}
+	ZSPACE_INLINE void zObj::setUtils(zUtilsDisplay &_displayUtils)
+	{
+		displayUtils = &_displayUtils;
+	}
 
 #endif 
 

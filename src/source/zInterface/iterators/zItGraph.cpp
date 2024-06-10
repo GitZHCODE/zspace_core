@@ -279,7 +279,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zItGraphHalfEdge zItGraphVertex::getHalfEdge()
 	{
-		return zItGraphHalfEdge(*graphObj, iter->getHalfEdge()->getId());
+		return zItGraphHalfEdge(*graphObj, iter->getHalfEdge());
 	}
 
 	ZSPACE_INLINE zItVertex zItGraphVertex::getRawIter()
@@ -316,7 +316,14 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItGraphVertex::setHalfEdge(zItGraphHalfEdge &he)
 	{
-		iter->setHalfEdge(&graphObj->graph.halfEdges[he.getId()]);
+		//iter->setHalfEdge(he.getId());
+
+		int id = getId();
+		int heId = he.getId();
+
+		iter->setHalfEdge(heId);
+
+		graphObj->graph.vHandles[id].he = heId;
 	}
 
 	ZSPACE_INLINE void zItGraphVertex::setPosition(zVector &pos)
@@ -478,7 +485,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zItGraphHalfEdge zItGraphEdge::getHalfEdge(int _index)
 	{
-		return zItGraphHalfEdge(*graphObj, iter->getHalfEdge(_index)->getId());
+		return zItGraphHalfEdge(*graphObj, iter->getHalfEdge(_index));
 	}
 
 	ZSPACE_INLINE zItEdge  zItGraphEdge::getRawIter()
@@ -505,7 +512,15 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItGraphEdge::setHalfEdge(zItGraphHalfEdge &he, int _index)
 	{
-		iter->setHalfEdge(&graphObj->graph.halfEdges[he.getId()], _index);
+		//iter->setHalfEdge(he.getId(), _index);
+
+
+		int id = getId();
+		int heId = he.getId();
+		iter->setHalfEdge(heId, _index);
+
+		if (_index == 0) graphObj->graph.eHandles[id].he0 = heId;
+		if (_index == 1) graphObj->graph.eHandles[id].he1 = heId;
 	}
 
 	ZSPACE_INLINE void zItGraphEdge::setColor(zColor col)
@@ -686,7 +701,7 @@ namespace zSpace
 
 	ZSPACE_INLINE bool zItGraphHalfEdge::onBoundary()
 	{
-		return !iter->getFace();
+		return (iter->getFace() == -1) ? true : false;
 	}
 
 	ZSPACE_INLINE zVector zItGraphHalfEdge::getCenter()
@@ -722,27 +737,27 @@ namespace zSpace
 
 	ZSPACE_INLINE zItGraphHalfEdge zItGraphHalfEdge::getSym()
 	{
-		return zItGraphHalfEdge(*graphObj, iter->getSym()->getId());
+		return zItGraphHalfEdge(*graphObj, iter->getSym());
 	}
 
 	ZSPACE_INLINE zItGraphHalfEdge zItGraphHalfEdge::getNext()
 	{
-		return zItGraphHalfEdge(*graphObj, iter->getNext()->getId());
+		return zItGraphHalfEdge(*graphObj, iter->getNext());
 	}
 
 	ZSPACE_INLINE zItGraphHalfEdge zItGraphHalfEdge::getPrev()
 	{
-		return zItGraphHalfEdge(*graphObj, iter->getPrev()->getId());
+		return zItGraphHalfEdge(*graphObj, iter->getPrev());
 	}
 
 	ZSPACE_INLINE zItGraphVertex zItGraphHalfEdge::getVertex()
 	{
-		return zItGraphVertex(*graphObj, iter->getVertex()->getId());
+		return zItGraphVertex(*graphObj, iter->getVertex());
 	}
 
 	ZSPACE_INLINE zItGraphEdge zItGraphHalfEdge::getEdge()
 	{
-		return zItGraphEdge(*graphObj, iter->getEdge()->getId());
+		return zItGraphEdge(*graphObj, iter->getEdge());
 	}
 
 	ZSPACE_INLINE zItHalfEdge  zItGraphHalfEdge::getRawIter()
@@ -752,12 +767,12 @@ namespace zSpace
 
 	ZSPACE_INLINE zColor zItGraphHalfEdge::getColor()
 	{
-		return graphObj->graph.edgeColors[iter->getEdge()->getId()];
+		return graphObj->graph.edgeColors[iter->getEdge()];
 	}
 
 	ZSPACE_INLINE zColor* zItGraphHalfEdge::getRawColor()
 	{
-		return &graphObj->graph.edgeColors[iter->getEdge()->getId()];
+		return &graphObj->graph.edgeColors[iter->getEdge()];
 	}
 
 	//---- SET METHODS
@@ -769,27 +784,61 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setSym(zItGraphHalfEdge &he)
 	{
-		iter->setSym(&graphObj->graph.halfEdges[he.getId()]);
+		iter->setSym(he.getId());
+		he.iter->setSym(getId());
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setNext(zItGraphHalfEdge &he)
 	{
-		iter->setNext(&graphObj->graph.halfEdges[he.getId()]);
+		//iter->setNext(he.getId());
+
+		int id = getId();
+		int nextId = he.getId();
+
+		iter->setNext(nextId);
+		//he.setPrev(*this);
+		he.iter->setPrev(id);
+
+		graphObj->graph.heHandles[id].n = nextId;
+		graphObj->graph.heHandles[nextId].p = id;
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setPrev(zItGraphHalfEdge &he)
 	{
-		iter->setPrev(&graphObj->graph.halfEdges[he.getId()]);
+		//iter->setPrev(&graphObj->graph.halfEdges[he.getId()]);
+		int id = getId();
+		int prevId = he.getId();
+
+		iter->setPrev(prevId);
+		//he.setNext(*this);
+		he.iter->setNext(id);
+
+		graphObj->graph.heHandles[id].p = prevId;
+		graphObj->graph.heHandles[prevId].n = id;
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setVertex(zItGraphVertex &v)
 	{
-		iter->setVertex(&graphObj->graph.vertices[v.getId()]);
+		//iter->setVertex(&graphObj->graph.vertices[v.getId()]);
+
+		iter->setVertex(v.getId());
+
+		int id = getId();
+		int vId = v.getId();
+
+		graphObj->graph.heHandles[id].v = vId;
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setEdge(zItGraphEdge &e)
 	{
-		iter->setEdge(&graphObj->graph.edges[e.getId()]);
+		//iter->setEdge(&graphObj->graph.edges[e.getId()]);
+
+		iter->setEdge(e.getId());
+
+		int id = getId();
+		int eId = e.getId();
+
+		graphObj->graph.heHandles[id].e = eId;
 	}
 
 	//---- UTILITY METHODS

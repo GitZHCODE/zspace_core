@@ -55,7 +55,7 @@ namespace zSpace
 		{
 			json j;
 
-			bool chk = coreUtils.readJSON(path, j);
+			bool chk = json_read(path, j);
 			if (chk) from(j, staticGeom);			
 		}
 
@@ -70,16 +70,18 @@ namespace zSpace
 
 		// Curve Attributes
 		vector<zDoubleArray> cPoints;		
-		readJSONAttribute(j, "NC_controlPoints", cPoints);
+		json_readAttribute(j, "NC_controlPoints", cPoints);
 
 		zDoubleArray cPointWeights;
-		readJSONAttribute(j, "NC_weights", cPointWeights);
+		json_readAttribute(j, "NC_weights", cPointWeights);
 		
 		int cDegree;
-		readJSONAttribute(j, "NC_degree", cDegree);
+		json_readAttribute(j, "NC_degree", cDegree);
+		//nurbsCurveObj->degree = cDegree;
 
 		bool cPeriodic;
-		readJSONAttribute(j, "NC_periodic", cPeriodic);
+		json_readAttribute(j, "NC_periodic", cPeriodic);
+		//nurbsCurveObj->periodic = cPeriodic;
 		
 		//printf("\n vertexAttributes: %zi %zi", vertexAttributes.size(), vertexAttributes[0].size());
 
@@ -100,7 +102,7 @@ namespace zSpace
 		{
 			json j;
 			to(j);
-			bool chk = coreUtils.writeJSON(path, j);
+			bool chk = json_write(path, j);
 			//toJSON(path);
 		}
 
@@ -136,12 +138,12 @@ namespace zSpace
 
 
 		// Json file 
-		coreUtils.writeJSONAttribute(j, "NC_controlPoints", cPoints);
-		coreUtils.writeJSONAttribute(j, "NC_weights", cPointWeights);
-		coreUtils.writeJSONAttribute(j, "NC_degree", cDegree);
-		coreUtils.writeJSONAttribute(j, "NC_domain", cDomain);
-		coreUtils.writeJSONAttribute(j, "NC_knots", cKnots);
-		coreUtils.writeJSONAttribute(j, "NC_periodic", cPeriodic);
+		json_writeAttribute(j, "NC_controlPoints", cPoints);
+		json_writeAttribute(j, "NC_weights", cPointWeights);
+		json_writeAttribute(j, "NC_degree", cDegree);
+		json_writeAttribute(j, "NC_domain", cDomain);
+		json_writeAttribute(j, "NC_knots", cKnots);
+		json_writeAttribute(j, "NC_periodic", cPeriodic);
 		
 	}
 

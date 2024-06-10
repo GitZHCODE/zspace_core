@@ -73,6 +73,7 @@ namespace zSpace
 		bool displayEdgeIds = false;
 		bool displayFaceIds = false;
 
+#ifndef ZSPACE_VIEWER
 		/*!	\brief stores the start vertex ID in the VBO, when attached to the zBufferObject.	*/
 		int VBO_VertexId;
 
@@ -84,6 +85,7 @@ namespace zSpace
 
 		/*!	\brief stores the start vertex color ID in the VBO, when attache to the zBufferObject.	*/
 		int VBO_VertexColorId;
+#endif
 		
 	public:
 
@@ -155,6 +157,7 @@ namespace zSpace
 		//---- GET METHODS
 		//--------------------------
 		
+#ifndef ZSPACE_VIEWER
 		/*! \brief This method gets the vertex VBO Index .
 		*
 		*	\return			int				- vertex VBO Index.
@@ -182,6 +185,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		int getVBO_VertexColorID();		
+#endif
 
 		//--------------------------
 		//---- OVERRIDE METHODS
@@ -189,16 +193,17 @@ namespace zSpace
 		
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		//void draw() override;
+		void draw() override;
 #endif
 
 		//--------------------------
 		//---- DISPLAY BUFFER METHODS
 		//--------------------------
 
+#ifndef ZSPACE_VIEWER
 		/*! \brief This method appends mesh to the buffer.
 		*
 		*	\param		[in]	edge_dihedralAngles	- input container of edge dihedral angles.
@@ -219,7 +224,7 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 			void drawField2D();
-
+#endif
 	};
 		
 

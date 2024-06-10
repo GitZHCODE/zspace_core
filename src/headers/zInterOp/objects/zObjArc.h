@@ -235,14 +235,15 @@ namespace zSpace
 		//---- OVERRIDE METHODS
 		//--------------------------
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		//void draw() override;
+		void draw() override;
 #endif
 
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 
+#ifndef ZSPACE_VIEWER
 		//--------------------------
 		//---- DISPLAY BUFFER METHODS
 		//--------------------------
@@ -263,6 +264,7 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		void drawArc();
+#endif
 	};
 
 	/** \addtogroup zCore

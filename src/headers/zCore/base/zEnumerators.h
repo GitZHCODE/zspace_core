@@ -193,6 +193,13 @@ namespace zSpace
 	*/
 	enum zSolverForceConstraints { zConstraintFree = 280, zConstraintXY, zConstraintYZ, zConstraintZX, zConstraintX, zConstraintY, zConstraintZ};
 
+	/*! \enum	zFieldColorType
+	*	\brief	Types of coloring for the field.
+	*	\since	version 0.0.4
+	*/
+	enum zFieldColorType { zFieldRegular = 290, zFieldSDF, zFieldSlime };
+
+
 	/** @}*/
 
 	/** @}*/

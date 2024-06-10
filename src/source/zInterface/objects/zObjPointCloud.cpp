@@ -21,14 +21,12 @@ namespace zSpace
 	ZSPACE_INLINE zObjPointCloud::zObjPointCloud()
 	{
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		//displayUtils = nullptr;
+		displayUtils = nullptr;
 #endif
-
 		displayVertices = false;
-
 	}
 
 	//---- DESTRUCTOR
@@ -51,50 +49,50 @@ namespace zSpace
 		coreUtils.getBounds(pCloud.vertexPositions, minBB, maxBB);
 	}
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 	// Do Nothing
 #else
 
-	//ZSPACE_INLINE void zObjPointCloud::draw()
-	//{
-	//	if (displayObject)
-	//	{
-	//		drawPointCloud();
-	//	}
+	ZSPACE_INLINE void zObjPointCloud::draw()
+	{
+		if (displayObject)
+		{
+			drawPointCloud();
+		}
 
-	//	if (displayObjectTransform)
-	//	{
-	//		displayUtils->drawTransform(transformationMatrix);
-	//	}
+		if (displayObjectTransform)
+		{
+			displayUtils->drawTransform(transformationMatrix);
+		}
 
-	//}
+	}
 
 	//---- DISPLAY BUFFER METHODS
 
-	//ZSPACE_INLINE void zObjPointCloud::appendToBuffer()
-	//{
-	//	displayObject = displayVertices = false;
+	ZSPACE_INLINE void zObjPointCloud::appendToBuffer()
+	{
+		displayObject = displayVertices = false;
 
-	//	// Vertex Attributes
-	//	zVector*_dummynormals = nullptr;
+		// Vertex Attributes
+		zVector*_dummynormals = nullptr;
 
-	//	pCloud.VBO_VertexId = displayUtils->bufferObj.appendVertexAttributes(&pCloud.vertexPositions[0], _dummynormals, pCloud.vertexPositions.size());
-	//	pCloud.VBO_VertexColorId = displayUtils->bufferObj.appendVertexColors(&pCloud.vertexColors[0], pCloud.vertexColors.size());
-	//}
+		pCloud.VBO_VertexId = displayUtils->bufferObj.appendVertexAttributes(&pCloud.vertexPositions[0], _dummynormals, pCloud.vertexPositions.size());
+		pCloud.VBO_VertexColorId = displayUtils->bufferObj.appendVertexColors(&pCloud.vertexColors[0], pCloud.vertexColors.size());
+	}
 
 	//---- PROTECTED DISPLAY METHODS
 
-	//ZSPACE_INLINE void zObjPointCloud::drawPointCloud()
-	//{
+	ZSPACE_INLINE void zObjPointCloud::drawPointCloud()
+	{
 
-	//	if (displayVertices)
-	//	{
+		if (displayVertices)
+		{
 
-	//		displayUtils->drawPoints(&pCloud.vertexPositions[0], &pCloud.vertexColors[0], &pCloud.vertexWeights[0], pCloud.vertexPositions.size());
+			displayUtils->drawPoints(&pCloud.vertexPositions[0], &pCloud.vertexColors[0], &pCloud.vertexWeights[0], pCloud.vertexPositions.size());
 
-	//	}
+		}
 
-	//}
+	}
 
 #endif // !ZSPACE_UNREAL_INTEROP
 

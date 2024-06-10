@@ -180,8 +180,8 @@ namespace zSpace
 		{			
 			zVector v2 = factoriseVector(values[i], precision);
 
-			if (v1 == v2)
-			{
+			if (v1.distanceTo(v2) < pow(10, -1 * precision))			{
+				
 				out = true;
 
 				index = i;
@@ -343,21 +343,6 @@ namespace zSpace
 		out.z = ofMap(value, inputDomain.min, inputDomain.max, outDomain.min.z, outDomain.max.z);
 
 		return out;
-	}
-
-	ZSPACE_INLINE zVector zUtilsCore::fromMatrix4Row(zMatrix4 &inMatrix, int rowIndex)
-	{
-		zMatrix4Row rVals;
-		inMatrix.getRow(rowIndex, rVals);
-		return zVector(rVals[0], rVals[1], rVals[2]);
-	}
-
-
-	ZSPACE_INLINE zVector zUtilsCore::fromMatrix4Column(zMatrix4 &inMatrix, int colIndex)
-	{
-		zMatrix4Col cVals;
-		inMatrix.getCol(colIndex, cVals);
-		return zVector(cVals[0], cVals[1], cVals[2]);
 	}
 
 	ZSPACE_INLINE zVector zUtilsCore::factorise(zVector &inVector, int precision)
@@ -545,6 +530,13 @@ namespace zSpace
 				c2 /= detr;
 
 
+				float u1 = 0.1;
+				float u2 = 0.9;
+
+				outP1 = (nA * c1) + (nB * c2) + (nA * nB * u1);
+				outP2 = (nA * c2) + (nB * c2) + (nA * nB * u2);
+
+				out = true;
 			}
 
 
@@ -1123,96 +1115,56 @@ namespace zSpace
 		altitude = acos(inVec.z / radius);
 	}
 
-	//---- 4x4 zMATRIX  TRANSFORMATION METHODS
-
-	ZSPACE_INLINE void zUtilsCore::setColfromVector(zMatrix4 &inMatrix, zVector &inVec, int index)
+	ZSPACE_INLINE void zUtilsCore::cyclicalSortPoints(zPointArray& inPoints, zVector& refX, zVector& refZ, zPointArray& outSortedPoints)
 	{
-		inMatrix(0, index) = inVec.x; inMatrix(1, index) = inVec.y; inMatrix(2, index) = inVec.z;
+
+		vector<float> angles;
+		map< float, int > angle_e_Map;
+
+		zPoint center;
+		for (auto p : inPoints) center += p;
+		center /= inPoints.size();	
+		
+
+		outSortedPoints.clear();
+		angles.clear();
+
+		for (int i = 0; i < inPoints.size(); i++)
+		{
+
+			zVector vec1(inPoints[i] - center);
+			float angle = refX.angle360(vec1, refZ);
+
+			// check if same key exists
+			for (int k = 0; k < angles.size(); k++)
+			{
+				if (angles[k] == angle) angle += 0.01;
+			}
+
+			angle_e_Map[angle] = i;
+			angles.push_back(angle);
+		}
+
+		sort(angles.begin(), angles.end());
+
+		for (int i = 0; i < angles.size(); i++)
+		{
+
+			int id = angle_e_Map.find(angles[i])->second;
+			if (id > inPoints.size())
+			{
+				id = 0;
+			}
+			outSortedPoints.push_back((inPoints[id]));
+		}
+		
 	}
 
-	ZSPACE_INLINE void zUtilsCore::setRowfromVector(zMatrix4 &inMatrix, zVector &inVec, int index)
-	{
-		inMatrix(index, 0) = inVec.x; inMatrix(index, 1) = inVec.y; inMatrix(index, 2) = inVec.z;
-	}
-
-	ZSPACE_INLINE void zUtilsCore::setTransformfromVectors(zMatrix4 &inMatrix, zVector &X, zVector &Y, zVector &Z, zVector &O)
-	{
-		inMatrix.setIdentity();
-
-		setColfromVector(inMatrix, X, 0);
-		setColfromVector(inMatrix, Y, 1);
-		setColfromVector(inMatrix, Z, 2);
-		setColfromVector(inMatrix, O, 3);
-	}
-
-
-	ZSPACE_INLINE zMatrix4 zUtilsCore::toWorldMatrix(zMatrix4 &inMatrix)
-	{
-		zMatrix4 outMatrix;
-		outMatrix.setIdentity();
-
-		zVector X(inMatrix(0, 0), inMatrix(1, 0), inMatrix(2, 0));
-		zVector Y(inMatrix(0, 1), inMatrix(1, 1), inMatrix(2, 1));
-		zVector Z(inMatrix(0, 2), inMatrix(1, 2), inMatrix(2, 2));
-		zVector Cen(inMatrix(0, 3), inMatrix(1, 3), inMatrix(2, 3));
-
-
-		outMatrix(0, 0) = X.x; outMatrix(0, 1) = Y.x; outMatrix(0, 2) = Z.x;
-		outMatrix(1, 0) = X.y; outMatrix(1, 1) = Y.y; outMatrix(1, 2) = Z.y;
-		outMatrix(2, 0) = X.z; outMatrix(2, 1) = Y.z; outMatrix(2, 2) = Z.z;
-
-		outMatrix(0, 3) = Cen.x; outMatrix(1, 3) = Cen.y; outMatrix(2, 3) = Cen.z;
-
-		return outMatrix;
-	}
-
-	ZSPACE_INLINE zMatrix4 zUtilsCore::toLocalMatrix(zMatrix4 &inMatrix)
-	{
-		zMatrix4 outMatrix;
-		outMatrix.setIdentity();
-
-		zVector X(inMatrix(0, 0), inMatrix(1, 0), inMatrix(2, 0));
-		zVector Y(inMatrix(0, 1), inMatrix(1, 1), inMatrix(2, 1));
-		zVector Z(inMatrix(0, 2), inMatrix(1, 2), inMatrix(2, 2));
-		zVector Cen(inMatrix(0, 3), inMatrix(1, 3), inMatrix(2, 3));
-
-		zVector orig(0, 0, 0);
-		zVector d = Cen - orig;
-
-		outMatrix(0, 0) = X.x; outMatrix(0, 1) = X.y; outMatrix(0, 2) = X.z;
-		outMatrix(1, 0) = Y.x; outMatrix(1, 1) = Y.y; outMatrix(1, 2) = Y.z;
-		outMatrix(2, 0) = Z.x; outMatrix(2, 1) = Z.y; outMatrix(2, 2) = Z.z;
-
-		outMatrix(0, 3) = -(X*d); outMatrix(1, 3) = -(Y*d); outMatrix(2, 3) = -(Z*d);
-
-
-
-		return outMatrix;
-	}
-
-	ZSPACE_INLINE zMatrix4 zUtilsCore::PlanetoPlane(zMatrix4 &from, zMatrix4 &to)
-	{
-		zMatrix4 world = toWorldMatrix(to);
-		zMatrix4 local = toLocalMatrix(from);
-		zMatrix4 out = world * local;
-		return out;
-	}
-
-
-	ZSPACE_INLINE zMatrix4 zUtilsCore::ChangeBasis(zMatrix4 &from, zMatrix4 &to)
-	{
-		zMatrix4 world = toWorldMatrix(from);
-		zMatrix4 local = toLocalMatrix(to);
-		zMatrix4 out = local * world;
-		return out;
-	}
-	
-	
 	//---- VECTOR METHODS GEOMETRY
 
 	ZSPACE_INLINE void zUtilsCore::getEllipse(double radius, int numPoints, zPointArray &Pts, zMatrix4 worldPlane, double xFactor, double yFactor)
 	{
-		double theta = 0;
+		/*double theta = 0;
 
 		zMatrix4 localPlane;
 		zMatrix4 trans = PlanetoPlane(localPlane, worldPlane);
@@ -1227,12 +1179,12 @@ namespace zSpace
 			Pts.push_back(pos * trans);
 
 			theta += (Z_TWO_PI / (numPoints+1));
-		}
+		}*/
 	}
 
 	ZSPACE_INLINE void zUtilsCore::getRectangle(zVector dims, zPointArray &rectanglePts, zMatrix4 localPlane)
 	{
-		dims.x *= 0.5;
+		/*dims.x *= 0.5;
 		dims.y *= 0.5;
 
 		zVector v0 = zVector(-dims.x, -dims.y, 0);
@@ -1246,7 +1198,7 @@ namespace zSpace
 		rectanglePts.push_back(v0 * trans);
 		rectanglePts.push_back(v1* trans);
 		rectanglePts.push_back(v2* trans);
-		rectanglePts.push_back(v3* trans);
+		rectanglePts.push_back(v3* trans);*/
 
 	}
 
@@ -1393,6 +1345,81 @@ namespace zSpace
 	
 
 #ifndef __CUDACC__
+
+	//---- JSON  METHODS
+
+	ZSPACE_INLINE bool zUtilsCore::json_read(string path, json& j)
+	{
+		j.clear();
+		ifstream in_myfile;
+		in_myfile.open(path.c_str());
+
+		int lineCnt = 0;
+
+		if (in_myfile.fail())
+		{
+			cout << " error in opening file  " << path.c_str() << endl;
+			return false;
+		}
+
+		in_myfile >> j;
+		in_myfile.close();
+
+		return true;
+	}
+
+	ZSPACE_INLINE bool zUtilsCore::json_write(string path, json& j)
+	{
+		ofstream myfile;
+		myfile.open(path.c_str());
+
+		if (myfile.fail())
+		{
+			cout << " error in opening file  " << path.c_str() << endl;
+			return false;
+		}
+		else cout << endl << " JSON exported. File:   " << path.c_str() << endl;
+
+
+		//myfile.precision(16);
+		myfile << j.dump();
+		myfile.close();
+		return true;
+	}
+
+
+	//---- USD  METHODS
+
+#if defined ZSPACE_USD_INTEROP
+	ZSPACE_INLINE bool zUtilsCore::usd_openStage(std::string path, UsdStageRefPtr& uStage)
+	{
+		uStage = UsdStage::Open(path);
+		if (!uStage) std::cout << "\n Failure to open stage." << std::endl;
+		else cout << "\n opened USD stage of file:  " << path.c_str() << endl;
+
+		return (uStage) ? true : false;
+	}
+
+	ZSPACE_INLINE bool zUtilsCore::usd_createStage(std::string path, UsdStageRefPtr& uStage)
+	{
+		uStage = UsdStage::CreateNew(path);
+
+		if (!uStage) cout << "\n error creating USD file  " << path.c_str() << endl;
+		else
+		{
+			uStage->SetMetadata(TfToken("defaultPrim"), VtValue("World"));
+			uStage->SetMetadata(TfToken("upAxis"), VtValue("Z"));
+			uStage->SetMetadata(TfToken("metersPerUnit"), VtValue(1.00));
+
+			UsdGeomXform root = UsdGeomXform::Define(uStage, SdfPath("/World"));
+			UsdGeomXform layer = UsdGeomXform::Define(uStage, SdfPath("/World/Geometry"));
+
+			cout << "\n creating USD file: " << path.c_str() << endl;
+		}
+
+		return (uStage) ? true : false;
+	}
+#endif
 
 	//---- BMP MATRIX  METHODS
 
@@ -1710,57 +1737,43 @@ namespace zSpace
 		out(0, 3) = averagePt.x;	out(1, 3) = averagePt.y;	out(2, 3) = averagePt.z;
 
 #else
-		MatrixXd X_eigen(points.size(), 3);
+		vector<Eigen::Vector3f> eigen_points(points.size());
 		for (int i = 0; i < points.size(); i++)
 		{
-			X_eigen(i, 0) = points[i].x - averagePt.x;
-			X_eigen(i, 1) = points[i].y - averagePt.y;
-			X_eigen(i, 2) = points[i].z - averagePt.z;
+			eigen_points[i](0) = points[i].x;
+			eigen_points[i](1) = points[i].y;
+			eigen_points[i](2) = points[i].z ;
 
 		}
 
 
-		Matrix3f covarianceMat;
-		//X_eigen.bdcSvd(ComputeThinU | ComputeThinV).solve(covarianceMat);
-
-		BDCSVD<Matrix3d> svd;
-		svd.compute(X_eigen);
-
-		//cout << "\n eigen \n " << svd.computeV();
-
-		// compute covariance matrix 
-		SelfAdjointEigenSolver<Matrix3f> eigensolver;
-		//Matrix3f covarianceMat;
-
-		for (int i = 0; i < 3; i++)
+		// Compute the centroid of the points
+		Eigen::Vector3f centroid(0.0, 0.0, 0.0);
+		for (auto& point : eigen_points) 
 		{
-			for (int j = 0; j < 3; j++)
-			{
+			centroid += point;
+		}
+		centroid /= points.size();
 
-				float val = 0;
-				for (int k = 0; k < points.size(); k++)
-				{
-					val += (points[k][i] - averagePt[i]) * (points[k][j] - averagePt[j]);
-				}
+		// Compute the covariance matrix
+		Eigen::Matrix3f covariance = Eigen::Matrix3f::Zero();
+		for (const auto& point : eigen_points) {
+			Eigen::Vector3f centered_point = point - centroid;
+			covariance += centered_point * centered_point.transpose();
+		}
+		covariance /= eigen_points.size();
 
-				if (val == INFINITY) val = 0.00;
-
-				if (val > EPS) val /= (points.size() - 1);
-				else val = 0.00;
-
-				covarianceMat(i, j) = val;
-			}
-
+		// Perform Eigen decomposition
+		Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> eigen_solver(covariance);
+		if (eigen_solver.info() != Eigen::Success) {
+			cout << "Eigen decomposition failed." << std::endl;	
+			abort();
 		}
 
-		eigensolver.compute(covarianceMat);
-		if (eigensolver.info() != Success) abort();
-
-		vector<double> X = { eigensolver.eigenvectors().col(2)(0), eigensolver.eigenvectors().col(2)(1), eigensolver.eigenvectors().col(2)(2), 1 };
-		vector<double> Y = { eigensolver.eigenvectors().col(1)(0), eigensolver.eigenvectors().col(1)(1), eigensolver.eigenvectors().col(1)(2), 1 };
-		vector<double> Z = { eigensolver.eigenvectors().col(0)(0), eigensolver.eigenvectors().col(0)(1), eigensolver.eigenvectors().col(0)(2), 1 };
-		vector<double> O = { averagePt.x, averagePt.y, averagePt.z, 1 };
-
+		vector<double> X = { eigen_solver.eigenvectors().col(2)(0), eigen_solver.eigenvectors().col(2)(1), eigen_solver.eigenvectors().col(2)(2) };
+		vector<double> Y = { eigen_solver.eigenvectors().col(1)(0), eigen_solver.eigenvectors().col(1)(1), eigen_solver.eigenvectors().col(1)(2) };
+		vector<double> Z = { eigen_solver.eigenvectors().col(0)(0), eigen_solver.eigenvectors().col(0)(1), eigen_solver.eigenvectors().col(0)(2) };
+		
 		// x
 		out(0, 0) = X[0]; 	out(1, 0) = X[1];	out(2, 0) = X[2];
 
@@ -1768,15 +1781,17 @@ namespace zSpace
 		out(0, 1) = Y[0]; 	out(1, 1) = Y[1];	out(2, 1) = Y[2];
 
 		// z
-		out(0, 2) = Z[0];	out(1, 2) = Z[1];	out(2, 2) = Z[3];
+		out(0, 2) = Z[0];	out(1, 2) = Z[1];	out(2, 2) = Z[2];
 
 		// o
 		out(0, 3) = averagePt.x;	out(1, 3) = averagePt.y;	out(2, 3) = averagePt.z;	
 		
+		
 
 #endif
+		zPlane temp = out.transpose();
 
-		return out;
+		return temp;
 	}
 
 
@@ -1805,7 +1820,12 @@ namespace zSpace
 		zPlane bPlane_Mat = getBestFitPlane(points);
 
 		// translate points to local frame
-		zTransform bPlane_Mat_local = toLocalMatrix(bPlane_Mat);
+		zTransformationMatrix tMat_bPlane;
+		tMat_bPlane.setTransform(bPlane_Mat);
+
+		zTransform bPlane_Mat_local = tMat_bPlane.getLocalMatrix();
+
+		//zTransform bPlane_Mat_local = toLocalMatrix(bPlane_Mat);
 
 		for (int i = 0; i < points.size(); i++)
 		{
@@ -1819,7 +1839,8 @@ namespace zSpace
 
 
 		// translate points to world frame
-		zTransform bPlane_Mat_world = toWorldMatrix(bPlane_Mat);
+		zTransform bPlane_Mat_world = tMat_bPlane.getWorldMatrix();
+		//zTransform bPlane_Mat_world = toWorldMatrix(bPlane_Mat);
 
 		for (int i = 0; i < points.size(); i++)
 		{
@@ -1909,7 +1930,6 @@ namespace zSpace
 
 		return out;
 	}
-
 	
 	ZSPACE_INLINE zTransform zUtilsCore::getTransformFromArray(zFloatArray& rowMajorVals)
 	{
@@ -1956,46 +1976,76 @@ namespace zSpace
 		return getTransformFromVectors(O, X, Y, Z);
 	}
 
-	//---- JSON  METHODS USING MODERN JSON
-
-	ZSPACE_INLINE bool zUtilsCore::readJSON(string path, json& outJSON)
+	ZSPACE_INLINE zPlane zUtilsCore::getPlaneFromArray(zFloatArray& rowMajorVals)
 	{
-		outJSON.clear();
-		ifstream in_myfile;
-		in_myfile.open(path.c_str());
-
-		int lineCnt = 0;
-
-		if (in_myfile.fail())
-		{
-			cout << " error in opening file  " << path.c_str() << endl;
-			return false;
-		}
-
-		in_myfile >> outJSON;
-		in_myfile.close();
-
-		return true;
+		return getTransformFromArray(rowMajorVals);
 	}
 
-	ZSPACE_INLINE bool zUtilsCore::writeJSON(string path, json& outJSON)
+	ZSPACE_INLINE zPlane zUtilsCore::getPlaneFromVectors(zPoint& O, zVector& X, zVector& Y, zVector& Z)
 	{
-		ofstream myfile;
-		myfile.open(path.c_str());
-
-		if (myfile.fail())
-		{
-			cout << " error in opening file  " << path.c_str() << endl;
-			return false;
-		}
-		else cout << endl << " JSON exported. File:   " << path.c_str() << endl;
-
-
-		//myfile.precision(16);
-		myfile << outJSON.dump();
-		myfile.close();
-		return true;
+		return getTransformFromVectors(O,X,Y,Z);
 	}
+
+	ZSPACE_INLINE zPlane zUtilsCore::getPlaneFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis)
+	{
+		return getTransformFromOrigin_Normal(O,Z, Basis);
+	}
+
+#ifndef __CUDACC__
+	
+	ZSPACE_INLINE zQuaternion zUtilsCore::planeToQuaternion(zPlane& plane)
+	{
+		zRotationMatrix rotMatrix = plane.block<3, 3>(0, 0);
+		zQuaternion quat(rotMatrix);
+		return quat.normalized();
+	}
+
+	ZSPACE_INLINE zPlane zUtilsCore::quaternionToPlane(zQuaternion& q, zPoint origin)
+	{
+		zRotationMatrix rotMatrix = q.normalized().toRotationMatrix();
+
+		zPlane outPlane = zPlane::Identity();
+		outPlane.block<3, 3>(0, 0) = rotMatrix;
+		outPlane(3, 0) = origin.x; outPlane(3, 1) = origin.y; outPlane(3, 2) = origin.z;
+
+		return outPlane;
+	}
+
+	ZSPACE_INLINE void zUtilsCore::interpolatePlanes_slerp(zPlane& p1, zPlane& p2, int numPlanes, zPointArray& origins, vector<zPlane>& outPlanes)
+	{
+		zQuaternion q1 = planeToQuaternion(p1);
+		zQuaternion q2 = planeToQuaternion(p2);
+
+		float increment = 1.0 / (numPlanes + 1);
+		float t = increment;
+		
+		outPlanes.clear();
+		outPlanes.assign(numPlanes, zPlane());
+
+		for (int i = 0; i < numPlanes; i++, t += increment)
+		{
+			zQuaternion qRes = q1.slerp(t, q2);
+			outPlanes[i] = quaternionToPlane(qRes, origins[i]);
+		}
+
+	}
+
+	ZSPACE_INLINE float zUtilsCore::dihedralAngleBetweenPlanes(zPlane& p1, zPlane& p2)
+	{
+		Vector3f normal1 = p1.block<1, 3>(2, 0);
+		Vector3f normal2 = p2.block<1, 3>(2, 0);
+
+		Vector3f n1 = normal1.normalized();
+		Vector3f n2 = normal2.normalized();
+
+		zQuaternion q = zQuaternion::FromTwoVectors(n1, n2);
+
+		return 2 * std::acos(q.w()) * RAD_TO_DEG;
+	}
+
+
+
+#endif
 
 	//---- MATRIX  METHODS USING ARMADILLO
 

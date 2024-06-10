@@ -137,6 +137,29 @@ namespace zSpace
 		//---- GET METHODS
 		//--------------------------
 
+#ifndef ZSPACE_VIEWER
+		/*! \brief This method gets the vertex VBO Index .
+		*
+		*	\return			int				- vertex VBO Index.
+		*	\since version 0.0.2
+		*/
+		int getVBO_VertexID();
+
+		/*! \brief This method gets the edge VBO Index .
+		*
+		*	\return			int				- edge VBO Index.
+		*	\since version 0.0.2
+		*/
+		int getVBO_EdgeID();
+
+		/*! \brief This method gets the vertex color VBO Index .
+		*
+		*	\return			int				- vertex color VBO Index.
+		*	\since version 0.0.2
+		*/
+		int getVBO_VertexColorID();
+#endif
+
 		/*! \brief This method gets display vertices boolean.
 		*
 		*	\return						bool				- input display vertices boolean.
@@ -169,14 +192,15 @@ namespace zSpace
 		//---- OVERRIDE METHODS
 		//--------------------------
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		//void draw() override;
+		void draw() override;
 #endif
 
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 
+#ifndef ZSPACE_VIEWER
 		//--------------------------
 		//---- DISPLAY BUFFER METHODS
 		//--------------------------
@@ -197,6 +221,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void drawGraph();
+#endif
 	};
 
 	/** \addtogroup zCore
