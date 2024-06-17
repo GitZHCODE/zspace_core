@@ -60,9 +60,12 @@ local function CommonConfigurationSettings()
     filter {}
 end
 
---Redefine to stop interference
-CoreIncludeDir = prependPath(deps_path, get_include_dirs())
-CoreLibDir = prependPath(deps_path, get_lib_dirs())
+path_from_core_to_workspace = path.join("..", path.getrelative(sketches_path, "%{wks.location}"))
+path_from_core_to_zspace_deps = path.join(path_from_core_to_workspace, zspace_deps_path)
+
+-- Redefine to keep paths relative
+CoreIncludeDir = prependPath(path_from_core_to_zspace_deps, get_zspace_include_dirs())
+CoreLibDir = prependPath(path_from_core_to_zspace_deps, get_zspace_lib_dirs())
 
 --#############__ZSPACE_APP__#############
 project "zSpace_App"
@@ -137,7 +140,7 @@ project "zSpace_Core"
     }
 
     -- Add omniverse includes
-    includedirs {prependPath(deps_path, get_omniverse_includes())}
+    includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
 
     libdirs
     {
@@ -146,7 +149,7 @@ project "zSpace_Core"
     }
 
     -- Add omniverse libdirs
-    libdirs {prependPath(deps_path, get_omniverse_libdirs())}
+    libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
 
     links
     {
@@ -202,7 +205,7 @@ project "zSpace_Interface"
     }
 
     -- Add omniverse includes
-    includedirs {prependPath(deps_path, get_omniverse_includes())}
+    includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
 
     libdirs
     {
@@ -212,7 +215,7 @@ project "zSpace_Interface"
     }
 
     -- Add omniverse libdirs
-    libdirs {prependPath(deps_path, get_omniverse_libdirs())}
+    libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
 
     links
     {
@@ -269,7 +272,7 @@ project "zSpace_InterOp"
     }
 
     -- Add omniverse includes
-    includedirs {prependPath(deps_path, get_omniverse_includes())}
+    includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
 
     libdirs
     {
@@ -281,7 +284,7 @@ project "zSpace_InterOp"
     }
 
     -- Add omniverse libdirs
-    libdirs {prependPath(deps_path, get_omniverse_libdirs())}
+    libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
 
     links
     {

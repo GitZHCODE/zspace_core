@@ -17,11 +17,6 @@ end
 
 premake.override(premake.vstudio.vc2010.elements, "link", function(base, prj)
     local calls = base(prj)
-    -- local index = table.indexof(calls, premake.vstudio.vc2010.ignoreDefaultLibraries)
-    -- if  index ~= nil then
-    --     table.insertafter(calls, premake.vstudio.vc2010.ignoreDefaultLibraries, AddDelayLoadDLLs)
-    -- end
-    --
     table.insert(calls, AddDelayLoadDLLs)
 
     return calls
