@@ -180,8 +180,8 @@ namespace zSpace
 		{			
 			zVector v2 = factoriseVector(values[i], precision);
 
-			if (v1 == v2)
-			{
+			if (v1.distanceTo(v2) < pow(10, -1 * precision))			{
+				
 				out = true;
 
 				index = i;
@@ -530,6 +530,13 @@ namespace zSpace
 				c2 /= detr;
 
 
+				float u1 = 0.1;
+				float u2 = 0.9;
+
+				outP1 = (nA * c1) + (nB * c2) + (nA * nB * u1);
+				outP2 = (nA * c2) + (nB * c2) + (nA * nB * u2);
+
+				out = true;
 			}
 
 
@@ -1106,6 +1113,51 @@ namespace zSpace
 		radius = inVec.length();
 		azimuth = atan(inVec.y / inVec.x);
 		altitude = acos(inVec.z / radius);
+	}
+
+	ZSPACE_INLINE void zUtilsCore::cyclicalSortPoints(zPointArray& inPoints, zVector& refX, zVector& refZ, zPointArray& outSortedPoints)
+	{
+
+		vector<float> angles;
+		map< float, int > angle_e_Map;
+
+		zPoint center;
+		for (auto p : inPoints) center += p;
+		center /= inPoints.size();	
+		
+
+		outSortedPoints.clear();
+		angles.clear();
+
+		for (int i = 0; i < inPoints.size(); i++)
+		{
+
+			zVector vec1(inPoints[i] - center);
+			float angle = refX.angle360(vec1, refZ);
+
+			// check if same key exists
+			for (int k = 0; k < angles.size(); k++)
+			{
+				if (angles[k] == angle) angle += 0.01;
+			}
+
+			angle_e_Map[angle] = i;
+			angles.push_back(angle);
+		}
+
+		sort(angles.begin(), angles.end());
+
+		for (int i = 0; i < angles.size(); i++)
+		{
+
+			int id = angle_e_Map.find(angles[i])->second;
+			if (id > inPoints.size())
+			{
+				id = 0;
+			}
+			outSortedPoints.push_back((inPoints[id]));
+		}
+		
 	}
 
 	//---- VECTOR METHODS GEOMETRY
@@ -1685,57 +1737,43 @@ namespace zSpace
 		out(0, 3) = averagePt.x;	out(1, 3) = averagePt.y;	out(2, 3) = averagePt.z;
 
 #else
-		MatrixXd X_eigen(points.size(), 3);
+		vector<Eigen::Vector3f> eigen_points(points.size());
 		for (int i = 0; i < points.size(); i++)
 		{
-			X_eigen(i, 0) = points[i].x - averagePt.x;
-			X_eigen(i, 1) = points[i].y - averagePt.y;
-			X_eigen(i, 2) = points[i].z - averagePt.z;
+			eigen_points[i](0) = points[i].x;
+			eigen_points[i](1) = points[i].y;
+			eigen_points[i](2) = points[i].z ;
 
 		}
 
 
-		Matrix3f covarianceMat;
-		//X_eigen.bdcSvd(ComputeThinU | ComputeThinV).solve(covarianceMat);
-
-		BDCSVD<Matrix3d> svd;
-		svd.compute(X_eigen);
-
-		//cout << "\n eigen \n " << svd.computeV();
-
-		// compute covariance matrix 
-		SelfAdjointEigenSolver<Matrix3f> eigensolver;
-		//Matrix3f covarianceMat;
-
-		for (int i = 0; i < 3; i++)
+		// Compute the centroid of the points
+		Eigen::Vector3f centroid(0.0, 0.0, 0.0);
+		for (auto& point : eigen_points) 
 		{
-			for (int j = 0; j < 3; j++)
-			{
+			centroid += point;
+		}
+		centroid /= points.size();
 
-				float val = 0;
-				for (int k = 0; k < points.size(); k++)
-				{
-					val += (points[k][i] - averagePt[i]) * (points[k][j] - averagePt[j]);
-				}
+		// Compute the covariance matrix
+		Eigen::Matrix3f covariance = Eigen::Matrix3f::Zero();
+		for (const auto& point : eigen_points) {
+			Eigen::Vector3f centered_point = point - centroid;
+			covariance += centered_point * centered_point.transpose();
+		}
+		covariance /= eigen_points.size();
 
-				if (val == INFINITY) val = 0.00;
-
-				if (val > EPS) val /= (points.size() - 1);
-				else val = 0.00;
-
-				covarianceMat(i, j) = val;
-			}
-
+		// Perform Eigen decomposition
+		Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> eigen_solver(covariance);
+		if (eigen_solver.info() != Eigen::Success) {
+			cout << "Eigen decomposition failed." << std::endl;	
+			abort();
 		}
 
-		eigensolver.compute(covarianceMat);
-		if (eigensolver.info() != Success) abort();
-
-		vector<double> X = { eigensolver.eigenvectors().col(2)(0), eigensolver.eigenvectors().col(2)(1), eigensolver.eigenvectors().col(2)(2), 1 };
-		vector<double> Y = { eigensolver.eigenvectors().col(1)(0), eigensolver.eigenvectors().col(1)(1), eigensolver.eigenvectors().col(1)(2), 1 };
-		vector<double> Z = { eigensolver.eigenvectors().col(0)(0), eigensolver.eigenvectors().col(0)(1), eigensolver.eigenvectors().col(0)(2), 1 };
-		vector<double> O = { averagePt.x, averagePt.y, averagePt.z, 1 };
-
+		vector<double> X = { eigen_solver.eigenvectors().col(2)(0), eigen_solver.eigenvectors().col(2)(1), eigen_solver.eigenvectors().col(2)(2) };
+		vector<double> Y = { eigen_solver.eigenvectors().col(1)(0), eigen_solver.eigenvectors().col(1)(1), eigen_solver.eigenvectors().col(1)(2) };
+		vector<double> Z = { eigen_solver.eigenvectors().col(0)(0), eigen_solver.eigenvectors().col(0)(1), eigen_solver.eigenvectors().col(0)(2) };
+		
 		// x
 		out(0, 0) = X[0]; 	out(1, 0) = X[1];	out(2, 0) = X[2];
 
@@ -1743,10 +1781,11 @@ namespace zSpace
 		out(0, 1) = Y[0]; 	out(1, 1) = Y[1];	out(2, 1) = Y[2];
 
 		// z
-		out(0, 2) = Z[0];	out(1, 2) = Z[1];	out(2, 2) = Z[3];
+		out(0, 2) = Z[0];	out(1, 2) = Z[1];	out(2, 2) = Z[2];
 
 		// o
 		out(0, 3) = averagePt.x;	out(1, 3) = averagePt.y;	out(2, 3) = averagePt.z;	
+		
 		
 
 #endif
@@ -1936,6 +1975,77 @@ namespace zSpace
 
 		return getTransformFromVectors(O, X, Y, Z);
 	}
+
+	ZSPACE_INLINE zPlane zUtilsCore::getPlaneFromArray(zFloatArray& rowMajorVals)
+	{
+		return getTransformFromArray(rowMajorVals);
+	}
+
+	ZSPACE_INLINE zPlane zUtilsCore::getPlaneFromVectors(zPoint& O, zVector& X, zVector& Y, zVector& Z)
+	{
+		return getTransformFromVectors(O,X,Y,Z);
+	}
+
+	ZSPACE_INLINE zPlane zUtilsCore::getPlaneFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis)
+	{
+		return getTransformFromOrigin_Normal(O,Z, Basis);
+	}
+
+#ifndef __CUDACC__
+	
+	ZSPACE_INLINE zQuaternion zUtilsCore::planeToQuaternion(zPlane& plane)
+	{
+		zRotationMatrix rotMatrix = plane.block<3, 3>(0, 0);
+		zQuaternion quat(rotMatrix);
+		return quat.normalized();
+	}
+
+	ZSPACE_INLINE zPlane zUtilsCore::quaternionToPlane(zQuaternion& q, zPoint origin)
+	{
+		zRotationMatrix rotMatrix = q.normalized().toRotationMatrix();
+
+		zPlane outPlane = zPlane::Identity();
+		outPlane.block<3, 3>(0, 0) = rotMatrix;
+		outPlane(3, 0) = origin.x; outPlane(3, 1) = origin.y; outPlane(3, 2) = origin.z;
+
+		return outPlane;
+	}
+
+	ZSPACE_INLINE void zUtilsCore::interpolatePlanes_slerp(zPlane& p1, zPlane& p2, int numPlanes, zPointArray& origins, vector<zPlane>& outPlanes)
+	{
+		zQuaternion q1 = planeToQuaternion(p1);
+		zQuaternion q2 = planeToQuaternion(p2);
+
+		float increment = 1.0 / (numPlanes + 1);
+		float t = increment;
+		
+		outPlanes.clear();
+		outPlanes.assign(numPlanes, zPlane());
+
+		for (int i = 0; i < numPlanes; i++, t += increment)
+		{
+			zQuaternion qRes = q1.slerp(t, q2);
+			outPlanes[i] = quaternionToPlane(qRes, origins[i]);
+		}
+
+	}
+
+	ZSPACE_INLINE float zUtilsCore::dihedralAngleBetweenPlanes(zPlane& p1, zPlane& p2)
+	{
+		Vector3f normal1 = p1.block<1, 3>(2, 0);
+		Vector3f normal2 = p2.block<1, 3>(2, 0);
+
+		Vector3f n1 = normal1.normalized();
+		Vector3f n2 = normal2.normalized();
+
+		zQuaternion q = zQuaternion::FromTwoVectors(n1, n2);
+
+		return 2 * std::acos(q.w()) * RAD_TO_DEG;
+	}
+
+
+
+#endif
 
 	//---- MATRIX  METHODS USING ARMADILLO
 

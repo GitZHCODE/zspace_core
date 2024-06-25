@@ -30,6 +30,8 @@
 #include <headers/zInterOp/functionSets/zRhinoFnGraph.h>
 
 #include <headers/zInterOp/functionSets/zFnNurbsCurve.h>
+#include <headers/zInterOp/functionSets/zFnPlane.h>
+
 
 #endif
 

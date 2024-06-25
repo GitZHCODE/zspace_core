@@ -728,6 +728,16 @@ namespace zSpace
 		ZSPACE_CUDA_CALLABLE void cartesianToSpherical(zPoint &inVec, double &radius, double &azimuth, double &altitude);
 		
 
+		/*! \brief This method sorts the input point cyclically based on the 360 Angle to a reference X axis around a reference normal(Z).
+		*
+		*	\param		[in]	inPoints			- input container of points.
+		*	\param		[in]	refX				- input reference X axis.
+		*	\param		[out]	refZ			- int reference normal.
+		*	\param		[out]	outSortedPoints		- output sorted points.
+		*	\since version 0.0.4
+		*/
+		ZSPACE_CUDA_CALLABLE void cyclicalSortPoints(zPointArray& inPoints, zVector& refX, zVector &refZ, zPointArray& outSortedPoints);
+
 		//--------------------------
 		//---- VECTOR METHODS GEOMETRY
 		//--------------------------
@@ -999,6 +1009,76 @@ namespace zSpace
 		*/
 		zTransform getTransformFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis = zVector(0, 1, 0));
 
+		/*! \brief This method computes the zTransform from the input row major container of 16 values.
+		*
+		*	\param		[in]	rowMajorVals		- input 1D container of the transform values in row major format.
+		*	\return 			zTransform		- transformation matrix.
+		*	\since version 0.0.2
+		*/
+		zPlane getPlaneFromArray(zFloatArray& rowMajorVals);
+
+		/*! \brief This method compute the transform from input Vectors.
+		*
+		*	\param		[in]	O							- input origin point.
+		*	\param		[in]	X							- input X axis vector.
+		* 	\param		[in]	Y							- input Y axis vector.
+		*	\param		[in]	Z							- input Z axis vector.
+		*	\return				zTransform					- output transform.
+		*	\since version 0.0.4
+		*/
+		zPlane getPlaneFromVectors(zPoint& O, zVector& X, zVector& Y, zVector& Z);
+
+		/*! \brief This method compute the transform from input Vectors.
+		*
+		* 	\param		[in]	O							- input origin point.
+		*	\param		[in]	Z							- input Z axis vector.
+		*	\param		[in]	Basis						- input Basis vector.
+		*	\return				zTransform					- output transform.
+		*	\since version 0.0.4
+		*/
+		zPlane getPlaneFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis = zVector(0, 1, 0));
+
+
+#ifndef __CUDACC__
+
+		/*! \brief This method compute the quaternion from input plane (row major).
+		*
+		* 	\param		[in]	plane						- input plane matrix.
+		*	\return				zQuaternion					- output quaternion.
+		*	\since version 0.0.4
+		*/
+		zQuaternion planeToQuaternion(zPlane& plane);
+
+		/*! \brief This method compute the plane from input quaternion and origin.
+		*
+		* 	\param		[in]	q							- input quaternion.
+		* 	\param		[in]	origin						- input plane origin.
+		*	\return				zPlane						- output plane (row major).
+		*	\since version 0.0.4
+		*/
+		zPlane quaternionToPlane(zQuaternion& q, zPoint origin);
+
+		/*! \brief This method compute the interpolated planes between the two input planes.
+		*
+		* 	\param		[in]	p1							- input plane 1.
+		* 	\param		[in]	p2							- input plane 2.
+		* 	\param		[in]	numplanes					- input number of planes.
+		* 	\param		[in]	origins						- input container of orin points for the interpolated planes.
+		*	\param		[out]	outPlanes					- output contatiner of interpolated planes.
+		*	\since version 0.0.4
+		*/
+		void interpolatePlanes_slerp(zPlane& p1, zPlane& p2, int numPlanes, zPointArray& origins, vector<zPlane>& outPlanes);
+
+		/*! \brief This method compute the dihedral angle between two planes.
+		*
+		* 	\param		[in]	p1							- input plane 1.
+		* 	\param		[in]	p2							- input plane 2.
+		*	\return				float						- dihedral angle in degrees.
+		*	\since version 0.0.4
+		*/
+		float dihedralAngleBetweenPlanes(zPlane& p1, zPlane& p2);
+
+#endif
 				
 		//--------------------------
 		//---- MATRIX  METHODS USING ARMADILLO

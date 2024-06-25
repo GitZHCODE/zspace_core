@@ -796,7 +796,8 @@ namespace zSpace
 		int nextId = he.getId();
 
 		iter->setNext(nextId);
-		he.setPrev(*this);
+		//he.setPrev(*this);
+		he.iter->setPrev(id);
 
 		graphObj->graph.heHandles[id].n = nextId;
 		graphObj->graph.heHandles[nextId].p = id;
@@ -809,7 +810,8 @@ namespace zSpace
 		int prevId = he.getId();
 
 		iter->setPrev(prevId);
-		he.setNext(*this);
+		//he.setNext(*this);
+		he.iter->setNext(id);
 
 		graphObj->graph.heHandles[id].p = prevId;
 		graphObj->graph.heHandles[prevId].n = id;
