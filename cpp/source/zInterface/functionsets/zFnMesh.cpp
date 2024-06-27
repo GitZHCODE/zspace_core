@@ -902,6 +902,19 @@ namespace zSpace
 		return out;
 	}
 
+	ZSPACE_INLINE bool zFnMesh::updatePolygon(zItMeshFace& face, zIntArray& fVertices)
+	{
+		for (auto& v : fVertices)
+		{
+			if (v < 0 && v >= numVertices()) throw std::invalid_argument(" error: index out of bounds");
+		}
+
+		bool out = meshObj->mesh.updatePolygon(face.getId(), fVertices);
+		
+
+		return out;
+	}
+
 	//--- TOPOLOGY QUERY METHODS 
 
 	ZSPACE_INLINE int zFnMesh::numVertices()
@@ -3780,7 +3793,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE zItMeshVertex zFnMesh::splitEdge(zItMeshEdge &edge, double edgeFactor)
+	ZSPACE_INLINE zItMeshVertex zFnMesh::splitEdge(zItMeshEdge &edge, double edgeFactor, bool checkDuplicates )
 	{
 
 		int edgeId = edge.getId();
@@ -3804,7 +3817,7 @@ namespace zSpace
 
 		// check if vertex exists if not add new vertex
 		zItMeshVertex newVertex;
-		addVertex(newVertPos, true, newVertex);
+		addVertex(newVertPos, checkDuplicates, newVertex);
 
 		if (newVertex.getId() >= numOriginalVertices)
 		{
@@ -3866,7 +3879,7 @@ namespace zSpace
 		return newVertex;
 	}
 
-	ZSPACE_INLINE zItMeshVertex zFnMesh::splitHalfEdge(zItMeshHalfEdge& hEdge, double edgeFactor)
+	ZSPACE_INLINE zItMeshVertex zFnMesh::splitHalfEdge(zItMeshHalfEdge& hEdge, double edgeFactor, bool checkDuplicates)
 	{
 
 		zItMeshEdge edge = hEdge.getEdge();
@@ -3892,12 +3905,13 @@ namespace zSpace
 
 		// check if vertex exists if not add new vertex
 		zItMeshVertex newVertex;
-		addVertex(newVertPos, true, newVertex);
+		addVertex(newVertPos, checkDuplicates, newVertex);
 
-		//printf("\n newVert: %1.2f %1.2f %1.2f   %s ", newVertPos.x, newVertPos.y, newVertPos.z, (vExists)?"true":"false");
+		//printf("\n newVert: %1.2f %1.2f %1.2f   %i ", newVertPos.x, newVertPos.y, newVertPos.z, newVertex.getId());
 
 		if (newVertex.getId() >= numOriginalVertices)
-		{
+		{		
+
 			// remove from halfEdge vertices map
 			removeFromHalfEdgesMap(hEdge);
 
@@ -4166,8 +4180,8 @@ namespace zSpace
 		zItMeshHalfEdge he0(*meshObj, heID_0);
 		zItMeshHalfEdge he1(*meshObj, heID_1);
 
-		zItMeshVertex v0 = splitHalfEdge(he0, edge0_factor);			
-		zItMeshVertex v1 = splitHalfEdge(he1, edge1_factor);
+		zItMeshVertex v0 = splitHalfEdge(he0, edge0_factor, true);			
+		zItMeshVertex v1 = splitHalfEdge(he1, edge1_factor, true);
 
 		zItMeshHalfEdge he;
 		addEdges(v0.getId(), v1.getId(), true, he);
@@ -4285,11 +4299,11 @@ namespace zSpace
 
 				if (!f.isActive()) continue;
 
-				vector<zItMeshHalfEdge> fEdges;
+				zIntArray fEdges;
 				f.getHalfEdges(fEdges);
 
 				// disable current face
-				f.deactivate();
+				//f.deactivate();
 
 				// check if vertex exists if not add new vertex
 				zItMeshVertex vertexCen;
@@ -4297,36 +4311,44 @@ namespace zSpace
 
 				// add new faces				
 				int startId = 0;
-				if (fEdges[0].getVertex().getId() < numOriginalVertices) startId = 1;
+				zItMeshHalfEdge he_0(*meshObj, fEdges[0]);
+				if (he_0.getVertex().getId() < numOriginalVertices) startId = 1;
 
 				for (int k = startId; k < fEdges.size() + startId; k += 2)
 				{
 					vector<int> newFVerts;
 
-					newFVerts.push_back(fEdges[k].getVertex().getId());
+					zItMeshHalfEdge he(*meshObj, fEdges[k]);
+					newFVerts.push_back(he.getVertex().getId());
 
 					newFVerts.push_back(vertexCen.getId());
 
-					newFVerts.push_back(fEdges[k].getPrev().getStartVertex().getId());
+					newFVerts.push_back(he.getPrev().getStartVertex().getId());
 
-					newFVerts.push_back(fEdges[k].getPrev().getVertex().getId());
+					newFVerts.push_back(he.getPrev().getVertex().getId());
 
-					zItMeshFace newF;
-				
-					bool chk = addPolygon(newFVerts, newF);
 
-					//printf("\n %s ", (chk) ? "true" : "false");
+					if (k == startId)
+					{
+						updatePolygon(f, newFVerts);
+					}
+					else
+					{
+						zItMeshFace newF;
+						addPolygon(newFVerts, newF);
+					}
+
 				}
 			}
 	
 			// update half edge handles. 
-			for (int i = 0; i < meshObj->mesh.heHandles.size(); i++)
-			{
-				if(meshObj->mesh.heHandles[i].f != -1) meshObj->mesh.heHandles[i].f -= numOriginalfaces;
-			}
-					
-			// remove inactive faces
-			garbageCollection(zFaceData);
+			//for (int i = 0; i < meshObj->mesh.heHandles.size(); i++)
+			//{
+			//	if(meshObj->mesh.heHandles[i].f != -1) meshObj->mesh.heHandles[i].f -= numOriginalfaces;
+			//}
+			//		
+			//// remove inactive faces
+			//garbageCollection(zFaceData);
 
 			computeMeshNormals();
 		}
@@ -4442,10 +4464,13 @@ namespace zSpace
 				zItMeshEdge e(*meshObj,i);
 				if (e.isActive())
 				{			
-					zItMeshVertex newVert = splitEdge(e);
+					zItMeshHalfEdge he = e.getHalfEdge(0);
+					zItMeshVertex newVert = splitHalfEdge(he,0.5,false);
 					newVert.setPosition(eCenters[i]);
 				}
 			}
+
+
 
 			// add faces
 			int numOriginalFaces = numPolygons();
@@ -4456,11 +4481,11 @@ namespace zSpace
 
 				if (!f.isActive()) continue;
 
-				vector<zItMeshHalfEdge> fEdges;
-				f.getHalfEdges(fEdges);
+				zIntArray fEdges;
+				f.getHalfEdges(fEdges);	
 
 				// disable current face
-				f.deactivate();
+				//f.deactivate();
 
 				// check if vertex exists if not add new vertex
 				zItMeshVertex vertexCen;
@@ -4468,33 +4493,58 @@ namespace zSpace
 
 				// add new faces				
 				int startId = 0;
-				if (fEdges[0].getVertex().getId() < numOriginalVertices) startId = 1;
+				zItMeshHalfEdge he_0(*meshObj, fEdges[0]);
+				if (he_0.getVertex().getId() < numOriginalVertices) startId = 1;
 
 				for (int k = startId; k < fEdges.size() + startId; k += 2)
 				{
 					vector<int> newFVerts;
 
-					newFVerts.push_back(fEdges[k].getVertex().getId());
+					zItMeshHalfEdge he(*meshObj, fEdges[k]);
+					newFVerts.push_back(he.getVertex().getId());
 
 					newFVerts.push_back(vertexCen.getId());
 
-					newFVerts.push_back(fEdges[k].getPrev().getStartVertex().getId());
+					newFVerts.push_back(he.getPrev().getStartVertex().getId());
 
-					newFVerts.push_back(fEdges[k].getPrev().getVertex().getId());
+					newFVerts.push_back(he.getPrev().getVertex().getId());
 
-					zItMeshFace newF;
-					addPolygon(newFVerts, newF);
+
+					if (k == startId)
+					{
+						updatePolygon(f, newFVerts);
+					}
+					else
+					{
+						zItMeshFace newF;
+						addPolygon(newFVerts, newF);
+					}
+					
 				}
+
+			
 			}
 
 			// update half edge handles. 
-			for (int i = 0; i < meshObj->mesh.heHandles.size(); i++)
+			/*for (int i = 0; i < meshObj->mesh.heHandles.size(); i++)
 			{
-				if (meshObj->mesh.heHandles[i].f != -1) meshObj->mesh.heHandles[i].f -= numOriginalFaces;
-			}
+				if (meshObj->mesh.heHandles[i].f != -1)
+				{
+					meshObj->mesh.heHandles[i].f -= numOriginalFaces;
+					meshObj->mesh.halfEdges[i].setFace(meshObj->mesh.heHandles[i].f);
+				}
+			}*/
+
+			/*for (zItMeshHalfEdge he(*meshObj); !he.end(); he++)
+			{
+				printf("\n %i |n %i p %i | v %i %i | f %i", he.getId(), he.getNext().getId(), he.getPrev().getId(), he.getStartVertex().getId(), he.getVertex().getId(), (!he.onBoundary()) ? he.getFace().getId() : -2);
+			}*/
 
 			// remove inactive faces
-			garbageCollection(zFaceData);
+			//garbageCollection(zFaceData);
+			//printf("\n faces a %i ", numPolygons());
+
+			
 
 			computeMeshNormals();
 		}	

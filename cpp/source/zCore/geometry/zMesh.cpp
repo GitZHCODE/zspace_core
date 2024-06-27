@@ -376,6 +376,73 @@ namespace zSpace
 		return out;
 	}
 
+	ZSPACE_INLINE bool zMesh::updatePolygon(int faceID, zIntArray& fVertices)
+	{
+		
+		// get edgeIds of face
+		zIntArray fEdge;
+
+		int currentNumEdges = n_he;
+
+
+		for (int i = 0; i < fVertices.size(); i++)
+		{
+			// check if edge exists
+			int eID;
+			bool chkEdge = halfEdgeExists(fVertices[i], fVertices[(i + 1) % fVertices.size()], eID);
+
+
+			if (chkEdge)
+			{
+				fEdge.push_back(eID);
+			}
+			else
+			{
+				addEdges(fVertices[i], fVertices[(i + 1) % fVertices.size()]);
+
+				fEdge.push_back(n_he - 2);
+
+			}
+
+			//printf("\n %i %i %s %i", fVertices[i], fVertices[(i + 1) % fVertices.size()], (chkEdge) ? "true" : "false", fEdge[i]);
+		}
+
+		//update current face verts edge pointer
+		for (int i = 0; i < fVertices.size(); i++)
+		{
+			vertices[fVertices[i]].setHalfEdge(fEdge[i]);
+
+			vHandles[fVertices[i]].he = fEdge[i];
+		}
+
+		// update face, next and prev edge pointers for face Edges
+		for (int i = 0; i < fEdge.size(); i++)
+		{
+			halfEdges[fEdge[i]].setFace(faceID);
+
+			halfEdges[fEdge[i]].setNext(fEdge[(i + 1) % fEdge.size()]);
+			halfEdges[fEdge[i]].setPrev(fEdge[(i - 1 + fEdge.size()) % fEdge.size()]);
+
+			halfEdges[fEdge[(i + 1) % fEdge.size()]].setPrev(fEdge[i]);
+			halfEdges[fEdge[(i - 1 + fEdge.size()) % fEdge.size()]].setNext(fEdge[i]);
+
+			heHandles[fEdge[i]].f = faceID;
+			heHandles[fEdge[i]].n = fEdge[(i + 1) % fEdge.size()];
+			heHandles[fEdge[i]].p = fEdge[(i - 1 + fEdge.size()) % fEdge.size()];
+
+			heHandles[fEdge[(i + 1) % fEdge.size()]].p = fEdge[i];
+			heHandles[fEdge[(i - 1 + fEdge.size()) % fEdge.size()]].n = fEdge[i];
+		}
+
+		// update curent face edge
+		//zFace *f1 = &faces[n_f - 1];
+		faces[faceID].setHalfEdge(fEdge[0]);
+
+		fHandles[faceID].he = fEdge[0];
+
+		return false;
+	}
+
 	ZSPACE_INLINE void zMesh::setNumPolygons(int _n_f, bool setMax)
 	{
 		n_f = _n_f;
@@ -531,143 +598,144 @@ namespace zSpace
 
 	ZSPACE_INLINE void zMesh::resizeArray(zHEData type, int newSize)
 	{
-		////  Vertex
-		//if (type == zVertexData)
-		//{
-		//	vertices.clear();
-		//	vertices.reserve(newSize);
+		//  Vertex
+		if (type == zVertexData)
+		{
+			vertices.clear();
+			vertices.reserve(newSize);
 
-		//	// reassign pointers
-		//	int n_v = 0;
-		//	for (auto &v : vHandles)
-		//	{
-		//		zItVertex newV = vertices.insert(vertices.end(), zVertex());
-		//		newV->setId(n_v);
-		//		if (v.he != -1)newV->setHalfEdge(&halfEdges[v.he]);
+			// reassign pointers
+			int n_v = 0;
+			for (auto &v : vHandles)
+			{
+				zItVertex newV = vertices.insert(vertices.end(), zVertex());
+				newV->setId(n_v);
+				if (v.he != -1)newV->setHalfEdge(v.he);
 
-		//		n_v++;
-		//	}
+				n_v++;
+			}
 
-		//	for (int i = 0; i < heHandles.size(); i++)
-		//	{
-		//		if (heHandles[i].v != -1) halfEdges[i].setVertex(&vertices[heHandles[i].v]);
-		//	}
+			for (int i = 0; i < heHandles.size(); i++)
+			{
+				if (heHandles[i].v != -1) halfEdges[i].setVertex(heHandles[i].v);
+			}
 
-		//	//printf("\n mesh vertices resized. ");
+			//printf("\n mesh vertices resized. ");
 
-		//}
+		}
 
-		////  Edge
-		//else if (type == zHalfEdgeData)
-		//{
+		//  Edge
+		else if (type == zHalfEdgeData)
+		{
 
-		//	halfEdges.clear();
-		//	halfEdges.reserve(newSize);
+			halfEdges.clear();
+			halfEdges.reserve(newSize);
 
-		//	// reassign pointers
-		//	int n_he = 0;
-		//	for (auto &he : heHandles)
-		//	{
+			// reassign pointers
+			int n_he = 0;
+			for (auto &he : heHandles)
+			{
 
-		//		zItHalfEdge newHE = halfEdges.insert(halfEdges.end(), zHalfEdge());
+				zItHalfEdge newHE = halfEdges.insert(halfEdges.end(), zHalfEdge());
 
-		//		newHE->setId(n_he);
-		//		if (he.n != -1) newHE->setNext(&halfEdges[he.n]);
-		//		if (he.p != -1) newHE->setPrev(&halfEdges[he.p]);
-		//		if (he.v != -1) newHE->setVertex(&vertices[he.v]);
-		//		if (he.e != -1) newHE->setEdge(&edges[he.e]);
-		//		if (he.f != -1) newHE->setFace(&faces[he.f]);
-
-
-		//		if (n_he % 2 == 1) newHE->setSym(&halfEdges[n_he - 1]);
-
-		//		n_he++;
-		//	}
-
-		//	for (int i = 0; i < vHandles.size(); i++)
-		//	{
-		//		if (vHandles[i].he != -1) vertices[i].setHalfEdge(&halfEdges[vHandles[i].he]);
-		//	}
-
-		//	for (int i = 0; i < eHandles.size(); i++)
-		//	{
-		//		if (eHandles[i].he0 != -1) edges[i].setHalfEdge(&halfEdges[eHandles[i].he0], 0);
-		//		if (eHandles[i].he1 != -1) edges[i].setHalfEdge(&halfEdges[eHandles[i].he1], 1);
-		//	
-		//	}
-
-		//	for (int i = 0; i < fHandles.size(); i++)
-		//	{
-		//		if (fHandles[i].he != -1) faces[i].setHalfEdge(&halfEdges[fHandles[i].he]);
-		//	}
+				newHE->setId(n_he);
+				if (he.n != -1) newHE->setNext(he.n);
+				if (he.p != -1) newHE->setPrev(he.p);
+				if (he.v != -1) newHE->setVertex(he.v);
+				if (he.e != -1) newHE->setEdge(he.e);
+				if (he.f != -1) newHE->setFace(he.f);
 
 
+				if (n_he % 2 == 1) newHE->setSym(n_he - 1);
+				else newHE->setSym(n_he + 1);
 
-		//	//printf("\n mesh half edges resized. ");
-		//}
+				n_he++;
+			}
 
-		//else if (type == zEdgeData)
-		//{
+			for (int i = 0; i < vHandles.size(); i++)
+			{
+				if (vHandles[i].he != -1) vertices[i].setHalfEdge(vHandles[i].he);
+			}
 
-		//
+			for (int i = 0; i < eHandles.size(); i++)
+			{
+				if (eHandles[i].he0 != -1) edges[i].setHalfEdge(eHandles[i].he0, 0);
+				if (eHandles[i].he1 != -1) edges[i].setHalfEdge(eHandles[i].he1, 1);
+			
+			}
 
-		//	edges.clear();
-		//	edges.reserve(newSize);
-
-		//	// reassign pointers
-
-		//	int n_e = 0;
-		//	for (auto &e : eHandles)
-		//	{
-		//		zItEdge newE = edges.insert(edges.end(), zEdge());
-		//		newE->setId(n_e);
-
-		//		if (e.he0 != -1)newE->setHalfEdge(&halfEdges[e.he0], 0);
-		//		if (e.he1 != -1)newE->setHalfEdge(&halfEdges[e.he1], 1);
-		//		
-
-		//		n_e++;
-
-		//	}
-
-		//	for (int i = 0; i < heHandles.size(); i++)
-		//	{
-		//		if (heHandles[i].e != -1) halfEdges[i].setEdge(&edges[heHandles[i].e]);
-		//	}
-
-		//	//printf("\n mesh edges resized. ");	
-		//}
-
-		//// Mesh Face
-		//else if (type == zFaceData)
-		//{
-
-		//	faces.clear();
-		//	faces.reserve(newSize);
-
-		//	// reassign pointers
-		//	int n_f = 0;
-		//	for (auto &f : fHandles)
-		//	{
-		//		zItFace newF = faces.insert(faces.end(), zFace());
-		//		newF->setId(n_f);
-		//		
-		//		if (f.he != -1)newF->setHalfEdge(&halfEdges[f.he]);
+			for (int i = 0; i < fHandles.size(); i++)
+			{
+				if (fHandles[i].he != -1) faces[i].setHalfEdge(fHandles[i].he);
+			}
 
 
-		//		n_f++;
 
-		//	}
+			//printf("\n mesh half edges resized. ");
+		}
 
-		//	for (int i = 0; i < heHandles.size(); i++)
-		//	{
-		//		if (heHandles[i].f != -1) halfEdges[i].setFace(&faces[heHandles[i].f]);
-		//	}
+		else if (type == zEdgeData)
+		{
+
+		
+
+			edges.clear();
+			edges.reserve(newSize);
+
+			// reassign pointers
+
+			int n_e = 0;
+			for (auto &e : eHandles)
+			{
+				zItEdge newE = edges.insert(edges.end(), zEdge());
+				newE->setId(n_e);
+
+				if (e.he0 != -1)newE->setHalfEdge(e.he0, 0);
+				if (e.he1 != -1)newE->setHalfEdge(e.he1, 1);
+				
+
+				n_e++;
+
+			}
+
+			for (int i = 0; i < heHandles.size(); i++)
+			{
+				if (heHandles[i].e != -1) halfEdges[i].setEdge(heHandles[i].e);
+			}
+
+			//printf("\n mesh edges resized. ");	
+		}
+
+		// Mesh Face
+		else if (type == zFaceData)
+		{
+
+			faces.clear();
+			faces.reserve(newSize);
+
+			// reassign pointers
+			int n_f = 0;
+			for (auto &f : fHandles)
+			{
+				zItFace newF = faces.insert(faces.end(), zFace());
+				newF->setId(n_f);
+				
+				if (f.he != -1)newF->setHalfEdge(f.he);
 
 
-		//	//printf("\n mesh faces resized. ");
-		//}
+				n_f++;
 
-		//else throw std::invalid_argument(" error: invalid zHEData type");
+			}
+
+			for (int i = 0; i < heHandles.size(); i++)
+			{
+				if (heHandles[i].f != -1) halfEdges[i].setFace(heHandles[i].f);
+			}
+
+
+			//printf("\n mesh faces resized. ");
+		}
+
+		else throw std::invalid_argument(" error: invalid zHEData type");
 	}
 }
