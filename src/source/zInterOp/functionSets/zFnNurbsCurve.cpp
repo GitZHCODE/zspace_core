@@ -359,9 +359,24 @@ namespace zSpace
 		nurbsCurveObj->curve.Reverse();
 	}
 
+	ZSPACE_INLINE void zFnNurbsCurve::rebuild(int numCVs, int degree)
+	{
+		bool periodic = nurbsCurveObj->curve.IsPeriodic();
+
+		zPointArray pos;
+		zDoubleArray tParams;
+		divideByCount(numCVs, pos, tParams);
+
+		if(periodic) pos.pop_back();
+		
+		nurbsCurveObj->curve = ON_NurbsCurve();
+		create(pos, degree, periodic, true);
+	}
+
+
 	//---- INTERSECT METHODS
 
-	ZSPACE_INLINE void zFnNurbsCurve::intersect(zPlane& plane, zPointArray& intersectionPts, zDoubleArray& tParams)
+	ZSPACE_INLINE void zFnNurbsCurve::intersect(zPlane& plane, double intersectionTolerance, zPointArray& intersectionPts, zDoubleArray& tParams )
 	{
 
 		intersectionPts.clear();
@@ -374,7 +389,7 @@ namespace zSpace
 		on_plane.Create(O, Z);
 
 		ON_SimpleArray<ON_X_EVENT> intersectionEvents;
-		nurbsCurveObj->curve.IntersectPlane(on_plane, intersectionEvents);
+		nurbsCurveObj->curve.IntersectPlane(on_plane, intersectionEvents, intersectionTolerance);
 
 		ON_3dPoint cx_pt;
 		double cx_param;

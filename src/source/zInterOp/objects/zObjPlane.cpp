@@ -64,40 +64,40 @@ namespace zSpace
 		planeMatrix(0,0)= xAxis.x;
 		planeMatrix(0,1)= xAxis.y;
 		planeMatrix(0,2)= xAxis.z;
-		planeMatrix(0,3)= origin.x;
+		planeMatrix(0,3)= 0;
 		planeMatrix(1,0)= yAxis.x;
 		planeMatrix(1,1)= yAxis.y;
 		planeMatrix(1,2)= yAxis.z;
-		planeMatrix(1,3)= origin.y;
+		planeMatrix(1,3)= 0;
 		planeMatrix(2,0)= normal.x;
 		planeMatrix(2,1)= normal.y;
 		planeMatrix(2,2)= normal.z;
-		planeMatrix(2,3)= origin.z;
-		planeMatrix(3,0)= 0;
-		planeMatrix(3,1)= 0;
-		planeMatrix(3,2)= 0;
+		planeMatrix(2,3)= 0;
+		planeMatrix(3,0)= origin.x;
+		planeMatrix(3,1)= origin.y;
+		planeMatrix(3,2)= origin.z;
 		planeMatrix(3,3)= 1;
 		return planeMatrix;
 	}
 	
-	ZSPACE_INLINE zDoubleArray zObjPlane::getDoubleArray()
+	ZSPACE_INLINE zDoubleArray zObjPlane::getData()
 	{
 		zDoubleArray planeArray;
 		planeArray.push_back(xAxis.x);
 		planeArray.push_back(xAxis.y);
 		planeArray.push_back(xAxis.z);
-		planeArray.push_back(origin.x);
+		planeArray.push_back(0);
 		planeArray.push_back(yAxis.x);
 		planeArray.push_back(yAxis.y);
 		planeArray.push_back(yAxis.z);
-		planeArray.push_back(origin.y);
+		planeArray.push_back(0);
 		planeArray.push_back(normal.x);
 		planeArray.push_back(normal.y);
 		planeArray.push_back(normal.z);
+		planeArray.push_back(0);
+		planeArray.push_back(origin.x);
+		planeArray.push_back(origin.y);
 		planeArray.push_back(origin.z);
-		planeArray.push_back(0);
-		planeArray.push_back(0);
-		planeArray.push_back(0);
 		planeArray.push_back(1);
 		return planeArray;
 	}

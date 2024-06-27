@@ -220,18 +220,27 @@ namespace zSpace
 		*/
 		void reverse();
 
+		/*! \brief This method rebuilds the curve.
+		*
+		* 	\param		[in]	numCVs					- desired number of control points
+		*	\param		[in]	degree					- desired curve degree
+		*	\since version 0.0.2
+		*/
+		void rebuild(int numCVs, int degree);
+
 		//--------------------------
 		//--- INTERSECT METHODS 
 		//--------------------------
 
 		/*! \brief This method computes the intersections to the input plane.
 		*
-		*	\param		[in]	plane			- input plane to intersect.
-		*	\param		[out]	intersectionPts	- output intersection points if valid.
-		*	\param		[out]	tParams			- output on curve parameters where intersections happened.
+		*	\param		[in]	plane							- input plane to intersect.
+		*	\param		[in]	intersectionTolerance			- input intersection tolerance.
+		*	\param		[out]	intersectionPts					- output intersection points if valid.
+		*	\param		[out]	tParams							- output on curve parameters where intersections happened.
 		*	\since version 0.0.2
 		*/
-		void intersect(zPlane &plane, zPointArray &intersectionPts, zDoubleArray & tParams);
+		void intersect(zPlane &plane, double intersectionTolerance, zPointArray &intersectionPts, zDoubleArray & tParams);
 		
 		/*! \brief This method computes the intersections to the input curve.
 		*
@@ -364,6 +373,13 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		double getLength();
+
+		/*! \brief This method gets the length of the curve.
+		*
+		*	\return		double					- length of the curve .
+		*	\since version 0.0.4
+		*/
+		bool getPlane();
 
 		/*! \brief This method gets the domain of the curve.
 		*

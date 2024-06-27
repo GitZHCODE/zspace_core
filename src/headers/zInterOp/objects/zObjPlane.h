@@ -144,7 +144,7 @@ namespace zSpace
 		*	\return				zDoubleArray		- a Double Array of the plane.
 		*	\since version 0.0.4
 		*/
-		zDoubleArray getDoubleArray();
+		zDoubleArray getData();
 
 
 		/*! \brief This method stores Raw Origin of the plane.

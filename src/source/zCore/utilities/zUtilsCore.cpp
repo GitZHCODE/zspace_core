@@ -530,21 +530,24 @@ namespace zSpace
 	{
 		{
 			bool out = false;
-
-			if ((nA^nB).length() > 0)
+			if ((nA ^ nB).length() > 0)
 			{
-				double detr = ((nA*nA)*(nB*nB)) - ((nA*nB) * (nA*nB));
-
+				double detr = ((nA * nA) * (nB * nB)) - ((nA * nB) * (nA * nB));
 				double d1 = nA * pA;
 				double d2 = nB * pB;
-
-				double c1 = (d1*(nB*nB)) - (d2*(nA*nB));
+				double c1 = (d1 * (nB * nB)) - (d2 * (nA * nB));
 				c1 /= detr;
-
-				double c2 = (d2*(nA*nA)) - (d1*(nA*nB));
+				double c2 = (d2 * (nA * nA)) - (d1 * (nA * nB));
 				c2 /= detr;
 
 
+				float u1 = 0.1;
+				float u2 = 0.9;
+
+				outP1 = (nA * c1) + (nB * c2) + (nA * nB * u1);
+				outP2 = (nA * c2) + (nB * c2) + (nA * nB * u2);
+
+				out = true;
 			}
 
 

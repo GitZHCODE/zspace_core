@@ -227,9 +227,9 @@ namespace zSpace
 	{
 		bool success = false;
 
-		zPoint origin(_plane(0, 3), _plane(1, 3), _plane(2, 3));
-		zVector xAxis(_plane(0, 0), _plane(1, 0), _plane(2, 0));
-		zVector yAxis(_plane(0, 1), _plane(1, 1), _plane(2, 1));
+		zVector xAxis(_plane(0, 0), _plane(0, 1), _plane(0, 2));
+		zVector yAxis(_plane(1, 0), _plane(1, 1), _plane(1, 2));
+		zPoint origin(_plane(3, 0), _plane(3, 1), _plane(3, 2));
 
 		success = create(origin, xAxis, yAxis);
 

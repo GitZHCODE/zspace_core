@@ -119,7 +119,7 @@ namespace zSpace
 		double _radius;
 		double _angle;
 
-		planeArray = arcObj->oPlane.getDoubleArray();
+		planeArray = arcObj->oPlane.getData();
 		_radius = arcObj->radius;
 		_angle = arcObj->angle;
 
