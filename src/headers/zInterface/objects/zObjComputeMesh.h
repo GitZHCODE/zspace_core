@@ -127,13 +127,15 @@ namespace  zSpace
 		//--------------------------
 		//---- OVERRIDE METHODS
 		//--------------------------
-		//void draw() override;
+
+#if defined (ZSPACE_VIEWER)
+		// Do Nothing
+#else
+		void draw() override;
+#endif
+
 		void getBounds(zPoint& minBB, zPoint& maxBB) override;
-
-		
-
 	};
-
 }
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
 // All defined OK so do nothing

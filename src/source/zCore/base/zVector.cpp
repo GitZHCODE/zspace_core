@@ -104,27 +104,27 @@ namespace zSpace
 		return  zVector(x * val, y * val, z * val);
 	}
 
-	ZSPACE_INLINE zVector zVector::operator*(zMatrix3 & inMatrix)
-	{
-		zMatrix3Col inVecMatrix; 
-		toColumnMatrix3(inVecMatrix);
+	//ZSPACE_INLINE zVector zVector::operator*(zMatrix3 & inMatrix)
+	//{
+	//	zMatrix3Col inVecMatrix; 
+	//	toColumnMatrix3(inVecMatrix);
 
-		zMatrix3Col outVecMatrix;
-		inMatrix.multiply(inVecMatrix, outVecMatrix);
+	//	zMatrix3Col outVecMatrix;
+	//	inMatrix.multiply(inVecMatrix, outVecMatrix);
 
-		return fromColumnMatrix3(outVecMatrix);
-	}
+	//	return fromColumnMatrix3(outVecMatrix);
+	//}
 
-	ZSPACE_INLINE zVector zVector::operator*(zMatrix4 & inMatrix)
-	{
-		zMatrix4Col inVecMatrix;
-		toColumnMatrix4(inVecMatrix);
+	//ZSPACE_INLINE zVector zVector::operator*(zMatrix4 & inMatrix)
+	//{
+	//	zMatrix4Col inVecMatrix;
+	//	toColumnMatrix4(inVecMatrix);
 
-		zMatrix4Col outVecMatrix;
-		inMatrix.multiply(inVecMatrix, outVecMatrix);
+	//	zMatrix4Col outVecMatrix;
+	//	inMatrix.multiply(inVecMatrix, outVecMatrix);
 
-		return fromColumnMatrix4(outVecMatrix);
-	}
+	//	return fromColumnMatrix4(outVecMatrix);
+	//}
 
 	ZSPACE_INLINE zVector zVector::operator/(float val)
 	{
@@ -317,7 +317,9 @@ namespace zSpace
 
 		float theta = DEG_TO_RAD * angle;
 
-		zMatrix3 rotationMatrix; ;
+		//zMatrix3 rotationMatrix; ;
+
+		Matrix3f rotationMatrix;
 
 		rotationMatrix(0, 0) = cos(theta) + (axisVec.x * axisVec.x) * (1 - cos(theta));
 		rotationMatrix(1, 0) = (axisVec.x * axisVec.y) * (1 - cos(theta)) - (axisVec.z) * (sin(theta));
@@ -337,50 +339,60 @@ namespace zSpace
 		return out;
 	}
 
-	ZSPACE_INLINE void zVector::toRowMatrix4(zMatrix4Row &row)
-	{
-		row[0] = x; row[1] = y; row[2] = z; row[3] = 1;
-	}
+	//ZSPACE_INLINE void zVector::toRowMatrix4(zMatrix4Row &row)
+	//{
+	//	row[0] = x; row[1] = y; row[2] = z; row[3] = 1;
+	//}
 
-	ZSPACE_INLINE void zVector::toRowMatrix3(zMatrix3Row &row)
-	{
-		row[0] = x; row[1] = y; row[2] = z;
-	}
+	//ZSPACE_INLINE void zVector::toRowMatrix3(zMatrix3Row &row)
+	//{
+	//	row[0] = x; row[1] = y; row[2] = z;
+	//}
 
-	ZSPACE_INLINE void zVector::toColumnMatrix4(zMatrix4Col &col)
-	{
-		col[0] = x; col[1] = y; col[2] = z; col[3] = 1;
-	}
+	//ZSPACE_INLINE void zVector::toColumnMatrix4(zMatrix4Col &col)
+	//{
+	//	col[0] = x; col[1] = y; col[2] = z; col[3] = 1;
+	//}
 
-	ZSPACE_INLINE void zVector::toColumnMatrix3(zMatrix3Col &col)
-	{
-		col[0] = x; col[1] = y; col[2] = z;
-	}
+	//ZSPACE_INLINE void zVector::toColumnMatrix3(zMatrix3Col &col)
+	//{
+	//	col[0] = x; col[1] = y; col[2] = z;
+	//}
 
-	ZSPACE_INLINE zVector zVector::fromRowMatrix4(zMatrix4Row &row)
-	{
-		return zVector(row[0], row[1], row[2], row[3]);
-	}
+	//ZSPACE_INLINE zVector zVector::fromRowMatrix4(zMatrix4Row &row)
+	//{
+	//	return zVector(row[0], row[1], row[2], row[3]);
+	//}
 
-	ZSPACE_INLINE zVector zVector::fromRowMatrix3(zMatrix3Row &row)
-	{
-		return zVector(row[0], row[1], row[2]);
-	}
+	//ZSPACE_INLINE zVector zVector::fromRowMatrix3(zMatrix3Row &row)
+	//{
+	//	return zVector(row[0], row[1], row[2]);
+	//}
 
-	ZSPACE_INLINE zVector zVector::fromColumnMatrix4(zMatrix4Col &col)
-	{
-		return zVector(col[0], col[1], col[2], col[3]);
-	}
+	//ZSPACE_INLINE zVector zVector::fromColumnMatrix4(zMatrix4Col &col)
+	//{
+	//	return zVector(col[0], col[1], col[2], col[3]);
+	//}
 
-	ZSPACE_INLINE zVector zVector::fromColumnMatrix3(zMatrix3Col &col)
-	{
-		return zVector(col[0], col[1], col[2]);
-	}
+	//ZSPACE_INLINE zVector zVector::fromColumnMatrix3(zMatrix3Col &col)
+	//{
+	//	return zVector(col[0], col[1], col[2]);
+	//}
 	
 
 
 #ifndef __CUDACC__
 
+	ZSPACE_INLINE zVector zVector::operator*(zRotationMatrix inTrans)
+	{
+		Vector3f p(x, y, z);
+
+		Vector3f newP = inTrans * p;
+
+		zVector out(newP(0), newP(1), newP(2));
+
+		return out;
+	}
 
 	ZSPACE_INLINE zVector zVector::operator*(zTransform inTrans)
 	{

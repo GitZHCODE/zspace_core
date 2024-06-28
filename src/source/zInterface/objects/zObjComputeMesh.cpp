@@ -107,8 +107,9 @@ namespace zSpace
 
 
 	//---- OVERRIDE METHODS
-	//ZSPACE_INLINE void zObjComputeMesh::draw() {}
+#ifndef ZSPACE_VIEWER
+	ZSPACE_INLINE void zObjComputeMesh::draw() {}
+#endif
 
 	ZSPACE_INLINE void zObjComputeMesh::getBounds(zPoint& minBB, zPoint& maxBB) {}
-
 }

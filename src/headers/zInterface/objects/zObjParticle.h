@@ -94,13 +94,14 @@ namespace zSpace
 		//---- OVERRIDE METHODS
 		//--------------------------
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		//void draw() override;
+		void draw() override;
 #endif
 
 	protected:
+#ifndef ZSPACE_VIEWER
 		//--------------------------
 		//---- PROTECTED DISPLAY METHODS
 		//--------------------------
@@ -110,7 +111,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void drawForces();
-
+#endif
 	};
 
 

@@ -60,9 +60,12 @@ local function CommonConfigurationSettings()
     filter {}
 end
 
---Redefine to stop interference
-CoreIncludeDir = prependPath(deps_path, get_include_dirs())
-CoreLibDir = prependPath(deps_path, get_lib_dirs())
+path_from_core_to_workspace = path.join("..", path.getrelative(sketches_path, "%{wks.location}"))
+path_from_core_to_zspace_deps = path.join(path_from_core_to_workspace, zspace_deps_path)
+
+-- Redefine to keep paths relative
+CoreIncludeDir = prependPath(path_from_core_to_zspace_deps, get_zspace_include_dirs())
+CoreLibDir = prependPath(path_from_core_to_zspace_deps, get_zspace_lib_dirs())
 
 --#############__ZSPACE_APP__#############
 project "zSpace_App"
@@ -136,16 +139,25 @@ project "zSpace_Core"
         "src/headers",
     }
 
+    -- Add omniverse includes
+    includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
+
     libdirs
     {
         "%{CoreLibDir.SQLITE}",
         "%{cfg.targetdir}",
     }
 
+    -- Add omniverse libdirs
+    libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
+
     links
     {
         "sqlite3.lib",
     }
+
+    -- Add omniverse links
+    links {get_omniverse_links()}
 
 
 --#############__ZSPACE_INTERFACE__#############
@@ -190,25 +202,20 @@ project "zSpace_Interface"
         "%{CoreIncludeDir.IGL}",
         --local
         "src/headers",
-        --Omniverse
-        "%{CoreIncludeDir.OV_CLIENT}",
-        "%{CoreIncludeDir.OV_USD_RES}",
-        "%{CoreIncludeDir.OV_PYTHON}",
-        "%{CoreIncludeDir.OV_TINYTOML}",
-        "%{CoreIncludeDir.OV_USD}",
     }
+
+    -- Add omniverse includes
+    includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
 
     libdirs
     {
         "%{CoreLibDir.SQLITE}",
         "%{CoreLibDir.IGL}",
         "%{cfg.targetdir}",
-        --Omniverse
-        "%{CoreLibDir.OV_CLIENT}",
-        "%{CoreLibDir.OV_USD_RES}",
-        "%{CoreLibDir.OV_PYTHON}",
-        "%{CoreLibDir.OV_USD}",
     }
+
+    -- Add omniverse libdirs
+    libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
 
     links
     {
@@ -217,8 +224,7 @@ project "zSpace_Interface"
         "igl.lib",
     }
 
-    --###__OMNIVERSE__###
-    --Omniverse is default
+    -- Add omniverse links
     links {get_omniverse_links()}
 
 
@@ -259,31 +265,26 @@ project "zSpace_InterOp"
         "%{CoreIncludeDir.QUICKHULL}",
         "%{CoreIncludeDir.IGL}",
         "%{maya_dir}/include",
+        --Rhino
+        "%{rhino_dir}/inc",
         --local
         "src/headers",
-        --Omniverse
-        "%{CoreIncludeDir.OV_CLIENT}",
-        "%{CoreIncludeDir.OV_USD_RES}",
-        "%{CoreIncludeDir.OV_PYTHON}",
-        "%{CoreIncludeDir.OV_TINYTOML}",
-        "%{CoreIncludeDir.OV_USD}",
-        --Rhino
-        "%{rhino_dir}/inc"
     }
+
+    -- Add omniverse includes
+    includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
 
     libdirs
     {
         "%{CoreLibDir.SQLITE}",
         "%{maya_dir}/lib",
         "%{cfg.targetdir}",
-        --Omniverse
-        "%{CoreLibDir.OV_CLIENT}",
-        "%{CoreLibDir.OV_USD_RES}",
-        "%{CoreLibDir.OV_PYTHON}",
-        "%{CoreLibDir.OV_USD}",
         --Rhino
         "%{rhino_dir}/lib/Release"
     }
+
+    -- Add omniverse libdirs
+    libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
 
     links
     {
@@ -299,8 +300,7 @@ project "zSpace_InterOp"
         "Foundation.lib",
     }
 
-    --###__OMNIVERSE__###
-    --Omniverse is default
+    -- Add omniverse links
     links {get_omniverse_links()}
 
     --###__RHINO__###

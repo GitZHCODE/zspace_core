@@ -137,6 +137,24 @@ namespace zSpace
 		*/
 		virtual void to(json &j) = 0;
 
+		/*! \brief This method gets the JSON file from the input path if it exists.
+		*
+		*	\param		[in]	path			- input file path.
+		*	\param		[out]	j				- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool json_read(string path, json& j);
+
+		/*! \brief This method writes the JSON file to the output path.
+		*
+		*	\param		[out]	path			- output file path.
+		*	\param		[in]	j				- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool json_write(string path, json& j);
+
 		/*! \brief This method gets the attributes from the input json.
 		*
 		*	\param		[in]	j				- input JSON file if it exists.
@@ -146,7 +164,7 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		template <typename T>
-		bool readJSONAttribute(json& j, std::string attributeKey, T& outAttribute);
+		bool json_readAttribute(json& j, std::string attributeKey, T& outAttribute);
 
 		/*! \brief This method gets the JSON file from the input path if it exists.
 		*
@@ -156,7 +174,7 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		template <typename T>
-		void writeJSONAttribute(json& j, std::string attributeKey, T& outAttribute);
+		void json_writeAttribute(json& j, std::string attributeKey, T& outAttribute);
 
 #if defined ZSPACE_USD_INTEROP
 
@@ -300,15 +318,17 @@ namespace zSpace
 	//--------------------------
 
 	template<typename T>
-	inline bool zFn::readJSONAttribute(json& j, std::string attributeKey, T& outAttribute)
+	inline bool zFn::json_readAttribute(json& j, std::string attributeKey, T& outAttribute)
 	{		
-		return coreUtils.readJSONAttribute(j, attributeKey, outAttribute);
+		bool out = j.contains(attributeKey);
+		if (out) outAttribute = j[attributeKey].get<T>();
+		return out;
 	}
 
 	template<typename T>
-	inline void zFn::writeJSONAttribute(json& j, std::string attributeKey, T& outAttribute)
+	inline void zFn::json_writeAttribute(json& j, std::string attributeKey, T& outAttribute)
 	{
-		coreUtils.writeJSONAttribute(j, attributeKey, outAttribute);
+		j[attributeKey] = outAttribute;
 	}
 
 #if defined ZSPACE_USD_INTEROP

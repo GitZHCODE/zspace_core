@@ -20,10 +20,10 @@ namespace zSpace
 
 	ZSPACE_INLINE zObjParticle::zObjParticle()
 	{
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		//displayUtils = nullptr;
+		displayUtils = nullptr;
 #endif
 
 		displayForces = false;
@@ -46,35 +46,35 @@ namespace zSpace
 	//---- OVERRIDE METHODS
 
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
 
-	//ZSPACE_INLINE void zObjParticle::draw()
-	//{
-	//	if (displayObject)
-	//	{
-	//		if (displayForces) drawForces();
-	//	}
+	ZSPACE_INLINE void zObjParticle::draw()
+	{
+		if (displayObject)
+		{
+			if (displayForces) drawForces();
+		}
 
-	//	if (displayObjectTransform)
-	//	{
-	//		displayUtils->drawTransform(transformationMatrix);
-	//	}
-	//}
+		if (displayObjectTransform)
+		{
+			displayUtils->drawTransform(transformationMatrix);
+		}
+	}
 
 	//---- PROTECTED DISPLAY METHODS
 
-	//ZSPACE_INLINE void zObjParticle::drawForces()
-	//{
-	//	zVector p = *particle.s.p;
-	//	zVector p1 = p + particle.f;
+	ZSPACE_INLINE void zObjParticle::drawForces()
+	{
+		zVector p = *particle.s.p;
+		zVector p1 = p + particle.f;
 
-	//	displayUtils->drawPoint(p1);
+		displayUtils->drawPoint(p1);
 
-	//	displayUtils->drawLine(p, p1, zColor(0, 1, 0, 1), 1.0);
+		displayUtils->drawLine(p, p1, zColor(0, 1, 0, 1), 1.0);
 
-	//}
+	}
 
 #endif 
 }

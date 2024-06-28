@@ -368,9 +368,11 @@ namespace zSpace
 		/*! \brief This method sets the values of the field to the input container values.
 		*
 		*	\param		[in]	fValues		- input container of field value.
+		*	\param		[in]	type		- input filed coloring type (Regular / SDF / Slime).
+		*	\param		[in]	sdfWidth	- input width for SDF values (required only for SDF, if not use default value).
 		*	\since version 0.0.2
 		*/
-		void setFieldValues(vector<T>& fValues);
+		void setFieldValues(vector<T>& fValues, zFieldColorType type = zFieldColorType::zFieldRegular, float sdfWidth = 0.1);
 
 		//--------------------------
 		//----  2D IDW FIELD METHODS
@@ -791,10 +793,12 @@ namespace zSpace
 		/*! \brief This method updates the color values of the field mesh based on the field values. Gradient - Black to Red
 		*
 		*	\warning works only for scalar fields.
+		*	\param		[in]	type		- input field coloring type (Regular / SDF / Slime).
+		*	\param		[in]	sdfWidth	- input width for SDF values (required only for SDF, if not use default value).
 		*	\since version 0.0.2
 		*	\warning	works only with scalar fields
 		*/
-		void updateColors();	
+		void updateColors(zFieldColorType type = zFieldColorType::zFieldRegular, float sdfWidth = 0.1);
 
 		//--------------------------
 		//---- CONTOUR METHODS

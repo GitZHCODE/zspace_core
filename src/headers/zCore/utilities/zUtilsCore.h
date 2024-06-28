@@ -53,6 +53,23 @@ using namespace std;
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;;
 
+#if defined ZSPACE_USD_INTEROP
+#include <pxr/pxr.h>
+#include <pxr/usd/usd/schemaBase.h>
+#include <pxr/usd/usd/prim.h>
+
+#include <pxr/usd/usdGeom/mesh.h>
+#include <pxr/usd/usd/primRange.h>
+#include <pxr/usd/usdGeom/xform.h>
+#include <pxr/usd/usdGeom/subset.h>
+
+#if PXR_VERSION >= 2208
+#include <pxr/usd/usdGeom/primvarsAPI.h>
+#endif
+
+PXR_NAMESPACE_USING_DIRECTIVE;
+#endif
+
 #ifndef __CUDACC__	
 
 	#include <toojpeg.h>
@@ -190,7 +207,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE_HOST vector<string> splitString(const string& str, const string& delimiter);
-		
+				
 
 		//--------------------------
 		//---- NUMERICAL METHODS
@@ -417,24 +434,6 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		ZSPACE_CUDA_CALLABLE zVector ofMap(float value, zDomainFloat inputDomain, zDomainVector outDomain);
-
-		/*! \brief This method a zVector from the input matrix row.
-		*
-		*	\param		[in]		zMatrixd	- input matrix. number of columns need to be 3 or 4.
-		*	\param		[in]		rowIndex	- row index to be extracted.
-		*	\return					zVector		- zVector of the row matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zVector fromMatrix4Row(zMatrix4 &inMatrix, int rowIndex = 0);
-
-		/*! \brief This method returns extracts a zVector from the input matrix column.
-		*
-		*	\param		[in]		zMatrixd	- input matrix. number of rows need to be 3 or 4.
-		*	\param		[in]		rowIndex	- row index to be extracted.
-		*	\return					zVector		- zVector of the column matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zVector fromMatrix4Column(zMatrix4 &inMatrix, int colIndex);
 
 		/*! \brief This method returns the factorised vector to the input precision.
 		*
@@ -727,77 +726,17 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		ZSPACE_CUDA_CALLABLE void cartesianToSpherical(zPoint &inVec, double &radius, double &azimuth, double &altitude);
-
-		//--------------------------
-		//---- 4x4 zMATRIX  TRANSFORMATION METHODS
-		//--------------------------
-
-		/*! \brief This method inputs the vector values at the input index of the 4X4 tranformation matrix.
-		*
-		*	\param		[in]	inMatrix	- input zMatrix .
-		*	\param		[in]	inVec		- input vector.
-		*	\param		[in]	index		- column index.
-		*	\return 			zMatrix		- transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE void setColfromVector(zMatrix4 &inMatrix, zVector &inVec, int index);
-
-		/*! \brief This method inputs the vector values at the input index of the 4X4 tranformation matrix.
-		*
-		*	\param		[in]	inMatrix	- input zMatrix .
-		*	\param		[in]	inVec		- input vector.
-		*	\param		[in]	index		- column index.
-		*	\return 			zMatrix		- transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE void setRowfromVector(zMatrix4 &inMatrix, zVector &inVec, int index);
-
-		/*! \brief This method returns the 4X4 tranformation matrix to change the origin to the input vector.
-		*
-		*	\param		[out]	inMatrix	- input zMatrix .
-		*	\param		[in]	X			- input X Axis as a vector.
-		*	\param		[in]	Y			- input Y Axis as a vector.
-		*	\param		[in]	Z			- input Z Axis as a vector.
-		*	\param		[in]	O			- input origin as a vector.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE void setTransformfromVectors(zMatrix4 &inMatrix, zVector &X, zVector &Y, zVector &Z, zVector &O);
-
-		/*! \brief This method computes the tranformation to the world space of the input 4x4 matrix.
-		*
-		*	\param		[in]	inMatrix	- input zMatrix to be transformed.
-		*	\return 			zMatrix		- world transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zMatrix4 toWorldMatrix(zMatrix4 &inMatrix);
-
-		/*! \brief This method computes the tranformation to the local space of the input 4x4 matrix.
-		*
-		*	\param		[in]	inMatrix	- input 4X4 zMatrix to be transformed.
-		*	\return 			zMatrix		- world transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zMatrix4 toLocalMatrix(zMatrix4 &inMatrix);
-
-		/*! \brief This method computes the tranformation from one 4X4 matrix to another.
-		*
-		*	\param		[in]	from		- input 4X4 zMatrix.
-		*	\param		[in]	to			- input 4X4 zMatrix.
-		*	\return 			zMatrix		- transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zMatrix4 PlanetoPlane(zMatrix4& from, zMatrix4& to);
-
-		/*! \brief This method computes the tranformation to change the baseis from one 4X4 matrix to another.
-		*
-		*	\tparam				T			- Type to work with standard c++ numerical datatypes.
-		*	\param		[in]	from		- input 4X4 zMatrix.
-		*	\param		[in]	to			- input 4X4 zMatrix.
-		*	\return 			zMatrix		- transformation matrix.
-		*	\since version 0.0.2
-		*/
-		ZSPACE_CUDA_CALLABLE zMatrix4 ChangeBasis(zMatrix4 &from, zMatrix4 &to);
 		
+
+		/*! \brief This method sorts the input point cyclically based on the 360 Angle to a reference X axis around a reference normal(Z).
+		*
+		*	\param		[in]	inPoints			- input container of points.
+		*	\param		[in]	refX				- input reference X axis.
+		*	\param		[out]	refZ			- int reference normal.
+		*	\param		[out]	outSortedPoints		- output sorted points.
+		*	\since version 0.0.4
+		*/
+		ZSPACE_CUDA_CALLABLE void cyclicalSortPoints(zPointArray& inPoints, zVector& refX, zVector &refZ, zPointArray& outSortedPoints);
 
 		//--------------------------
 		//---- VECTOR METHODS GEOMETRY
@@ -858,6 +797,87 @@ namespace zSpace
 		ZSPACE_CUDA_CALLABLE zColor blendColor(float inputValue, zDomainFloat inDomain, zDomainColor outDomain, zColorType type);
 		
 #ifndef __CUDACC__
+
+		//--------------------------
+		//---- JSON  METHODS USING MODERN JSON
+		//--------------------------
+
+		/*! \brief This method gets the JSON file from the input path if it exists.
+		*
+		*	\param		[in]	path			- input file path.
+		*	\param		[out]	j				- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool json_read(string path, json& j);
+
+		/*! \brief This method writes the JSON file to the output path.
+		*
+		*	\param		[out]	path			- output file path.
+		*	\param		[in]	j				- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool json_write(string path, json& j);
+
+		/*! \brief This method gets the attributes from the input json.
+		*
+		*	\param		[in]	j				- input JSON file if it exists.
+		*	\param		[in]	attributeKey	- input JSON attribute name.
+		*	\param		[in]	outAttribute	- input JSON attribute values.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		template <typename T>
+		bool json_readAttribute(json& j, std::string attributeKey, T& outAttribute);
+
+		/*! \brief This method gets the JSON file from the input path if it exists.
+		*
+		*	\param		[in]	path			- input file path.
+		*	\param		[out]	j				- output JSON file if it exists.
+		*	\return 			bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		template <typename T>
+		void json_writeAttribute(json& j, std::string attributeKey, T& outAttribute);
+
+		//--------------------------
+		//---- USD  METHODS 
+		//--------------------------
+
+#if defined ZSPACE_USD_INTEROP
+
+		/*! \brief This method returns the stage pointer if it exists.
+		*
+		*	\param [in]		path			-  file name including the directory path and extension.
+		*	\param [out]	uStage			-  usd stage pointer if it exists.
+		*	\return 		bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool usd_openStage(std::string path, UsdStageRefPtr& uStage);
+
+		/*! \brief This method creates a new stage in the specified path.
+		*
+		*	\param [in]		path			- file name including the directory path and extension.
+		*	\param [out]	uStage			- usd stage pointer if it exists.
+		*	\return 		bool			- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		bool usd_createStage(std::string path, UsdStageRefPtr& uStage);
+
+		/*! \brief This method creates a new geometry prim with the input name & stage.
+		*
+		*	\param [in]		uStage				- usd stage pointer.
+		*	\param [in]		s_prim				- name of the geometry prim.
+		*	\param [out]	geomPrim			- output geometry prim.
+		*	\return 		bool				- true if file exists, else false.
+		*	\since version 0.0.4
+		*/
+		template <typename T>
+		void usd_createGeomPrim(UsdStageRefPtr& uStage, string s_prim, T& geomPrim);
+
+
+#endif
 
 		//--------------------------
 		//---- IMAGE  METHODS
@@ -989,50 +1009,77 @@ namespace zSpace
 		*/
 		zTransform getTransformFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis = zVector(0, 1, 0));
 
-
-		//--------------------------
-		//---- JSON  METHODS USING MODERN JSON
-		//--------------------------
-
-		/*! \brief This method gets the JSON file from the input path if it exists.
+		/*! \brief This method computes the zTransform from the input row major container of 16 values.
 		*
-		*	\param		[in]	path			- input file path.
-		*	\param		[out]	j				- output JSON file if it exists.
-		*	\return 			bool			- true if file exists, else false.
+		*	\param		[in]	rowMajorVals		- input 1D container of the transform values in row major format.
+		*	\return 			zTransform		- transformation matrix.
+		*	\since version 0.0.2
+		*/
+		zPlane getPlaneFromArray(zFloatArray& rowMajorVals);
+
+		/*! \brief This method compute the transform from input Vectors.
+		*
+		*	\param		[in]	O							- input origin point.
+		*	\param		[in]	X							- input X axis vector.
+		* 	\param		[in]	Y							- input Y axis vector.
+		*	\param		[in]	Z							- input Z axis vector.
+		*	\return				zTransform					- output transform.
 		*	\since version 0.0.4
 		*/
-		bool readJSON(string path, json& j);
+		zPlane getPlaneFromVectors(zPoint& O, zVector& X, zVector& Y, zVector& Z);
 
-		/*! \brief This method writes the JSON file to the output path.
+		/*! \brief This method compute the transform from input Vectors.
 		*
-		*	\param		[out]	path			- output file path.
-		*	\param		[in]	j				- output JSON file if it exists.
-		*	\return 			bool			- true if file exists, else false.
+		* 	\param		[in]	O							- input origin point.
+		*	\param		[in]	Z							- input Z axis vector.
+		*	\param		[in]	Basis						- input Basis vector.
+		*	\return				zTransform					- output transform.
 		*	\since version 0.0.4
 		*/
-		bool writeJSON(string path, json& j);
-		
-		/*! \brief This method gets the attributes from the input json.
-		*
-		*	\param		[in]	j				- input JSON file if it exists.
-		*	\param		[in]	attributeKey	- input JSON attribute name.
-		*	\param		[in]	outAttribute	- input JSON attribute values.
-		*	\return 			bool			- true if file exists, else false.
-		*	\since version 0.0.4
-		*/
-		template <typename T>
-		bool readJSONAttribute(json& j, string attributeKey , T &outAttribute);
+		zPlane getPlaneFromOrigin_Normal(zPoint& O, zVector& Z, zVector Basis = zVector(0, 1, 0));
 
-		/*! \brief This method gets the JSON file from the input path if it exists.
+
+#ifndef __CUDACC__
+
+		/*! \brief This method compute the quaternion from input plane (row major).
 		*
-		*	\param		[in]	path			- input file path.
-		*	\param		[out]	j				- output JSON file if it exists.
-		*	\return 			bool			- true if file exists, else false.
+		* 	\param		[in]	plane						- input plane matrix.
+		*	\return				zQuaternion					- output quaternion.
 		*	\since version 0.0.4
 		*/
-		template <typename T>
-		void writeJSONAttribute(json& j, string attributeKey, T& outAttribute);
-		
+		zQuaternion planeToQuaternion(zPlane& plane);
+
+		/*! \brief This method compute the plane from input quaternion and origin.
+		*
+		* 	\param		[in]	q							- input quaternion.
+		* 	\param		[in]	origin						- input plane origin.
+		*	\return				zPlane						- output plane (row major).
+		*	\since version 0.0.4
+		*/
+		zPlane quaternionToPlane(zQuaternion& q, zPoint origin);
+
+		/*! \brief This method compute the interpolated planes between the two input planes.
+		*
+		* 	\param		[in]	p1							- input plane 1.
+		* 	\param		[in]	p2							- input plane 2.
+		* 	\param		[in]	numplanes					- input number of planes.
+		* 	\param		[in]	origins						- input container of orin points for the interpolated planes.
+		*	\param		[out]	outPlanes					- output contatiner of interpolated planes.
+		*	\since version 0.0.4
+		*/
+		void interpolatePlanes_slerp(zPlane& p1, zPlane& p2, int numPlanes, zPointArray& origins, vector<zPlane>& outPlanes);
+
+		/*! \brief This method compute the dihedral angle between two planes.
+		*
+		* 	\param		[in]	p1							- input plane 1.
+		* 	\param		[in]	p2							- input plane 2.
+		*	\return				float						- dihedral angle in degrees.
+		*	\since version 0.0.4
+		*/
+		float dihedralAngleBetweenPlanes(zPlane& p1, zPlane& p2);
+
+#endif
+				
 		//--------------------------
 		//---- MATRIX  METHODS USING ARMADILLO
 		//--------------------------
@@ -1276,8 +1323,10 @@ namespace zSpace
 		return out;
 	}
 
+	//---- JSON METHODS
+
 	template<typename T>
-	inline bool zUtilsCore::readJSONAttribute(json& j, string attributeKey, T& outAttribute)
+	inline bool zUtilsCore::json_readAttribute(json& j, std::string attributeKey, T& outAttribute)
 	{
 		bool out = j.contains(attributeKey);
 		if (out) outAttribute = j[attributeKey].get<T>();
@@ -1285,10 +1334,24 @@ namespace zSpace
 	}
 
 	template<typename T>
-	inline void zUtilsCore::writeJSONAttribute(json& j, string attributeKey, T& outAttribute)
+	inline void zUtilsCore::json_writeAttribute(json& j, std::string attributeKey, T& outAttribute)
 	{
-		j[attributeKey] = outAttribute;		
+		j[attributeKey] = outAttribute;
 	}
+
+#if defined ZSPACE_USD_INTEROP
+
+	//---- UsdGeomMesh specilization for usd_createGeomPrim
+	template<>
+	inline void zUtilsCore::usd_createGeomPrim(UsdStageRefPtr& uStage, string s_prim, UsdGeomMesh& geomPrim)
+	{
+		geomPrim = UsdGeomMesh::Define(uStage, SdfPath("/World/Geometry/" + s_prim));
+
+		if (!geomPrim) cout << " error creating UsdGeomMesh at  /World/Geometry/" << s_prim.c_str() << endl;
+	}
+
+
+#endif
 
 
 #endif

@@ -67,8 +67,8 @@ namespace zSpace
 		/*!	\brief stores of the edge. */
 		int index;
 
-		/*!	\brief pointer to 2 half edges of the edge. */
-		zHalfEdge* he[2];
+		/*!	\brief indicies to 2 half edges of the edge. */
+		int he[2];
 
 	public:		
 	
@@ -116,15 +116,15 @@ namespace zSpace
 		*	\param		[in]	_index		- input index - 0 or 1.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE zHalfEdge* getHalfEdge(int _index);
+		ZSPACE_CUDA_CALLABLE int getHalfEdge(int _index);
 
 		/*! \brief This method sets the half edge pointer of current edge at the input index.
 		*
-		*	\param		[in]	_he			- input half edge pointer.
+		*	\param		[in]	_he			- input half edge index.
 		*	\param		[in]	_index		- input index - 0 or 1.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE void setHalfEdge(zHalfEdge* _he, int _index);
+		ZSPACE_CUDA_CALLABLE void setHalfEdge(int _he, int _index);
 
 		//--------------------------
 		//---- METHODS
@@ -174,23 +174,23 @@ namespace zSpace
 	{
 	protected:
 		
-		/*!	\brief iterator	in vertex list. */
-		zVertex* v;
+		/*!	\brief index in vertex list. */
+		int v;
 
-		/*!	\brief iterator in face list. */
-		zFace* f;
+		/*!	\brief index in face list. */
+		int f;
 
-		/*!	\brief iterator in edge list. */
-		zEdge* e;
+		/*!	\brief index in edge list. */
+		int e;
 
-		/*!	\brief iterator to previous  halfedge */
-		zHalfEdge* prev;
+		/*!	\brief index of previous  halfedge */
+		int prev;
 
-		/*!	\brief iterator to next halfedge */
-		zHalfEdge* next;
+		/*!	\brief index of next halfedge */
+		int next;
 
-		/*!	\brief iterator to symmerty/twin half edge.			*/
-		zHalfEdge* sym;
+		/*!	\brief index of symmerty/twin half edge.			*/
+		int sym;
 
 		/*!	\brief index of half edge.			*/
 		int index;
@@ -231,94 +231,94 @@ namespace zSpace
 
 		/*! \brief This method sets the index of current half edge to the the input value.
 		*
-		*	\param		[in]	_ edgeId - input half edge index
+		*	\param		[in]	_halfedgeId - input half edge index
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE void setId(int _edgeId);
+		ZSPACE_CUDA_CALLABLE void setId(int _halfedgeId);
 
 		/*! \brief This method returns the symmetry half edge of current half edge.
 		*
-		*	\return				zHalfEdge - symmetry halfedge pointed by the half edge.
+		*	\return				int - symmetry halfedge pointed by the half edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE zHalfEdge* getSym();
+		ZSPACE_CUDA_CALLABLE int getSym();
 
 		/*! \brief This method sets the symmetry edge of current zEdge to the the input edge
 		*
 		*	\param		[in]	_sym - symmetry half edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE void setSym(zHalfEdge* _sym);
+		ZSPACE_CUDA_CALLABLE void setSym(int _sym);
 
 		/*! \brief This method returns the previous half edge of current zEdge.
 		*
-		*	\return				zHalfEdge - previous halfedge pointed by the half edge.
+		*	\return				int - previous halfedge pointed by the half edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE zHalfEdge* getPrev();
+		ZSPACE_CUDA_CALLABLE int getPrev();
 
 		/*! \brief This method sets the previous half edge of current half edge to the the input half edge.
 		*
 		*	\param		[in]	_prev		- previous halfedge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE void setPrev(zHalfEdge* _prev);
+		ZSPACE_CUDA_CALLABLE void setPrev(int _prev);
 
 		/*! \brief This method returns the next edge of current halfedge.
 		*
-		*	\return				zHalfEdge - next halfedge pointed by the half edge.
+		*	\return				int - next halfedge pointed by the half edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE zHalfEdge* getNext();
+		ZSPACE_CUDA_CALLABLE int getNext();
 
 		/*! \brief This method sets the next edge of current half edge to the the input half edge
 		*
 		*	\param		[in]	_next		- next half edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE void setNext(zHalfEdge* _next);
+		ZSPACE_CUDA_CALLABLE void setNext(int _next);
 
 		/*! \brief This method returns the vertex pointed to by the current zEdge.
 		*
-		*	\return				zVertex - vertex pointed by the half edge.
+		*	\return				int - vertex pointed by the half edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE zVertex* getVertex();
+		ZSPACE_CUDA_CALLABLE int getVertex();
 
 		/*! \brief This method sets the vertex pointed to by the current half edge to the the input vertex.
 		*
 		*	\param		[in]	_v - input vertex.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE void setVertex(zVertex* _v);
+		ZSPACE_CUDA_CALLABLE void setVertex(int _v);
 
 		/*! \brief This method returns the face pointed to by the current half edge.
 		*
-		*	\return				zEdge - face pointed by the half edge.
+		*	\return				int - face pointed by the half edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE zFace* getFace();
+		ZSPACE_CUDA_CALLABLE int getFace();
 
 		/*! \brief This method sets the face pointed to by the current half edge to the the input face.
 		*
 		*	\param		[in]	 _f - input face.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE void setFace(zFace* _f);
+		ZSPACE_CUDA_CALLABLE void setFace(int _f);
 
 		/*! \brief This method gets the edge pointed to by the current half edge.
 		*
-		*	\return				zEdge - edge pointed by the half edge.
+		*	\return				int - edge pointed by the half edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE zEdge* getEdge();
+		ZSPACE_CUDA_CALLABLE int getEdge();
 
 		/*! \brief This method sets the edge pointed to by the current halfedge to the the input edge.
 		*
 		*	\param		[in]	 _e - input edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE void setEdge(zEdge* _e);
+		ZSPACE_CUDA_CALLABLE void setEdge(int _e);
 
 		/*! \brief This method resets the pointers of the half edge to null.
 		*
@@ -369,8 +369,8 @@ namespace zSpace
 		/*!	\brief index of vertex.			*/
 		int index;
 
-		/*!	\brief pointer to zHalfEdge starting at the current zVertex.		*/
-		zHalfEdge* he;
+		/*!	\brief index to zHalfEdge starting at the current zVertex.		*/
+		int he;
 
 	public:				
 
@@ -414,17 +414,17 @@ namespace zSpace
 
 		/*! \brief This method gets the half edge pointed by the current Vertex.
 		*
-		*	\return				zHalfEdge - half edge pointed to by the vertex.
+		*	\return				int - half edge pointed to by the vertex.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE zHalfEdge* getHalfEdge();
+		ZSPACE_CUDA_CALLABLE int getHalfEdge();
 
 		/*! \brief This method sets the half edge of the current vertex to the the input half edge
 		*
 		*	\param		[in]	_he - input half edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE void setHalfEdge(zHalfEdge* _he);
+		ZSPACE_CUDA_CALLABLE void setHalfEdge(int _he);
 
 		/*! \brief This method makes the pointers of the current zVertex to null.
 		*
@@ -475,8 +475,8 @@ namespace zSpace
 		/*!	\brief stores index of the face. 	*/
 		int index;
 
-		/*!	\brief pointer to one of the zHalfEdge contained in the polygon.		*/
-		zHalfEdge* he;
+		/*!	\brief index to one of the zHalfEdge contained in the polygon.		*/
+		int he;
 
 	public:	
 				
@@ -518,17 +518,17 @@ namespace zSpace
 
 		/*! \brief This method returns the associated edge of current zFace.
 		*
-		*	\return				zHalfEdge -  half edge pointed to by the face.
+		*	\return				int -  half edge pointed to by the face.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE zHalfEdge* getHalfEdge();
+		ZSPACE_CUDA_CALLABLE int getHalfEdge();
 
 		/*! \brief This method sets the associated edge of current zFace to the the input edge
 		*
 		*	\param		[in]	_he - input half edge.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE void setHalfEdge(zHalfEdge* _he);
+		ZSPACE_CUDA_CALLABLE void setHalfEdge(int _he);
 
 		//--------------------------
 		//---- METHODS

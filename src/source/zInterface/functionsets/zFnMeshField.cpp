@@ -1159,7 +1159,7 @@ namespace zSpace
 	//---- zScalar and zVector specilization for setFieldValues
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::setFieldValues(zScalarArray& fValues)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::setFieldValues(zScalarArray& fValues, zFieldColorType type, float sdfWidth)
 	{
 		if (fValues.size() == numFieldValues())
 		{			
@@ -1169,7 +1169,7 @@ namespace zSpace
 				s.setValue(fValues[i]);
 			}
 
-			updateColors();
+			updateColors(type, sdfWidth);
 
 			//printf("\n working  update colors %i ", contourVertexValues.size());;
 		}
@@ -1178,7 +1178,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::setFieldValues(vector<zVector>& fValues)
+	ZSPACE_INLINE void zFnMeshField<zVector>::setFieldValues(vector<zVector>& fValues, zFieldColorType type, float sdfWidth)
 	{
 		if (fValues.size() == numFieldValues())
 		{
@@ -1462,9 +1462,9 @@ namespace zSpace
 	{
 		scalars.clear();;
 
-		vector<double> distVals;
-		double dMin = 100000;
-		double dMax = 0;;
+		vector<float> distVals;
+		float dMin = 100000;
+		float dMax = 0;;
 
 		zVector *meshPositions = fnMesh.getRawVertexPositions();
 
@@ -1491,7 +1491,8 @@ namespace zSpace
 			}
 		}
 
-		dMin = coreUtils.zMin(distVals);
+		scalars = distVals;
+		/*dMin = coreUtils.zMin(distVals);
 		dMax = coreUtils.zMax(distVals);
 
 
@@ -1499,7 +1500,7 @@ namespace zSpace
 		{
 			double val = coreUtils.ofMap(distVals[j], dMin, dMax, 0.0, 1.0);
 			scalars.push_back(val);
-		}
+		}*/
 
 
 		if (normalise)
@@ -2008,10 +2009,10 @@ namespace zSpace
 		zDomainFloat d;
 		computeDomain(fieldValues, d);
 				
-		for (int i = 0; i < fieldValues.size(); i++) fieldValues[i] = d.max - fieldValues[i];
-		computeDomain(fieldValues, d);		
+		//for (int i = 0; i < fieldValues.size(); i++) fieldValues[i] = d.max - fieldValues[i];
+		//computeDomain(fieldValues, d);		
 
-		/*zDomainFloat outNeg(-1.0, 0.0);
+		zDomainFloat outNeg(-1.0, 0.0);
 		zDomainFloat outPos(0.0, 1.0);
 
 		zDomainFloat inNeg(d.min, 0.0);
@@ -2021,7 +2022,9 @@ namespace zSpace
 		{
 			if(fieldValues[i] < 0) fieldValues[i] = coreUtils.ofMap(fieldValues[i], inNeg, outNeg);
 			else fieldValues[i] = coreUtils.ofMap(fieldValues[i], inPos, outPos);
-		}*/
+		}
+
+		computeDomain(fieldValues, d);
 	}
 
 	template<>
@@ -2186,7 +2189,7 @@ namespace zSpace
 	template<>
 	ZSPACE_INLINE void zFnMeshField<zScalar>::blend_linear(int currentFrame, int totalFrames, zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result)
 	{
-		float weight = currentFrame / totalFrames;
+		float weight = (float) currentFrame / (float) totalFrames;
 
 		if (currentFrame <= 0) weight = 0;
 		if (currentFrame >= totalFrames) weight = 1;
@@ -2314,7 +2317,7 @@ namespace zSpace
 	//---- zScalar specilization for updateColors
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::updateColors()
+	ZSPACE_INLINE void zFnMeshField<zScalar>::updateColors(zFieldColorType type, float sdfWidth)
 	{
 
 		vector<float> scalars;
@@ -2375,11 +2378,6 @@ namespace zSpace
 
 			else
 			{
-				//cout << "\n update color : contourValueDomain " << contourValueDomain.min << " , " << contourValueDomain.max;
-				//cout << "\n update color : fieldColorDomain min " << fieldColorDomain.min.r << " , " << fieldColorDomain.min.g << " , " << fieldColorDomain.min.b;
-				//cout << "\n update color : fieldColorDomain max" << fieldColorDomain.max.r << " , " << fieldColorDomain.max.g << " , " << fieldColorDomain.max.b;
-
-
 				fieldColorDomain.min.toHSV(); fieldColorDomain.max.toHSV();
 
 				zColor* cols = fnMesh.getRawVertexColors();
@@ -2388,49 +2386,41 @@ namespace zSpace
 				for (int i = 0; i < scalars.size(); i++)
 				{
 					// SLIME
-					/*if (scalars[i] < contourValueDomain.min) cols[i] = fieldColorDomain.min;
-					else if (scalars[i] > contourValueDomain.max) cols[i] = fieldColorDomain.max;
-					else
+					if (type == zFieldColorType::zFieldSlime)
 					{
-						cols[i] = coreUtils.blendColor(scalars[i], contourValueDomain, fieldColorDomain, zHSV);
-					}*/					
+						if (scalars[i] < contourValueDomain.min) cols[i] = fieldColorDomain.min;
+						else if (scalars[i] > contourValueDomain.max) cols[i] = fieldColorDomain.max;
+						else
+						{
+							cols[i] = coreUtils.blendColor(scalars[i], contourValueDomain, fieldColorDomain, zHSV);
+						}
+					}
+									
 
 
 					// SDFs
-					if (scalars[i] < -0.1)
+					if (type == zFieldColorType::zFieldSDF)
 					{
-						//temp = coreUtils.blendColor(scalars[i], dVal, dCol, zHSV);
+						if (scalars[i] < -sdfWidth)
+						{
+							//temp = coreUtils.blendColor(scalars[i], dVal, dCol, zHSV);
 
-						cols[i] = zColor(0, 0.550, 0.950, 1);
-					}
-					else if (scalars[i] > 0.1)
-					{
+							cols[i] = fieldColorDomain.min;/*zColor(0, 0.550, 0.950, 1);*/
+						}
+						else if (scalars[i] > sdfWidth)
+						{
 
-						cols[i] = zColor(0.25, 0.25, 0.25, 1) /*dCol.max*/;
+							cols[i] = /*zColor(0.25, 0.25, 0.25, 1)*/ fieldColorDomain.max;
+						}
+						else cols[i] = zMAGENTA;
 					}
-					else cols[i] = zColor(0.950, 0, 0.55, 1);;
+					
 
 					//OTHER
-					//if (scalars[i] < -0.005)
-					//{
-					//	zDomainColor dCol(zColor(324, 0.0, 1), zColor(324, 0.0, 0.4));
-					//	zDomainFloat dVal(contourValueDomain.min, -0.005);
-
-					//	//cols[i] = zColor(1, 0, 0, 1);
-
-					//	cols[i] = coreUtils.blendColor(scalars[i], dVal, dCol, zHSV);
-					//}
-					//else if (scalars[i] > 0.005)
-					//{
-
-					//	zDomainColor dCol(zColor(150, 0.0, 0.4), zColor(150, 0, 1));
-					//	zDomainFloat dVal(0.005, contourValueDomain.max);
-
-					//	//cols[i] = zColor(0, 1, 0, 1);
-
-					//	cols[i] = coreUtils.blendColor(scalars[i], dVal, dCol, zHSV);
-					//}
-					//else cols[i] = zColor(324, 1, 1);
+					if (type == zFieldColorType::zFieldRegular)
+					{
+						cols[i] = coreUtils.blendColor(scalars[i], contourValueDomain, fieldColorDomain, zHSV);
+					}					
 				}
 
 				if (fnMesh.numPolygons() == scalars.size())

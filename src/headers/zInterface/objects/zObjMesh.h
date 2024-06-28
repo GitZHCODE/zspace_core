@@ -243,13 +243,43 @@ namespace zSpace
 		*/
 		inline bool& getDisplayFaceIds() { return displayFaceIds; }
 
+#ifndef ZSPACE_VIEWER
+
+		/*! \brief This method gets the vertex VBO Index .
+				*
+				*	\return			int				- vertex VBO Index.
+				*	\since version 0.0.2
+				*/
+		int getVBO_VertexID();
+
+		/*! \brief This method gets the edge VBO Index .
+		*
+		*	\return			int				- edge VBO Index.
+		*	\since version 0.0.2
+		*/
+		int getVBO_EdgeID();
+
+		/*! \brief This method gets the face VBO Index .
+		*
+		*	\return			int				- face VBO Index.
+		*	\since version 0.0.2
+		*/
+		int getVBO_FaceID();
+
+		/*! \brief This method gets the vertex color VBO Index .
+		*
+		*	\return			int				- vertex color VBO Index.
+		*	\since version 0.0.2
+		*/
+		int getVBO_VertexColorID();
+#endif
+
 		void getBounds(zPoint &minBB, zPoint &maxBB) override;
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		//void draw() override;
-#endif
+		void draw() override;
 
 		//--------------------------
 		//---- DISPLAY BUFFER METHODS
@@ -293,6 +323,7 @@ namespace zSpace
 		*	\since version 0.0.4
 		*/
 		void drawMesh_FaceNormals();
+#endif
 	};
 
 

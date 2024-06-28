@@ -20,10 +20,10 @@ namespace zSpace
 	ZSPACE_INLINE zObjComputeField2D::zObjComputeField2D()
 	{
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) /*|| defined (ZSPACE_RHINO_INTEROP)*/
 		// Do Nothing
 #else
-		//displayUtils = nullptr;
+		displayUtils = nullptr;
 #endif
 
 		displayVertices = false;
@@ -77,6 +77,7 @@ namespace zSpace
 
 	//---- GET METHODS
 
+#ifndef ZSPACE_VIEWER
 	ZSPACE_INLINE int zObjComputeField2D::getVBO_VertexID()
 	{
 		return VBO_VertexId;
@@ -96,6 +97,7 @@ namespace zSpace
 	{
 		return VBO_VertexColorId;
 	}
+#endif
 
 	//---- OVERRIDE METHODS
 
@@ -104,23 +106,23 @@ namespace zSpace
 		coreUtils.getBounds(vertexPositions, nV, minBB, maxBB);
 	}
 
-#if defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) || defined (ZSPACE_RHINO_INTEROP)
+#if defined (ZSPACE_VIEWER) || defined (ZSPACE_UNREAL_INTEROP) || defined (ZSPACE_MAYA_INTEROP) || defined (ZSPACE_RHINO_INTEROP)
 	// Do Nothing
 #else
 	   
-	//ZSPACE_INLINE void zObjComputeField2D::draw()
-	//{	
-	//	if (displayObject)
-	//	{
-	//		drawField2D();			
-	//	}
+	ZSPACE_INLINE void zObjComputeField2D::draw()
+	{	
+		if (displayObject)
+		{
+			drawField2D();			
+		}
 
-	//	if (displayObjectTransform)
-	//	{
-	//		displayUtils->drawTransform(transformationMatrix);
-	//	}
+		if (displayObjectTransform)
+		{
+			displayUtils->drawTransform(transformationMatrix);
+		}
 
-	//}
+	}
 
 	//---- DISPLAY BUFFER METHODS
 
