@@ -202,6 +202,15 @@ namespace zSpace
 		*/
 		bool addPolygon(zItMeshFace &face);
 
+		/*! \brief This method updated the input face of the mesh.
+		*
+		*	\param		[in]	face		- input face iterator.
+		*	\param		[in]	fVertices	- array of ordered vertex index that make up the polygon.
+		*	\return				bool		- true if the faces container is resized.
+		*	\since version 0.0.2
+		*/
+		bool updatePolygon(zItMeshFace& face, zIntArray& fVertices);
+
 		//--------------------------
 		//--- TOPOLOGY QUERY METHODS 
 		//--------------------------
@@ -955,7 +964,7 @@ namespace zSpace
 		*	\return				zItMeshVertex	- iterator to new vertex added after splitting the edge.
 		*	\since version 0.0.2
 		*/
-		zItMeshVertex splitEdge(zItMeshEdge &edge, double edgeFactor = 0.5);
+		zItMeshVertex splitEdge(zItMeshEdge &edge, double edgeFactor = 0.5, bool checkDuplicates = false);
 
 		/*! \brief This method splits an edge and inserts a vertex along the edge at the input factor.
 		*
@@ -964,7 +973,7 @@ namespace zSpace
 		*	\return				zItMeshVertex	- iterator to new vertex added after splitting the edge.
 		*	\since version 0.0.2
 		*/
-		zItMeshVertex splitHalfEdge(zItMeshHalfEdge& hEdge, double edgeFactor = 0.5);
+		zItMeshVertex splitHalfEdge(zItMeshHalfEdge& hEdge, double edgeFactor = 0.5, bool checkDuplicates = false);
 
 		/*! \brief This method detaches an edge.
 		*
