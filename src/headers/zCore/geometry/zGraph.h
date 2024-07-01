@@ -113,6 +113,17 @@ namespace zSpace
 		/*!	\brief stores half edge handles. Used for container resizing only  */
 		vector<zHalfEdgeHandle> heHandles;
 
+#ifndef ZSPACE_VIEWER
+		/*!	\brief stores the start vertex ID in the VBO, when attached to the zBufferObject.	*/
+		int VBO_VertexId;
+
+		/*!	\brief stores the start edge ID in the VBO, when attached to the zBufferObject.	*/
+		int VBO_EdgeId;
+
+		/*!	\brief stores the start vertex color ID in the VBO, when attache to the zBufferObject.	*/
+		int VBO_VertexColorId;
+#endif
+
 		/*!	\brief boolean indicating if the geometry is static or not. Default its false.	*/
 		bool staticGeometry = false;
 

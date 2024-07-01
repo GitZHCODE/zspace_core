@@ -24,14 +24,10 @@ local function CommonConfigurationSettings()
 --        flags {"MultiProcessorCompile"}
 --        buildoptions {"/bigobj"}
 
-    filter "configurations:Debug_DLL*"
-        kind "SharedLib"
+    filter "configurations:*Debug*"
         targetname ("%{prj.name}")
-        defines {"ZSPACE_DYNAMIC_LIBRARY",
-                 "_WINDLL"}
         optimize "Off"
         warnings "Off"
-        --symbols "On"
         flags {"MultiProcessorCompile"}
         buildoptions {"/bigobj"}
 
@@ -46,22 +42,24 @@ local function CommonConfigurationSettings()
 --                "MultiProcessorCompile"}
 --        buildoptions {"/bigobj"}
 
-    filter "configurations:Release_DLL*"
-        kind "SharedLib"
+    filter "configurations:*Release*"
         targetname ("%{prj.name}")
-        defines {"ZSPACE_DYNAMIC_LIBRARY",
-                 "NDEBUG",
-                 "_WINDLL"}
+        defines {"NDEBUG"}
         optimize "Full"
         warnings "Off"
         flags {"LinkTimeOptimization",
                 "MultiProcessorCompile"}
 
+    filter "configurations:*DLL*"
+        kind "SharedLib"
+        defines {"ZSPACE_DYNAMIC_LIBRARY",
+                 "_WINDLL"}
+
     filter {}
 end
 
-path_from_core_to_workspace = path.join("..", path.getrelative(sketches_path, "%{wks.location}"))
-path_from_core_to_zspace_deps = path.join(path_from_core_to_workspace, zspace_deps_path)
+path_from_core_to_zspace_deps = path.getrelative(zspace_core_path, zspace_deps_path)
+path_from_core_to_zspace_toolsets = path.getrelative(zspace_core_path, zspace_toolsets_path)
 
 -- Redefine to keep paths relative
 CoreIncludeDir = prependPath(path_from_core_to_zspace_deps, get_zspace_include_dirs())
@@ -69,7 +67,7 @@ CoreLibDir = prependPath(path_from_core_to_zspace_deps, get_zspace_lib_dirs())
 
 --#############__ZSPACE_APP__#############
 project "zSpace_App"
-    location "projects/zSpace_App"
+    location "projects/zSpace_App/%{wks.name}"
     language "C++"
     cppdialect "C++17"
     dependson("zSpace_Interface")
@@ -92,6 +90,7 @@ project "zSpace_App"
     {
         "%{CoreIncludeDir.ARMADILLO}",
         "src/headers",
+        "%{path_from_core_to_zspace_toolsets}/src/headers",
     }
 
     libdirs
@@ -103,7 +102,7 @@ project "zSpace_App"
 
 --#############__ZSPACE_CORE__#############
 project "zSpace_Core"
-    location "projects/zSpace_Core"
+    location "projects/zSpace_Core/%{wks.name}"
     language "C++"
     cppdialect "C++17"
 
@@ -139,30 +138,44 @@ project "zSpace_Core"
         "src/headers",
     }
 
-    -- Add omniverse includes
-    includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
-
     libdirs
     {
         "%{CoreLibDir.SQLITE}",
         "%{cfg.targetdir}",
     }
 
-    -- Add omniverse libdirs
-    libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
-
     links
     {
         "sqlite3.lib",
     }
 
-    -- Add omniverse links
-    links {get_omniverse_links()}
+    --###__Injected__###
+        --Inject included dirs
+        includedirs {get_include_dirs_injection()}
+
+        --Inject lib dirs
+        libdirs {get_lib_dirs_injection()}
+
+        --Inject links
+        links {get_links_injection()}
+    --##################
+
+    --###__Omniverse__###
+    filter {"platforms:Omniverse or Both"}
+        -- Add omniverse includes
+        includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
+
+        -- Add omniverse libdirs
+        libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
+
+        -- Add omniverse links
+        links {get_omniverse_links()}
+    filter{}
 
 
 --#############__ZSPACE_INTERFACE__#############
 project "zSpace_Interface"
-    location "projects/zSpace_Interface"
+    location "projects/zSpace_Interface/%{wks.name}"
     language "C++"
     cppdialect "C++17"
     dependson("zSpace_Core")
@@ -204,9 +217,6 @@ project "zSpace_Interface"
         "src/headers",
     }
 
-    -- Add omniverse includes
-    includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
-
     libdirs
     {
         "%{CoreLibDir.SQLITE}",
@@ -214,23 +224,41 @@ project "zSpace_Interface"
         "%{cfg.targetdir}",
     }
 
-    -- Add omniverse libdirs
-    libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
-
     links
     {
         "sqlite3.lib",
         "zSpace_Core.lib",
         "igl.lib",
     }
+    --##############
 
-    -- Add omniverse links
-    links {get_omniverse_links()}
+    --###__Injected__###
+        -- Inject included dirs
+        includedirs {get_include_dirs_injection()}
+
+        -- Inject lib dirs
+        libdirs {get_lib_dirs_injection()}
+
+        -- Inject links
+        links{get_links_injection()}
+    --##################
+
+    --###__Omniverse__###
+    filter {"platforms:Omniverse or Both"}
+        -- Add omniverse includes
+        includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
+
+        -- Add omniverse libdirs
+        libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
+
+        -- Add omniverse links
+        links {get_omniverse_links()}
+    filter {}
 
 
 --#############__ZSPACE_INTEROP__#############
 project "zSpace_InterOp"
-    location "projects/zSpace_InterOp"
+    location "projects/zSpace_InterOp/%{wks.name}"
     language "C++"
     cppdialect "C++17"
     dependson("zSpace_Interface")
@@ -265,26 +293,16 @@ project "zSpace_InterOp"
         "%{CoreIncludeDir.QUICKHULL}",
         "%{CoreIncludeDir.IGL}",
         "%{maya_dir}/include",
-        --Rhino
-        "%{rhino_dir}/inc",
         --local
         "src/headers",
     }
-
-    -- Add omniverse includes
-    includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
 
     libdirs
     {
         "%{CoreLibDir.SQLITE}",
         "%{maya_dir}/lib",
         "%{cfg.targetdir}",
-        --Rhino
-        "%{rhino_dir}/lib/Release"
     }
-
-    -- Add omniverse libdirs
-    libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
 
     links
     {
@@ -300,11 +318,39 @@ project "zSpace_InterOp"
         "Foundation.lib",
     }
 
-    -- Add omniverse links
-    links {get_omniverse_links()}
+    --###__Injected__###
+        --Inject included dirs
+        includedirs {get_include_dirs_injection()}
+
+        -- Inject lib dirs
+        libdirs {get_lib_dirs_injection()}
+    --##################
+
+    --###__Omniverse__###
+    filter {"platforms:Omniverse or Both"}
+        -- Add omniverse includes
+        includedirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_includes())}
+
+        -- Add omniverse libdirs
+        libdirs {prependPath(path_from_core_to_zspace_deps, get_omniverse_libdirs())}
+
+        -- Add omniverse links
+        links {get_omniverse_links()}
+    --###################
 
     --###__RHINO__###
-    filter {"configurations:*Rhino"}
+    filter {"platforms:Rhino or Both"}
+
+        includedirs
+        {
+            "%{rhino_dir}/inc"
+        }
+
+        libdirs
+        {
+            "%{rhino_dir}/lib/Release"
+        }
+
         delayloaddlls
         {
             "opennurbs.dll",
@@ -319,3 +365,4 @@ project "zSpace_InterOp"
             "RhinoLibrary.lib", --This lib should be in Rhino 7 SDK, if it's not ask Vishu
         }
     filter {}
+    --###############

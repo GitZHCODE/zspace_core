@@ -4,8 +4,8 @@
 //---- zArchGeometry
 //--------------------------
 
-#include <headers/zArchGeom/zAgColumn.h>
+#include <zArchGeom/zAgColumn.h>
 
-#include <headers/zArchGeom/zAgSlab.h>
+#include <zArchGeom/zAgSlab.h>
 
-#include <headers/zArchGeom/zAgTypedef.h>
+#include <zArchGeom/zAgTypedef.h>
