@@ -352,7 +352,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void getFieldColorDomain(zDomainColor& colDomain);
-		
+
 		//--------------------------
 		//---- SET METHODS
 		//--------------------------
@@ -558,6 +558,8 @@ namespace zSpace
 		*/
 		void getScalars_Polygon(zScalarArray& scalars, zObjGraph & inGraphObj, bool normalise = true);
 
+		void getScalars_Polygon(zScalarArray& scalars, zObjGraph & inGraphObj, zIntArray& closestEdgeId, bool normalise = true);
+
 		/*! \brief This method gets the scalars for a circle.
 		*
 		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
@@ -622,6 +624,18 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void getScalars_Square(zScalarArray &scalars, zVector& cen, zVector &dimensions, float annularVal = 0, bool normalise = true);
+
+		/*! \brief This method gets the scalars for a square.
+		*
+		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
+		*	\param	[out]	scalars			- container for storing scalar values.
+		*	\param	[in]	p				- input field point.
+		*	\param	[in]	dimension		- input square dimensions.
+		*	\param	[in]	annularVal		- input annular / offset value.
+		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
+		*	\since version 0.0.2
+		*/
+		void getScalars_Square_SharpCorners(zScalarArray &scalars, zVector& cen, zVector &dimensions, float annularVal = 0, bool normalise = true);
 
 		/*! \brief This method gets the scalars for a trapezoid.
 		*
@@ -886,7 +900,7 @@ namespace zSpace
 		*	\return			double			- scalar value.
 		*	\since version 0.0.2
 		*/
-		float getScalar_Polygon(zObjGraph& inGraphObj, zPoint& p);
+		float getScalar_Polygon(zObjGraph& inGraphObj, zPoint& p, int& edgeId);
 
 		/*! \brief This method gets the scalar for the input point.
 		*
@@ -942,7 +956,7 @@ namespace zSpace
 		*	\param	[in]	dimention		- input distance.
 		*	\since version 0.0.2
 		*/
-		float getScalar_Square(zPoint &p, zVector& cen, zVector &dimensions);
+		float getScalar_Square(zPoint &p, zVector& cen, zVector &dimensions, bool sharpCorners = false);
 
 		/*! \brief This method gets the scalar for a trapezoid.
 		*

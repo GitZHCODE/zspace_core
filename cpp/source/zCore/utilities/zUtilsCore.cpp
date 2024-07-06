@@ -1827,6 +1827,10 @@ namespace zSpace
 
 		//zTransform bPlane_Mat_local = toLocalMatrix(bPlane_Mat);
 
+		// bPlane_Mat_local = tMat_bPlane.getLocalMatrix();
+
+		//zTransform bPlane_Mat_local = toLocalMatrix(bPlane_Mat);
+
 		for (int i = 0; i < points.size(); i++)
 		{
 			zVector new_pos = points[i] * bPlane_Mat_local;
@@ -2005,7 +2009,8 @@ namespace zSpace
 		zRotationMatrix rotMatrix = q.normalized().toRotationMatrix();
 
 		zPlane outPlane = zPlane::Identity();
-		outPlane.block<3, 3>(0, 0) = rotMatrix;
+		outPlane.block<3, 3>(0, 0) = rotMatrix;// .transpose();
+		//outPlane(3, 0) = origin.x; outPlane(3, 1) = origin.y; outPlane(3, 2) = origin.z;
 		outPlane(3, 0) = origin.x; outPlane(3, 1) = origin.y; outPlane(3, 2) = origin.z;
 
 		return outPlane;
@@ -2013,6 +2018,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zUtilsCore::interpolatePlanes_slerp(zPlane& p1, zPlane& p2, int numPlanes, zPointArray& origins, vector<zPlane>& outPlanes)
 	{
+		
 		zQuaternion q1 = planeToQuaternion(p1);
 		zQuaternion q2 = planeToQuaternion(p2);
 
@@ -2027,6 +2033,30 @@ namespace zSpace
 			zQuaternion qRes = q1.slerp(t, q2);
 			outPlanes[i] = quaternionToPlane(qRes, origins[i]);
 		}
+		
+		/*
+		Eigen::Matrix4f T1 = p1;
+		Eigen::Matrix4f T2 = p2;
+		zFloatArray tParams;
+		tParams.assign(numPlanes, 0);
+		outPlanes.assign(numPlanes, zPlane());
+		for (int i = 0; i < numPlanes; i++)
+		{
+			tParams[i] = (float)i / (numPlanes - 1);
+		}
+		for (int i = 1; i < tParams.size()-1; i++)
+		{
+			//quaternion
+			Eigen::Matrix4f T3 = Eigen::Matrix4f::Identity();
+			Eigen::Quaternionf q1(T1.block<3, 3>(0, 0));
+			Eigen::Quaternionf q2(T2.block<3, 3>(0, 0));
+			Eigen::Quaternionf q3 = q1.slerp(tParams[i], q2);
+			T3.block<3, 3>(0, 0) = q3.normalized().toRotationMatrix();
+			//T3.block<3, 1>(0, 3) = (1.0 - tParams[i]) * T1.block<3, 1>(0, 3) + tParams[i] * T2.block<3, 1>(0, 3);
+			T3.block<3, 1>(0, 3) = (1.0 - tParams[i]) * T1.block<3, 1>(0, 3) + tParams[i] * T2.block<3, 1>(0, 3);
+			outPlanes[i] = T3;
+		}
+		*/
 
 	}
 

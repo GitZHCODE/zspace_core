@@ -1838,6 +1838,10 @@ namespace zSpace
 	{
 		scalars.clear();
 		scalars.assign(fnMesh.numVertices(), 0.0);
+
+		//closestEdgeId.clear();
+		//closestEdgeId.assign(fnMesh.numVertices(), -1);
+
 		zFnGraph inFnGraph(inGraphObj);
 
 		zVector* meshPositions = fnMesh.getRawVertexPositions();
@@ -1845,7 +1849,8 @@ namespace zSpace
 
 		for (int i = 0; i < fnMesh.numVertices(); i++)
 		{
-			scalars[i] = getScalar_Polygon(inGraphObj, meshPositions[i]) ;
+			int id = 0;
+			scalars[i] = getScalar_Polygon(inGraphObj, meshPositions[i], id) ;
 		}
 
 		if (normalise)
@@ -1854,6 +1859,35 @@ namespace zSpace
 		}
 
 	}
+
+
+	template<>
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Polygon(zScalarArray& scalars, zObjGraph& inGraphObj, zIntArray& closestEdgeId, bool normalise)
+	{
+		scalars.clear();
+		scalars.assign(fnMesh.numVertices(), 0.0);
+
+		closestEdgeId.clear();
+		closestEdgeId.assign(fnMesh.numVertices(), -1);
+
+		zFnGraph inFnGraph(inGraphObj);
+
+		zVector* meshPositions = fnMesh.getRawVertexPositions();
+		zVector* inPositions = inFnGraph.getRawVertexPositions();
+
+		for (int i = 0; i < fnMesh.numVertices(); i++)
+		{
+			scalars[i] = getScalar_Polygon(inGraphObj, meshPositions[i], closestEdgeId[i]);
+		}
+
+		if (normalise)
+		{
+			normliseValues(scalars);
+		}
+
+	}
+
+
 
 	template<>
 	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Circle(zScalarArray &scalars, zVector &cen, float r, double annularVal, bool normalise)
@@ -1946,6 +1980,26 @@ namespace zSpace
 			zVector p = meshPositions[i];
 			if (annularVal == 0) scalars[i] = getScalar_Square(p, cen, dimensions);
 			else scalars[i] = abs(getScalar_Square(p, cen, dimensions) - annularVal);
+		}
+
+		if (normalise) normliseValues(scalars);
+	}
+	
+	template<>
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Square_SharpCorners(zScalarArray &scalars, zVector& cen, zVector &dimensions, float annularVal, bool normalise)
+	{
+		scalars.clear();
+		scalars.assign(fnMesh.numVertices(), 0.0);
+
+		cen.z = 0;
+
+		zVector *meshPositions = fnMesh.getRawVertexPositions();
+
+		for (int i = 0; i < fnMesh.numVertices(); i++)
+		{
+			zVector p = meshPositions[i];
+			if (annularVal == 0) scalars[i] = getScalar_Square(p, cen, dimensions, true);
+			else scalars[i] = abs(getScalar_Square(p, cen, dimensions, true) - annularVal);
 		}
 
 		if (normalise) normliseValues(scalars);
@@ -2384,12 +2438,7 @@ namespace zSpace
 
 			else
 			{
-
-				//printf("\n min %1.2f %1.2f %1.2f ", fieldColorDomain.min.r, fieldColorDomain.min.g, fieldColorDomain.min.b);
-				//printf("\n max %1.2f %1.2f %1.2f ", fieldColorDomain.max.r, fieldColorDomain.max.g, fieldColorDomain.max.b);
-
 				fieldColorDomain.min.toHSV(); fieldColorDomain.max.toHSV();
-								
 
 				zColor* cols = fnMesh.getRawVertexColors();
 				if (fnMesh.numPolygons() == scalars.size()) cols = fnMesh.getRawFaceColors();
@@ -2815,7 +2864,7 @@ namespace zSpace
 
 	
 	template<>
-	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Polygon(zObjGraph& inGraphObj, zPoint& p)
+	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Polygon(zObjGraph& inGraphObj, zPoint& p, int& edgeId)
 	{
 		zItGraphVertex v(inGraphObj, 0);
 		
@@ -2829,6 +2878,8 @@ namespace zSpace
 
 		float s = 1.0;
 
+		int minEdgeId = 0;
+
 		do
 		{			
 			
@@ -2841,7 +2892,12 @@ namespace zSpace
 
 			zVector b = w - e * coreUtils.ofClamp<float>((w * e) / (e * e), 0.0, 1.0);
 
-			d = coreUtils.zMin(d, (b * b));
+			if ((b*b) < d)
+			{
+				d = b * b;
+				minEdgeId = he.getEdge().getId();
+			}
+			//d = coreUtils.zMin(d, (b * b));
 
 			bool c1 = (p.y >= vi.y);
 			bool c2 = (p.y < vj.y);
@@ -2854,7 +2910,7 @@ namespace zSpace
 
 		} while (he != start);
 
-				
+		edgeId = minEdgeId;
 		return s * sqrt(d);
 	}
 
@@ -2958,7 +3014,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Square(zPoint &p, zVector& cen, zVector &dimensions)
+	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Square(zPoint &p, zVector& cen, zVector &dimensions, bool sharpCorners)
 	{
 		zPoint transP = p - cen;
 		transP.x = abs(transP.x); 
@@ -2970,9 +3026,22 @@ namespace zSpace
 		d.y = coreUtils.zMax(d.y, 0.0f);
 		d.z = coreUtils.zMax(d.z, 0.0f);	
 		
-		float r = d.length() + coreUtils.zMin (coreUtils.zMax(d.x,d.y), 0.0f);		
+		float r;
+
+		if (sharpCorners)
+		{
+			float d_outside = d.length();
+			float d_inside = coreUtils.zMax(coreUtils.zMax(d.x, d.y), 0.0f);
+			r = (d_inside > 0) ? d_inside : d_outside;
+		}
+		else
+		{
+			float r = d.length() + coreUtils.zMin (coreUtils.zMax(d.x,d.y), 0.0f);
+		}
+
+		
 	
-		return(r);		
+		return(r);
 	}
 
 	template<>
