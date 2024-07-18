@@ -236,7 +236,7 @@ namespace zSpace
 				int newId = (newId_X * fieldObj->field.n_Y) + (newId_Y);
 
 
-				if (newId < size())
+				if (newId < size() && newId != getId())
 				{
 					if (i == 0 || j == 0) adjacentNeighbours.push_back(zItMeshScalarField(*fieldObj, newId));
 				}
@@ -277,9 +277,12 @@ namespace zSpace
 				int newId = (newId_X * fieldObj->field.n_Y) + (newId_Y);
 
 
-				if (newId < size())
+				if (newId < size() && newId != getId())
 				{
-					if (i == 0 || j == 0) adjacentNeighbours.push_back(newId);
+					if (i == 0 || j == 0)
+					{
+						adjacentNeighbours.push_back(newId);
+					}
 				}
 			}
 

@@ -1141,6 +1141,12 @@ namespace zSpace
 		return triMesh;
 	}
 
+	template<typename T>
+	ZSPACE_INLINE void zFnMeshField<T>::getFieldColorDomain(zDomainColor& colDomain)
+	{
+		colDomain = fieldColorDomain;
+	}
+
 	//---- SET METHODS
 
 	template<typename T>
@@ -2378,7 +2384,12 @@ namespace zSpace
 
 			else
 			{
+
+				//printf("\n min %1.2f %1.2f %1.2f ", fieldColorDomain.min.r, fieldColorDomain.min.g, fieldColorDomain.min.b);
+				//printf("\n max %1.2f %1.2f %1.2f ", fieldColorDomain.max.r, fieldColorDomain.max.g, fieldColorDomain.max.b);
+
 				fieldColorDomain.min.toHSV(); fieldColorDomain.max.toHSV();
+								
 
 				zColor* cols = fnMesh.getRawVertexColors();
 				if (fnMesh.numPolygons() == scalars.size()) cols = fnMesh.getRawFaceColors();
@@ -2959,9 +2970,9 @@ namespace zSpace
 		d.y = coreUtils.zMax(d.y, 0.0f);
 		d.z = coreUtils.zMax(d.z, 0.0f);	
 		
-		float r = d.length() + coreUtils.zMin (coreUtils.zMax(d.x,d.y), 0.0f);
+		float r = d.length() + coreUtils.zMin (coreUtils.zMax(d.x,d.y), 0.0f);		
 	
-		return(r);
+		return(r);		
 	}
 
 	template<>
