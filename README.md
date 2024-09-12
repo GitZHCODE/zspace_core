@@ -16,7 +16,7 @@ Optionally the library may also be pre-compiled into a statically  or dynamicall
 If you use the library of ZSPACE in a project, please refer to the GitHub repository. <br/> <br/>
 @misc{zspace-framework, <br/>
       title  = {{zspace}: A simple C++ header-only collection of geometry data-structures, algorithms and city data visualization                       framework.},<br/>
-      author = {Vishu Bhooshan and Shajay Bhooshan and others},<br/>
+      author = {Vishu Bhooshan, Shajay Bhooshan, Tommaso Casucci and others},<br/>
       note   = {https://github.com/venumb/ZSPACE},<br/>
       year   = {2018},<br/>
     }
