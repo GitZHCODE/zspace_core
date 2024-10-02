@@ -835,6 +835,9 @@ namespace zSpace
 		*/
 		void getIsocontour(zObjGraph &coutourGraphObj, float inThreshold, int precision = PRECISION, float distTolerance = distanceTolerance);
 
+
+		void getIsocontour(zObjGraph &coutourGraphObj, float inThreshold, zVector normalVector, int precision = PRECISION, float distTolerance = distanceTolerance);
+
 		/*! \brief This method creates a isoline mesh from the input field mesh at the given field threshold.
 		*
 		*	\details based on https://en.wikipedia.org/wiki/Marching_squares.

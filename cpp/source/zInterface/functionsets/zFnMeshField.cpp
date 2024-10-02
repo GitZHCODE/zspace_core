@@ -2562,6 +2562,39 @@ namespace zSpace
 	}
 
 	template<>
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsocontour(zObjGraph& coutourGraphObj, float inThreshold, zVector graphNormal, int precision, float distTolerance)
+	{
+		if (contourVertexValues.size() == 0)
+		{
+			return;
+		}
+		if (contourVertexValues.size() != numFieldValues())
+		{
+			throw std::invalid_argument(" error: invalid contour condition. Call updateColors method. ");
+			return;
+		}
+
+		float threshold = inThreshold;
+
+		vector<zVector> pos;
+		vector<int> edgeConnects;
+
+		vector<int> edgetoIsoGraphVertexId;
+
+		zVector* positions = fnMesh.getRawVertexPositions();
+
+		zColorArray vColors;
+		fnMesh.getIsoContour(contourVertexValues, inThreshold, pos, edgeConnects, vColors, precision, distTolerance);
+
+
+		zFnGraph tempFn(coutourGraphObj);
+		tempFn.clear(); // clear memory if the mobject exists.
+
+
+		tempFn.create(pos, edgeConnects, graphNormal, false);
+	}
+
+	template<>
 	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsolineMesh(zObjMesh &coutourMeshObj, float inThreshold, bool invertMesh)
 	{
 		if (contourVertexValues.size() == 0) return;

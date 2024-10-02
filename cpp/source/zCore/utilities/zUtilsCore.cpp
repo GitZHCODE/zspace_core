@@ -871,7 +871,6 @@ namespace zSpace
 				if (check)  windingNum = 1;
 			}
 		}
-		
 		if (windingNum != 0)
 			return true;
 		else
@@ -1056,8 +1055,9 @@ namespace zSpace
 		closest_Pt = n * ((e0 - pt) * n);
 		closest_Pt += pt;
 
-		float len = e0.distanceTo(e1);
+		double len = e0.distanceTo(e1);
 
+		if (len == 0) return -1.0;
 		zVector ed = (e0 - e1) / len;
 		double param = (closest_Pt - e1) * ed;
 
@@ -2022,7 +2022,8 @@ namespace zSpace
 		zQuaternion q1 = planeToQuaternion(p1);
 		zQuaternion q2 = planeToQuaternion(p2);
 
-		float increment = 1.0 / (numPlanes + 1);
+		//float increment = 1.0 / (numPlanes + 1);
+		float increment = 1.0 / (numPlanes);
 		float t = increment;
 		
 		outPlanes.clear();
