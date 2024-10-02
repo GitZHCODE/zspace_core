@@ -465,6 +465,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::to(json& j)
 	{
+
 		// remove inactive elements
 		if (numVertices() != meshObj->mesh.vertices.size()) garbageCollection(zVertexData);
 		if (numEdges() != meshObj->mesh.edges.size()) garbageCollection(zEdgeData);
@@ -472,7 +473,7 @@ namespace zSpace
 
 		// CREATE JSON FILE
 		zUtilsJsonHE meshJSON;
-		j.clear();
+		//j.clear();
 
 		// Vertices
 		for (zItMeshVertex v(*meshObj); !v.end(); v++)

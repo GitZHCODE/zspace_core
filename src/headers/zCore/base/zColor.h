@@ -181,8 +181,8 @@ namespace zSpace
 	inline zColor zYELLOW(1, 1, 0, 1);
 
 	/** Cyan Color. */
-	inline zColor zCYAN(0.00, 1, 1, 1);
-
+	inline zColor zCYAN(0, 1, 1, 1);
+	
 	/** @}*/
 
 	/** @}*/
