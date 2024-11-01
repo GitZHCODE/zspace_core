@@ -2959,8 +2959,12 @@ namespace zSpace
 		d.y = coreUtils.zMax(d.y, 0.0f);
 		d.z = coreUtils.zMax(d.z, 0.0f);	
 		
-		float r = d.length() + coreUtils.zMin (coreUtils.zMax(d.x,d.y), 0.0f);
+//		float r = d.length() + coreUtils.zMin (coreUtils.zMax(d.x,d.y), 0.0f);
 	
+		float d_outside = d.length();
+		float d_inside = coreUtils.zMax(coreUtils.zMax(d.x, d.y), 0.0f);
+		float r = (d_inside > 0) ? d_inside : d_outside;
+
 		return(r);
 	}
 

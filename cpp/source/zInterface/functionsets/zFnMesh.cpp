@@ -1687,6 +1687,17 @@ namespace zSpace
 		}
 	}
 
+	ZSPACE_INLINE void zFnMesh::setVertexNormals(zVectorArray& vNormals)
+	{
+		if (meshObj->mesh.vertices.size() != vNormals.size()) throw std::invalid_argument("size of color contatiner is not equal to number of mesh vertices.");
+
+		meshObj->mesh.vertexNormals.clear();
+
+		meshObj->mesh.vertexNormals = vNormals;
+
+	
+	}
+
 	ZSPACE_INLINE void zFnMesh::setFaceColor(zColor col, bool setVertexColor)
 	{
 		meshObj->mesh.faceColors.clear();
@@ -1745,7 +1756,7 @@ namespace zSpace
 		computeVertexNormalfromFaceNormal();
 	}
 
-	ZSPACE_INLINE void zFnMesh::setFaceNormals(zVectorArray &fNormals)
+	ZSPACE_INLINE void zFnMesh::setFaceNormals(zVectorArray &fNormals, bool setVertexNormal)
 	{
 		if (meshObj->mesh.faces.size() != fNormals.size()) throw std::invalid_argument("size of color contatiner is not equal to number of mesh faces.");
 
@@ -1754,7 +1765,7 @@ namespace zSpace
 		meshObj->mesh.faceNormals = fNormals;
 
 		// compute normals per face based on vertex normals and store it in faceNormals
-		computeVertexNormalfromFaceNormal();
+		if(setVertexNormal) computeVertexNormalfromFaceNormal();
 	}
 
 	ZSPACE_INLINE void zFnMesh::setEdgeColor(zColor col, bool setVertexColor)
@@ -4247,8 +4258,7 @@ namespace zSpace
 		/*printf("\n new face vert Ids : ");
 		for (auto fV : fVerts) printf(" %i ", fV);*/
 
-		
-		computeMeshNormals();
+		//computeMeshNormals();
 		
 	}
 

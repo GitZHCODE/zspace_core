@@ -452,6 +452,14 @@ namespace zSpace
 		*/
 		void setVertexWeight(double wt);
 
+
+		/*! \brief This method sets vertex normals of all the faces to the input normals contatiner.
+		*
+		*	\param		[in]	vNormals		- input normals contatiner. The size of the contatiner should be equal to number of vertices in the mesh.
+		*	\since version 0.0.2
+		*/
+		void setVertexNormals(zVectorArray& vNormals);
+
 		/*! \brief This method sets vertex weights of all the vertices with the input weight contatiner.
 		*
 		*	\param		[in]	wt				- input weight  contatiner. The size of the contatiner should be equal to number of vertices in the mesh.
@@ -495,7 +503,7 @@ namespace zSpace
 		*	\param		[in]	fNormals		- input normals contatiner. The size of the contatiner should be equal to number of faces in the mesh.
 		*	\since version 0.0.2
 		*/
-		void setFaceNormals(zVectorArray &fNormals);
+		void setFaceNormals(zVectorArray &fNormals, bool setVertexNormal = true);
 
 		/*! \brief This method sets edge color of all the edges to the input color.
 		*
