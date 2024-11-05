@@ -73,6 +73,7 @@ namespace zSpace
 						from(prim, staticGeom);						
 					}
 				}
+				stage->Save();
 			}
 			else cout << " error in opening file  " << path.c_str() << endl;
 	
@@ -577,7 +578,7 @@ namespace zSpace
 		// Declare arrays to store mesh data
 		VtArray<GfVec3f> u_points;
 		VtArray<GfVec3f> u_normals;
-		VtArray<GfVec3f> u_Colors;
+		VtArray<GfVec4f> u_Colors;
 		VtArray<int>     faceVertexCounts;
 		VtArray<int>     faceVertexIndices;
 		VtArray<int>	 u_ColorIndices;
@@ -592,9 +593,12 @@ namespace zSpace
 		UsdAttribute normalsAttr = usdMesh.GetNormalsAttr();
 		UsdAttribute faceVertexCountsAttr = usdMesh.GetFaceVertexCountsAttr();
 		UsdAttribute faceVertexIndicesAttr = usdMesh.GetFaceVertexIndicesAttr();
-		UsdAttribute colorAttr = usdMesh.GetDisplayColorAttr();
-		UsdAttribute colorIndicesAttr = usdMesh.GetPrim().GetAttribute(pxr::TfToken("primvars:displayColor:indices"));
+		UsdAttribute colorAttr = usdMesh.GetPrim().GetAttribute(pxr::TfToken("primvars:colorSet1"));
+		//UsdAttribute colorIndicesAttr = usdMesh.GetPrim().GetAttribute(pxr::TfToken("primvars:colorSet1:indices"));
 
+		UsdGeomPrimvar colorPrimvar(colorAttr);
+		UsdAttribute colorIndicesAttr = colorPrimvar.GetIndicesAttr();
+		//colorPrimvar.GetIndices(&u_ColorIndices);
 
 		// Prepare data structures for the zObjMesh
 		zPointArray positions;
@@ -624,14 +628,14 @@ namespace zSpace
 			}
 
 		if (colorAttr.Get(&u_Colors))
-			for (int i = 0; i < u_Colors.size() * 3; i += 3)
+			for (int i = 0; i < u_Colors.size() * 4; i += 4)
 			{
-				zColor col = zColor(u_Colors.cdata()->GetArray()[i], u_Colors.cdata()->GetArray()[i + 1], u_Colors.cdata()->GetArray()[i + 2], 1);
+				zColor col = zColor(u_Colors.cdata()->GetArray()[i], u_Colors.cdata()->GetArray()[i + 1], u_Colors.cdata()->GetArray()[i + 2], u_Colors.cdata()->GetArray()[i + 3]);
 				palette.push_back(col);
 			}
 
 		if (colorIndicesAttr.Get(&u_ColorIndices))
-			for (size_t i = 0; i < u_ColorIndices.size(); i++)
+			for (int i = 0; i < u_ColorIndices.size(); i++)
 			{
 				int id = u_ColorIndices[i];
 				colors.push_back(palette[id]);
@@ -657,6 +661,7 @@ namespace zSpace
 		if (colors.size() == numPolygons()) setFaceColors(colors, true);
 
 		// Set the transformation matrix
+		
 		setTransform(myTransform);
 
 		if (staticGeom) setStaticContainers();
@@ -673,10 +678,10 @@ namespace zSpace
 		GfMatrix4d transform;
 
 		//custom attributes
-		VtArray<GfVec3f> vCols;
+		VtArray<GfVec4f> vCols;
 		VtArray<float> opacity;
 
-		VtArray<GfVec3f> vCols_unique;
+		VtArray<GfVec4f> vCols_unique;
 		VtArray<float> opacity_unique;
 		VtArray<int> vCols_unique_index;
 
@@ -697,13 +702,14 @@ namespace zSpace
 		// v positions and color
 		for (int i = 0; i < numV; i++)
 		{
-			GfVec3f v_attr, c_attr;
+			GfVec3f v_attr;
+			GfVec4f c_attr;
 			//set vertex positions
 			v_attr.Set(rawVPositions[i].x, rawVPositions[i].y, rawVPositions[i].z);
 			points.push_back(v_attr);
 
 			opacity.push_back(1.0);
-			c_attr.Set(rawVColor[i].r, rawVColor[i].g, rawVColor[i].b);
+			c_attr.Set(rawVColor[i].r, rawVColor[i].g, rawVColor[i].b, rawVColor[i].a);
 			vCols.push_back(c_attr);	
 
 			int id = -1;
@@ -766,22 +772,29 @@ namespace zSpace
 		usdMesh.CreateFaceVertexIndicesAttr(VtValue(fVIDs), true);
 		usdMesh.CreateNormalsAttr(VtValue(normals), true);
 		
-				
-		auto displayColorPrimvar = usdMesh.CreateDisplayColorPrimvar();
-		displayColorPrimvar.Set(vCols_unique);
-		displayColorPrimvar.SetIndices(vCols_unique_index);
-		displayColorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+		UsdAttribute colorAttr = usdMesh.GetPrim().CreateAttribute(pxr::TfToken("primvars:colorSet1"), SdfValueTypeNames->Color4fArray);
+		//UsdAttribute colorIndicesAttr = usdMesh.GetPrim().CreateAttribute(pxr::TfToken("primvars:colorSet1:indices"),SdfValueTypeNames->IntArray);
 
-		auto displayOpacityPrimvar = usdMesh.CreateDisplayOpacityPrimvar();
-		displayOpacityPrimvar.Set(opacity_unique);
-		displayOpacityPrimvar.SetIndices(vCols_unique_index);
-		displayOpacityPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
-		
+		UsdGeomPrimvar colPrimvar(colorAttr);
+		colPrimvar.Set(vCols_unique);
+		colPrimvar.SetIndices(vCols_unique_index);
+		colPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
 
+		//auto displayColorPrimvar = usdMesh.CreateDisplayColorPrimvar();
+		//displayColorPrimvar.Set(vCols_unique);
+		//displayColorPrimvar.SetIndices(vCols_unique_index);
+		//displayColorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+
+		//auto displayOpacityPrimvar = usdMesh.CreateDisplayOpacityPrimvar();
+		//displayOpacityPrimvar.Set(opacity_unique);
+		//displayOpacityPrimvar.SetIndices(vCols_unique_index);
+		//displayOpacityPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+		//
+		UsdAttribute doubleSideAttr = usdMesh.CreateDoubleSidedAttr(VtValue(true));
 
 		//set transform	
-		usdMesh.ClearXformOpOrder();
-		usdMesh.AddTransformOp().Set(transform);
+		//usdMesh.ClearXformOpOrder();
+		//usdMesh.AddTransformOp().Set(transform);
 		
 
 			
