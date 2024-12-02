@@ -637,7 +637,7 @@ namespace zSpace
 		if (colorIndicesAttr.Get(&u_ColorIndices))
 			for (int i = 0; i < u_ColorIndices.size(); i++)
 			{
-				int id = u_ColorIndices[i];
+				int id = u_ColorIndices.cdata()[i];
 				colors.push_back(palette[id]);
 			}
 
@@ -717,7 +717,7 @@ namespace zSpace
 
 			for (int j = 0; j < vCols_unique.size(); j++)
 			{
-				if (vCols_unique[j] == c_attr)
+				if (vCols_unique.cdata()[j] == c_attr)
 				{
 					chkRepeat = true;
 					id = j;
@@ -764,16 +764,15 @@ namespace zSpace
 		//create default attr
 		UsdGeomMesh usdMesh(usd);
 		UsdGeomPrimvarsAPI usdPrimVar(usd);
-		UsdGeomSubset usdSubset(usd);
+		//UsdGeomSubset usdSubset(usd);
 
-		usdMesh.CreatePointsAttr(VtValue(points), true);
+		usdMesh.CreatePointsAttr(VtValue(points.cdata()));
 
-		usdMesh.CreateFaceVertexCountsAttr(VtValue(fVCounts), true);
-		usdMesh.CreateFaceVertexIndicesAttr(VtValue(fVIDs), true);
-		usdMesh.CreateNormalsAttr(VtValue(normals), true);
-		
+		usdMesh.CreateFaceVertexCountsAttr(VtValue(fVCounts.cdata()), true);
+		usdMesh.CreateFaceVertexIndicesAttr(VtValue(fVIDs.cdata()), true);
+		usdMesh.CreateNormalsAttr(VtValue(normals.cdata()), true);
+
 		UsdAttribute colorAttr = usdMesh.GetPrim().CreateAttribute(pxr::TfToken("primvars:colorSet1"), SdfValueTypeNames->Color4fArray);
-		//UsdAttribute colorIndicesAttr = usdMesh.GetPrim().CreateAttribute(pxr::TfToken("primvars:colorSet1:indices"),SdfValueTypeNames->IntArray);
 
 		UsdGeomPrimvar colPrimvar(colorAttr);
 		colPrimvar.Set(vCols_unique);
@@ -790,7 +789,8 @@ namespace zSpace
 		//displayOpacityPrimvar.SetIndices(vCols_unique_index);
 		//displayOpacityPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
 		//
-		UsdAttribute doubleSideAttr = usdMesh.CreateDoubleSidedAttr(VtValue(true));
+
+		usdMesh.CreateDoubleSidedAttr().Set(true);
 
 		//set transform	
 		//usdMesh.ClearXformOpOrder();
