@@ -87,12 +87,18 @@ namespace zSpace
 		if (!uStage) cout << "\n error creating USD file  " << path.c_str() << endl;
 		else
 		{
-			uStage->SetMetadata(TfToken("defaultPrim"), VtValue("World"));
-			uStage->SetMetadata(TfToken("upAxis"), VtValue("Z"));
-			uStage->SetMetadata(TfToken("metersPerUnit"), VtValue(1.00));
+			//uStage->SetMetadata(TfToken("defaultPrim"), VtValue("World"));
+			//uStage->SetMetadata(TfToken("upAxis"), VtValue("Z"));
+			//uStage->SetMetadata(TfToken("metersPerUnit"), VtValue(1.00));
 
 			UsdGeomXform root = UsdGeomXform::Define(uStage, SdfPath("/World"));
 			UsdGeomXform layer = UsdGeomXform::Define(uStage, SdfPath("/World/Geometry"));
+
+			string metersPerUnit = "1.00";
+			uStage->SetDefaultPrim(root.GetPrim());
+			uStage->SetMetadata(TfToken("upAxis"), VtValue("Z"));
+			uStage->SetMetadata(TfToken("metersPerUnit"), VtValue(metersPerUnit));
+
 
 			cout << "\n creating USD file: " << path.c_str() << endl;
 		}

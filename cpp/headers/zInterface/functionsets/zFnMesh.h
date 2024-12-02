@@ -37,10 +37,11 @@
 #include <igl/read_triangle_mesh.h>
 
 #if defined ZSPACE_USD_INTEROP
-//#include <pxr/usd/usdGeom/mesh.h>
-//#include <pxr/usd/usd/primRange.h>
-//#include <pxr/usd/usdGeom/xform.h>
-//#include <pxr/usd/usdGeom/subset.h>
+#include <pxr/usd/usdgeom/mesh.h>
+#include <pxr/usd/usd/primrange.h>
+#include <pxr/usd/usdgeom/xform.h>
+#include <pxr/usd/usdgeom/subset.h>
+#include <pxr/usd/usdGeom/primvarsAPI.h>
 
 #endif
 
