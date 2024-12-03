@@ -94,7 +94,7 @@ namespace zSpace
 			UsdGeomXform root = UsdGeomXform::Define(uStage, SdfPath("/World"));
 			UsdGeomXform layer = UsdGeomXform::Define(uStage, SdfPath("/World/Geometry"));
 
-			string metersPerUnit = "1.00";
+			double metersPerUnit = 1.00;
 			uStage->SetDefaultPrim(root.GetPrim());
 			uStage->SetMetadata(TfToken("upAxis"), VtValue("Z"));
 			uStage->SetMetadata(TfToken("metersPerUnit"), VtValue(metersPerUnit));

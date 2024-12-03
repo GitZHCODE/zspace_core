@@ -717,7 +717,7 @@ namespace zSpace
 
 			for (int j = 0; j < vCols_unique.size(); j++)
 			{
-				if (vCols_unique.cdata()[j] == c_attr)
+				if (vCols_unique.data()[j] == c_attr)
 				{
 					chkRepeat = true;
 					id = j;
@@ -765,12 +765,11 @@ namespace zSpace
 		UsdGeomMesh usdMesh(usd);
 		UsdGeomPrimvarsAPI usdPrimVar(usd);
 		//UsdGeomSubset usdSubset(usd);
+		usdMesh.CreatePointsAttr().Set(points);
 
-		usdMesh.CreatePointsAttr(VtValue(points.cdata()));
-
-		usdMesh.CreateFaceVertexCountsAttr(VtValue(fVCounts.cdata()), true);
-		usdMesh.CreateFaceVertexIndicesAttr(VtValue(fVIDs.cdata()), true);
-		usdMesh.CreateNormalsAttr(VtValue(normals.cdata()), true);
+		usdMesh.CreateFaceVertexCountsAttr().Set(fVCounts);
+		usdMesh.CreateFaceVertexIndicesAttr().Set(fVIDs);
+		usdMesh.CreateNormalsAttr().Set(normals);
 
 		UsdAttribute colorAttr = usdMesh.GetPrim().CreateAttribute(pxr::TfToken("primvars:colorSet1"), SdfValueTypeNames->Color4fArray);
 
@@ -795,9 +794,7 @@ namespace zSpace
 		//set transform	
 		//usdMesh.ClearXformOpOrder();
 		//usdMesh.AddTransformOp().Set(transform);
-		
-
-
+	
 
 	}
 
