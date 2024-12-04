@@ -266,4 +266,3 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-/projects/CPP/zSpace_Core/zCorePropertySheet.props
