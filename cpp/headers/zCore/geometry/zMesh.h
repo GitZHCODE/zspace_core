@@ -172,6 +172,15 @@ namespace zSpace
 		*/
 		bool addPolygon(zIntArray &fVertices);
 
+		/*! \brief This method updates a face to the faces array and updates the pointers of vertices, edges and polygons of the mesh based on face vertices.
+		*
+		*	\param		[in]	faceID		- id of the face that needs to be updated.
+		*	\param		[in]	fVertices	- array of ordered vertices that make up the polygon.
+		*	\return				bool		- true if the faces container is resized.
+		*	\since version 0.0.1
+		*/
+		bool updatePolygon(int faceID, zIntArray& fVertices);
+
 		/*! \brief This method sets the number of faces in zMesh  the input value.
 		*	\param		[in]	_n_f	-	number of faces.
 		*	\param		[in]	setMax	- if true, sets max edges as amultiple of _n_e.

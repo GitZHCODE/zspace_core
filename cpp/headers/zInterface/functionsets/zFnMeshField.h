@@ -345,6 +345,13 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		bool getTriMeshBoolean();
+
+		/*! \brief This method gets the field color domain.
+		*
+		*	\param		[out]	colDomain		- input color domain.
+		*	\since version 0.0.2
+		*/
+		void getFieldColorDomain(zDomainColor& colDomain);
 		
 		//--------------------------
 		//---- SET METHODS
