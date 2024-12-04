@@ -91,7 +91,16 @@ namespace zSpace
 
 	ZSPACE_INLINE void zUtilsDisplay::drawLine(zPoint &p0, zPoint &p1, const zColor &col , const double &wt)
 	{
-		glColor3f(col.r, col.g, col.b);
+
+		// Enable blending for transparency
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Enable line smoothing
+		glEnable(GL_LINE_SMOOTH);
+		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST); // Optional: Improve quality
+
+		glColor4f(col.r, col.g, col.b, 1.0f);
 		glLineWidth(wt);
 
 		glBegin(GL_LINES);
@@ -99,18 +108,34 @@ namespace zSpace
 		glVertex3f(p1.x, p1.y, p1.z);
 		glEnd();
 
+		// Disable line smoothing and blending if they are not needed elsewhere
+		glDisable(GL_LINE_SMOOTH);
+		glDisable(GL_BLEND);
+
 		glLineWidth(1.0);
 		glColor3f(0, 0, 1);
 	}
 
 	ZSPACE_INLINE void zUtilsDisplay::drawPolygon(zPointArray &pos, const zColor &col)
 	{
+		// Enable blending for transparency
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Enable polygon smoothing
+		glEnable(GL_POLYGON_SMOOTH);
+		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST); // Optional: Improve quality
+
 		glColor3f(col.r, col.g, col.b);
 
 		glBegin(GL_POLYGON);
 		for (int i = 0; i < pos.size(); i++)
 			glVertex3f(pos[i].x, pos[i].y, pos[i].z);
 		glEnd();
+
+		// Disable polygon smoothing and blending if they are not needed elsewhere
+		glDisable(GL_POLYGON_SMOOTH);
+		glDisable(GL_BLEND);
 
 		glColor3f(0, 0, 1);
 	}
@@ -198,13 +223,22 @@ namespace zSpace
 
 	ZSPACE_INLINE void zUtilsDisplay::drawEdges(vector<zEdgeHandle> &eHandles, vector<zIntArray> &edgeVerts, zVector *pos, zColor *col, double *wt)
 	{
+
+		// Enable blending for transparency
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Enable line smoothing
+		glEnable(GL_LINE_SMOOTH);
+		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST); // Optional: Improve quality
+
 		for (auto &e : eHandles)
 		{
 			if (e.id == -1) continue;
 
 			int i = e.id;
 
-			glColor3f(col[i].r, col[i].g, col[i].b);
+			glColor4f(col[i].r, col[i].g, col[i].b, 1.0f);
 			glLineWidth(wt[i]);
 
 			glBegin(GL_LINES);
@@ -216,6 +250,10 @@ namespace zSpace
 			glEnd();
 
 		}
+
+		// Disable line smoothing and blending if they are not needed elsewhere
+		glDisable(GL_LINE_SMOOTH);
+		glDisable(GL_BLEND);
 
 		glLineWidth(1.0);
 		glColor3f(0, 0, 1);
@@ -250,6 +288,14 @@ namespace zSpace
 
 	ZSPACE_INLINE void zUtilsDisplay::drawFaces(vector<zFaceHandle> &fHandles, vector<zIntArray> &faceVerts, zVector *pos, zColor *col)
 	{
+		// Enable blending for transparency
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Enable polygon smoothing
+		glEnable(GL_POLYGON_SMOOTH);
+		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST); // Optional: Improve quality
+
 		for (auto &f : fHandles)
 		{
 			if (f.id == -1) continue;
@@ -258,7 +304,7 @@ namespace zSpace
 			int i = f.id;
 			//printf("\n %i %i ",i, faceVerts[i].size());
 
-			glColor3f(col[i].r, col[i].g, col[i].b);
+			glColor4f(col[i].r, col[i].g, col[i].b, 1.0f);
 
 
 			glBegin(GL_POLYGON);
@@ -270,6 +316,10 @@ namespace zSpace
 			}
 			glEnd();
 		}
+
+		// Disable polygon smoothing and blending if they are not needed elsewhere
+		glDisable(GL_POLYGON_SMOOTH);
+		glDisable(GL_BLEND);
 
 		glColor3f(0, 0, 1);
 	}

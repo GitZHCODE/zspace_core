@@ -242,18 +242,41 @@ namespace zSpace
 
 	ZSPACE_INLINE void zObjMesh::drawMesh()
 	{
-
-		// draw vertex
-		if (displayVertices)
+		// draw polygon
+		if (displayFaces)
 		{
-			displayUtils->drawVertices(mesh.vHandles, &mesh.vertexPositions[0], &mesh.vertexColors[0], &mesh.vertexWeights[0]);			
+			if (mesh.staticGeometry)
+			{
+				displayUtils->drawFaces(mesh.fHandles, mesh.faceVertices, &mesh.vertexPositions[0], &mesh.faceColors[0]);
+			}
+			else
+			{
+				vector<zIntArray> faceVertices;
+
+				for (int i = 0; i < mesh.n_f; i++)
+				{
+					zIntArray faceVerts;
+					if (mesh.fHandles[i].id != -1)
+					{
+						mesh.getFaceVertices(i, faceVerts);
+					}
+
+					faceVertices.push_back(faceVerts);
+
+				}
+
+				displayUtils->drawFaces(mesh.fHandles, faceVertices, &mesh.vertexPositions[0], &mesh.faceColors[0]);
+
+			}
 		}
 
-		// draw vertex ID
-		if (displayVertexIds)
+		// draw polygon ID
+		if (displayFaceIds)
 		{
-			zColor col(0.8, 0, 0, 1);
-			displayUtils->drawVertexIds(mesh.n_v, &mesh.vertexPositions[0], col);
+			if (faceCenters.size() != mesh.n_f) throw std::invalid_argument(" error: face centers are not computed.");
+
+			zColor col(0, 0, 0.8, 1);
+			displayUtils->drawFaceIds(mesh.n_f, &faceCenters[0], col);
 		}
 
 		// draw edges
@@ -294,41 +317,18 @@ namespace zSpace
 			displayUtils->drawEdgeIds(mesh.n_e, &edgeCenters[0], col);
 		}
 
-		// draw polygon
-		if (displayFaces)
+
+		// draw vertex
+		if (displayVertices)
 		{
-			if (mesh.staticGeometry)
-			{
-				displayUtils->drawFaces(mesh.fHandles, mesh.faceVertices, &mesh.vertexPositions[0], &mesh.faceColors[0]);
-			}
-			else
-			{
-				vector<zIntArray> faceVertices;
-
-				for (int i = 0; i < mesh.n_f; i++)
-				{
-					zIntArray faceVerts;
-					if (mesh.fHandles[i].id != -1)
-					{
-						mesh.getFaceVertices(i, faceVerts);
-					}
-
-					faceVertices.push_back(faceVerts);
-
-				}
-
-				displayUtils->drawFaces(mesh.fHandles, faceVertices, &mesh.vertexPositions[0], &mesh.faceColors[0]);
-
-			}
+			displayUtils->drawVertices(mesh.vHandles, &mesh.vertexPositions[0], &mesh.vertexColors[0], &mesh.vertexWeights[0]);
 		}
 
-		// draw polygon ID
-		if (displayFaceIds)
+		// draw vertex ID
+		if (displayVertexIds)
 		{
-			if (faceCenters.size() != mesh.n_f) throw std::invalid_argument(" error: face centers are not computed.");
-
-			zColor col(0, 0, 0.8, 1);
-			displayUtils->drawFaceIds(mesh.n_f, &faceCenters[0], col);
+			zColor col(0.8, 0, 0, 1);
+			displayUtils->drawVertexIds(mesh.n_v, &mesh.vertexPositions[0], col);
 		}
 	}
 
