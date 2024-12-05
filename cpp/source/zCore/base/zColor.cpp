@@ -164,7 +164,7 @@ namespace zSpace
 
 	//---- OVERLOADED OPERATORS
 
-	ZSPACE_INLINE bool zColor::operator==(zColor &c1)
+	ZSPACE_INLINE bool zColor::operator==(const zColor &c1) const
 	{
 		return (r == c1.r && g == c1.g && b == c1.b);
 	}

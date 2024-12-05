@@ -137,7 +137,7 @@ namespace zSpace
 		*	\return				bool	- true if colors are the same.
 		*	\since version 0.0.1
 		*/				
-		ZSPACE_CUDA_CALLABLE bool operator==(zColor &c1);
+		ZSPACE_CUDA_CALLABLE bool operator==(const zColor &c1) const;
 		
 
 	};
