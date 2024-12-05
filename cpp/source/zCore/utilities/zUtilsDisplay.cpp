@@ -46,12 +46,24 @@ namespace zSpace
 
 	ZSPACE_INLINE void zUtilsDisplay::drawPoint(zPoint &pos, const zColor &col, const double &wt)
 	{
-		glColor3f(col.r, col.g, col.b);
+		// Enable blending for smooth points
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Enable point smoothing
+		glEnable(GL_POINT_SMOOTH);
+		glHint(GL_POINT_SMOOTH_HINT, GL_NICEST); // Optional: Improve quality
+
+		glColor4f(col.r, col.g, col.b, 1.0f);
 		glPointSize(wt);
 
 		glBegin(GL_POINTS);
 		glVertex3f(pos.x, pos.y, pos.z);
 		glEnd();
+
+		// Disable point smoothing and blending if not needed elsewhere
+		glDisable(GL_POINT_SMOOTH);
+		glDisable(GL_BLEND);
 
 		glPointSize(1.0);
 		glColor3f(0, 0, 1);
@@ -59,6 +71,14 @@ namespace zSpace
 
 	ZSPACE_INLINE void zUtilsDisplay::drawPoints(zPoint *pos, zColor *col, double *wt, int size)
 	{
+		// Enable blending for smooth points
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Enable point smoothing
+		glEnable(GL_POINT_SMOOTH);
+		glHint(GL_POINT_SMOOTH_HINT, GL_NICEST); // Optional: Improve quality
+
 		glBegin(GL_POINTS);
 		for (int i = 0; i < size; i++)
 		{
@@ -69,6 +89,10 @@ namespace zSpace
 		}
 		glEnd();
 
+		// Disable point smoothing and blending if not needed elsewhere
+		glDisable(GL_POINT_SMOOTH);
+		glDisable(GL_BLEND);
+
 		glPointSize(1.0);
 
 		glColor3f(0, 0, 1);
@@ -76,6 +100,14 @@ namespace zSpace
 
 	ZSPACE_INLINE void zUtilsDisplay::drawPoints(zPoint* pos, zColor col, double wt, int size)
 	{
+		// Enable blending for smooth points
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Enable point smoothing
+		glEnable(GL_POINT_SMOOTH);
+		glHint(GL_POINT_SMOOTH_HINT, GL_NICEST); // Optional: Improve quality
+
 		glPointSize(wt);
 		glColor3f(col.r, col.g, col.b);
 		glBegin(GL_POINTS);
@@ -84,6 +116,10 @@ namespace zSpace
 			glVertex3f(pos[i].x, pos[i].y, pos[i].z);
 		}
 		glEnd();
+
+		// Disable point smoothing and blending if not needed elsewhere
+		glDisable(GL_POINT_SMOOTH);
+		glDisable(GL_BLEND);
 
 		glPointSize(1.0);
 		glColor3f(0, 0, 1);
