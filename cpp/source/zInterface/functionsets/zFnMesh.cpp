@@ -687,8 +687,10 @@ namespace zSpace
 
 		//set mesh vertex attributes
 		int numV = numVertices();
+		int numF = numPolygons();
 		zPoint* rawVPositions = getRawVertexPositions();
 		zColor* rawVColor = getRawVertexColors();
+		zColor* rawFColor = getRawFaceColors();
 
 		//get & set transformation
 		zTransform t;
@@ -699,45 +701,18 @@ namespace zSpace
 			t(0, 2), t(1, 2), t(2, 2), t(3, 2),
 			t(0, 3), t(1, 3), t(2, 3), t(3, 3));
 
+		// check v col or f col - need implement a status in meshObj
+		bool useFaceCol = false;
+		zItMeshFace f_check(*meshObj,0);
+		if (f_check.getColor().g != 0) useFaceCol = true;
+
 		// v positions and color
 		for (int i = 0; i < numV; i++)
 		{
 			GfVec3f v_attr;
-			GfVec4f c_attr;
 			//set vertex positions
 			v_attr.Set(rawVPositions[i].x, rawVPositions[i].y, rawVPositions[i].z);
 			points.push_back(v_attr);
-
-			opacity.push_back(1.0);
-			c_attr.Set(rawVColor[i].r, rawVColor[i].g, rawVColor[i].b, rawVColor[i].a);
-			vCols.push_back(c_attr);	
-
-			int id = -1;
-			bool chkRepeat = false;
-
-			for (int j = 0; j < vCols_unique.size(); j++)
-			{
-				if (vCols_unique.data()[j] == c_attr)
-				{
-					chkRepeat = true;
-					id = j;
-
-					break;
-				}
-			}
-
-			if (chkRepeat)
-			{
-				vCols_unique_index.push_back(id);
-			}
-			else
-			{
-				vCols_unique_index.push_back(vCols_unique.size());
-				vCols_unique.push_back(c_attr);
-				//opacity_unique.push_back(1.0);
-
-			}
-
 		}
 
 		//set mesh face attributes
@@ -759,6 +734,76 @@ namespace zSpace
 			}
 		}
 
+		GfVec4f c_attr;
+		if (!useFaceCol)
+		{
+			for (int i = 0; i < numV; i++)
+			{
+				//opacity.push_back(1.0);
+				c_attr.Set(rawVColor[i].r, rawVColor[i].g, rawVColor[i].b, rawVColor[i].a);
+				vCols.push_back(c_attr);
+
+				int id = -1;
+				bool chkRepeat = false;
+
+				for (int j = 0; j < vCols_unique.size(); j++)
+				{
+					if (vCols_unique.data()[j] == c_attr)
+					{
+						chkRepeat = true;
+						id = j;
+
+						break;
+					}
+				}
+
+				if (chkRepeat)
+				{
+					vCols_unique_index.push_back(id);
+				}
+				else
+				{
+					vCols_unique_index.push_back(vCols_unique.size());
+					vCols_unique.push_back(c_attr);
+					//opacity_unique.push_back(1.0);
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < numF; i++)
+			{
+				//opacity.push_back(1.0);
+				c_attr.Set(rawFColor[i].r, rawFColor[i].g, rawFColor[i].b, rawFColor[i].a);
+				vCols.push_back(c_attr);
+
+				int id = -1;
+				bool chkRepeat = false;
+
+				for (int j = 0; j < vCols_unique.size(); j++)
+				{
+					if (vCols_unique.data()[j] == c_attr)
+					{
+						chkRepeat = true;
+						id = j;
+
+						break;
+					}
+				}
+
+				if (chkRepeat)
+				{
+					vCols_unique_index.push_back(id);
+				}
+				else
+				{
+					vCols_unique_index.push_back(vCols_unique.size());
+					vCols_unique.push_back(c_attr);
+					//opacity_unique.push_back(1.0);
+				}
+			}
+		}
+
 
 
 		//create default attr
@@ -776,7 +821,11 @@ namespace zSpace
 		UsdGeomPrimvar colPrimvar(colorAttr);
 		colPrimvar.Set(vCols_unique);
 		colPrimvar.SetIndices(vCols_unique_index);
+
+		if(!useFaceCol)
 		colPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+		else
+			colPrimvar.SetInterpolation(pxr::UsdGeomTokens->uniform);
 
 		//auto displayColorPrimvar = usdMesh.CreateDisplayColorPrimvar();
 		//displayColorPrimvar.Set(vCols_unique);

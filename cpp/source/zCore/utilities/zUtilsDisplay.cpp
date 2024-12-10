@@ -332,6 +332,10 @@ namespace zSpace
 		glEnable(GL_POLYGON_SMOOTH);
 		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST); // Optional: Improve quality
 
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(1.0f, 1.0f);
+
+
 		for (auto &f : fHandles)
 		{
 			if (f.id == -1) continue;
@@ -352,6 +356,8 @@ namespace zSpace
 			}
 			glEnd();
 		}
+
+		glDisable(GL_POLYGON_OFFSET_FILL);
 
 		// Disable polygon smoothing and blending if they are not needed elsewhere
 		glDisable(GL_POLYGON_SMOOTH);
