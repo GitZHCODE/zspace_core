@@ -348,6 +348,8 @@ namespace zSpace
 		template <typename T>
 		ZSPACE_CUDA_CALLABLE_HOST bool checkRepeatElement(T &inVal, vector<T> values, int &index, int precision = 3);
 
+		bool zUtilsCore::FindDuplicateVector(zVector& inVal, vector<zVector>& values, int& index, float sqr_tolerance);
+
 		/*! \brief This method checks if the input vector is repeated in input container.
 		*
 		*	\param		[in]	inVal			- input vector.
@@ -357,7 +359,7 @@ namespace zSpace
 		*	\return				bool			- true if there is a repeat element.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE_HOST bool checkRepeatVector(zVector &inVec, vector<zVector> values, int &index, int precision = 3);
+		ZSPACE_CUDA_CALLABLE_HOST bool checkRepeatVector(zVector &inVec, vector<zVector>& values, int &index, int precision = 3);
 
 		//--------------------------
 		//---- MAP METHODS 
@@ -371,7 +373,7 @@ namespace zSpace
 		*	\return				bool		- true if the string exists in the map.
 		*	\since version 0.0.1
 		*/
-		ZSPACE_CUDA_CALLABLE bool existsInMap(string hashKey, unordered_map<string, int> map, int &outVal);
+		ZSPACE_CUDA_CALLABLE bool existsInMap(string hashKey, unordered_map<string, int>& map, int &outVal);
 
 		/*! \brief This method checks if the input position exists in the map.
 		*

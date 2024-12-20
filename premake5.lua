@@ -172,6 +172,11 @@ project "zSpace_Core"
         links {get_omniverse_links()}
     filter{}
 
+    postbuildcommands
+    {
+        "{COPYFILE} %{!cfg.targetdir}/zSpace_Core.dll %{wks.location}%{exe_path}\\%{zSpace_Libs_Folder}\\zSpace_Core.dll"
+    }
+
 
 --#############__ZSPACE_INTERFACE__#############
 project "zSpace_Interface"
@@ -254,6 +259,11 @@ project "zSpace_Interface"
         -- Add omniverse links
         links {get_omniverse_links()}
     filter {}
+
+    postbuildcommands
+    {
+        "{COPYFILE} %{!cfg.targetdir}/zSpace_Interface.dll %{wks.location}%{exe_path}\\%{zSpace_Libs_Folder}\\zSpace_Interface.dll"
+    }
 
 
 --#############__ZSPACE_INTEROP__#############
@@ -365,4 +375,9 @@ project "zSpace_InterOp"
             "RhinoLibrary.lib", --This lib should be in Rhino 7 SDK, if it's not ask Vishu
         }
     filter {}
+
+    postbuildcommands
+    {
+        "{COPYFILE} %{!cfg.targetdir}/zSpace_InterOp.dll %{wks.location}%{exe_path}\\%{zSpace_Libs_Folder}\\zSpace_InterOp.dll"
+    }
     --###############

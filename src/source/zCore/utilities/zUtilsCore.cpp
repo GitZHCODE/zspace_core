@@ -170,7 +170,26 @@ namespace zSpace
 		return  inputVec;
 	}
 
-	ZSPACE_INLINE bool zUtilsCore::checkRepeatVector(zVector &inVal, vector<zVector> values, int &index, int precision)
+	bool zUtilsCore::FindDuplicateVector(zVector& inVal, vector<zVector>& values, int& index, float sqr_tolerance) 
+	{
+		bool out = false;
+		index = 0;
+
+		for (auto& vec : values)
+		{
+			zVector dist = inVal - vec;
+			if (dist.length2() < sqr_tolerance) 
+			{
+				out = true;
+				return out;
+			}
+			++index;
+		}
+
+		return out;
+	}
+
+	ZSPACE_INLINE bool zUtilsCore::checkRepeatVector(zVector &inVal, vector<zVector>& values, int &index, int precision)
 	{
 		bool out = false;
 		index = -1;
@@ -180,7 +199,8 @@ namespace zSpace
 		{			
 			zVector v2 = factoriseVector(values[i], precision);
 
-			if (v1.distanceTo(v2) < pow(10, -1 * precision))			{
+			if (v1.distanceTo(v2) < pow(10, -1 * precision))			
+			{
 				
 				out = true;
 
@@ -194,7 +214,7 @@ namespace zSpace
 
 	//---- MAP METHODS 
 
-	ZSPACE_INLINE bool zUtilsCore::existsInMap(string hashKey, unordered_map<string, int> map, int &outVal)
+	ZSPACE_INLINE bool zUtilsCore::existsInMap(string hashKey, unordered_map<string, int>& map, int &outVal)
 	{
 
 		bool out = false;;
