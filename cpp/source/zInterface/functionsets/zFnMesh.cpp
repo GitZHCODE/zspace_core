@@ -2669,7 +2669,8 @@ namespace zSpace
 
 			VectorXd K;
 
-			(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmesh(V, F);
+			//(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmesh(V, F);
+			(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmeshTriangulated(V, F);
 
 			// Compute integral of Gaussian curvature
 			igl::gaussian_curvature(V, F, K);
@@ -2975,6 +2976,44 @@ namespace zSpace
 		}
 
 		F = FQuads;
+	}
+
+	ZSPACE_INLINE void zFnMesh::getMatrices_quadmeshTriangulated(MatrixXd& V, MatrixXi& F)
+	{
+		zPoint* vPositions = getRawVertexPositions();
+		MatrixXd quadMesh_V(numVertices(), 3);
+
+		for (int i = 0; i < numVertices(); i++)
+		{
+			quadMesh_V(i, 0) = vPositions[i].x;
+			quadMesh_V(i, 1) = vPositions[i].y;
+			quadMesh_V(i, 2) = vPositions[i].z;
+		}
+
+		V = quadMesh_V;
+
+		MatrixXi FTris(2 * numPolygons(), 3);
+
+		int triCount = 0;
+		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		{
+			zIntArray fVerts;
+			f.getVertices(fVerts);
+
+			// Tri #1: ( v0, v1, v2 )
+			FTris(triCount, 0) = fVerts[0];
+			FTris(triCount, 1) = fVerts[1];
+			FTris(triCount, 2) = fVerts[2];
+			triCount++;
+
+			// Tri #2: ( v0, v2, v3 )
+			FTris(triCount, 0) = fVerts[0];
+			FTris(triCount, 1) = fVerts[2];
+			FTris(triCount, 2) = fVerts[3];
+			triCount++;
+		}
+
+		F = FTris;
 	}
 
 	ZSPACE_INLINE void zFnMesh::getEdgeData(zIntArray& edgeConnects, bool excludeBoundary)
