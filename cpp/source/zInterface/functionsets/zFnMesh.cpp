@@ -908,7 +908,7 @@ namespace zSpace
 		zDoubleArray edgeWeights = meshObj->mesh.edgeWeights;
 		for (zItMeshEdge e(*meshObj); !e.end(); e++)
 		{
-			double creaseVal = edgeWeights[e.getId()];
+			double creaseVal = e.getWeight();
 
 			if (creaseVal != 0.0)
 			{

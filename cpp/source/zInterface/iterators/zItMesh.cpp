@@ -860,6 +860,11 @@ namespace zSpace
 		return &meshObj->mesh.edgeColors[getId()];
 	}
 
+	ZSPACE_INLINE double zItMeshEdge::getWeight()
+	{
+		return meshObj->mesh.edgeWeights[getId()];
+	}
+
 	//---- SET METHODS
 
 	ZSPACE_INLINE void zItMeshEdge::setId(int _id)

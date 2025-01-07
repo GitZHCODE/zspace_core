@@ -614,6 +614,13 @@ namespace zSpace
 		*/
 		zColor* getRawColor();
 
+		/*! \brief This method gets display weight of the edge.
+		*
+		*	\return			double						- output weight.
+		*	\since version 0.0.3
+		*/
+		double getWeight();
+
 		//--------------------------
 		//---- SET METHODS
 		//--------------------------
