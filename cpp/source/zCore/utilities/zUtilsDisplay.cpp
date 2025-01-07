@@ -275,7 +275,8 @@ namespace zSpace
 			int i = e.id;
 
 			glColor4f(col[i].r, col[i].g, col[i].b, 1.0f);
-			glLineWidth(wt[i]);
+
+			glLineWidth(std::max(1.0,wt[i]));
 
 			glBegin(GL_LINES);
 

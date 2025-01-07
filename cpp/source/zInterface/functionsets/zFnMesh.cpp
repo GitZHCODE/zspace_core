@@ -583,6 +583,11 @@ namespace zSpace
 		VtArray<int>     faceVertexIndices;
 		VtArray<int>	 u_ColorIndices;
 
+		VtArray<int>	 u_creaseIndices;
+		VtArray<int>	 u_creaseLengths;
+		VtArray<float>	 u_creaseSharpnesses;
+
+
 		GfMatrix4d transform;
 		bool tmp = true;
 
@@ -596,6 +601,10 @@ namespace zSpace
 		UsdAttribute colorAttr = usdMesh.GetPrim().GetAttribute(pxr::TfToken("primvars:colorSet1"));
 		//UsdAttribute colorIndicesAttr = usdMesh.GetPrim().GetAttribute(pxr::TfToken("primvars:colorSet1:indices"));
 
+		UsdAttribute creaseIndicesAttr = usdMesh.GetCreaseIndicesAttr();
+		UsdAttribute creaseLengthsAttr = usdMesh.GetCreaseLengthsAttr();
+		UsdAttribute creaseSharpnessesAttr = usdMesh.GetCreaseSharpnessesAttr();
+
 		UsdGeomPrimvar colorPrimvar(colorAttr);
 		UsdAttribute colorIndicesAttr = colorPrimvar.GetIndicesAttr();
 		//colorPrimvar.GetIndices(&u_ColorIndices);
@@ -607,6 +616,8 @@ namespace zSpace
 		zTransform myTransform;
 		zColorArray palette;
 		zColorArray colors;
+		zDoubleArray edgeCreases;
+		std::map<std::pair<int, int>, float> creaseMap;
 
 		if (pointsAttr.Get(&u_points))
 			for (int i = 0; i < u_points.size() * 3; i += 3)
@@ -641,7 +652,32 @@ namespace zSpace
 				colors.push_back(palette[id]);
 			}
 
-		// Convert the GfMatrix4d to a `zTransf	orm` matrix
+		if (creaseIndicesAttr.Get(&u_creaseIndices)
+			&& creaseLengthsAttr.Get(&u_creaseLengths)
+			&& creaseSharpnessesAttr.Get(&u_creaseSharpnesses))
+		{
+			int offset = 0;
+			for (int i = 0; i < u_creaseLengths.size(); i++)
+			{
+				int length = u_creaseLengths.cdata()[i];
+				float sharpness = u_creaseSharpnesses.cdata()[i];
+
+				for (int j = 0; j < length - 1; j++)
+				{
+					int vA = u_creaseIndices.cdata()[offset + j];
+					int vB = u_creaseIndices.cdata()[offset + j + 1];
+
+					if (vB < vA) std::swap(vA, vB);
+
+					// Add to the result
+					creaseMap[{vA, vB}] = sharpness;
+				}
+				offset += length;
+			}
+		}
+
+		// Convert the GfMatrix4d to a `zTransform` matrix
+		myTransform.setIdentity();
 		if (usdMesh.GetLocalTransformation(&transform, &tmp))
 		{
 			double* data = transform.GetArray();
@@ -656,8 +692,30 @@ namespace zSpace
 		create(positions, polyCounts, polyConnects);
 		computeMeshNormals();
 
+		// Set edge creases
+		edgeCreases.reserve(numEdges());
+		for (zItMeshEdge e(*meshObj); !e.end(); e++)
+		{
+			zIntArray vIds;
+			e.getVertices(vIds);
+
+			int vA = vIds[0];
+			int vB = vIds[1];
+			if (vB < vA) std::swap(vA, vB);
+
+			double creaseValue = 0.0; // default
+			auto it = creaseMap.find({ vA, vB });
+			if (it != creaseMap.end())
+			{
+				creaseValue = it->second;
+			}
+			edgeCreases.push_back(creaseValue);
+		}
+		setEdgeWeights(edgeCreases);
+
+
 		// Set vertex colors
-		if (colors.size() == numVertices()) 	setVertexColors(colors, true);
+		if (colors.size() == numVertices()) setVertexColors(colors, true);
 		if (colors.size() == numPolygons()) setFaceColors(colors, true);
 
 		// Set the transformation matrix
@@ -839,6 +897,42 @@ namespace zSpace
 		//
 
 		usdMesh.CreateDoubleSidedAttr().Set(true);
+
+		// Crease attributes
+		VtArray<int>   u_creaseIndices;
+		VtArray<int>   u_creaseLengths;
+		VtArray<float> u_creaseSharpnesses;
+
+		// Iterate all edges
+		// (Assuming getEdgeWeight(...) or similar gives you the crease value.)
+		zDoubleArray edgeWeights = meshObj->mesh.edgeWeights;
+		for (zItMeshEdge e(*meshObj); !e.end(); e++)
+		{
+			double creaseVal = edgeWeights[e.getId()];
+
+			if (creaseVal != 0.0)
+			{
+				zIntArray vIds;
+				e.getVertices(vIds);
+				int vA = vIds[0];
+				int vB = vIds[1];
+
+				if (vB < vA) std::swap(vA, vB);
+
+				u_creaseIndices.push_back(vA);
+				u_creaseIndices.push_back(vB);
+				u_creaseLengths.push_back(2);
+
+				u_creaseSharpnesses.push_back(static_cast<float>(creaseVal));
+			}
+		}
+
+		if (!u_creaseIndices.empty())
+		{
+			usdMesh.CreateCreaseIndicesAttr().Set(u_creaseIndices);
+			usdMesh.CreateCreaseLengthsAttr().Set(u_creaseLengths);
+			usdMesh.CreateCreaseSharpnessesAttr().Set(u_creaseSharpnesses);
+		}
 
 		//set transform	
 		//usdMesh.ClearXformOpOrder();
