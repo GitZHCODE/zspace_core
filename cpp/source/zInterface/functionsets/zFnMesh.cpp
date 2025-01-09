@@ -2661,32 +2661,32 @@ namespace zSpace
 		bool quadMesh = isQuadMesh();
 		bool triMesh = isTriMesh();
 
-		if (quadMesh || triMesh)
-		{
-			vertexCurvatures.assign(numVertices(), -1);
-			MatrixXd V;
-			MatrixXi F;
+		//if (quadMesh || triMesh)
+		//{
+		//	vertexCurvatures.assign(numVertices(), -1);
+		//	MatrixXd V;
+		//	MatrixXi F;
 
-			VectorXd K;
+		//	VectorXd K;
 
-			//(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmesh(V, F);
-			(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmeshTriangulated(V, F);
+		//	//(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmesh(V, F);
+		//	(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmeshTriangulated(V, F);
 
-			// Compute integral of Gaussian curvature
-			igl::gaussian_curvature(V, F, K);
-			// Compute mass matrix
-			SparseMatrix<double> M, Minv;
-			igl::massmatrix(V, F, igl::MASSMATRIX_TYPE_DEFAULT, M);
-			igl::invert_diag(M, Minv);
-			// Divide by area to get integral average
-			K = (Minv * K).eval();
+		//	// Compute integral of Gaussian curvature
+		//	igl::gaussian_curvature(V, F, K);
+		//	// Compute mass matrix
+		//	SparseMatrix<double> M, Minv;
+		//	igl::massmatrix(V, F, igl::MASSMATRIX_TYPE_DEFAULT, M);
+		//	igl::invert_diag(M, Minv);
+		//	// Divide by area to get integral average
+		//	K = (Minv * K).eval();
 
-			for (int i = 0; i < numVertices(); i++)
-			{
-				vertexCurvatures[i] = K(i);
-			}
-		}
-		else
+		//	for (int i = 0; i < numVertices(); i++)
+		//	{
+		//		vertexCurvatures[i] = K(i);
+		//	}
+		//}
+		//else
 		{
 			for (zItMeshVertex v(*meshObj); !v.end(); v++)
 			{
