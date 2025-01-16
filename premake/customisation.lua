@@ -115,3 +115,20 @@ premake.override(premake.vstudio.vc2010.elements, "clCompile", function(base, cf
     end
     return calls
 end)
+
+-- RAW PROP FILE INCLUDES 
+premake.api.register {
+    name = "rawpropfileincludes",
+    scope = "config",
+    kind = "list:string",
+    tokens = true,
+}
+
+-- [TODO] Hardcoded for now, fix later
+premake.override(premake.vstudio.vc2010, "propertySheets", function(base, cfg)
+    premake.push('<ImportGroup Label="PropertySheets" %s>', premake.vstudio.vc2010.condition(cfg))
+    for _, prop in pairs(cfg.rawpropfileincludes) do
+        premake.w('<Import Project="%s"/>', prop, nil)
+    end
+	premake.pop('</ImportGroup>')
+end)
