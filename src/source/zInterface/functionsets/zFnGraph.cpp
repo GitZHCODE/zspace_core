@@ -302,14 +302,26 @@ namespace zSpace
 			graphJSON.vertexAttributes.push_back(v_attrib);
 		}
 
+		std::vector<std::vector<double>> EdgeAttributes; EdgeAttributes.reserve(graphObj->graph.n_e);
+		for (zItGraphEdge e(*graphObj); !e.end(); e++)
+		{
+			std::vector<double> attribs;
+
+			auto col = e.getColor();
+			attribs.push_back(col.r);
+			attribs.push_back(col.g);
+			attribs.push_back(col.b);
+
+			EdgeAttributes.push_back(attribs);
+		}
+
 
 		// Json file 
 		j["Vertices"] = graphJSON.vertices;
 		j["Halfedges"] = graphJSON.halfedges;
 		j["VertexAttributes"] = graphJSON.vertexAttributes;
 		j["HalfedgeAttributes"] = graphJSON.halfedgeAttributes;
-
-		
+		j["EdgeAttributes"] = EdgeAttributes;
 	}
 
 #if defined ZSPACE_USD_INTEROP
