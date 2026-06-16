@@ -1,0 +1,43 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "ninja-msvc",
+      "displayName": "Ninja with MSVC x64",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/ninja-msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install",
+        "CMAKE_MAKE_PROGRAM": "C:/Program Files/Microsoft Visual Studio/2022/Professional/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe",
+        "ZSPACE_BUILD_SHARED": "ON",
+        "ZSPACE_BUILD_INTERFACE": "ON",
+        "ZSPACE_BUILD_IO": "ON",
+        "ZSPACE_BUILD_DISPLAY": "ON",
+        "ZSPACE_BUILD_INTEROP": "OFF",
+        "ZSPACE_BUILD_TESTS": "ON",
+        "ZSPACE_WITH_IGL": "ON",
+        "ZSPACE_WITH_OPENGL": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ninja-msvc-release",
+      "displayName": "Build Release DLLs",
+      "configurePreset": "ninja-msvc",
+      "configuration": "Release"
+    },
+    {
+      "name": "ninja-msvc-debug",
+      "displayName": "Build Debug DLLs",
+      "configurePreset": "ninja-msvc",
+      "configuration": "Debug"
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+#include <src/zIO/codecs/zCodecOBJ.h>
+
+#include <fstream>
+#include <iomanip>
+#include <limits>
+#include <locale>
+#include <sstream>
+#include <vector>
+
+namespace zSpace::io_detail
+{
+	namespace
+	{
+		struct FaceIndex
+		{
+			int vertex = -1;
+			int normal = -1;
+		};
+
+		bool resolveIndex(const std::string& value, int count, int& index)
+		{
+			if (value.empty()) return false;
+
+			try
+			{
+				const int parsed = std::stoi(value);
+				if (parsed == 0) return false;
+				index = parsed > 0 ? parsed - 1 : count + parsed;
+				return index >= 0 && index < count;
+			}
+			catch (...)
+			{
+				return false;
+			}
+		}
+
+		bool parseFaceIndex(
+			const std::string& token,
+			int vertexCount,
+			int normalCount,
+			FaceIndex& index)
+		{
+			const auto firstSlash = token.find('/');
+			const std::string vertexValue = token.substr(0, firstSlash);
+			if (!resolveIndex(vertexValue, vertexCount, index.vertex)) return false;
+			if (firstSlash == std::string::npos) return true;
+
+			const auto secondSlash = token.find('/', firstSlash + 1);
+			if (secondSlash == std::string::npos) return true;
+
+			const std::string normalValue = token.substr(secondSlash + 1);
+			if (normalValue.empty()) return true;
+			return resolveIndex(normalValue, normalCount, index.normal);
+		}
+	}
+
+	zIOResult readOBJ(const std::string& path, MeshData& data)
+	{
+		std::ifstream input(path);
+		if (!input) return zIOResult::error("Could not open OBJ file: " + path);
+		input.imbue(std::locale::classic());
+
+		data = {};
+		zVectorArray normals;
+		zVectorArray polygonNormals;
+		bool allPolygonsHaveNormals = true;
+		std::string line;
+		int lineNumber = 0;
+
+		while (std::getline(input, line))
+		{
+			++lineNumber;
+			std::istringstream stream(line);
+			stream.imbue(std::locale::classic());
+
+			std::string tag;
+			stream >> tag;
+			if (tag.empty() || tag[0] == '#') continue;
+
+			if (tag == "v")
+			{
+				zPoint position;
+				if (!(stream >> position.x >> position.y >> position.z))
+					return zIOResult::error("Invalid OBJ vertex at line " + std::to_string(lineNumber));
+
+				std::vector<float> trailingValues;
+				float trailingValue = 0.0f;
+				while (stream >> trailingValue) trailingValues.push_back(trailingValue);
+
+				if (trailingValues.size() == 1)
+				{
+					const float homogeneousWeight = trailingValues[0];
+					if (homogeneousWeight == 0.0f)
+						return zIOResult::error("OBJ vertex has zero homogeneous weight at line " + std::to_string(lineNumber));
+					position /= homogeneousWeight;
+				}
+				else if (trailingValues.size() >= 3)
+				{
+					const float alpha = trailingValues.size() >= 4 ? trailingValues[3] : 1.0f;
+					data.vertexColors.emplace_back(
+						trailingValues[0],
+						trailingValues[1],
+						trailingValues[2],
+						alpha);
+				}
+				data.positions.push_back(position);
+			}
+			else if (tag == "vn")
+			{
+				zVector normal;
+				if (!(stream >> normal.x >> normal.y >> normal.z))
+					return zIOResult::error("Invalid OBJ normal at line " + std::to_string(lineNumber));
+				normals.push_back(normal);
+			}
+			else if (tag == "f")
+			{
+				std::vector<FaceIndex> face;
+				std::string token;
+				while (stream >> token)
+				{
+					if (!token.empty() && token[0] == '#') break;
+
+					FaceIndex index;
+					if (!parseFaceIndex(
+						token,
+						static_cast<int>(data.positions.size()),
+						static_cast<int>(normals.size()),
+						index))
+						return zIOResult::error("Invalid OBJ face index at line " + std::to_string(lineNumber));
+					face.push_back(index);
+				}
+
+				if (face.size() < 3)
+					return zIOResult::error("OBJ face has fewer than three vertices at line " + std::to_string(lineNumber));
+
+				zVector polygonNormal;
+				bool polygonHasNormals = true;
+				for (const auto& index : face)
+				{
+					data.polygonConnects.push_back(index.vertex);
+					if (index.normal >= 0) polygonNormal += normals[index.normal];
+					else polygonHasNormals = false;
+				}
+				data.polygonCounts.push_back(static_cast<int>(face.size()));
+
+				if (polygonHasNormals && polygonNormal.length() > 0.0)
+				{
+					polygonNormal.normalize();
+					polygonNormals.push_back(polygonNormal);
+				}
+				else
+				{
+					allPolygonsHaveNormals = false;
+				}
+			}
+		}
+
+		if (data.positions.empty()) return zIOResult::error("OBJ file contains no vertices: " + path);
+		if (data.polygonCounts.empty()) return zIOResult::error("OBJ file contains no faces: " + path);
+		if (!data.vertexColors.empty() && data.vertexColors.size() != data.positions.size())
+			data.vertexColors.clear();
+		if (allPolygonsHaveNormals && polygonNormals.size() == data.polygonCounts.size())
+			data.faceNormals = std::move(polygonNormals);
+		return zIOResult::ok();
+	}
+
+	zIOResult writeOBJ(const std::string& path, const MeshData& data)
+	{
+		std::ofstream output(path);
+		if (!output) return zIOResult::error("Could not create OBJ file: " + path);
+		output.imbue(std::locale::classic());
+		output << std::setprecision(std::numeric_limits<float>::max_digits10);
+		output << "# Generated by zSpace\n";
+		output << "o zSpaceMesh\n";
+
+		for (const auto& position : data.positions)
+			output << "v " << position.x << ' ' << position.y << ' ' << position.z << '\n';
+
+		const bool writeNormals = data.faceNormals.size() == data.polygonCounts.size();
+		if (writeNormals)
+		{
+			for (const auto& normal : data.faceNormals)
+				output << "vn " << normal.x << ' ' << normal.y << ' ' << normal.z << '\n';
+		}
+
+		output << "s off\n";
+
+		std::size_t cursor = 0;
+		for (std::size_t faceIndex = 0; faceIndex < data.polygonCounts.size(); ++faceIndex)
+		{
+			const int count = data.polygonCounts[faceIndex];
+			if (count < 3 || cursor + static_cast<std::size_t>(count) > data.polygonConnects.size())
+				return zIOResult::error("Mesh contains invalid polygon connectivity.");
+
+			output << "f";
+			for (int i = 0; i < count; ++i)
+			{
+				const int vertex = data.polygonConnects[cursor++];
+				if (vertex < 0 || vertex >= static_cast<int>(data.positions.size()))
+					return zIOResult::error("Mesh polygon references an invalid vertex.");
+
+				output << ' ' << vertex + 1;
+				if (writeNormals) output << "//" << faceIndex + 1;
+			}
+			output << '\n';
+		}
+
+		if (cursor != data.polygonConnects.size())
+			return zIOResult::error("Mesh contains unused polygon connectivity.");
+
+		return output ? zIOResult::ok() : zIOResult::error("Failed while writing OBJ file: " + path);
+	}
+}

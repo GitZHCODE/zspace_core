@@ -1,0 +1,5 @@
+{
+  "cmake.configureOnOpen": true,
+  "cmake.useCMakePresets": "always",
+  "cmake.buildPreset": "ninja-msvc-release"
+}
