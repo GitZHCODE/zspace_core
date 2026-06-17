@@ -26,14 +26,14 @@ namespace zSpace
 		meshObj = nullptr;
 	}
 
-	ZSPACE_INLINE zItMeshVertex::zItMeshVertex(zObjMesh &_meshObj)
+	ZSPACE_INLINE zItMeshVertex::zItMeshVertex(zObjectMesh &_meshObj)
 	{
 		meshObj = &_meshObj;
 
 		iter = zMeshObjectStorage::get(*meshObj).vertices.begin();
 	}
 
-	ZSPACE_INLINE zItMeshVertex::zItMeshVertex(zObjMesh &_meshObj, int _index)
+	ZSPACE_INLINE zItMeshVertex::zItMeshVertex(zObjectMesh &_meshObj, int _index)
 	{
 		meshObj = &_meshObj;
 
@@ -673,14 +673,14 @@ namespace zSpace
 		meshObj = nullptr;
 	}
 
-	ZSPACE_INLINE zItMeshEdge::zItMeshEdge(zObjMesh &_meshObj)
+	ZSPACE_INLINE zItMeshEdge::zItMeshEdge(zObjectMesh &_meshObj)
 	{
 		meshObj = &_meshObj;
 
 		iter = zMeshObjectStorage::get(*meshObj).edges.begin();
 	}
 
-	ZSPACE_INLINE zItMeshEdge::zItMeshEdge(zObjMesh &_meshObj, int _index)
+	ZSPACE_INLINE zItMeshEdge::zItMeshEdge(zObjectMesh &_meshObj, int _index)
 	{
 		meshObj = &_meshObj;
 
@@ -924,14 +924,14 @@ namespace zSpace
 		meshObj = nullptr;
 	}
 
-	ZSPACE_INLINE zItMeshFace::zItMeshFace(zObjMesh &_meshObj)
+	ZSPACE_INLINE zItMeshFace::zItMeshFace(zObjectMesh &_meshObj)
 	{
 		meshObj = &_meshObj;
 
 		iter = zMeshObjectStorage::get(*meshObj).faces.begin();
 	}
 
-	ZSPACE_INLINE zItMeshFace::zItMeshFace(zObjMesh &_meshObj, int _index)
+	ZSPACE_INLINE zItMeshFace::zItMeshFace(zObjectMesh &_meshObj, int _index)
 	{
 		meshObj = &_meshObj;
 
@@ -1782,14 +1782,14 @@ namespace zSpace
 		meshObj = nullptr;
 	}
 
-	ZSPACE_INLINE zItMeshHalfEdge::zItMeshHalfEdge(zObjMesh &_meshObj)
+	ZSPACE_INLINE zItMeshHalfEdge::zItMeshHalfEdge(zObjectMesh &_meshObj)
 	{
 		meshObj = &_meshObj;
 
 		iter = zMeshObjectStorage::get(*meshObj).halfEdges.begin();
 	}
 
-	ZSPACE_INLINE zItMeshHalfEdge::zItMeshHalfEdge(zObjMesh &_meshObj, int _index)
+	ZSPACE_INLINE zItMeshHalfEdge::zItMeshHalfEdge(zObjectMesh &_meshObj, int _index)
 	{
 		meshObj = &_meshObj;
 

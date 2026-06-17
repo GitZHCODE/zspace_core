@@ -27,14 +27,14 @@ namespace zSpace
 		graphObj = nullptr;
 	}
 
-	ZSPACE_INLINE zItGraphVertex::zItGraphVertex(zObjGraph &_graphObj)
+	ZSPACE_INLINE zItGraphVertex::zItGraphVertex(zObjectGraph &_graphObj)
 	{
 		graphObj = &_graphObj;
 
 		iter = zGraphObjectStorage::get(*graphObj).vertices.begin();
 	}
 
-	ZSPACE_INLINE zItGraphVertex::zItGraphVertex(zObjGraph &_graphObj, int _index)
+	ZSPACE_INLINE zItGraphVertex::zItGraphVertex(zObjectGraph &_graphObj, int _index)
 	{
 		graphObj = &_graphObj;
 
@@ -372,14 +372,14 @@ namespace zSpace
 		graphObj = nullptr;
 	}
 
-	ZSPACE_INLINE zItGraphEdge::zItGraphEdge(zObjGraph &_graphObj)
+	ZSPACE_INLINE zItGraphEdge::zItGraphEdge(zObjectGraph &_graphObj)
 	{
 		graphObj = &_graphObj;
 
 		iter = zGraphObjectStorage::get(*graphObj).edges.begin();
 	}
 
-	ZSPACE_INLINE zItGraphEdge::zItGraphEdge(zObjGraph &_graphObj, int _index)
+	ZSPACE_INLINE zItGraphEdge::zItGraphEdge(zObjectGraph &_graphObj, int _index)
 	{
 		graphObj = &_graphObj;
 
@@ -568,14 +568,14 @@ namespace zSpace
 		graphObj = nullptr;
 	}
 
-	ZSPACE_INLINE zItGraphHalfEdge::zItGraphHalfEdge(zObjGraph &_graphObj)
+	ZSPACE_INLINE zItGraphHalfEdge::zItGraphHalfEdge(zObjectGraph &_graphObj)
 	{
 		graphObj = &_graphObj;
 
 		iter = zGraphObjectStorage::get(*graphObj).halfEdges.begin();
 	}
 
-	ZSPACE_INLINE zItGraphHalfEdge::zItGraphHalfEdge(zObjGraph &_graphObj, int _index)
+	ZSPACE_INLINE zItGraphHalfEdge::zItGraphHalfEdge(zObjectGraph &_graphObj, int _index)
 	{
 		graphObj = &_graphObj;
 

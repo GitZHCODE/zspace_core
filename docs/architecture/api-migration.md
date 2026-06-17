@@ -39,7 +39,7 @@ libigl, USD, and host SDK dependencies belong in private source directories.
 3. Add validated function-set attachment APIs.
 4. Move mesh and graph drawing into display classes and `zDisplayScene`. Completed.
 5. Place mesh and graph storage behind opaque object implementations. Completed.
-6. Update iterators to attach through object handles or private accessors.
+6. Update iterators to attach through object handles or private accessors. Completed for mesh, graph, and point-cloud public iterators.
 7. Repeat the pattern for point clouds, particles, fields, and spatial bins. In progress.
 8. Remove storage headers and third-party dependencies from the installed API.
 9. Deprecate and later remove the `zObj*` compatibility names.

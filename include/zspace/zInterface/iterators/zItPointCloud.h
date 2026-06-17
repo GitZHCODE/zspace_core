@@ -16,7 +16,7 @@
 #pragma once
 
 #include<zspace/zInterface/iterators/zIt.h>
-#include<zspace/zInterface/objects/zObjPointCloud.h>
+#include<zspace/zInterface/objects/zObjectPointCloud.h>
 
 namespace zSpace
 {
@@ -54,7 +54,7 @@ namespace zSpace
 		int index;
 
 		/*!	\brief pointer to a pointcloud object  */
-		zObjPointCloud *pointsObj;
+		zObjectPointCloud *pointsObj;
 
 	public:
 
@@ -73,7 +73,7 @@ namespace zSpace
 		*	\param		[in]	_pointsObj			- input point cloud object.
 		*	\since version 0.0.3
 		*/
-		zItPointCloudVertex(zObjPointCloud &_pointsObj);
+		zItPointCloudVertex(zObjectPointCloud &_pointsObj);
 
 		/*! \brief Overloaded constructor.
 		*
@@ -81,7 +81,7 @@ namespace zSpace
 		*	\param		[in]	_index				- input index in mesh vertex list.
 		*	\since version 0.0.3
 		*/
-		zItPointCloudVertex(zObjPointCloud &_pointsObj, int _index);
+		zItPointCloudVertex(zObjectPointCloud &_pointsObj, int _index);
 
 		//--------------------------
 		//---- OVERRIDE METHODS

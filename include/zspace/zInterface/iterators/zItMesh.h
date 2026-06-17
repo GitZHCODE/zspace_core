@@ -16,7 +16,7 @@
 #pragma once
 
 #include<zspace/zInterface/iterators/zIt.h>
-#include<zspace/zInterface/objects/zObjMesh.h>
+#include<zspace/zInterface/objects/zObjectMesh.h>
 #include<zspace/zCore/geometry/zHEGeomTypes.h>
 
 namespace zSpace
@@ -114,7 +114,7 @@ namespace zSpace
 		zItVertex iter;
 
 		/*!	\brief pointer to a mesh object  */
-		zObjMesh *meshObj;
+		zObjectMesh *meshObj;
 
 	public:
 
@@ -133,7 +133,7 @@ namespace zSpace
 		*	\param		[in]	_meshObj			- input mesh object.
 		*	\since version 0.0.3
 		*/
-		zItMeshVertex(zObjMesh &_meshObj);
+		zItMeshVertex(zObjectMesh &_meshObj);
 
 		/*! \brief Overloaded constructor.
 		*
@@ -141,7 +141,7 @@ namespace zSpace
 		*	\param		[in]	_index				- input index in mesh vertex container.
 		*	\since version 0.0.3
 		*/
-		zItMeshVertex(zObjMesh &_meshObj, int _index);
+		zItMeshVertex(zObjectMesh &_meshObj, int _index);
 
 		//--------------------------
 		//---- OVERRIDE METHODS
@@ -453,7 +453,7 @@ namespace zSpace
 		zItEdge iter;
 
 		/*!	\brief pointer to a mesh object  */
-		zObjMesh *meshObj;
+		zObjectMesh *meshObj;
 
 
 	public:
@@ -473,7 +473,7 @@ namespace zSpace
 		*	\param		[in]	_meshObj			- input mesh object.
 		*	\since version 0.0.3
 		*/
-		zItMeshEdge(zObjMesh &_meshObj);
+		zItMeshEdge(zObjectMesh &_meshObj);
 
 		/*! \brief Overloaded constructor.
 		*
@@ -481,7 +481,7 @@ namespace zSpace
 		*	\param		[in]	_index				- input index in mesh edge list.
 		*	\since version 0.0.3
 		*/
-		zItMeshEdge(zObjMesh &_meshObj, int _index);
+		zItMeshEdge(zObjectMesh &_meshObj, int _index);
 
 		//--------------------------
 		//---- OVERRIDE METHODS
@@ -717,7 +717,7 @@ namespace zSpace
 		zItFace iter;
 
 		/*!	\brief pointer to a mesh object  */
-		zObjMesh *meshObj;
+		zObjectMesh *meshObj;
 
 
 	public:
@@ -737,7 +737,7 @@ namespace zSpace
 		*	\param		[in]	_meshObj			- input mesh object.
 		*	\since version 0.0.3
 		*/
-		zItMeshFace(zObjMesh &_meshObj);
+		zItMeshFace(zObjectMesh &_meshObj);
 
 		/*! \brief Overloaded constructor.
 		*
@@ -745,7 +745,7 @@ namespace zSpace
 		*	\param		[in]	_index				- input index in mesh face list.
 		*	\since version 0.0.3
 		*/
-		zItMeshFace(zObjMesh &_meshObj, int _index);
+		zItMeshFace(zObjectMesh &_meshObj, int _index);
 
 		//--------------------------
 		//---- OVERRIDE METHODS
@@ -1062,7 +1062,7 @@ namespace zSpace
 		zItHalfEdge iter;
 
 		/*!	\brief pointer to a mesh object  */
-		zObjMesh *meshObj;
+		zObjectMesh *meshObj;
 
 
 	public:
@@ -1082,7 +1082,7 @@ namespace zSpace
 		*	\param		[in]	_meshObj			- input mesh object.
 		*	\since version 0.0.3
 		*/
-		zItMeshHalfEdge(zObjMesh &_meshObj);
+		zItMeshHalfEdge(zObjectMesh &_meshObj);
 
 		/*! \brief Overloaded constructor.
 		*
@@ -1090,7 +1090,7 @@ namespace zSpace
 		*	\param		[in]	_index				- input index in mesh halfedge list.
 		*	\since version 0.0.3
 		*/
-		zItMeshHalfEdge(zObjMesh &_meshObj, int _index);
+		zItMeshHalfEdge(zObjectMesh &_meshObj, int _index);
 
 		//--------------------------
 		//---- OVERRIDE METHODS

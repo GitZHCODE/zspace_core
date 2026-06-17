@@ -16,7 +16,7 @@
 #pragma once
 
 #include<zspace/zInterface/iterators/zIt.h>
-#include<zspace/zInterface/objects/zObjGraph.h>
+#include<zspace/zInterface/objects/zObjectGraph.h>
 #include<zspace/zCore/geometry/zHEGeomTypes.h>
 
 namespace zSpace
@@ -106,7 +106,7 @@ namespace zSpace
 		zItVertex iter;
 
 		/*!	\brief pointer to a graph object  */
-		zObjGraph *graphObj;
+		zObjectGraph *graphObj;
 
 	public:
 
@@ -125,7 +125,7 @@ namespace zSpace
 		*	\param		[in]	_graphObj			- input graph object.
 		*	\since version 0.0.3
 		*/
-		zItGraphVertex(zObjGraph &_graphObj);
+		zItGraphVertex(zObjectGraph &_graphObj);
 
 		/*! \brief Overloaded constructor.
 		*
@@ -133,7 +133,7 @@ namespace zSpace
 		*	\param		[in]	_index				- input index in graph vertex list.
 		*	\since version 0.0.3
 		*/
-		zItGraphVertex(zObjGraph &_graphObj, int _index);
+		zItGraphVertex(zObjectGraph &_graphObj, int _index);
 
 		//--------------------------
 		//---- OVERRIDE METHODS
@@ -387,7 +387,7 @@ namespace zSpace
 		zItEdge iter;
 
 		/*!	\brief pointer to a graph object  */
-		zObjGraph *graphObj;
+		zObjectGraph *graphObj;
 
 
 	public:
@@ -407,7 +407,7 @@ namespace zSpace
 		*	\param		[in]	_graphObj			- input graph object.
 		*	\since version 0.0.3
 		*/
-		zItGraphEdge(zObjGraph &_graphObj);
+		zItGraphEdge(zObjectGraph &_graphObj);
 
 		/*! \brief Overloaded constructor.
 		*
@@ -415,7 +415,7 @@ namespace zSpace
 		*	\param		[in]	_index				- input index in graph edge list.
 		*	\since version 0.0.3
 		*/
-		zItGraphEdge(zObjGraph &_graphObj, int _index);
+		zItGraphEdge(zObjectGraph &_graphObj, int _index);
 
 		//--------------------------
 		//---- OVERRIDE METHODS
@@ -621,7 +621,7 @@ namespace zSpace
 		zItHalfEdge iter;
 
 		/*!	\brief pointer to a graph object  */
-		zObjGraph *graphObj;
+		zObjectGraph *graphObj;
 
 
 	public:
@@ -641,7 +641,7 @@ namespace zSpace
 		*	\param		[in]	_graphObj			- input graph object.
 		*	\since version 0.0.3
 		*/
-		zItGraphHalfEdge(zObjGraph &_graphObj);
+		zItGraphHalfEdge(zObjectGraph &_graphObj);
 
 		/*! \brief Overloaded constructor.
 		*
@@ -649,7 +649,7 @@ namespace zSpace
 		*	\param		[in]	_index				- input index in graph halfedge list.
 		*	\since version 0.0.3
 		*/
-		zItGraphHalfEdge(zObjGraph &_graphObj, int _index);
+		zItGraphHalfEdge(zObjectGraph &_graphObj, int _index);
 
 		//--------------------------
 		//---- OVERRIDE METHODS

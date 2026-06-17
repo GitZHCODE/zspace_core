@@ -10,12 +10,12 @@ namespace zSpace
 	{
 	}
 
-	ZSPACE_INLINE zItPointCloudVertex::zItPointCloudVertex(zObjPointCloud& _pointsObj)
+	ZSPACE_INLINE zItPointCloudVertex::zItPointCloudVertex(zObjectPointCloud& _pointsObj)
 		: index(0), pointsObj(&_pointsObj)
 	{
 	}
 
-	ZSPACE_INLINE zItPointCloudVertex::zItPointCloudVertex(zObjPointCloud& _pointsObj, int _index)
+	ZSPACE_INLINE zItPointCloudVertex::zItPointCloudVertex(zObjectPointCloud& _pointsObj, int _index)
 		: index(_index), pointsObj(&_pointsObj)
 	{
 		if (_index < 0 || _index >= size())
