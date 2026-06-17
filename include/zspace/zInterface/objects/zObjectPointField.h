@@ -23,6 +23,9 @@ using namespace std;
 
 namespace zSpace
 {
+	template<typename T> class zFnPointField;
+	class zItPointScalarField;
+	class zItPointVectorField;
 
 	/** \addtogroup zInterface
 	*	\brief The Application Program Interface of the library.
@@ -47,16 +50,19 @@ namespace zSpace
 	template<typename T>
 	class ZSPACE_API zObjectPointField : public zObjectPointCloud
 	{
+		template<typename U> friend class zFnPointField;
+		friend class zItPointScalarField;
+		friend class zItPointVectorField;
+
 	private:
-		
-	public:
 		//--------------------------
-		//---- PUBLIC ATTRIBUTES
+		//---- PRIVATE ATTRIBUTES
 		//--------------------------
 
 		/*! \brief field 2D */
 		zField3D<T> field;
 
+	public:
 
 		//--------------------------
 		//---- CONSTRUCTOR

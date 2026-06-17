@@ -42,8 +42,9 @@ libigl, USD, and host SDK dependencies belong in private source directories.
 6. Update iterators to attach through object handles or private accessors. Completed for mesh, graph, and point-cloud public iterators.
 7. Repeat the pattern for point clouds, particles, fields, and spatial bins. In progress:
    public function-set signatures now use `zObject*` names for mesh, graph,
-   point-cloud, point-field, mesh-field, and dynamics APIs; direct field and
-   particle storage exposure is still being migrated.
+   point-cloud, point-field, mesh-field, and dynamics APIs. Field and particle
+   storage members are now private and reachable only by the owning function
+   sets and iterators.
 8. Remove storage headers and third-party dependencies from the installed API.
    In progress: mesh/graph iterator DLL-interface warnings are now suppressed
    at the private STL iterator members; remaining warning cleanup is focused on

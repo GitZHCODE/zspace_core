@@ -23,6 +23,9 @@ using namespace std;
 
 namespace zSpace
 {
+	template<typename T> class zFnMeshField;
+	class zItMeshScalarField;
+	class zItMeshVectorField;
 
 	/** \addtogroup zInterface
 	*	\brief The Application Program Interface of the library.
@@ -47,14 +50,19 @@ namespace zSpace
 	template<typename T>
 	class ZSPACE_API zObjectMeshField : public zObjectMesh
 	{
+		template<typename U> friend class zFnMeshField;
+		friend class zItMeshScalarField;
+		friend class zItMeshVectorField;
 
-	public:
+	private:
 		//--------------------------
-		//---- PUBLIC ATTRIBUTES
+		//---- PRIVATE ATTRIBUTES
 		//--------------------------
 
 		/*! \brief field 2D */
 		zField2D<T> field;
+
+	public:
 
 		//--------------------------
 		//---- CONSTRUCTOR

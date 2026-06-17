@@ -21,6 +21,10 @@
 
 namespace zSpace
 {
+	class zFnParticle;
+	class zFnComputeMesh;
+	class zFnGraphDynamics;
+	class zFnMeshDynamics;
 
 	/** \addtogroup zInterface
 	*	\brief The Application Program Interface of the library.
@@ -43,13 +47,20 @@ namespace zSpace
 
 	class ZSPACE_API zObjectParticle :public zObject
 	{
-	public:
+		friend class zFnParticle;
+		friend class zFnComputeMesh;
+		friend class zFnGraphDynamics;
+		friend class zFnMeshDynamics;
+
+	private:
 		//--------------------------
-		//---- PUBLIC ATTRIBUTES
+		//---- PRIVATE ATTRIBUTES
 		//--------------------------
 
 		/*! \brief particle */
 		zParticle particle;
+
+	public:
 
 		//--------------------------
 		//---- CONSTRUCTOR
