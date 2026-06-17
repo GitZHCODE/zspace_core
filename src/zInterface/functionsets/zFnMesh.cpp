@@ -19,6 +19,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <queue>
+#include <utility>
 
 namespace zSpace
 {
@@ -165,6 +167,226 @@ namespace zSpace
 				tangentDirection -= normal * (float)(tangentDirection * normal);
 			}
 			tangentDirection = normalized(tangentDirection);
+		}
+
+		bool solve5x5(double A[5][5], double b[5], double x[5])
+		{
+			double tempA[5][5];
+			double tempB[5];
+
+			for (int i = 0; i < 5; ++i)
+			{
+				tempB[i] = b[i];
+				x[i] = 0.0;
+				for (int j = 0; j < 5; ++j) tempA[i][j] = A[i][j];
+			}
+
+			for (int i = 0; i < 5; ++i)
+			{
+				int pivotRow = i;
+				double maxValue = std::abs(tempA[i][i]);
+				for (int r = i + 1; r < 5; ++r)
+				{
+					double value = std::abs(tempA[r][i]);
+					if (value > maxValue)
+					{
+						maxValue = value;
+						pivotRow = r;
+					}
+				}
+
+				if (maxValue < 1.0e-12) return false;
+
+				if (pivotRow != i)
+				{
+					for (int col = i; col < 5; ++col) std::swap(tempA[i][col], tempA[pivotRow][col]);
+					std::swap(tempB[i], tempB[pivotRow]);
+				}
+
+				for (int r = i + 1; r < 5; ++r)
+				{
+					double factor = tempA[r][i] / tempA[i][i];
+					for (int col = i; col < 5; ++col) tempA[r][col] -= factor * tempA[i][col];
+					tempB[r] -= factor * tempB[i];
+				}
+			}
+
+			for (int i = 4; i >= 0; --i)
+			{
+				double sum = 0.0;
+				for (int col = i + 1; col < 5; ++col) sum += tempA[i][col] * x[col];
+				x[i] = (tempB[i] - sum) / tempA[i][i];
+			}
+
+			return true;
+		}
+
+		void solveSymmetric2x2(
+			double A,
+			double B,
+			double C,
+			double& L1,
+			double& L2,
+			double& v1x,
+			double& v1y,
+			double& v2x,
+			double& v2y)
+		{
+			double disc = ((A - C) * (A - C)) + (4.0 * B * B);
+			double sqrtDisc = std::sqrt(std::max(0.0, disc));
+			L1 = 0.5 * (A + C + sqrtDisc);
+			L2 = 0.5 * (A + C - sqrtDisc);
+
+			double u1 = B;
+			double u2 = L1 - A;
+			double len = std::sqrt((u1 * u1) + (u2 * u2));
+			if (len > 1.0e-9)
+			{
+				v1x = u1 / len;
+				v1y = u2 / len;
+			}
+			else
+			{
+				v1x = 1.0;
+				v1y = 0.0;
+			}
+
+			v2x = -v1y;
+			v2y = v1x;
+		}
+
+		void appendUnique(zIntArray& values, int value)
+		{
+			if (std::find(values.begin(), values.end(), value) == values.end()) values.push_back(value);
+		}
+
+		void getKRingVertices(int start, int kRing, zIntArray& out, const vector<zIntArray>& vertexToVertices)
+		{
+			out.clear();
+			if (start < 0 || start >= (int)vertexToVertices.size()) return;
+
+			vector<bool> visited(vertexToVertices.size(), false);
+			std::queue<std::pair<int, int>> queue;
+
+			queue.push(std::make_pair(start, 0));
+			visited[start] = true;
+
+			while (!queue.empty())
+			{
+				std::pair<int, int> current = queue.front();
+				queue.pop();
+				out.push_back(current.first);
+
+				if (current.second >= kRing) continue;
+
+				for (int neighbour : vertexToVertices[current.first])
+				{
+					if (neighbour < 0 || neighbour >= (int)visited.size() || visited[neighbour]) continue;
+
+					visited[neighbour] = true;
+					queue.push(std::make_pair(neighbour, current.second + 1));
+				}
+			}
+		}
+
+		void getSphereVertices(
+			int start,
+			double radius,
+			zIntArray& out,
+			int minCount,
+			const vector<zIntArray>& vertexToVertices,
+			const zVectorArray& positions)
+		{
+			out.clear();
+			if (start < 0 || start >= (int)vertexToVertices.size()) return;
+
+			vector<bool> visited(vertexToVertices.size(), false);
+			std::queue<int> queue;
+			vector<std::pair<int, double>> extraCandidates;
+
+			queue.push(start);
+			visited[start] = true;
+			zVector center = positions[start];
+
+			while (!queue.empty())
+			{
+				int current = queue.front();
+				queue.pop();
+				out.push_back(current);
+
+				for (int neighbour : vertexToVertices[current])
+				{
+					if (neighbour < 0 || neighbour >= (int)visited.size() || visited[neighbour]) continue;
+
+					zVector neighbourPosition = positions[neighbour];
+					zVector delta = neighbourPosition - center;
+					double distance = vectorLength(delta);
+					if (distance < radius)
+					{
+						queue.push(neighbour);
+					}
+					else if ((int)out.size() < minCount)
+					{
+						extraCandidates.push_back(std::make_pair(neighbour, distance));
+					}
+
+					visited[neighbour] = true;
+				}
+			}
+
+			while (!extraCandidates.empty() && (int)out.size() < minCount)
+			{
+				std::sort(extraCandidates.begin(), extraCandidates.end(),
+					[](const std::pair<int, double>& a, const std::pair<int, double>& b)
+					{
+						return a.second < b.second;
+					});
+
+				std::pair<int, double> candidate = extraCandidates.front();
+				extraCandidates.erase(extraCandidates.begin());
+				out.push_back(candidate.first);
+
+				for (int neighbour : vertexToVertices[candidate.first])
+				{
+					if (neighbour < 0 || neighbour >= (int)visited.size() || visited[neighbour]) continue;
+
+					zVector neighbourPosition = positions[neighbour];
+					zVector delta = neighbourPosition - center;
+					double distance = vectorLength(delta);
+					extraCandidates.push_back(std::make_pair(neighbour, distance));
+					visited[neighbour] = true;
+				}
+			}
+		}
+
+		zVector computeFaceNormalAndArea(const zIntArray& faceVertices, const zVectorArray& positions, double& area)
+		{
+			area = 0.0;
+			if (faceVertices.size() < 3) return zVector();
+
+			zVector centroid;
+			for (int vertexId : faceVertices)
+			{
+				zVector position = positions[vertexId];
+				centroid += position;
+			}
+			centroid /= (float)faceVertices.size();
+
+			zVector normalSum;
+			for (int i = 0; i < (int)faceVertices.size(); ++i)
+			{
+				zVector p1 = positions[faceVertices[i]];
+				zVector p2 = positions[faceVertices[(i + 1) % faceVertices.size()]];
+				zVector v1 = p1 - centroid;
+				zVector v2 = p2 - centroid;
+				normalSum += (v1 ^ v2);
+			}
+
+			double length = vectorLength(normalSum);
+			if (length <= 1.0e-9) return zVector();
+
+			area = 0.5 * length;
+			return normalized(normalSum);
 		}
 	}
 
@@ -1867,42 +2089,235 @@ namespace zSpace
 		pVector1.clear();
 		pVector2.clear();
 
-		vertexCurvatures.assign(numVertices(), zCurvature());
+		const int radius = 5;
+		const bool useKring = true;
+		const int nV = numVertices();
+		const int nF = numPolygons();
+
+		vertexCurvatures.assign(nV, zCurvature());
 		pVector1.assign(numVertices(), zVector());
 		pVector2.assign(numVertices(), zVector());
 
-		for (zItMeshVertex v(*meshObj); !v.end(); v++)
-		{
-			int id = v.getId();
+		if (nV == 0) return;
 
-			if (!v.isActive())
+		zVectorArray positions(nV);
+		for (zItMeshVertex vertex(*meshObj); !vertex.end(); vertex++)
+		{
+			if (vertex.isActive()) positions[vertex.getId()] = vertex.getPosition();
+		}
+
+		vector<zIntArray> vertexToVertices(nV);
+		vector<zIntArray> vertexToFaces(nV);
+		vector<zIntArray> faceVertexIds(nF);
+
+		for (zItMeshFace face(*meshObj); !face.end(); face++)
+		{
+			if (!face.isActive()) continue;
+
+			int faceId = face.getId();
+			face.getVertices(faceVertexIds[faceId]);
+
+			const zIntArray& fVerts = faceVertexIds[faceId];
+			for (int i = 0; i < (int)fVerts.size(); ++i)
 			{
-				vertexCurvatures[id].k1 = -1;
-				vertexCurvatures[id].k2 = -1;
+				int u = fVerts[i];
+				int v = fVerts[(i + 1) % fVerts.size()];
+
+				appendUnique(vertexToVertices[u], v);
+				appendUnique(vertexToVertices[v], u);
+				appendUnique(vertexToFaces[u], faceId);
+			}
+		}
+
+		zVectorArray faceNormals(nF);
+		zDoubleArray faceAreas(nF, 0.0);
+		for (int i = 0; i < nF; ++i)
+		{
+			faceNormals[i] = computeFaceNormalAndArea(faceVertexIds[i], positions, faceAreas[i]);
+		}
+
+		zVectorArray vertexNormals(nV);
+		for (int i = 0; i < nV; ++i)
+		{
+			zVector normalSum;
+			for (int faceId : vertexToFaces[i])
+			{
+				normalSum += faceNormals[faceId] * (float)faceAreas[faceId];
+			}
+
+			if (vectorLength(normalSum) > 1.0e-9) vertexNormals[i] = normalized(normalSum);
+			else vertexNormals[i] = zVector(0, 0, 1);
+		}
+
+		double averageEdgeLength = 1.0;
+		double edgeLengthSum = 0.0;
+		int edgeLengthCount = 0;
+		for (const zIntArray& fVerts : faceVertexIds)
+		{
+			for (int i = 0; i < (int)fVerts.size(); ++i)
+			{
+				zVector edge = positions[fVerts[(i + 1) % fVerts.size()]] - positions[fVerts[i]];
+				edgeLengthSum += vectorLength(edge);
+				edgeLengthCount++;
+			}
+		}
+		if (edgeLengthCount > 0) averageEdgeLength = edgeLengthSum / (double)edgeLengthCount;
+
+		double scaledRadius = averageEdgeLength * (double)radius;
+
+		for (zItMeshVertex vertex(*meshObj); !vertex.end(); vertex++)
+		{
+			int id = vertex.getId();
+
+			if (!vertex.isActive() || vertexToVertices[id].empty())
+			{
+				vertexCurvatures[id].k1 = 0;
+				vertexCurvatures[id].k2 = 0;
 				continue;
 			}
 
-			double gaussianCurvature = 0.0;
-			double meanCurvature = 0.0;
-			zVector tangentDirection;
-			computeVertexCurvatureData(*this, v, gaussianCurvature, meanCurvature, tangentDirection);
+			zIntArray neighbourhood;
+			if (useKring) getKRingVertices(id, radius, neighbourhood, vertexToVertices);
+			else getSphereVertices(id, scaledRadius, neighbourhood, 6, vertexToVertices, positions);
 
-			double discriminant = (meanCurvature * meanCurvature) - gaussianCurvature;
-			if (discriminant < 0.0) discriminant = 0.0;
+			if (neighbourhood.size() < 6) continue;
 
-			double root = std::sqrt(discriminant);
-			vertexCurvatures[id].k1 = meanCurvature + root;
-			vertexCurvatures[id].k2 = meanCurvature - root;
-
-			zVector normal = normalized(v.getNormal());
-			zVector tangent2 = normalized(normal ^ tangentDirection);
-			if (vectorLength(tangent2) <= ZSPACE_CURVATURE_EPS)
+			zIntArray filteredNeighbourhood;
+			zVector ppn = vertexNormals[id];
+			for (int neighbour : neighbourhood)
 			{
-				tangent2 = zVector();
+				zVector nNormal = vertexNormals[neighbour];
+				if ((nNormal * ppn) > 0.0) filteredNeighbourhood.push_back(neighbour);
 			}
 
-			pVector1[id] = tangentDirection;
-			pVector2[id] = tangent2;
+			if (filteredNeighbourhood.size() >= 6 && filteredNeighbourhood.size() < neighbourhood.size())
+			{
+				neighbourhood = filteredNeighbourhood;
+			}
+
+			if (neighbourhood.size() < 6) continue;
+
+			zVector normal = vertexNormals[id];
+			zVector diff = positions[vertexToVertices[id][0]] - positions[id];
+			zVector xAxis = diff - (normal * (float)(diff * normal));
+			if (vectorLength(xAxis) < 1.0e-9)
+			{
+				for (int j = 1; j < (int)vertexToVertices[id].size(); ++j)
+				{
+					diff = positions[vertexToVertices[id][j]] - positions[id];
+					xAxis = diff - (normal * (float)(diff * normal));
+					if (vectorLength(xAxis) > 1.0e-9) break;
+				}
+			}
+
+			if (vectorLength(xAxis) < 1.0e-9)
+			{
+				if (std::abs(normal.x) < 0.9 && std::abs(normal.y) < 0.9)
+				{
+					xAxis = normal ^ zVector(0, 0, 1);
+				}
+				else
+				{
+					xAxis = normal ^ zVector(1, 0, 0);
+				}
+			}
+
+			xAxis = normalized(xAxis);
+			zVector yAxis = normalized(normal ^ xAxis);
+
+			double normalEquations[5][5] = {};
+			double rhs[5] = {};
+			zVector center = positions[id];
+
+			for (int neighbour : neighbourhood)
+			{
+				zVector tangent = positions[neighbour] - center;
+				double u = tangent * xAxis;
+				double v = tangent * yAxis;
+				double n = tangent * normal;
+
+				double row[5] = { u * u, u * v, v * v, u, v };
+				for (int r = 0; r < 5; ++r)
+				{
+					for (int c = 0; c < 5; ++c) normalEquations[r][c] += row[r] * row[c];
+					rhs[r] += row[r] * n;
+				}
+			}
+
+			double coefficients[5] = {};
+			if (!solve5x5(normalEquations, rhs, coefficients)) continue;
+
+			double aVal = coefficients[0];
+			double bVal = coefficients[1];
+			double cVal = coefficients[2];
+			double dVal = coefficients[3];
+			double eVal = coefficients[4];
+
+			double E = 1.0 + (dVal * dVal);
+			double F = dVal * eVal;
+			double G = 1.0 + (eVal * eVal);
+
+			double nLength = std::sqrt((dVal * dVal) + (eVal * eVal) + 1.0);
+			if (nLength <= 1.0e-9) continue;
+
+			double n2 = 1.0 / nLength;
+			double L = 2.0 * aVal * n2;
+			double M = bVal * n2;
+			double N = 2.0 * cVal * n2;
+
+			double det = (E * G) - (F * F);
+			if (std::abs(det) < 1.0e-9) continue;
+
+			double m00 = ((L * G) - (M * F)) / det;
+			double m01 = ((M * E) - (L * F)) / det;
+			double m11 = ((N * E) - (M * F)) / det;
+
+			double l1, l2, v1x, v1y, v2x, v2y;
+			solveSymmetric2x2(m00, m01, m11, l1, l2, v1x, v1y, v2x, v2y);
+
+			l1 = -l1;
+			l2 = -l2;
+
+			zVector v1Global = (xAxis * (float)v1x) + (yAxis * (float)v1y);
+			zVector v2Global = (xAxis * (float)v2x) + (yAxis * (float)v2y);
+
+			v1Global = normalized(v1Global);
+			v2Global = normalized(v2Global);
+
+			if (!std::isfinite(v1Global.x) || !std::isfinite(v1Global.y) || !std::isfinite(v1Global.z) ||
+				!std::isfinite(v2Global.x) || !std::isfinite(v2Global.y) || !std::isfinite(v2Global.z))
+			{
+				continue;
+			}
+
+			double k1, k2;
+			zVector pd1;
+			zVector pd2;
+			if (l1 > l2)
+			{
+				k1 = l1;
+				k2 = l2;
+				pd1 = v1Global;
+				pd2 = v2Global;
+			}
+			else
+			{
+				k1 = l2;
+				k2 = l1;
+				pd1 = v2Global;
+				pd2 = v1Global;
+			}
+
+			if ((pd1 * pd2) > 1.0e-5)
+			{
+				pd1 = zVector();
+				pd2 = zVector();
+			}
+
+			vertexCurvatures[id].k1 = k1;
+			vertexCurvatures[id].k2 = k2;
+			pVector1[id] = pd1;
+			pVector2[id] = pd2;
 		}
 		
 	}
