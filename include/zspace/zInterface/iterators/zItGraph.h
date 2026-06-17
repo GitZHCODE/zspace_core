@@ -103,6 +103,7 @@ namespace zSpace
 	{
 	protected:
 
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItVertex iter;
 
 		/*!	\brief pointer to a graph object  */
@@ -384,6 +385,7 @@ namespace zSpace
 	{
 	protected:
 
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItEdge iter;
 
 		/*!	\brief pointer to a graph object  */
@@ -618,6 +620,7 @@ namespace zSpace
 	{
 	protected:
 
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItHalfEdge iter;
 
 		/*!	\brief pointer to a graph object  */

@@ -111,6 +111,7 @@ namespace zSpace
 	protected:
 
 		/*!	\brief iterator of core mesh vertex object  */
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItVertex iter;
 
 		/*!	\brief pointer to a mesh object  */
@@ -450,6 +451,7 @@ namespace zSpace
 	{
 	protected:
 
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItEdge iter;
 
 		/*!	\brief pointer to a mesh object  */
@@ -714,6 +716,7 @@ namespace zSpace
 	{
 	protected:
 
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItFace iter;
 
 		/*!	\brief pointer to a mesh object  */
@@ -1059,6 +1062,7 @@ namespace zSpace
 	{
 	protected:
 
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItHalfEdge iter;
 
 		/*!	\brief pointer to a mesh object  */

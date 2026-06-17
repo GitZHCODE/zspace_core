@@ -45,6 +45,9 @@ libigl, USD, and host SDK dependencies belong in private source directories.
    point-cloud, point-field, mesh-field, and dynamics APIs; direct field and
    particle storage exposure is still being migrated.
 8. Remove storage headers and third-party dependencies from the installed API.
+   In progress: mesh/graph iterator DLL-interface warnings are now suppressed
+   at the private STL iterator members; remaining warning cleanup is focused on
+   third-party QuickHull headers and `zParticle` float conversions.
 9. Deprecate and later remove the `zObj*` compatibility names.
 
 ## Current Transition Rules
