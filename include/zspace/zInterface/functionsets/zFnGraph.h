@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include<zspace/zInterface/objects/zObjMesh.h>
-#include<zspace/zInterface/objects/zObjGraph.h>
+#include<zspace/zInterface/objects/zObjectMesh.h>
+#include<zspace/zInterface/objects/zObjectGraph.h>
 #include<zspace/zInterface/functionsets/zFn.h>
 #include<zspace/zInterface/iterators/zItGraph.h>
 
@@ -50,7 +50,7 @@ namespace zSpace
 		//--------------------------
 
 		/*!	\brief pointer to a graph object  */
-		zObjGraph *graphObj;	
+		zObjectGraph *graphObj;	
 
 	public:
 
@@ -78,7 +78,7 @@ namespace zSpace
 		*	\param		[in]	_graphObj			- input graph object.
 		*	\since version 0.0.2
 		*/
-		zFnGraph(zObjGraph &_graphObj, bool  _planarGraph = false, zVector _graphNormal = zVector(0, 0, 1));
+		zFnGraph(zObjectGraph &_graphObj, bool  _planarGraph = false, zVector _graphNormal = zVector(0, 0, 1));
 
 		/*! \brief Attaches this function set to a graph object. */
 		void setObject(zObjectGraph &_graphObject);
@@ -140,7 +140,7 @@ namespace zSpace
 		*	\param		[in]	excludeBoundary		- excludes the boundary edge of the input mesh.
 		*	\since version 0.0.4
 		*/
-		void createFromMesh(zObjMesh &meshObj, bool excludeBoundary = false, bool staticGraph = false);
+		void createFromMesh(zObjectMesh &meshObj, bool excludeBoundary = false, bool staticGraph = false);
 
 		/*! \brief This method adds a vertex to the graph.
 		*
@@ -406,17 +406,17 @@ namespace zSpace
 		*	\return				zGraph			- duplicate graph.
 		*	\since version 0.0.2
 		*/
-		zObjGraph getDuplicate(bool planarGraph = false, zVector graphNormal = zVector(0, 0, 1));
+		zObjectGraph getDuplicate(bool planarGraph = false, zVector graphNormal = zVector(0, 0, 1));
 
 		/*! \brief This method returns the mesh created from planar input graph.
 		*
-		*	\param		[out]	zObjMesh				- output mesh object
+		*	\param		[out]	zObjectMesh				- output mesh object
 		*	\param		[in]	inGraph					- input graph.
 		*	\param		[in]	width					- offset width from the graph.
 		*	\param		[in]	graphNormal				- normal of the plane of the graph.		
 		*	\since version 0.0.2
 		*/
-		void getGraphMesh(zObjMesh &out, double width = 0.5, zVector graphNormal = zVector(0, 0, 1));
+		void getGraphMesh(zObjectMesh &out, double width = 0.5, zVector graphNormal = zVector(0, 0, 1));
 
 		/*! \brief This method computes the graph eccentricity.
 		*

@@ -26,7 +26,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE zFnGraphDynamics::zFnGraphDynamics(zObjGraph &_graphObj)
+	ZSPACE_INLINE zFnGraphDynamics::zFnGraphDynamics(zObjectGraph &_graphObj)
 	{
 		graphObj = &_graphObj;
 		fnType = zFnType::zGraphDynamicsFn;
@@ -81,7 +81,7 @@ namespace zSpace
 		}*/
 	}
 
-	ZSPACE_INLINE void zFnGraphDynamics::create(zObjGraph &_graphObj, bool fixBoundary)
+	ZSPACE_INLINE void zFnGraphDynamics::create(zObjectGraph &_graphObj, bool fixBoundary)
 	{
 		graphObj = &_graphObj;
 

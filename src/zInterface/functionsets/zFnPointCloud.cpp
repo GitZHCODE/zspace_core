@@ -1,4 +1,4 @@
-﻿// This file is part of zspace, a simple C++ collection of geometry data-structures & algorithms, 
+// This file is part of zspace, a simple C++ collection of geometry data-structures & algorithms, 
 // data analysis & visualization framework.
 //
 // Copyright (C) 2019 ZSPACE 
@@ -12,7 +12,7 @@
 
 
 #include<zspace/zInterface/functionsets/zFnPointCloud.h>
-#include <src/zInterface/objects/internal/zObjPointCloudImpl.h>
+#include <src/zInterface/objects/internal/zObjectPointCloudImpl.h>
 
 namespace zSpace
 {
@@ -26,7 +26,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE zFnPointCloud::zFnPointCloud(zObjPointCloud &_pointsObj)
+	ZSPACE_INLINE zFnPointCloud::zFnPointCloud(zObjectPointCloud &_pointsObj)
 	{
 		pointsObj = &_pointsObj;
 		fnType = zFnType::zPointsFn;

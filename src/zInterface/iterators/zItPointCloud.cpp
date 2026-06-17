@@ -1,5 +1,5 @@
 #include <zspace/zInterface/iterators/zItPointCloud.h>
-#include <src/zInterface/objects/internal/zObjPointCloudImpl.h>
+#include <src/zInterface/objects/internal/zObjectPointCloudImpl.h>
 
 #include <stdexcept>
 

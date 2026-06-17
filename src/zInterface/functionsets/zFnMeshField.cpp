@@ -559,7 +559,7 @@ namespace zSpace
 	//---- zScalar &  zVector specilization for getNeighbourPosition_Contained
 	
 	template<typename T>
-	ZSPACE_INLINE zObjMesh* zFnMeshField<T>::getRawMesh()
+	ZSPACE_INLINE zObjectMesh* zFnMeshField<T>::getRawMesh()
 	{
 		return this->fieldObj;
 	}
@@ -1147,7 +1147,7 @@ namespace zSpace
 	//----  2D IDW FIELD METHODS
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjMesh &inMeshObj, T meshValue, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectMesh &inMeshObj, T meshValue, double influence, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnMesh inFnMesh(inMeshObj);
@@ -1193,7 +1193,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjGraph &inGraphObj, T graphValue, double influence, double power, bool normalise )
+	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectGraph &inGraphObj, T graphValue, double influence, double power, bool normalise )
 	{
 		fieldValues.clear();
 
@@ -1242,7 +1242,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjPointCloud &inPointsObj, T value, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectPointCloud &inPointsObj, T value, double influence, double power, bool normalise)
 	{
 
 		fieldValues.clear();
@@ -1283,7 +1283,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjPointCloud &inPointsObj, vector<T> &values, vector<double>& influences, double power, bool normalise)
+	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectPointCloud &inPointsObj, vector<T> &values, vector<double>& influences, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnPointCloud fnPoints(inPointsObj);
@@ -1501,7 +1501,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjPointCloud &inPointsObj, bool normalise)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectPointCloud &inPointsObj, bool normalise)
 	{
 		scalars.clear();;
 
@@ -1556,7 +1556,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjPointCloud &inPointsObj, float offset,  bool normalise)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectPointCloud &inPointsObj, float offset,  bool normalise)
 	{
 		scalars.clear();;
 
@@ -1597,7 +1597,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjMesh &inMeshObj, float offset,  bool normalise)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectMesh &inMeshObj, float offset,  bool normalise)
 	{
 		scalars.clear();
 
@@ -1639,7 +1639,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjGraph &inGraphObj, float offset, bool normalise)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, float offset, bool normalise)
 	{
 		scalars.clear();
 		zFnGraph inFnGraph(inGraphObj);
@@ -1680,7 +1680,7 @@ namespace zSpace
 	}
 	
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsEdgeDistance(zScalarArray &scalars, zObjMesh &inMeshObj,float offset, bool normalise)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectMesh &inMeshObj,float offset, bool normalise)
 	{
 		scalars.clear();
 		zFnMesh inFnMesh(inMeshObj);
@@ -1728,7 +1728,7 @@ namespace zSpace
 	
 
 	template<>
-	ZSPACE_INLINE 	void zFnMeshField<zScalar>::getScalarsAsEdgeDistance(zScalarArray &scalars, zObjGraph &inGraphObj, float offset, bool normalise)
+	ZSPACE_INLINE 	void zFnMeshField<zScalar>::getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, float offset, bool normalise)
 	{
 		scalars.clear();
 		zFnGraph inFnGraph(inGraphObj);
@@ -1779,7 +1779,7 @@ namespace zSpace
 	//----  2D SD SCALAR FIELD METHODS
 	
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Polygon(zScalarArray& scalars, zObjGraph& inGraphObj, bool normalise)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Polygon(zScalarArray& scalars, zObjectGraph& inGraphObj, bool normalise)
 	{
 		scalars.clear();
 		scalars.assign(fnMesh.numVertices(), 0.0);
@@ -2423,7 +2423,7 @@ namespace zSpace
 	//---- CONTOUR METHODS
 	
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsocontour(zObjGraph &coutourGraphObj, float inThreshold, int precision, float distTolerance)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsocontour(zObjectGraph &coutourGraphObj, float inThreshold, int precision, float distTolerance)
 	{
 		if (contourVertexValues.size() == 0)
 		{		
@@ -2458,7 +2458,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsolineMesh(zObjMesh &coutourMeshObj, float inThreshold, bool invertMesh)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsolineMesh(zObjectMesh &coutourMeshObj, float inThreshold, bool invertMesh)
 	{
 		if (contourVertexValues.size() == 0) return;
 		if (contourVertexValues.size() != numFieldValues())
@@ -2497,7 +2497,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsobandMesh(zObjMesh &coutourMeshObj, float inThresholdLow, float inThresholdHigh)
+	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsobandMesh(zObjectMesh &coutourMeshObj, float inThresholdLow, float inThresholdHigh)
 	{
 		if (contourVertexValues.size() == 0) return;
 
@@ -2523,8 +2523,8 @@ namespace zSpace
 
 		//if (invertMesh)
 		//{
-		//	//zObjMesh m1 = getIsolineMesh((thresholdLow < thresholdHigh) ? thresholdLow : thresholdHigh, false);
-		//	//zObjMesh m2 = getIsolineMesh( (thresholdLow < thresholdHigh) ? thresholdHigh : thresholdLow, true);
+		//	//zObjectMesh m1 = getIsolineMesh((thresholdLow < thresholdHigh) ? thresholdLow : thresholdHigh, false);
+		//	//zObjectMesh m2 = getIsolineMesh( (thresholdLow < thresholdHigh) ? thresholdHigh : thresholdLow, true);
 
 		//	///*if (m1.numVertices() > 0 && m2.numVertices() > 0)
 		//	//{
@@ -2646,7 +2646,7 @@ namespace zSpace
 
 	
 	template<>
-	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Polygon(zObjGraph& inGraphObj, zPoint& p)
+	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Polygon(zObjectGraph& inGraphObj, zPoint& p)
 	{
 		zItGraphVertex v(inGraphObj, 0);
 		

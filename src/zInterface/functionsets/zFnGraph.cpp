@@ -1,4 +1,4 @@
-﻿// This file is part of zspace, a simple C++ collection of geometry data-structures & algorithms, 
+// This file is part of zspace, a simple C++ collection of geometry data-structures & algorithms, 
 // data analysis & visualization framework.
 //
 // Copyright (C) 2019 ZSPACE 
@@ -30,7 +30,7 @@ namespace zSpace
 		graphNormal = zVector(0, 0, 1);
 	}
 
-	ZSPACE_INLINE zFnGraph::zFnGraph(zObjGraph &_graphObj, bool  _planarGraph, zVector _graphNormal)
+	ZSPACE_INLINE zFnGraph::zFnGraph(zObjectGraph &_graphObj, bool  _planarGraph, zVector _graphNormal)
 	{
 		fnType = zFnType::zGraphFn;
 
@@ -102,7 +102,7 @@ namespace zSpace
 		if (staticGraph) setStaticContainers();
 	}
 
-	ZSPACE_INLINE void zFnGraph::createFromMesh(zObjMesh &meshObj, bool excludeBoundary, bool staticGraph)
+	ZSPACE_INLINE void zFnGraph::createFromMesh(zObjectMesh &meshObj, bool excludeBoundary, bool staticGraph)
 	{
 		zFnMesh fnMesh(meshObj);
 
@@ -549,9 +549,9 @@ namespace zSpace
 		}
 	}
 
-	ZSPACE_INLINE zObjGraph zFnGraph::getDuplicate(bool planarGraph, zVector graphNormal)
+	ZSPACE_INLINE zObjectGraph zFnGraph::getDuplicate(bool planarGraph, zVector graphNormal)
 	{
-		zObjGraph out;
+		zObjectGraph out;
 
 		if (numVertices() != zGraphObjectStorage::get(*graphObj).vertices.size()) removeInactiveElements(zVertexData);
 		if (numEdges() != zGraphObjectStorage::get(*graphObj).edges.size()) removeInactiveElements(zEdgeData);
@@ -581,7 +581,7 @@ namespace zSpace
 		return out;
 	}
 
-	ZSPACE_INLINE void zFnGraph::getGraphMesh(zObjMesh &out, double width, zVector graphNormal)
+	ZSPACE_INLINE void zFnGraph::getGraphMesh(zObjectMesh &out, double width, zVector graphNormal)
 	{
 
 		vector<zVector>positions;

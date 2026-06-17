@@ -70,7 +70,7 @@ namespace zSpace
 		*	\param		[in]	_meshObj			- input mesh object.
 		*	\since version 0.0.2
 		*/
-		zFnMeshDynamics(zObjMesh &_meshObj);
+		zFnMeshDynamics(zObjectMesh &_meshObj);
 
 		//--------------------------
 		//---- DESTRUCTOR
@@ -110,7 +110,7 @@ namespace zSpace
 		*	\param		[in]	fixBoundary			- true if the boundary vertices are to be fixed.
 		*	\since version 0.0.2
 		*/
-		void create(zObjMesh &_meshObj, bool fixBoundary = false);
+		void create(zObjectMesh &_meshObj, bool fixBoundary = false);
 
 
 		//--------------------------

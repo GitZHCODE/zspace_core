@@ -24,7 +24,7 @@ namespace zSpace
 		meshObj = nullptr;
 	}
 
-	ZSPACE_INLINE zFnMeshDynamics::zFnMeshDynamics(zObjMesh &_meshObj)
+	ZSPACE_INLINE zFnMeshDynamics::zFnMeshDynamics(zObjectMesh &_meshObj)
 	{
 		fnType = zFnType::zMeshDynamicsFn;
 		meshObj = &_meshObj;
@@ -77,7 +77,7 @@ namespace zSpace
 				
 	}
 
-	ZSPACE_INLINE void zFnMeshDynamics::create(zObjMesh &_meshObj, bool fixBoundary)
+	ZSPACE_INLINE void zFnMeshDynamics::create(zObjectMesh &_meshObj, bool fixBoundary)
 	{
 		meshObj = &_meshObj;
 		makeDynamic(fixBoundary);

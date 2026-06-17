@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include<zspace/zInterface/objects/zObjGraph.h>
-#include<zspace/zInterface/objects/zObjMesh.h>
-#include<zspace/zInterface/objects/zObjPointCloud.h>
+#include<zspace/zInterface/objects/zObjectGraph.h>
+#include<zspace/zInterface/objects/zObjectMesh.h>
+#include<zspace/zInterface/objects/zObjectPointCloud.h>
 #include<zspace/zInterface/objects/zObjectMeshField.h>
 
 #include<zspace/zInterface/functionsets/zFnMesh.h>
@@ -195,10 +195,10 @@ namespace zSpace
 
 		/*! \brief This method gets pointer to the internal mesh object.
 		*
-		*	\return				zObjMesh*					- pointer to internal mesh object.
+		*	\return				zObjectMesh*					- pointer to internal mesh object.
 		*	\since version 0.0.4
 		*/
-		zObjMesh* getRawMesh();
+		zObjectMesh* getRawMesh();
 
 		/*! \brief This method gets the field indices which contain the input position.
 		*
@@ -375,7 +375,7 @@ namespace zSpace
 		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjMesh &inMeshObj, T meshValue, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectMesh &inMeshObj, T meshValue, double influence, double power = 2.0, bool normalise = true);
 
 		/*! \brief This method computes the field values as inverse weighted distance from the input graph vertex positions.
 		*
@@ -387,7 +387,7 @@ namespace zSpace
 		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjGraph &inGraphObj, T graphValue, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectGraph &inGraphObj, T graphValue, double influence, double power = 2.0, bool normalise = true);
 	
 		/*! \brief This method computes the field values based on inverse weighted distance from the input positions.
 		*
@@ -399,7 +399,7 @@ namespace zSpace
 		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjPointCloud &inPointsObj, T value, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectPointCloud &inPointsObj, T value, double influence, double power = 2.0, bool normalise = true);
 
 		/*! \brief This method computes the field values based on inverse weighted distance from the input positions.
 		*
@@ -411,7 +411,7 @@ namespace zSpace
 		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjPointCloud &inPointsObj, vector<T> &values, vector<double>& influences, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectPointCloud &inPointsObj, vector<T> &values, vector<double>& influences, double power = 2.0, bool normalise = true);
 
 		/*! \brief This method computes the field values based on inverse weighted distance from the input positions.
 		*
@@ -468,7 +468,7 @@ namespace zSpace
 		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjPointCloud &inPointsObj, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjectPointCloud &inPointsObj, bool normalise = true);
 
 		/*! \brief This method creates a vertex distance Field from the input point cloud.
 		*
@@ -478,7 +478,7 @@ namespace zSpace
 		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjPointCloud &inPointsObj, float offset, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjectPointCloud &inPointsObj, float offset, bool normalise = true);
 
 		/*! \brief This method creates a vertex distance Field from the input mesh vertex positions.
 		*
@@ -488,7 +488,7 @@ namespace zSpace
 		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjMesh &inMeshObj, float offset, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjectMesh &inMeshObj, float offset, bool normalise = true);
 
 		/*! \brief This method creates a vertex distance Field from the input graph vertex positions.
 		*
@@ -498,7 +498,7 @@ namespace zSpace
 		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjGraph &inGraphObj, float offset, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, float offset, bool normalise = true);
 
 		/*! \brief This method creates a edge distance Field from the input mesh.
 		*
@@ -508,7 +508,7 @@ namespace zSpace
 		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjMesh &inMeshObj, float offset, bool normalise = true);
+		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectMesh &inMeshObj, float offset, bool normalise = true);
 
 		/*! \brief This method creates a edge distance Field from the input graph.
 		*
@@ -518,7 +518,7 @@ namespace zSpace
 		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjGraph &inGraphObj, float offset, bool normalise = true);
+		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, float offset, bool normalise = true);
 
 
 		//--------------------------
@@ -536,7 +536,7 @@ namespace zSpace
 		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
 		*	\since version 0.0.2
 		*/
-		void getScalars_Polygon(zScalarArray& scalars, zObjGraph & inGraphObj, bool normalise = true);
+		void getScalars_Polygon(zScalarArray& scalars, zObjectGraph & inGraphObj, bool normalise = true);
 
 		/*! \brief This method gets the scalars for a circle.
 		*
@@ -799,7 +799,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*	\warning	works only with scalar fields
 		*/
-		void getIsocontour(zObjGraph &coutourGraphObj, float inThreshold, int precision = PRECISION, float distTolerance = distanceTolerance);
+		void getIsocontour(zObjectGraph &coutourGraphObj, float inThreshold, int precision = PRECISION, float distTolerance = distanceTolerance);
 
 		/*! \brief This method creates a isoline mesh from the input field mesh at the given field threshold.
 		*
@@ -811,7 +811,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*	\warning	works only with scalar fields
 		*/
-		void getIsolineMesh(zObjMesh &coutourMeshObj, float inThreshold = 0.5, bool invertMesh = false);
+		void getIsolineMesh(zObjectMesh &coutourMeshObj, float inThreshold = 0.5, bool invertMesh = false);
 
 		/*! \brief This method creates a isoband mesh from the input field mesh at the given field threshold.
 		*
@@ -822,7 +822,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*	\warning	works only with scalar fields
 		*/
-		void getIsobandMesh(zObjMesh &coutourMeshObj, float inThresholdLow = 0.2, float inThresholdHigh = 0.5);
+		void getIsobandMesh(zObjectMesh &coutourMeshObj, float inThresholdLow = 0.2, float inThresholdHigh = 0.5);
 
 	protected:
 		
@@ -849,7 +849,7 @@ namespace zSpace
 		*	\return			double			- scalar value.
 		*	\since version 0.0.2
 		*/
-		float getScalar_Polygon(zObjGraph& inGraphObj, zPoint& p);
+		float getScalar_Polygon(zObjectGraph& inGraphObj, zPoint& p);
 
 		/*! \brief This method gets the scalar for the input point.
 		*

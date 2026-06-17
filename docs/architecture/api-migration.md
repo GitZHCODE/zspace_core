@@ -40,13 +40,17 @@ libigl, USD, and host SDK dependencies belong in private source directories.
 4. Move mesh and graph drawing into display classes and `zDisplayScene`. Completed.
 5. Place mesh and graph storage behind opaque object implementations. Completed.
 6. Update iterators to attach through object handles or private accessors. Completed for mesh, graph, and point-cloud public iterators.
-7. Repeat the pattern for point clouds, particles, fields, and spatial bins. In progress.
+7. Repeat the pattern for point clouds, particles, fields, and spatial bins. In progress:
+   public function-set signatures now use `zObject*` names for mesh, graph,
+   point-cloud, point-field, mesh-field, and dynamics APIs; direct field and
+   particle storage exposure is still being migrated.
 8. Remove storage headers and third-party dependencies from the installed API.
 9. Deprecate and later remove the `zObj*` compatibility names.
 
 ## Current Transition Rules
 
 - New application code should include `zObject*.h` and use `zObject*` names.
+  The `zObj*` headers remain as compatibility aliases only.
 - New code should mutate geometry through `zFn*`.
 - New code should not access `.mesh`, `.graph`, or related storage directly.
 - Rendering code should not be added to object classes.

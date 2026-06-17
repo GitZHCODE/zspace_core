@@ -70,7 +70,7 @@ namespace zSpace
 		*	\param		[in]	_graphObj			- input graph object.
 		*	\since version 0.0.2
 		*/
-		zFnGraphDynamics(zObjGraph &_graphObj);
+		zFnGraphDynamics(zObjectGraph &_graphObj);
 
 		//--------------------------
 		//---- DESTRUCTOR
@@ -120,7 +120,7 @@ namespace zSpace
 		*	\param		[in]	fixBoundary			- true if the boundary vertices are to be fixed.
 		*	\since version 0.0.2
 		*/
-		void create(zObjGraph &_graphObj, bool fixBoundary = false);		
+		void create(zObjectGraph &_graphObj, bool fixBoundary = false);		
 
 		//--------------------------
 		//---- FORCE METHODS 

@@ -1,4 +1,4 @@
-﻿// This file is part of zspace, a simple C++ collection of geometry data-structures & algorithms, 
+// This file is part of zspace, a simple C++ collection of geometry data-structures & algorithms, 
 // data analysis & visualization framework.
 //
 // Copyright (C) 2019 ZSPACE 
@@ -398,7 +398,7 @@ namespace zSpace
 		meshObj = nullptr;
 	}
 
-	ZSPACE_INLINE zFnMesh::zFnMesh(zObjMesh &_meshObj)
+	ZSPACE_INLINE zFnMesh::zFnMesh(zObjectMesh &_meshObj)
 	{
 		fnType = zFnType::zMeshFn;
 		setObject(_meshObj);
@@ -1658,7 +1658,7 @@ namespace zSpace
 		else throw std::invalid_argument(" error: invalid zHEData type");
 	}
 
-	ZSPACE_INLINE void zFnMesh::getDualMesh(zObjMesh &dualMeshObj, zIntArray &inEdge_dualEdge, zIntArray &dualEdge_inEdge, bool excludeBoundary, bool keepExistingBoundary, bool rotate90)
+	ZSPACE_INLINE void zFnMesh::getDualMesh(zObjectMesh &dualMeshObj, zIntArray &inEdge_dualEdge, zIntArray &dualEdge_inEdge, bool excludeBoundary, bool keepExistingBoundary, bool rotate90)
 	{
 		vector<zVector> positions;
 		vector<int> polyConnects;
@@ -1822,7 +1822,7 @@ namespace zSpace
 		}
 	}
 
-	ZSPACE_INLINE void zFnMesh::getDualGraph(zObjGraph &dualGraphObj, zIntArray &inEdge_dualEdge, zIntArray &dualEdge_inEdge, bool excludeBoundary , bool PlanarMesh , bool rotate90)
+	ZSPACE_INLINE void zFnMesh::getDualGraph(zObjectGraph &dualGraphObj, zIntArray &inEdge_dualEdge, zIntArray &dualEdge_inEdge, bool excludeBoundary , bool PlanarMesh , bool rotate90)
 	{
 		vector<zVector> positions;
 		vector<int> edgeConnects;
@@ -1933,7 +1933,7 @@ namespace zSpace
 		}
 	}
 
-	ZSPACE_INLINE void zFnMesh::getRainflowGraph(zObjGraph &rainflowGraphObj, bool excludeBoundary)
+	ZSPACE_INLINE void zFnMesh::getRainflowGraph(zObjectGraph &rainflowGraphObj, bool excludeBoundary)
 	{
 		vector<zVector> positions;
 		vector<int> edgeConnects;
@@ -2633,7 +2633,7 @@ namespace zSpace
 		}
 	}
 
-	ZSPACE_INLINE void zFnMesh::getDuplicate(zObjMesh &out)
+	ZSPACE_INLINE void zFnMesh::getDuplicate(zObjectMesh &out)
 	{
 		/*vector<zVector> positions;
 		vector<int> polyConnects;
@@ -2651,16 +2651,16 @@ namespace zSpace
 		tempFn.setEdgeColors(zMeshObjectStorage::get(*meshObj).edgeColors, false);
 		tempFn.setFaceColors(zMeshObjectStorage::get(*meshObj).faceColors, false);*/
 
-		out = zObjMesh(*meshObj);
+		out = zObjectMesh(*meshObj);
 	}
 
 	
 
 	//---- CONTOUR METHODS
 
-	ZSPACE_INLINE void zFnMesh::splitMesh_Mixed(zPointArray& splitPlanes_origins, zVectorArray& splitPlanes_normals, zObjMesh& resultMeshObj)
+	ZSPACE_INLINE void zFnMesh::splitMesh_Mixed(zPointArray& splitPlanes_origins, zVectorArray& splitPlanes_normals, zObjectMesh& resultMeshObj)
 	{
-		zObjMesh tempObj;
+		zObjectMesh tempObj;
 		getDuplicate(tempObj);
 
 
@@ -2699,7 +2699,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zFnMesh::splitMesh_Quad(vector<zPlane>& splitPlanes, bool invertMesh, zObjMesh& resultMeshObj)
+	ZSPACE_INLINE void zFnMesh::splitMesh_Quad(vector<zPlane>& splitPlanes, bool invertMesh, zObjectMesh& resultMeshObj)
 	{
 		
 		zScalarArray scalars;
@@ -2744,7 +2744,7 @@ namespace zSpace
 				
 	}
 
-	ZSPACE_INLINE void zFnMesh::getIsoMesh_mixed(zScalarArray& vertexScalars, float threshold, bool invertMesh, zObjMesh& coutourMeshObj)
+	ZSPACE_INLINE void zFnMesh::getIsoMesh_mixed(zScalarArray& vertexScalars, float threshold, bool invertMesh, zObjectMesh& coutourMeshObj)
 	{
 
 		if (vertexScalars.size() != numVertices())
@@ -2804,7 +2804,7 @@ namespace zSpace
 	}
 
 
-	ZSPACE_INLINE void zFnMesh::getIsoMesh(zScalarArray& vertexScalars, float threshold, bool invertMesh, zObjMesh& coutourMeshObj)
+	ZSPACE_INLINE void zFnMesh::getIsoMesh(zScalarArray& vertexScalars, float threshold, bool invertMesh, zObjectMesh& coutourMeshObj)
 	{
 
 		if (vertexScalars.size() != numVertices())
@@ -2832,7 +2832,7 @@ namespace zSpace
 
 	}
 	
-	ZSPACE_INLINE void zFnMesh::getIsobandMesh(zScalarArray& vertexScalars, float inThresholdLow, float inThresholdHigh, zObjMesh& coutourMeshObj)
+	ZSPACE_INLINE void zFnMesh::getIsobandMesh(zScalarArray& vertexScalars, float inThresholdLow, float inThresholdHigh, zObjectMesh& coutourMeshObj)
 	{
 		zFnMesh tempFn(coutourMeshObj);
 		tempFn.clear(); // clear memory if the mobject exists.
@@ -4338,7 +4338,7 @@ namespace zSpace
 	}
 
 
-	ZSPACE_INLINE void zFnMesh::extrudeMesh(float extrudeThickness,zObjMesh &out, bool thicknessTris)
+	ZSPACE_INLINE void zFnMesh::extrudeMesh(float extrudeThickness,zObjectMesh &out, bool thicknessTris)
 	{
 		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() == 0 || zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
 		
@@ -4417,7 +4417,7 @@ namespace zSpace
 		
 	}
 
-	ZSPACE_INLINE void zFnMesh::extrudeVariableMesh(zFloatArray extrudeThickness, zObjMesh& out, bool bothSides, bool thicknessTris)
+	ZSPACE_INLINE void zFnMesh::extrudeVariableMesh(zFloatArray extrudeThickness, zObjectMesh& out, bool bothSides, bool thicknessTris)
 	{
 		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() == 0 || zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
 
@@ -4498,7 +4498,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zFnMesh::extrudeBoundaryEdge(float extrudeThickness, zObjMesh &out, bool thicknessTris)
+	ZSPACE_INLINE void zFnMesh::extrudeBoundaryEdge(float extrudeThickness, zObjectMesh &out, bool thicknessTris)
 	{
 		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() == 0 || zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
 

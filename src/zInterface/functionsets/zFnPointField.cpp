@@ -541,7 +541,7 @@ namespace zSpace
 	//----  3D IDW FIELD METHODS
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjMesh& inMeshObj, T meshValue, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectMesh& inMeshObj, T meshValue, double influence, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnMesh inFnMesh(inMeshObj);
@@ -586,7 +586,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjGraph& inGraphObj, T graphValue, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectGraph& inGraphObj, T graphValue, double influence, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnGraph inFnGraph(inGraphObj);
@@ -634,7 +634,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjPointCloud& inPointsObj, T value, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectPointCloud& inPointsObj, T value, double influence, double power, bool normalise)
 	{
 
 		fieldValues.clear();
@@ -675,7 +675,7 @@ namespace zSpace
 	}
 
 	template <typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjPointCloud& inPointsObj, vector<T>& values, vector<double>& influences, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectPointCloud& inPointsObj, vector<T>& values, vector<double>& influences, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnPointCloud inFnPoints(inPointsObj);
@@ -796,7 +796,7 @@ namespace zSpace
 	//----  3D SCALAR FIELD METHODS
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjPointCloud& inPointsObj, bool normalise)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectPointCloud& inPointsObj, bool normalise)
 	{
 		scalars.clear();
 
@@ -851,7 +851,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjMesh& inMeshObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, double offset, bool normalise)
 	{
 		scalars.clear();
 
@@ -892,7 +892,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjGraph& inGraphObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, double offset, bool normalise)
 	{
 		scalars.clear();
 
@@ -936,7 +936,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjMesh& inMeshObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, double offset, bool normalise)
 	{
 		scalars.clear();
 		zFnMesh inFnMesh(inMeshObj);
@@ -991,7 +991,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjGraph& inGraphObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, double offset, bool normalise)
 	{
 		scalars.clear();
 		zFnGraph inFnGraph(inGraphObj);

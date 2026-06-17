@@ -16,8 +16,8 @@
 #pragma once
 
 
-#include<zspace/zInterface/objects/zObjGraph.h>
-#include<zspace/zInterface/objects/zObjMesh.h>
+#include<zspace/zInterface/objects/zObjectGraph.h>
+#include<zspace/zInterface/objects/zObjectMesh.h>
 
 #include<zspace/zInterface/functionsets/zFn.h>
 #include<zspace/zInterface/iterators/zItMesh.h>
@@ -48,7 +48,7 @@ namespace zSpace
 	protected:
 
 		/*!	\brief pointer to a mesh object  */
-		zObjMesh *meshObj;
+		zObjectMesh *meshObj;
 
 	public:
 		
@@ -67,7 +67,7 @@ namespace zSpace
 		*	\param		[in]	_meshObj			- input mesh object.
 		*	\since version 0.0.2
 		*/
-		zFnMesh(zObjMesh &_meshObj);
+		zFnMesh(zObjectMesh &_meshObj);
 
 		/*! \brief Attaches this function set to a mesh object. */
 		void setObject(zObjectMesh &_meshObject);
@@ -647,7 +647,7 @@ namespace zSpace
 		*	\param		[in]	rotate90				- true if dual mesh is to be roatated by 90. Generally used for planar mesh for 2D graphic statics application.
 		*	\since version 0.0.2
 		*/
-		void getDualMesh(zObjMesh &dualMeshObj, zIntArray &inEdge_dualEdge, zIntArray &dualEdge_inEdge, bool excludeBoundary, bool keepExistingBoundary = false, bool rotate90 = false);
+		void getDualMesh(zObjectMesh &dualMeshObj, zIntArray &inEdge_dualEdge, zIntArray &dualEdge_inEdge, bool excludeBoundary, bool keepExistingBoundary = false, bool rotate90 = false);
 
 		/*! \brief This method returns the dual graph of the input mesh.
 		*
@@ -659,7 +659,7 @@ namespace zSpace
 		*	\param		[in]	rotate90				- true if dual mesh is to be roatated by 90.
 		*	\since version 0.0.2
 		*/
-		void getDualGraph(zObjGraph &dualGraphObj, zIntArray &inEdge_dualEdge, zIntArray &dualEdge_inEdge, bool excludeBoundary = false, bool PlanarMesh = false, bool rotate90 = false);
+		void getDualGraph(zObjectGraph &dualGraphObj, zIntArray &inEdge_dualEdge, zIntArray &dualEdge_inEdge, bool excludeBoundary = false, bool PlanarMesh = false, bool rotate90 = false);
 		   	
 		/*! \brief This method returns the rainflow graph of the input mesh.
 		*
@@ -667,7 +667,7 @@ namespace zSpace
 		*	\param		[in]	excludeBoundary			- true if boundary vertices are to be ignored.
 		*	\since version 0.0.2
 		*/
-		void getRainflowGraph(zObjGraph &rainflowGraphObj, bool excludeBoundary = false);
+		void getRainflowGraph(zObjectGraph &rainflowGraphObj, bool excludeBoundary = false);
 
 
 		/*! \brief This method computes the triangles of each face of the input mesh and stored in 2 dimensional container.
@@ -798,7 +798,7 @@ namespace zSpace
 		*	\param		[out]	out			- duplicate mesh object.
 		*	\since version 0.0.2
 		*/
-		void getDuplicate(zObjMesh &out);
+		void getDuplicate(zObjectMesh &out);
 
 		//--------------------------
 		//---- CONTOUR METHODS
@@ -811,7 +811,7 @@ namespace zSpace
 		*	\since version 0.0.4
 		*	\warning	doensn't work with ngon meshes
 		*/
-		void splitMesh_Mixed(zPointArray& splitPlanes_origins, zVectorArray& splitPlanes_normals, zObjMesh& resultMesh);
+		void splitMesh_Mixed(zPointArray& splitPlanes_origins, zVectorArray& splitPlanes_normals, zObjectMesh& resultMesh);
 
 		/*! \brief This method splits the quad mesh with the input planes.
 		*
@@ -821,7 +821,7 @@ namespace zSpace
 		*	\since version 0.0.4
 		*	\warning	works only with quad meshes.
 		*/
-		void splitMesh_Quad(vector<zPlane>& splitPlanes, bool invertMesh, zObjMesh& resultMesh);
+		void splitMesh_Quad(vector<zPlane>& splitPlanes, bool invertMesh, zObjectMesh& resultMesh);
 
 		/*! \brief This method creates a isocontour graph from the input field mesh at the given field threshold.
 		*
@@ -844,7 +844,7 @@ namespace zSpace
 		*	\since version 0.0.4
 		*	\warning	works only with quad meshes.
 		*/
-		void getIsoMesh(zScalarArray &vertexScalars, float threshold, bool invertMesh, zObjMesh& coutourMeshObj);
+		void getIsoMesh(zScalarArray &vertexScalars, float threshold, bool invertMesh, zObjectMesh& coutourMeshObj);
 		
 		/*! \brief This method creates a isoband mesh from the input field mesh at the given field threshold.
 		*
@@ -856,7 +856,7 @@ namespace zSpace
 		*	\since version 0.0.4
 		*	\warning	doesnt work with ngon meshes
 		*/
-		void getIsoMesh_mixed(zScalarArray& vertexScalars, float threshold, bool invertMesh, zObjMesh& coutourMeshObj);
+		void getIsoMesh_mixed(zScalarArray& vertexScalars, float threshold, bool invertMesh, zObjectMesh& coutourMeshObj);
 
 
 		/*! \brief This method creates a isoband mesh from the input field mesh at the given field threshold.
@@ -869,7 +869,7 @@ namespace zSpace
 		*	\since version 0.0.2
 		*	\warning	works only with vertex color gradients Red to Black.
 		*/
-		void getIsobandMesh(zScalarArray& vertexScalars, float inThresholdLow, float inThresholdHigh, zObjMesh& coutourMeshObj);
+		void getIsobandMesh(zScalarArray& vertexScalars, float inThresholdLow, float inThresholdHigh, zObjectMesh& coutourMeshObj);
 
 		//--------------------------
 		//---- TRI-MESH MODIFIER METHODS
@@ -1004,7 +1004,7 @@ namespace zSpace
 		*	\retrun				zMesh				- extruded mesh.
 		*	\since version 0.0.2
 		*/
-		void extrudeMesh(float extrudeThickness, zObjMesh &outMesh, bool thicknessTris = false);
+		void extrudeMesh(float extrudeThickness, zObjectMesh &outMesh, bool thicknessTris = false);
 
 		/*! \brief This method returns an extruded mesh from the input mesh.
 		*
@@ -1013,7 +1013,7 @@ namespace zSpace
 		*	\retrun				zMesh				- extruded mesh.
 		*	\since version 0.0.2
 		*/
-		void extrudeVariableMesh(zFloatArray extrudeThickness, zObjMesh& outMesh,bool bothSides, bool thicknessTris = false);
+		void extrudeVariableMesh(zFloatArray extrudeThickness, zObjectMesh& outMesh,bool bothSides, bool thicknessTris = false);
 			 
 		/*! \brief This method returns an extruded mesh of the boundary edgesd of the input mesh.
 		*
@@ -1022,9 +1022,9 @@ namespace zSpace
 		*	\retrun				zMesh				- extruded mesh.
 		*	\since version 0.0.2
 		*/
-		void extrudeBoundaryEdge(float extrudeThickness, zObjMesh &outMesh, bool thicknessTris = false);
+		void extrudeBoundaryEdge(float extrudeThickness, zObjectMesh &outMesh, bool thicknessTris = false);
 
-		zObjMesh extrude(float extrudeThickness, bool thicknessTris = false);
+		zObjectMesh extrude(float extrudeThickness, bool thicknessTris = false);
 			   		 	  	  		
 
 		//--------------------------

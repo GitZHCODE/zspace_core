@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include<zspace/zInterface/objects/zObjPointCloud.h>
+#include<zspace/zInterface/objects/zObjectPointCloud.h>
 #include<zspace/zInterface/functionsets/zFn.h>
 #include<zspace/zInterface/iterators/zItPointCloud.h>
 
@@ -49,7 +49,7 @@ namespace zSpace
 		//--------------------------
 
 		/*!	\brief pointer to a mesh object  */
-		zObjPointCloud *pointsObj;
+		zObjectPointCloud *pointsObj;
 
 	public:
 
@@ -68,7 +68,7 @@ namespace zSpace
 		*	\param		[in]	_pointsObj			- input point cloud object.
 		*	\since version 0.0.2
 		*/
-		zFnPointCloud(zObjPointCloud &_pointsObj);
+		zFnPointCloud(zObjectPointCloud &_pointsObj);
 
 		//--------------------------
 		//---- DESTRUCTOR

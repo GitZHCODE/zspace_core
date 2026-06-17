@@ -12,7 +12,7 @@
 
 
 #include<zspace/zInterface/objects/zObjectPointCloud.h>
-#include <src/zInterface/objects/internal/zObjPointCloudImpl.h>
+#include <src/zInterface/objects/internal/zObjectPointCloudImpl.h>
 
 namespace zSpace
 {
