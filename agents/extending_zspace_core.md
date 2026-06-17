@@ -1,35 +1,31 @@
-# zSpace Agent Guide
+# Extending zspace_core
 
-This document is the working guide for humans and LLM/Codex agents extending
-`zspace_core`. Use it as the first file to read after cloning the repository.
-It describes the current structure, build setup, naming conventions, and the
-expected workflow for adding new geometry, IO, display, or interop classes.
+This guide is for humans and Codex/LLM agents adding new code to
+`zspace_core`. Read this before creating new classes, moving code, or changing
+the build.
 
 ## Repository Purpose
 
-`zspace_core` is a C++17 geometry framework split into small DLLs:
+`zspace_core` is a C++17 geometry framework split into focused DLLs:
 
 - `zSpace_Core`: low-level math, geometry storage, fields, dynamics, utilities.
 - `zSpace_Interface`: public geometry objects, iterators, and function sets.
-- `zSpace_IO`: mesh, graph, point, and format codecs behind the `zIO` facade.
-- `zSpace_Display`: optional display settings, scene drawing, and OpenGL backend.
-- `zSpace_InterOp`: optional SDK interop, currently Rhino/OpenNURBS dependent.
+- `zSpace_IO`: file IO facade and format codecs.
+- `zSpace_Display`: optional display settings, scenes, and OpenGL backend.
+- `zSpace_InterOp`: optional host/SDK interop, currently Rhino/OpenNURBS based.
 
-The intended public API style is:
+The public API direction is object + function set:
 
 ```cpp
 zObjectMesh mesh;
 zFnMesh fn(mesh);
-
-zPoint minBounds;
-zPoint maxBounds;
-fn.getBounds(minBounds, maxBounds);
 ```
 
-Objects own data and identity. Function sets create, edit, and query geometry.
-Display classes own rendering state. IO classes read and write external formats.
+Objects own identity and storage. Function sets create, edit, and query
+geometry. Display classes own rendering state. IO classes read and write
+external formats.
 
-## Current Folder Structure
+## Active Folder Structure
 
 ```text
 include/zspace/                 Public umbrella headers and public API.
@@ -47,6 +43,7 @@ src/zIO/                        IO facade and codec implementation.
 src/zDisplay/                   Display and renderer implementation.
 src/zInterOp/                   Optional Rhino/Maya/Unreal/USD interop implementation.
 
+agents/                         Agent-facing extension and usage guides.
 scripts/                        Supported build scripts.
 tests/smoke/                    Smoke tests for build and basic API health.
 tests/headers/                  Header compile checks.
@@ -375,47 +372,6 @@ scripts\build_interop.bat "C:\Program Files\Rhino 8 SDK"
 
 Do not make core/interface/display depend on a host SDK.
 
-## Querying Existing Methods
-
-For Codex/LLM agents, prefer ripgrep searches before editing:
-
-```powershell
-rg "class ZSPACE_API zFnMesh" include src
-rg "getPrincipalCurvatures" include src tests
-rg "zIO::readMesh|readMesh\\(" include src tests
-rg "zDisplayMesh" include src tests docs
-```
-
-Useful search targets:
-
-```text
-include/zspace/zInterface/functionsets/    Public method declarations.
-src/zInterface/functionsets/               Method implementations.
-include/zspace/zInterface/objects/         Public object declarations.
-src/zInterface/objects/internal/           Private storage/impl details.
-tests/smoke/                               Minimal usage examples.
-docs/architecture/api-migration.md         Current migration state.
-```
-
-When answering usage questions, include a short snippet using public umbrella
-headers where possible:
-
-```cpp
-#include <zspace/interface.h>
-#include <zspace/io.h>
-
-zSpace::zObjectMesh mesh;
-auto result = zSpace::zIO::readMesh("input.obj", mesh);
-
-if (result)
-{
-    zSpace::zFnMesh fn(mesh);
-    zSpace::zPoint minBB;
-    zSpace::zPoint maxBB;
-    fn.getBounds(minBB, maxBB);
-}
-```
-
 ## Agent Workflow For Changes
 
 Use this checklist when adding or modifying API:
@@ -477,72 +433,6 @@ During the migration, avoid breaking existing users unnecessarily:
 - Document any intentional breaking change in this file and in
   `docs/architecture/api-migration.md`.
 
-## Good Example Snippets
-
-Create and query a mesh:
-
-```cpp
-#include <zspace/interface.h>
-
-zSpace::zObjectMesh mesh;
-zSpace::zFnMesh fn(mesh);
-
-zSpace::zPointArray positions;
-zSpace::zIntArray faceCounts;
-zSpace::zIntArray faceConnects;
-
-fn.create(positions, faceCounts, faceConnects);
-
-zSpace::zPoint minBB;
-zSpace::zPoint maxBB;
-fn.getBounds(minBB, maxBB);
-```
-
-Read and write mesh files:
-
-```cpp
-#include <zspace/interface.h>
-#include <zspace/io.h>
-
-zSpace::zObjectMesh mesh;
-
-auto readResult = zSpace::zIO::readMesh("input.obj", mesh);
-if (!readResult)
-{
-    std::cerr << readResult.message() << std::endl;
-}
-
-zSpace::zIO::writeMesh("output.json", mesh);
-```
-
-Display a mesh:
-
-```cpp
-#include <zspace/interface.h>
-#include <zspace/display.h>
-
-zSpace::zObjectMesh mesh;
-zSpace::zDisplayScene scene;
-
-zSpace::zDisplayMesh& display = scene.mesh(mesh);
-display.setDisplayElements(false, true, true);
-display.setDisplayVertexNormals(true, 0.5);
-
-scene.draw(mesh);
-```
-
-Use point clouds:
-
-```cpp
-#include <zspace/interface.h>
-
-zSpace::zObjectPointCloud points;
-zSpace::zFnPointCloud fn(points);
-
-zSpace::zPointArray positions;
-fn.create(positions);
-```
-
 ## What Not To Do
 
 Do not:
@@ -555,3 +445,4 @@ Do not:
 - Add host SDK dependencies to Core, Interface, IO, or Display.
 - Expose raw storage as public object members.
 - Reintroduce libigl for curvature without a clear dependency plan.
+
