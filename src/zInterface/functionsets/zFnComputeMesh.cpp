@@ -190,49 +190,14 @@ namespace  zSpace
 
 	ZSPACE_INLINE void zFnComputeMesh::computeCurvatureDirections(VectorXd& PV1, VectorXd& PV2, MatrixXd& PD1, MatrixXd& PD2)
 	{
-		////calculate MatrixV and MatrixFTris
-		//MatrixXd V = setMatrixV();
-		//MatrixXi FTris = setMatrixFTris();
-		//igl::principal_curvature(V, FTris, PD1, PD2, PV1, PV2);
-
 	}
 
 	ZSPACE_INLINE void zFnComputeMesh::computeGaussianCurvature(VectorXd& K)
 	{
-		////calculate MatrixV and MatrixFTris
-		//MatrixXd V = setMatrixV();
-		//MatrixXi FTris = setMatrixFTris();
-
-		//// Compute integral of Gaussian curvature
-		//igl::gaussian_curvature(V, FTris, K);
-		//// Compute mass matrix
-		//SparseMatrix<double> M, Minv;
-		//igl::massmatrix(V, FTris, igl::MASSMATRIX_TYPE_DEFAULT, M);
-		//igl::invert_diag(M, Minv);
-		//// Divide by area to get integral average
-		//K = (Minv * K).eval();
-
 	}
 	
 	ZSPACE_INLINE void zFnComputeMesh::computeMeanCurvature(VectorXd& HV, MatrixXd& HN)
 	{
-
-		////calculate MatrixV and MatrixFTris
-		//MatrixXd V = setMatrixV();
-		//MatrixXi FTris = setMatrixFTris();
-
-		//// Alternative discrete mean curvature
-		//SparseMatrix<double> L, M, Minv;
-		//igl::cotmatrix(V, FTris, L);
-		//igl::massmatrix(V, FTris, igl::MASSMATRIX_TYPE_VORONOI, M);
-		//igl::invert_diag(M, Minv);
-
-		//// Laplace-Beltrami of position
-		//HN = -Minv * (L * V);
-
-		//// Extract magnitude as mean curvature
-		//HV = HN.rowwise().norm();
-
 	}
 
 	

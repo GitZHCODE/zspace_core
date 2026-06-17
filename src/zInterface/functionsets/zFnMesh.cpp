@@ -13,23 +13,160 @@
 
 #include<zspace/zInterface/functionsets/zFnMesh.h>
 
-#include <igl/avg_edge_length.h>
-#include <igl/cotmatrix.h>
-#include <igl/gaussian_curvature.h>
-#include <igl/invert_diag.h>
-#include <igl/massmatrix.h>
-#include <igl/parula.h>
-#include <igl/per_corner_normals.h>
-#include <igl/per_face_normals.h>
-#include <igl/per_vertex_normals.h>
-#include <igl/principal_curvature.h>
-#include <igl/read_triangle_mesh.h>
 #include<zspace/zInterface/functionsets/zFnGraph.h>
 #include <src/zInterface/objects/zMeshObjectStorage.h>
 #include <src/zCore/geometry/detail/zMeshStorage.h>
 
+#include <algorithm>
+#include <cmath>
+
 namespace zSpace
 {
+	namespace
+	{
+		const double ZSPACE_CURVATURE_EPS = 1.0e-12;
+
+		double clampUnit(double value)
+		{
+			return std::max(-1.0, std::min(1.0, value));
+		}
+
+		double vectorLength(zVector v)
+		{
+			return std::sqrt((double)v.x * v.x + (double)v.y * v.y + (double)v.z * v.z);
+		}
+
+		zVector normalized(zVector v)
+		{
+			double len = vectorLength(v);
+			if (len <= ZSPACE_CURVATURE_EPS) return zVector();
+
+			v /= (float)len;
+			return v;
+		}
+
+		double angleAtVertex(zVector center, zVector prev, zVector next)
+		{
+			zVector a = prev - center;
+			zVector b = next - center;
+
+			double aLen = vectorLength(a);
+			double bLen = vectorLength(b);
+			if (aLen <= ZSPACE_CURVATURE_EPS || bLen <= ZSPACE_CURVATURE_EPS) return 0.0;
+
+			double dot = (double)(a * b);
+			return std::acos(clampUnit(dot / (aLen * bLen)));
+		}
+
+		double triangleArea(zVector a, zVector b, zVector c)
+		{
+			zVector ab = b - a;
+			zVector ac = c - a;
+			return 0.5 * vectorLength(ab ^ ac);
+		}
+
+		double polygonArea(const zVectorArray& positions)
+		{
+			if (positions.size() < 3) return 0.0;
+
+			double area = 0.0;
+			for (size_t i = 1; i + 1 < positions.size(); ++i)
+			{
+				area += triangleArea(positions[0], positions[i], positions[i + 1]);
+			}
+
+			return area;
+		}
+
+		void computeVertexCurvatureData(
+			zFnMesh& meshFn,
+			zItMeshVertex& vertex,
+			double& gaussianCurvature,
+			double& meanCurvature,
+			zVector& tangentDirection)
+		{
+			gaussianCurvature = 0.0;
+			meanCurvature = 0.0;
+			tangentDirection = zVector();
+
+			if (!vertex.isActive()) return;
+
+			zVector position = vertex.getPosition();
+			double angleSum = 0.0;
+			double vertexArea = 0.0;
+
+			zItMeshFaceArray connectedFaces;
+			vertex.getConnectedFaces(connectedFaces);
+
+			for (auto& face : connectedFaces)
+			{
+				zItMeshVertexArray faceVertices;
+				face.getVertices(faceVertices);
+				if (faceVertices.size() < 3) continue;
+
+				int localIndex = -1;
+				for (int i = 0; i < (int)faceVertices.size(); ++i)
+				{
+					if (faceVertices[i].getId() == vertex.getId())
+					{
+						localIndex = i;
+						break;
+					}
+				}
+
+				if (localIndex < 0) continue;
+
+				zVectorArray facePositions;
+				face.getVertexPositions(facePositions);
+
+				int previousIndex = (localIndex + (int)faceVertices.size() - 1) % (int)faceVertices.size();
+				int nextIndex = (localIndex + 1) % (int)faceVertices.size();
+				angleSum += angleAtVertex(position, facePositions[previousIndex], facePositions[nextIndex]);
+
+				vertexArea += polygonArea(facePositions) / (double)faceVertices.size();
+			}
+
+			if (vertexArea > ZSPACE_CURVATURE_EPS)
+			{
+				double targetAngle = vertex.onBoundary() ? Z_PI : Z_TWO_PI;
+				gaussianCurvature = (targetAngle - angleSum) / vertexArea;
+			}
+
+			zItMeshHalfEdgeArray connectedHalfEdges;
+			vertex.getConnectedHalfEdges(connectedHalfEdges);
+
+			zVector meanNormal;
+			for (auto& halfEdge : connectedHalfEdges)
+			{
+				zItMeshVertex neighbour = halfEdge.getVertex();
+				if (!neighbour.isActive()) continue;
+
+				double weight = meshFn.getEdgeCotangentWeight(halfEdge);
+				if (!std::isfinite(weight)) continue;
+
+				zVector edgeVector = position - neighbour.getPosition();
+				meanNormal += edgeVector * (float)weight;
+
+				if (vectorLength(tangentDirection) <= ZSPACE_CURVATURE_EPS)
+				{
+					tangentDirection = neighbour.getPosition() - position;
+				}
+			}
+
+			if (vertexArea > ZSPACE_CURVATURE_EPS)
+			{
+				meanNormal /= (float)(2.0 * vertexArea);
+				meanCurvature = 0.5 * vectorLength(meanNormal);
+			}
+
+			zVector normal = normalized(vertex.getNormal());
+			if (vectorLength(normal) > ZSPACE_CURVATURE_EPS && vectorLength(tangentDirection) > ZSPACE_CURVATURE_EPS)
+			{
+				tangentDirection -= normal * (float)(tangentDirection * normal);
+			}
+			tangentDirection = normalized(tangentDirection);
+		}
+	}
 
 	//---- CONSTRUCTOR
 
@@ -1730,56 +1867,42 @@ namespace zSpace
 		pVector1.clear();
 		pVector2.clear();
 
-		bool quadMesh = isQuadMesh();
-		bool triMesh = isTriMesh();
+		vertexCurvatures.assign(numVertices(), zCurvature());
+		pVector1.assign(numVertices(), zVector());
+		pVector2.assign(numVertices(), zVector());
 
-		if (quadMesh || triMesh)
+		for (zItMeshVertex v(*meshObj); !v.end(); v++)
 		{
-			vertexCurvatures.assign(numVertices(), zCurvature());
-			pVector1.assign(numVertices(), zVector());
-			pVector2.assign(numVertices(), zVector());
+			int id = v.getId();
 
-			MatrixXd V;
-			MatrixXi F;
-
-			VectorXd PV1, PV2;
-			MatrixXd PD1, PD2;						
-
-			(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmesh(V, F);
-
-			igl::principal_curvature(V, F, PD1, PD2, PV1, PV2);
-
-			for (int i = 0; i < numVertices(); i++)
+			if (!v.isActive())
 			{
-				vertexCurvatures[i].k1 = PV1(i);
-				vertexCurvatures[i].k2 = PV2(i);
-
-				pVector1[i] = zVector(PV1(i, 0), PV1(i, 1), PV1(i, 2));
-				pVector2[i] = zVector(PV1(i, 0), PV1(i, 1), PV1(i, 2));
+				vertexCurvatures[id].k1 = -1;
+				vertexCurvatures[id].k2 = -1;
+				continue;
 			}
-		}
 
-		else
-		{
-			for (zItMeshVertex v(*meshObj); !v.end(); v++)
+			double gaussianCurvature = 0.0;
+			double meanCurvature = 0.0;
+			zVector tangentDirection;
+			computeVertexCurvatureData(*this, v, gaussianCurvature, meanCurvature, tangentDirection);
+
+			double discriminant = (meanCurvature * meanCurvature) - gaussianCurvature;
+			if (discriminant < 0.0) discriminant = 0.0;
+
+			double root = std::sqrt(discriminant);
+			vertexCurvatures[id].k1 = meanCurvature + root;
+			vertexCurvatures[id].k2 = meanCurvature - root;
+
+			zVector normal = normalized(v.getNormal());
+			zVector tangent2 = normalized(normal ^ tangentDirection);
+			if (vectorLength(tangent2) <= ZSPACE_CURVATURE_EPS)
 			{
-				int j = v.getId();
-
-				if (v.isActive())
-				{
-					vertexCurvatures.push_back(v.getPrincipalCurvature());
-				}
-
-				else
-				{
-					zCurvature curv;
-
-					curv.k1 = -1;
-					curv.k2 = -1;
-
-					vertexCurvatures.push_back(curv);
-				}
+				tangent2 = zVector();
 			}
+
+			pVector1[id] = tangentDirection;
+			pVector2[id] = tangent2;
 		}
 		
 	}
@@ -1788,45 +1911,19 @@ namespace zSpace
 	ZSPACE_INLINE void zFnMesh::getGaussianCurvature(zDoubleArray &vertexCurvatures)
 	{	
 		vertexCurvatures.clear();
+		vertexCurvatures.assign(numVertices(), -1);
 
-		bool quadMesh = isQuadMesh();
-		bool triMesh = isTriMesh();
-
-		if (quadMesh || triMesh)
+		for (zItMeshVertex v(*meshObj); !v.end(); v++)
 		{
-			vertexCurvatures.assign(numVertices(), -1);
-			MatrixXd V;
-			MatrixXi F;
+			int id = v.getId();
+			if (!v.isActive()) continue;
 
-			VectorXd K;
-
-			(triMesh) ? getMatrices_trimesh(V, F) : getMatrices_quadmesh(V, F);
-
-			// Compute integral of Gaussian curvature
-			igl::gaussian_curvature(V, F, K);
-			// Compute mass matrix
-			SparseMatrix<double> M, Minv;
-			igl::massmatrix(V, F, igl::MASSMATRIX_TYPE_DEFAULT, M);
-			igl::invert_diag(M, Minv);
-			// Divide by area to get integral average
-			K = (Minv * K).eval();
-
-			for (int i = 0; i < numVertices(); i++)
-			{
-				vertexCurvatures[i] = K(i);
-			}
-		}		
-		else
-		{
-			for (zItMeshVertex v(*meshObj); !v.end(); v++)
-			{
-				int j = v.getId();
-				vertexCurvatures.push_back(v.getGaussianCurvature());
-
-			}
+			double gaussianCurvature = 0.0;
+			double meanCurvature = 0.0;
+			zVector tangentDirection;
+			computeVertexCurvatureData(*this, v, gaussianCurvature, meanCurvature, tangentDirection);
+			vertexCurvatures[id] = gaussianCurvature;
 		}
-			
-		
 	}
 
 	ZSPACE_INLINE void zFnMesh::getPlanarityDeviationPerFace(zDoubleArray& planarityDevs, zPlanarSolverType type, bool colorFaces, double tolerance)

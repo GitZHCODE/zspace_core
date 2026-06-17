@@ -11,7 +11,6 @@ option(ZSPACE_BUILD_DISPLAY "Build zSpace display DLL" ON)
 option(ZSPACE_BUILD_INTEROP "Build zSpace interop DLL" OFF)
 option(ZSPACE_BUILD_TESTS "Build zSpace CLI smoke tests" OFF)
 option(ZSPACE_BUILD_SHARED "Build zSpace libraries as DLLs" ON)
-option(ZSPACE_WITH_IGL "Enable libigl-backed interface methods" ON)
 option(ZSPACE_WITH_OPENGL "Link bundled OpenGL helper libraries" ON)
 option(ZSPACE_WITH_MAYA "Enable Autodesk Maya interop code" OFF)
 option(ZSPACE_WITH_RHINO "Enable Rhino interop code" OFF)
@@ -109,15 +108,6 @@ if(ZSPACE_BUILD_INTERFACE)
   if(MSVC)
     target_compile_options(zSpace_Interface PRIVATE /MP /W0 /permissive-)
     target_compile_definitions(zSpace_Interface PRIVATE _CRT_SECURE_NO_WARNINGS)
-  endif()
-
-  if(ZSPACE_WITH_IGL)
-    target_include_directories(zSpace_Interface PUBLIC
-      "${ZSPACE_ROOT}/third_party/depends/igl/headers"
-    )
-    target_link_libraries(zSpace_Interface PUBLIC
-      "${ZSPACE_ROOT}/third_party/depends/igl/build/lib/igl.lib"
-    )
   endif()
 
   target_link_libraries(zSpace_Interface PUBLIC zspace::core)
