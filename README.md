@@ -1,25 +1,31 @@
-# ZSPACE
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/gitzhcode/zspace_core/LICENSE.MIT)
-[![Documentation](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://github.com/gitzhcode/zspace_core/doxyoutput/)
-[![GitHub Releases](https://img.shields.io/github/release/gitzhcode/zspace_core.svg)](https://github.com/gitzhcode/zspace_core/releases)
-[![GitHub Issues](https://img.shields.io/github/issues/gitzhcode/zspace_core.svg)](http://github.com/gitzhcode/zspace_core/issues)
+# zSpace Core
 
-**ZSPACE** is a C++  library collection of geometry data-structures, algorithms framework. It is implemented as a header-only C++ library, whose dependencies, are header-only or static libraries. Hence **ZSPACE** can be easily embedded in C++ projects. 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/GitZHACODE/zspace_core)](https://github.com/GitZHACODE/zspace_core/releases)
+[![GitHub issues](https://img.shields.io/github/issues/GitZHACODE/zspace_core)](https://github.com/GitZHACODE/zspace_core/issues)
 
-Optionally the library may also be pre-compiled into a statically  or dynamically linked library, for faster compile times.
+zSpace is a modular C++17 library for geometry data structures and algorithms. It uses CMake and can be built as dynamically linked libraries by default, or as static libraries when required. The library is divided into Core, Interface, IO, Display, and optional InterOp modules, allowing applications to link only the functionality they need. A header-only compatibility mode remains available for existing integrations but is not the recommended build configuration.
 
-- [Citing](#Citing)
+## Contents
+
+- [Build](#build)
+- [Geometry IO](#geometry-io)
+- [Optional InterOp](#optional-interop)
+- [Repository layout](#repository-layout)
+- [Citation](#citation)
+- [Dependencies](#dependencies)
 - [License](#license)
-- [Third party dependcencies](#used-third-party-dependencies)
 
-# Build from CLI or VS Code
+## Build
 
-The preferred build path is CMake + Ninja. It builds separate Core, Interface, and Display DLLs, avoids the optional Maya/Rhino/Unreal/Omniverse interop projects, does not generate Visual Studio `.sln` or `.vcxproj` files, and emits DLLs to the repository `build` folder.
+The preferred build path is CMake with Ninja. It builds separate Core, Interface, IO, and Display libraries while keeping Maya, Rhino, Unreal, and USD/Omniverse interoperability opt-in. This workflow does not generate Visual Studio `.sln` or `.vcxproj` files.
 
 The dependency direction is:
 
 ```text
+zSpace_IO      -> zSpace_Interface -> zSpace_Core
 zSpace_Display -> zSpace_Interface -> zSpace_Core
+zSpace_InterOp -> zSpace_IO        -> zSpace_Interface -> zSpace_Core
 ```
 
 `zSpace_Core` and `zSpace_Interface` contain no OpenGL dependency. Headless geometry applications only need those two DLLs. `zSpace_Display` is optional and owns the OpenGL, GLEW, and FreeGLUT rendering backend.
@@ -51,10 +57,10 @@ fnMesh.getBounds(minBounds, maxBounds);
 
 Geometry objects no longer expose `getBounds()` directly.
 
-Requirements:
+### Requirements
 
-- Visual Studio 2022 with the C++ desktop workload.
-- CMake and Ninja on `PATH`, or Visual Studio's bundled CMake and Ninja.
+- MSVC Build Tools 2022 with the C++ compiler and Windows SDK. The Visual Studio IDE is not required.
+- CMake and Ninja on `PATH`.
 
 From PowerShell:
 
@@ -74,6 +80,8 @@ Equivalent raw CMake commands, when run from a Visual Studio Developer PowerShel
 cmake --preset ninja-msvc
 cmake --build --preset ninja-msvc-release --parallel
 ```
+
+### Build outputs
 
 The default build produces:
 
@@ -108,20 +116,22 @@ Formats are selected from the file extension. OBJ, JSON, and graph TXT codecs ar
 built into `zSpace_IO`. USD extensions use the `zCodecUSD` boundary and report
 that the optional USD module is unavailable when it is not enabled.
 
-Build outputs:
+The generated binaries and import libraries are placed under the selected CMake preset directory:
 
 ```text
 build/ninja-msvc/bin/zSpace_Core.dll
 build/ninja-msvc/bin/zSpace_Interface.dll
+build/ninja-msvc/bin/zSpace_IO.dll
 build/ninja-msvc/bin/zSpace_Display.dll
 build/ninja-msvc/lib/zSpace_Core.lib
 build/ninja-msvc/lib/zSpace_Interface.lib
+build/ninja-msvc/lib/zSpace_IO.lib
 build/ninja-msvc/lib/zSpace_Display.lib
 ```
 
 In VS Code, open the repository folder and run the default build task: `CMake: build Release DLLs`.
 
-## Optional interop build
+## Optional InterOp
 
 `zSpace_InterOp` is included in the CMake structure as an opt-in target. The current interop API uses Rhino/OpenNURBS types directly for plane, arc, curve, and nurbs objects, so it cannot be built as an SDK-free DLL yet.
 
@@ -176,7 +186,7 @@ ZSPACE_WITH_USD=ON     requires ZSPACE_USD_DIR
 
 The default CLI and VS Code build keeps interop disabled so `zSpace_Core` and `zSpace_Interface` remain fast and reproducible on a standard C++ toolchain.
 
-# Repository layout
+## Repository layout
 
 The active build uses this folder structure:
 
@@ -194,43 +204,43 @@ build/                 Generated CMake/Ninja build output. This folder is ignore
 
 `legacy/visualstudio` is kept for reference only. The maintained build entry point is the root `CMakeLists.txt`.
 
-# Citing
-If you use the library of ZSPACE in a project, please refer to the GitHub repository. <br/> <br/>
-@misc{zspace-framework, <br/>
-      title  = {{zspace}: A simple C++ header-only collection of geometry data-structures, algorithms and city data visualization                       framework.},<br/>
-      author = {Vishu Bhooshan, Shajay Bhooshan, Tommaso Casucci, Taizhong Chen and others},<br/>
-      note   = {https://github.com/venumb/ZSPACE},<br/>
-      year   = {2018},<br/>
-    }
+## Citation
 
-# License
-The library is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+When using zSpace in academic or published work, cite the repository:
 
+```bibtex
+@software{zspace_core,
+  title  = {zSpace Core: A C++ Geometry Data Structures and Algorithms Library},
+  author = {Bhooshan, Vishu and Bhooshan, Shajay and Chen, Taizhong and others},
+  year   = {2018},
+  url    = {https://github.com/GitZHACODE/zspace_core}
+}
+```
 
-# Third party dependencies
-The library has some dependencies on third-party tools and services, which have different licensing as listed below.
-Thanks a lot!
+## Dependencies
 
-- [**OPENGL**](https://www.opengl.org/about/) for display methods. End users, independent software vendors, and others writing code based on the OpenGL API are free from licensing requirements.
+Dependencies used by the default Core, Interface, and IO build are vendored under `third_party/depends`.
 
-- [**Eigen**](https://github.com/eigenteam/eigen-git-mirror) for matricies and related methods. It is an open source project licensed under
-[MPL2](https://www.mozilla.org/MPL/2.0/).
+| Dependency | Purpose | License |
+| --- | --- | --- |
+| [Eigen](https://eigen.tuxfamily.org/) | Dense and sparse linear algebra | MPL-2.0 |
+| [JSON for Modern C++](https://github.com/nlohmann/json) | JSON parsing and serialization | MIT |
+| [QuickHull](https://github.com/karimnaaji/quickhull) | Convex hull computation | MIT |
+| [LodePNG](https://lodev.org/lodepng/) | PNG encoding | Zlib |
+| [TooJPEG](https://create.stephan-brumme.com/toojpeg/) | JPEG encoding | Zlib |
 
-- [**Spectra**](https://github.com/yixuan/spectra) for large scale eigen value problems. It is an open source project licensed under
-[MPL2](https://www.mozilla.org/MPL/2.0/).
+The optional Display module adds the following graphics dependencies:
 
-- [**Armadillo**](http://arma.sourceforge.net/) for matricies and related methods. It is an open source project licensed under
-[Apache License 2.0](https://opensource.org/licenses/Apache-2.0).
+| Dependency | Purpose | License |
+| --- | --- | --- |
+| [OpenGL](https://www.khronos.org/opengl/) | Rendering API | Platform/system library |
+| [GLEW](https://glew.sourceforge.net/) | OpenGL extension loading | Modified BSD, MIT |
+| [FreeGLUT](https://freeglut.sourceforge.net/) | OpenGL windowing and utilities | MIT/X11 |
 
-- [**Alglib**](http://http://www.alglib.net/) free edition for linear programming optimisation methods.
+The optional InterOp module links against external SDKs selected at configure time. Rhino/OpenNURBS is currently required to build InterOp; Maya, Unreal Engine, and USD/Omniverse support are optional. Their licenses and redistribution terms are governed by their respective SDKs.
 
-- [**JSON for Modern C++**](https://github.com/nlohmann/json) to create a JSON file. It is an open source project licensed under
-[MIT License](https://opensource.org/licenses/MIT).
+Armadillo support remains available behind the `USING_ARMA` compile definition. Spectra and ALGLIB are present in the vendored dependency tree for historical compatibility but are not used by the maintained CMake targets.
 
-- [**SQLITE**](https://www.sqlite.org/index.html) for SQL database engine. It is an open source project dedicated to the [public domain](https://en.wikipedia.org/wiki/Public_domain).
+## License
 
-- [**LodePNG**](https://lodev.org/lodepng) for creating PNG images. It is a project licensed under 
-[ZLIB License](https://zlib.net/zlib_license.html).
-
-- [**TooJPEG**](https://create.stephan-brumme.com/toojpeg/) for creating JPEG images. It is a project licensed under 
-[ZLIB License](https://zlib.net/zlib_license.html).
+zSpace Core is licensed under the [MIT License](LICENSE). Third-party components retain their respective licenses.
