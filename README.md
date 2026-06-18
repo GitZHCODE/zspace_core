@@ -209,8 +209,8 @@ build/                 Generated CMake/Ninja build output. This folder is ignore
 When using zSpace in academic or published work, cite the repository:
 
 ```bibtex
-@software{zspace_core,
-  title  = {zSpace Core: A C++ Geometry Data Structures and Algorithms Library},
+@software{ZSPACE,
+  title  = {ZSPACE: A C++ Geometry Data Structures and Algorithms Library},
   author = {Bhooshan, Vishu and Bhooshan, Shajay and Chen, Taizhong and others},
   year   = {2018},
   url    = {https://github.com/GitZHACODE/zspace_core}
