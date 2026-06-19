@@ -46,8 +46,10 @@ namespace
 
 		const auto objPath = directory / "mesh.obj";
 		const auto jsonPath = directory / "mesh.json";
+		const auto usdPath = directory / "mesh.usda";
 		requireSuccess(zIO::writeMesh(objPath.string(), source));
 		requireSuccess(zIO::writeMesh(jsonPath.string(), source));
+		requireSuccess(zIO::writeMesh(usdPath.string(), source));
 
 		nlohmann::json document;
 		{
@@ -63,13 +65,17 @@ namespace
 
 		zObjectMesh fromObj;
 		zObjectMesh fromJson;
+		zObjectMesh fromUsd;
 		requireSuccess(zIO::readMesh(objPath.string(), fromObj));
 		requireSuccess(zIO::readMesh(jsonPath.string(), fromJson));
+		requireSuccess(zIO::readMesh(usdPath.string(), fromUsd));
 
 		zFnMesh objFn(fromObj);
 		zFnMesh jsonFn(fromJson);
+		zFnMesh usdFn(fromUsd);
 		require(objFn.numVertices() == 4 && objFn.numPolygons() == 1, "OBJ mesh round trip");
 		require(jsonFn.numVertices() == 4 && jsonFn.numPolygons() == 1, "JSON mesh round trip");
+		require(usdFn.numVertices() == 4 && usdFn.numPolygons() == 1, "USD mesh round trip");
 
 		zColorArray roundTripEdgeColors;
 		jsonFn.getEdgeColors(roundTripEdgeColors);
@@ -80,6 +86,28 @@ namespace
 		jsonFn.getEdgeWeights(roundTripEdgeWeights);
 		require(roundTripEdgeWeights.size() == edgeWeights.size(), "JSON mesh edge weight count");
 		require(roundTripEdgeWeights[2] == 2.5, "JSON mesh edge weight round trip");
+
+		zColorArray usdEdgeColors;
+		usdFn.getEdgeColors(usdEdgeColors);
+		require(usdEdgeColors.size() == edgeColors.size(), "USD mesh edge color count");
+		require(usdEdgeColors[2].b == 1.0f, "USD mesh edge color round trip");
+
+		zDoubleArray usdEdgeWeights;
+		usdFn.getEdgeWeights(usdEdgeWeights);
+		require(usdEdgeWeights.size() == edgeWeights.size(), "USD mesh edge weight count");
+		require(usdEdgeWeights[2] == 2.5, "USD mesh edge weight round trip");
+
+		std::ifstream usdInput(usdPath);
+		const std::string usdText(
+			(std::istreambuf_iterator<char>(usdInput)),
+			std::istreambuf_iterator<char>());
+		require(usdText.find("customLayerData") != std::string::npos, "USD writes layer metadata");
+		require(usdText.find("primvars:zspace:edgeColor") != std::string::npos,
+			"USD writes edge color primvar");
+		require(usdText.find("primvars:zspace:edgeWeight") != std::string::npos,
+			"USD writes edge weight primvar");
+		require(!zIO::writeMesh((directory / "mesh.usdc").string(), source),
+			"USD binary writing reports unsupported");
 
 		std::ifstream objInput(objPath);
 		const std::string objText(
@@ -196,10 +224,6 @@ int main()
 		testExternalOBJ(directory);
 		testGraph(directory);
 		testPointCloud(directory);
-
-		zObjectMesh mesh;
-		const auto usdResult = zIO::readMesh((directory / "mesh.usd").string(), mesh);
-		require(!usdResult, "USD should report unavailable without the optional module");
 
 		std::filesystem::remove_all(directory);
 		std::cout << "zspace IO smoke tests passed\n";

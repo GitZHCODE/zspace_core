@@ -10,6 +10,7 @@ namespace zSpace::io_detail
 		zPointArray positions;
 		zIntArray polygonCounts;
 		zIntArray polygonConnects;
+		zIntArray edgeConnects;
 		zVectorArray faceNormals;
 		zColorArray vertexColors;
 		zColorArray edgeColors;

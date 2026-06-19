@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
+#include <map>
 
 namespace zSpace
 {
@@ -42,6 +43,37 @@ namespace zSpace
 
 			zFnMesh functionSet(mesh);
 			functionSet.create(data.positions, data.polygonCounts, data.polygonConnects, staticGeometry);
+
+			if (data.edgeConnects.size() % 2 == 0 && !data.edgeConnects.empty())
+			{
+				std::map<std::pair<int, int>, std::size_t> sourceEdges;
+				for (std::size_t i = 0; i < data.edgeConnects.size(); i += 2)
+				{
+					const auto edge = std::minmax(data.edgeConnects[i], data.edgeConnects[i + 1]);
+					sourceEdges[{ edge.first, edge.second }] = i / 2;
+				}
+
+				zColorArray orderedColors;
+				zDoubleArray orderedWeights;
+				for (zItMeshEdge edge(mesh); !edge.end(); edge++)
+				{
+					zIntArray vertices;
+					edge.getVertices(vertices);
+					if (vertices.size() != 2) continue;
+					const auto endpoints = std::minmax(vertices[0], vertices[1]);
+					const auto source = sourceEdges.find({ endpoints.first, endpoints.second });
+					if (source == sourceEdges.end()) continue;
+					if (source->second < data.edgeColors.size())
+						orderedColors.push_back(data.edgeColors[source->second]);
+					if (source->second < data.edgeWeights.size())
+						orderedWeights.push_back(data.edgeWeights[source->second]);
+				}
+
+				if (orderedColors.size() == static_cast<std::size_t>(functionSet.numEdges()))
+					data.edgeColors = std::move(orderedColors);
+				if (orderedWeights.size() == static_cast<std::size_t>(functionSet.numEdges()))
+					data.edgeWeights = std::move(orderedWeights);
+			}
 
 			if (data.vertexColors.size() == data.positions.size())
 				functionSet.setVertexColors(data.vertexColors);
@@ -84,6 +116,17 @@ namespace zSpace
 				face.getVertices(vertices);
 				data.polygonCounts.push_back(static_cast<int>(vertices.size()));
 				data.polygonConnects.insert(data.polygonConnects.end(), vertices.begin(), vertices.end());
+			}
+
+			for (zItMeshEdge edge(mesh); !edge.end(); edge++)
+			{
+				if (!edge.isActive()) continue;
+				zIntArray vertices;
+				edge.getVertices(vertices);
+				if (vertices.size() != 2)
+					return zIOResult::error("Mesh contains an edge without two vertices.");
+				data.edgeConnects.push_back(vertices[0]);
+				data.edgeConnects.push_back(vertices[1]);
 			}
 
 			if (data.positions.empty() || data.polygonCounts.empty())
@@ -142,7 +185,7 @@ namespace zSpace
 		zIOResult result;
 		if (extension == ".obj") result = io_detail::readOBJ(path, data);
 		else if (extension == ".json") result = io_detail::readMeshJSON(path, data);
-		else if (isUSD(extension)) return io_detail::usdUnavailable();
+		else if (isUSD(extension)) result = io_detail::readMeshUSD(path, data);
 		else return zIOResult::error("Unsupported mesh file extension: " + extension);
 
 		if (!result) return result;
@@ -158,7 +201,7 @@ namespace zSpace
 		const std::string extension = extensionOf(path);
 		if (extension == ".obj") return io_detail::writeOBJ(path, data);
 		if (extension == ".json") return io_detail::writeMeshJSON(path, data);
-		if (isUSD(extension)) return io_detail::usdUnavailable();
+		if (isUSD(extension)) return io_detail::writeMeshUSD(path, data);
 		return zIOResult::error("Unsupported mesh file extension: " + extension);
 	}
 
@@ -170,7 +213,7 @@ namespace zSpace
 		zIOResult result;
 		if (extension == ".txt") result = io_detail::readGraphTXT(path, data);
 		else if (extension == ".json") result = io_detail::readGraphJSON(path, data);
-		else if (isUSD(extension)) return io_detail::usdUnavailable();
+		else if (isUSD(extension)) return zIOResult::error("USD graph IO is not implemented.");
 		else return zIOResult::error("Unsupported graph file extension: " + extension);
 
 		if (!result) return result;
@@ -186,7 +229,7 @@ namespace zSpace
 		const std::string extension = extensionOf(path);
 		if (extension == ".txt") return io_detail::writeGraphTXT(path, data);
 		if (extension == ".json") return io_detail::writeGraphJSON(path, data);
-		if (isUSD(extension)) return io_detail::usdUnavailable();
+		if (isUSD(extension)) return zIOResult::error("USD graph IO is not implemented.");
 		return zIOResult::error("Unsupported graph file extension: " + extension);
 	}
 

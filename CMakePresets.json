@@ -21,6 +21,7 @@
         "ZSPACE_BUILD_DISPLAY": "ON",
         "ZSPACE_BUILD_INTEROP": "OFF",
         "ZSPACE_BUILD_TESTS": "ON",
+        "ZSPACE_IO_WITH_TINYUSDZ": "ON",
         "ZSPACE_WITH_OPENGL": "ON"
       }
     }

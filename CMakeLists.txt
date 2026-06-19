@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(zspace_core
-  VERSION 0.1.0
+  VERSION 3.0.0
   LANGUAGES CXX
 )
 
@@ -12,6 +12,7 @@ option(ZSPACE_BUILD_INTEROP "Build zSpace interop DLL" OFF)
 option(ZSPACE_BUILD_TESTS "Build zSpace CLI smoke tests" OFF)
 option(ZSPACE_BUILD_SHARED "Build zSpace libraries as DLLs" ON)
 option(ZSPACE_WITH_OPENGL "Link bundled OpenGL helper libraries" ON)
+option(ZSPACE_IO_WITH_TINYUSDZ "Enable TinyUSDZ mesh IO" ON)
 option(ZSPACE_WITH_MAYA "Enable Autodesk Maya interop code" OFF)
 option(ZSPACE_WITH_RHINO "Enable Rhino interop code" OFF)
 option(ZSPACE_WITH_UNREAL "Enable Unreal interop code" OFF)
@@ -50,6 +51,21 @@ set(ZSPACE_COMMON_INCLUDE_DIRS
   "${ZSPACE_ROOT}/third_party/depends/alglib/cpp/src"
 )
 
+set(ZSPACE_INSTALL_TARGETS)
+
+function(zspace_configure_public_includes target)
+  target_include_directories(${target}
+    PUBLIC
+      $<BUILD_INTERFACE:${ZSPACE_ROOT}>
+      $<BUILD_INTERFACE:${ZSPACE_ROOT}/include>
+      $<BUILD_INTERFACE:${ZSPACE_ROOT}/third_party>
+      $<BUILD_INTERFACE:${ZSPACE_ROOT}/third_party/depends>
+      $<BUILD_INTERFACE:${ZSPACE_ROOT}/third_party/depends/Armadillo>
+      $<BUILD_INTERFACE:${ZSPACE_ROOT}/third_party/depends/alglib/cpp/src>
+      $<INSTALL_INTERFACE:include>
+  )
+endfunction()
+
 file(GLOB_RECURSE ZSPACE_CORE_SOURCES CONFIGURE_DEPENDS
   "${ZSPACE_ROOT}/src/zCore/*.cpp"
   "${ZSPACE_ROOT}/third_party/depends/lodePNG/lodepng.cpp"
@@ -61,11 +77,9 @@ list(REMOVE_ITEM ZSPACE_CORE_SOURCES
 
 add_library(zSpace_Core ${ZSPACE_LIBRARY_TYPE} ${ZSPACE_CORE_SOURCES})
 add_library(zspace::core ALIAS zSpace_Core)
-
-target_include_directories(zSpace_Core
-  PUBLIC
-    ${ZSPACE_COMMON_INCLUDE_DIRS}
-)
+set_target_properties(zSpace_Core PROPERTIES EXPORT_NAME core)
+zspace_configure_public_includes(zSpace_Core)
+list(APPEND ZSPACE_INSTALL_TARGETS zSpace_Core)
 
 target_compile_definitions(zSpace_Core
   PUBLIC
@@ -91,11 +105,9 @@ if(ZSPACE_BUILD_INTERFACE)
 
   add_library(zSpace_Interface ${ZSPACE_LIBRARY_TYPE} ${ZSPACE_INTERFACE_SOURCES})
   add_library(zspace::interface ALIAS zSpace_Interface)
-
-  target_include_directories(zSpace_Interface
-    PUBLIC
-      ${ZSPACE_COMMON_INCLUDE_DIRS}
-  )
+  set_target_properties(zSpace_Interface PROPERTIES EXPORT_NAME interface)
+  zspace_configure_public_includes(zSpace_Interface)
+  list(APPEND ZSPACE_INSTALL_TARGETS zSpace_Interface)
 
   target_compile_definitions(zSpace_Interface
     PUBLIC
@@ -125,11 +137,9 @@ if(ZSPACE_BUILD_IO)
 
   add_library(zSpace_IO ${ZSPACE_LIBRARY_TYPE} ${ZSPACE_IO_SOURCES})
   add_library(zspace::io ALIAS zSpace_IO)
-
-  target_include_directories(zSpace_IO
-    PUBLIC
-      ${ZSPACE_COMMON_INCLUDE_DIRS}
-  )
+  set_target_properties(zSpace_IO PROPERTIES EXPORT_NAME io)
+  zspace_configure_public_includes(zSpace_IO)
+  list(APPEND ZSPACE_INSTALL_TARGETS zSpace_IO)
 
   target_compile_definitions(zSpace_IO
     PUBLIC
@@ -145,6 +155,38 @@ if(ZSPACE_BUILD_IO)
   endif()
 
   target_link_libraries(zSpace_IO PUBLIC zspace::interface)
+
+  if(ZSPACE_IO_WITH_TINYUSDZ)
+    include(FetchContent)
+
+    set(TINYUSDZ_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_C_API OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_BUILTIN_IMAGE_LOADER OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_TYDRA OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_USDMTLX OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_JSON OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_USD_TO_GLTF OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_USDOBJ OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_USDFBX OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_AUDIO OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_ALAC_AUDIO OFF CACHE BOOL "" FORCE)
+    set(TINYUSDZ_WITH_PXR_COMPAT_API OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(tinyusdz
+      GIT_REPOSITORY https://github.com/lighttransport/tinyusdz.git
+      GIT_TAG 11a2d361a9b6a0c4bf8918027233858d80ed17c5
+      GIT_SHALLOW TRUE
+      EXCLUDE_FROM_ALL
+    )
+    FetchContent_MakeAvailable(tinyusdz)
+
+    target_compile_definitions(zSpace_IO PRIVATE ZSPACE_IO_TINYUSDZ)
+    target_include_directories(zSpace_IO PRIVATE "${tinyusdz_SOURCE_DIR}/src")
+    target_link_libraries(zSpace_IO PRIVATE tinyusdz::tinyusdz_static)
+  endif()
 endif()
 
 if(ZSPACE_BUILD_DISPLAY)
@@ -158,11 +200,9 @@ if(ZSPACE_BUILD_DISPLAY)
 
   add_library(zSpace_Display ${ZSPACE_LIBRARY_TYPE} ${ZSPACE_DISPLAY_SOURCES})
   add_library(zspace::display ALIAS zSpace_Display)
-
-  target_include_directories(zSpace_Display
-    PUBLIC
-      ${ZSPACE_COMMON_INCLUDE_DIRS}
-  )
+  set_target_properties(zSpace_Display PROPERTIES EXPORT_NAME display)
+  zspace_configure_public_includes(zSpace_Display)
+  list(APPEND ZSPACE_INSTALL_TARGETS zSpace_Display)
 
   target_compile_definitions(zSpace_Display
     PUBLIC
@@ -187,6 +227,55 @@ if(ZSPACE_BUILD_DISPLAY)
 
   target_link_libraries(zSpace_Display PUBLIC zspace::interface)
 endif()
+
+include(CMakePackageConfigHelpers)
+
+install(TARGETS ${ZSPACE_INSTALL_TARGETS}
+  EXPORT zspaceTargets
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION bin
+  ARCHIVE DESTINATION lib
+  INCLUDES DESTINATION include
+)
+
+install(DIRECTORY "${ZSPACE_ROOT}/include/zspace"
+  DESTINATION include
+)
+
+foreach(zspace_dependency Eigen Eigen_Unsupported Armadillo nlohmann quickhull lodePNG tooJPEG)
+  if(EXISTS "${ZSPACE_ROOT}/third_party/depends/${zspace_dependency}")
+    install(DIRECTORY "${ZSPACE_ROOT}/third_party/depends/${zspace_dependency}"
+      DESTINATION include/depends
+    )
+  endif()
+endforeach()
+
+configure_package_config_file(
+  "${ZSPACE_ROOT}/cmake/zspaceConfig.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/zspaceConfig.cmake"
+  INSTALL_DESTINATION lib/cmake/zspace
+)
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/zspaceConfigVersion.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(EXPORT zspaceTargets
+  FILE zspaceTargets.cmake
+  NAMESPACE zspace::
+  DESTINATION lib/cmake/zspace
+)
+
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/zspaceConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/zspaceConfigVersion.cmake"
+  DESTINATION lib/cmake/zspace
+)
+
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/version.txt" "${PROJECT_VERSION}\n")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.txt" DESTINATION .)
 
 if(ZSPACE_BUILD_TESTS)
   if(NOT TARGET zSpace_Display)

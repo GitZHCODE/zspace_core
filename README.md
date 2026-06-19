@@ -113,8 +113,14 @@ zSpace::zIO::writeGraph("graph.json", graph);
 ```
 
 Formats are selected from the file extension. OBJ, JSON, and graph TXT codecs are
-built into `zSpace_IO`. USD extensions use the `zCodecUSD` boundary and report
-that the optional USD module is unavailable when it is not enabled.
+built into `zSpace_IO`. TinyUSDZ provides mesh reading for USDA, USDC, and USDZ,
+plus robust USDA writing. Binary USDC and USDZ writing is intentionally disabled
+until TinyUSDZ's writers are production-ready. Configure with
+`ZSPACE_IO_WITH_TINYUSDZ=OFF` to build without USD support.
+
+USD mesh import currently reads the first mesh prim in object space. Scene
+composition, transforms, animation, and multi-mesh stage import remain outside
+the single-object `zIO::readMesh` contract.
 
 The generated binaries and import libraries are placed under the selected CMake preset directory:
 
@@ -184,6 +190,9 @@ ZSPACE_WITH_UNREAL=ON  requires ZSPACE_UNREAL_DIR
 ZSPACE_WITH_USD=ON     requires ZSPACE_USD_DIR
 ```
 
+Large host SDKs are not bundled with this repository. Set the corresponding
+`ZSPACE_*_DIR` option to an external installation when enabling an integration.
+
 The default CLI and VS Code build keeps interop disabled so `zSpace_Core` and `zSpace_Interface` remain fast and reproducible on a standard C++ toolchain.
 
 ## Repository layout
@@ -219,7 +228,8 @@ When using zSpace in academic or published work, cite the repository:
 
 ## Dependencies
 
-Dependencies used by the default Core, Interface, and IO build are vendored under `third_party/depends`.
+Dependencies used by the default Core, Interface, and IO build are either
+vendored under `third_party/depends` or fetched at a pinned revision by CMake.
 
 | Dependency | Purpose | License |
 | --- | --- | --- |
@@ -228,6 +238,7 @@ Dependencies used by the default Core, Interface, and IO build are vendored unde
 | [QuickHull](https://github.com/karimnaaji/quickhull) | Convex hull computation | MIT |
 | [LodePNG](https://lodev.org/lodepng/) | PNG encoding | Zlib |
 | [TooJPEG](https://create.stephan-brumme.com/toojpeg/) | JPEG encoding | Zlib |
+| [TinyUSDZ](https://github.com/lighttransport/tinyusdz) | USDA/USDC/USDZ mesh IO | Apache-2.0 |
 
 The optional Display module adds the following graphics dependencies:
 
@@ -237,7 +248,7 @@ The optional Display module adds the following graphics dependencies:
 | [GLEW](https://glew.sourceforge.net/) | OpenGL extension loading | Modified BSD, MIT |
 | [FreeGLUT](https://freeglut.sourceforge.net/) | OpenGL windowing and utilities | MIT/X11 |
 
-The optional InterOp module links against external SDKs selected at configure time. Rhino/OpenNURBS is currently required to build InterOp; Maya, Unreal Engine, and USD/Omniverse support are optional. Their licenses and redistribution terms are governed by their respective SDKs.
+The optional InterOp module links against external SDKs selected at configure time. Rhino/OpenNURBS is currently required to build InterOp; Maya, Unreal Engine, and USD/Omniverse support are optional. These SDKs are not vendored, and their licenses and redistribution terms are governed by their respective providers.
 
 Armadillo support remains available behind the `USING_ARMA` compile definition. Spectra and ALGLIB are present in the vendored dependency tree for historical compatibility but are not used by the maintained CMake targets.
 
