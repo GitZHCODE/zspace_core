@@ -100,7 +100,16 @@ namespace zSpace
 				int v1 = cVs[cVs.size() - 1].getId();
 				
 				int he_lowPoly = -1;
-				bool chk  = zspace_FnMesh.halfEdgeExists(v0, v1, he_lowPoly);
+				bool chk = false;
+				for (zItMeshHalfEdge lowPolyHE(*zspace_meshObj); !lowPolyHE.end(); lowPolyHE++)
+				{
+					if (lowPolyHE.getStartVertex().getId() == v0 && lowPolyHE.getVertex().getId() == v1)
+					{
+						he_lowPoly = lowPolyHE.getId();
+						chk = true;
+						break;
+					}
+				}
 
 				if (chk && !halfEdgeVisited[he_lowPoly])
 				{

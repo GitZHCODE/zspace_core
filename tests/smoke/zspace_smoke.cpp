@@ -30,6 +30,8 @@ namespace
 		require(fnMesh.numVertices() == 4, "mesh vertex count");
 		require(fnMesh.numEdges() == 4, "mesh edge count");
 		require(fnMesh.numPolygons() == 1, "mesh polygon count");
+		int meshEdgeId = -1;
+		require(fnMesh.edgeExists(0, 1, meshEdgeId) && meshEdgeId >= 0, "mesh edge exists");
 
 		zItMeshVertex vertex(mesh, 0);
 		vertex.setPosition(zPoint(-0.25, 0, 0));
@@ -50,6 +52,8 @@ namespace
 
 		require(fnGraph.numVertices() == 3, "graph vertex count");
 		require(fnGraph.numEdges() == 2, "graph edge count");
+		int graphEdgeId = -1;
+		require(fnGraph.edgeExists(1, 2, graphEdgeId) && graphEdgeId == 1, "graph edge exists");
 
 		int edgeCount = 0;
 		for (zItGraphEdge edge(graph); !edge.end(); edge++)

@@ -717,6 +717,26 @@ namespace zSpace
 		return zMeshObjectStorage::read(*meshObj).numEdges();
 	}
 
+	ZSPACE_INLINE bool zFnMesh::edgeExists(int v1, int v2, int &outEdgeId)
+	{
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		const int a = std::min(v1, v2);
+		const int b = std::max(v1, v2);
+
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
+		{
+			if (data.edgeVertexIndices[edgeId * 2] == a &&
+				data.edgeVertexIndices[edgeId * 2 + 1] == b)
+			{
+				outEdgeId = edgeId;
+				return true;
+			}
+		}
+
+		outEdgeId = -1;
+		return false;
+	}
+
 	ZSPACE_INLINE int zFnMesh::numHalfEdges()
 	{
 		return zMeshObjectStorage::get(*meshObj).n_he;
@@ -1954,6 +1974,8 @@ namespace zSpace
 
 		// compute inEdge to dualEdge	
 		inEdge_dualEdge.clear();
+		zIntArray dualGraphEdgeConnects;
+		fnDualGraph.getEdgeData(dualGraphEdgeConnects);
 
 		for (int i = 0; i < numHalfEdges(); i++)
 		{
@@ -1961,9 +1983,13 @@ namespace zSpace
 			int v2 = (i % 2 == 0) ? inEdge_dualVertex[i + 1] : inEdge_dualVertex[i - 1];
 
 			int eId;
-			bool chk = fnDualGraph.halfEdgeExists(v1, v2, eId);
+			bool chk = fnDualGraph.edgeExists(v1, v2, eId);
 
-			if (chk) inEdge_dualEdge.push_back(eId);
+			if (chk)
+			{
+				int heId = (dualGraphEdgeConnects[eId * 2] == v1) ? eId * 2 : eId * 2 + 1;
+				inEdge_dualEdge.push_back(heId);
+			}
 			else inEdge_dualEdge.push_back(-1);
 
 			if (inEdge_dualEdge[i] != -1)

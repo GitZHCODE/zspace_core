@@ -84,6 +84,10 @@ Update this section after each migration step.
   Half-edge counts are topology details and should be queried through
   `zItMeshHalfEdge::size()` / `zItGraphHalfEdge::size()` only when code is
   explicitly using half-edge traversal.
+- Public edge query cleanup: completed. `zFnMesh` and `zFnGraph` now expose
+  edge-list-facing `edgeExists(v1, v2, edgeId)`. `halfEdgeExists(...)` is no
+  longer public and remains only as a protected topology helper for internal
+  and interop code that explicitly works with half-edge traversal.
 - Raw pointer/public dependency audit: pending. Keep performance escape hatches
   only where needed and document them as advanced API.
 - Interop naming cleanup: pending. Replace remaining internal `zObj*` uses with

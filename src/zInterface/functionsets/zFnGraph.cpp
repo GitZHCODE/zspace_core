@@ -172,6 +172,11 @@ namespace zSpace
 		return zGraphObjectStorage::read(*graphObj).numEdges();
 	}
 
+	ZSPACE_INLINE bool zFnGraph::edgeExists(int v1, int v2, int &outEdgeId)
+	{
+		return zGraphObjectStorage::read(*graphObj).edgeExists(v1, v2, outEdgeId);
+	}
+
 	ZSPACE_INLINE int zFnGraph::numHalfEdges()
 	{
 		return zGraphObjectStorage::read(*graphObj).numHalfEdges();

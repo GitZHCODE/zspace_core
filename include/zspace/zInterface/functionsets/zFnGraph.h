@@ -180,6 +180,16 @@ namespace zSpace
 		*/
 		int numEdges();
 
+		/*! \brief This method determines if an edge already exists between input vertices.
+		*
+		*	\param		[in]	v1			- vertex id 1.
+		*	\param		[in]	v2			- vertex id 2.
+		*	\param		[out]	outEdgeId	- edge id if edge exists, else -1.
+		*	\return				bool		- true if edge exists.
+		*	\since version 0.0.5
+		*/
+		bool edgeExists(int v1, int v2, int &outEdgeId);
+
 		/*! \brief This method detemines if a vertex already exists at the input position
 		*
 		*	\param		[in]		pos					- position to be checked.
@@ -189,27 +199,6 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		bool vertexExists(zPoint pos, zItGraphVertex &outVertex, int precisionfactor = 6);
-
-		/*! \brief This method detemines if an edge already exists between input vertices.
-		*
-		*	\param		[in]	v1					-  vertexId 1.
-		*	\param		[in]	v2					-  vertexId 2.
-		*	\param		[out]	outHalfEdgeId		-  half edge id.
-		*	\return		[out]	bool			-  true if edge exists else false.
-		*	\since version 0.0.2
-		*/
-		bool halfEdgeExists(int v1, int v2, int &outHalfEdgeId);
-
-		/*! \brief This method detemines if an edge already exists between input vertices.
-		*
-		*	\param		[in]	v1			-  vertexId 1.
-		*	\param		[in]	v2			-  vertexId 2.
-		*	\param		[out]	outEdgeId	-  half edge iterator if edge exists.
-		*	\return		[out]	bool		-  true if edge exists else false.
-		*	\since version 0.0.2
-		*/
-		bool halfEdgeExists(int v1, int v2, zItGraphHalfEdge &outHalfEdge);
-	
 
 		//--------------------------
 		//--- COMPUTE METHODS 
@@ -466,6 +455,12 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void removeInactive(zHEData type);
+
+		//--------------------------
+		//---- TOPOLOGY HELPERS
+		//--------------------------
+		bool halfEdgeExists(int v1, int v2, int &outHalfEdgeId);
+		bool halfEdgeExists(int v1, int v2, zItGraphHalfEdge &outHalfEdge);
 
 	private:
 

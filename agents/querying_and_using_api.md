@@ -209,6 +209,9 @@ zSpace::zIntArray edgeConnects = { 0, 1, 1, 2 };
 
 fn.create(positions, edgeConnects);
 
+int edgeId = -1;
+bool found = fn.edgeExists(0, 1, edgeId);
+
 zSpace::zDoubleArray edgeLengths;
 fn.getEdgeLengths(edgeLengths);
 ```
@@ -431,6 +434,9 @@ Avoid:
 - Direct use of `zGraph` or `zMesh` storage types in application snippets.
 - `zFnMesh::numHalfEdges()` or `zFnGraph::numHalfEdges()`; use half-edge
   iterator `size()` only inside explicit topology traversal examples.
+- `zFnMesh::halfEdgeExists()` or `zFnGraph::halfEdgeExists()` in application
+  snippets; use public `edgeExists(...)` unless explicitly explaining topology
+  internals.
 - Direct access to `.mesh`, `.graph`, `.field`, or `.particle`.
 - Draw methods on objects.
 - File IO through function sets.
