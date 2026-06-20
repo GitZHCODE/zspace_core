@@ -72,19 +72,21 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraph::getBounds(zPoint &minBB, zPoint &maxBB)
 	{
-		coreUtils.getBounds(zGraphObjectStorage::get(*graphObj).vertexPositions, minBB, maxBB);
+		zPointArray positions = zGraphObjectStorage::read(*graphObj).positions;
+		coreUtils.getBounds(positions, minBB, maxBB);
 	}
 
 	ZSPACE_INLINE void zFnGraph::clear()
 	{
-		zGraphObjectStorage::get(*graphObj).clear();
+		zGraphObjectStorage::edit(*graphObj).clear();
 	}
 
 	//---- CREATE METHODS
 
 	ZSPACE_INLINE void zFnGraph::create(zPointArray(&_positions), zIntArray(&edgeConnects), bool staticGraph,int precision)
 	{
-		zGraphObjectStorage::get(*graphObj).create(_positions, edgeConnects,staticGraph, precision);
+		zGraphObjectStorage::set(*graphObj, _positions, edgeConnects);
+		zGraphObjectStorage::setStatic(*graphObj, staticGraph);
 
 		if (staticGraph) setStaticContainers();
 	}
@@ -97,7 +99,8 @@ namespace zSpace
 		zVector x(1, 0, 0);
 		zVector sortRef = graphNormal ^ x;
 
-		zGraphObjectStorage::get(*graphObj).create(_positions, edgeConnects, graphNormal, sortRef);
+		zGraphObjectStorage::set(*graphObj, _positions, edgeConnects);
+		zGraphObjectStorage::setStatic(*graphObj, staticGraph);
 
 		if (staticGraph) setStaticContainers();
 	}
@@ -127,7 +130,7 @@ namespace zSpace
 
 		}
 
-		bool out = zGraphObjectStorage::get(*graphObj).addVertex(_pos);
+		bool out = zGraphObjectStorage::edit(*graphObj).addVertex(_pos);
 		vertex = zItGraphVertex(*graphObj, numVertices() - 1);
 
 		return out;
@@ -149,7 +152,8 @@ namespace zSpace
 			}
 		}
 
-		bool out = zGraphObjectStorage::get(*graphObj).addEdges(v1, v2);
+		int edgeId = -1;
+		bool out = zGraphObjectStorage::edit(*graphObj).addEdge(v1, v2, false, &edgeId);
 
 		halfEdge = zItGraphHalfEdge(*graphObj, numHalfEdges() - 2);
 
@@ -160,24 +164,24 @@ namespace zSpace
 
 	ZSPACE_INLINE int zFnGraph::numVertices()
 	{
-		return zGraphObjectStorage::get(*graphObj).n_v;
+		return zGraphObjectStorage::read(*graphObj).numVertices();
 	}
 
 	ZSPACE_INLINE int zFnGraph::numEdges()
 	{
-		return zGraphObjectStorage::get(*graphObj).n_e;
+		return zGraphObjectStorage::read(*graphObj).numEdges();
 	}
 
 	ZSPACE_INLINE int zFnGraph::numHalfEdges()
 	{
-		return zGraphObjectStorage::get(*graphObj).n_he;
+		return zGraphObjectStorage::read(*graphObj).numHalfEdges();
 	}
 
 	ZSPACE_INLINE bool zFnGraph::vertexExists(zPoint pos, zItGraphVertex &outVertex, int precisionfactor)
 	{
 
 		int id;
-		bool chk = zGraphObjectStorage::get(*graphObj).vertexExists(pos, id, precisionfactor);
+		bool chk = zGraphObjectStorage::read(*graphObj).vertexExists(pos, id, precisionfactor);
 
 		if (chk) outVertex = zItGraphVertex(*graphObj, id);
 
@@ -186,7 +190,13 @@ namespace zSpace
 
 	ZSPACE_INLINE bool zFnGraph::halfEdgeExists(int v1, int v2, int &outHalfEdgeId)
 	{
-		return zGraphObjectStorage::get(*graphObj).halfEdgeExists(v1, v2, outHalfEdgeId);
+		int edgeId = -1;
+		if (!zGraphObjectStorage::read(*graphObj).edgeExists(v1, v2, edgeId)) return false;
+
+		const auto& data = zGraphObjectStorage::read(*graphObj);
+		const int a = data.edgeVertexIndices[edgeId * 2];
+		outHalfEdgeId = (a == v1) ? edgeId * 2 : edgeId * 2 + 1;
+		return true;
 	}
 
 	ZSPACE_INLINE bool zFnGraph::halfEdgeExists(int v1, int v2, zItGraphHalfEdge &outHalfEdge)
@@ -204,27 +214,19 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraph::computeEdgeColorfromVertexColor()
 	{
-
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
+		auto& data = zGraphObjectStorage::edit(*graphObj);
+		if (data.edgeColors.size() != data.numEdges()) data.edgeColors.assign(data.numEdges(), zColor(0, 0, 0, 1));
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 		{
-			if (e.isActive())
-			{
-				int v0 = e.getHalfEdge(0).getVertex().getId();
-				int v1 = e.getHalfEdge(1).getVertex().getId();
+			int v0 = data.edgeVertexIndices[edgeId * 2];
+			int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
 
-				zColor col;
-				col.r = (zGraphObjectStorage::get(*graphObj).vertexColors[v0].r + zGraphObjectStorage::get(*graphObj).vertexColors[v1].r) * 0.5;
-				col.g = (zGraphObjectStorage::get(*graphObj).vertexColors[v0].g + zGraphObjectStorage::get(*graphObj).vertexColors[v1].g) * 0.5;
-				col.b = (zGraphObjectStorage::get(*graphObj).vertexColors[v0].b + zGraphObjectStorage::get(*graphObj).vertexColors[v1].b) * 0.5;
-				col.a = (zGraphObjectStorage::get(*graphObj).vertexColors[v0].a + zGraphObjectStorage::get(*graphObj).vertexColors[v1].a) * 0.5;
-
-				if (zGraphObjectStorage::get(*graphObj).edgeColors.size() <= e.getId()) zGraphObjectStorage::get(*graphObj).edgeColors.push_back(col);
-				else zGraphObjectStorage::get(*graphObj).edgeColors[e.getId()] = col;
-
-
-			}
-
-
+			zColor col;
+			col.r = (data.vertexColors[v0].r + data.vertexColors[v1].r) * 0.5;
+			col.g = (data.vertexColors[v0].g + data.vertexColors[v1].g) * 0.5;
+			col.b = (data.vertexColors[v0].b + data.vertexColors[v1].b) * 0.5;
+			col.a = (data.vertexColors[v0].a + data.vertexColors[v1].a) * 0.5;
+			data.edgeColors[edgeId] = col;
 		}
 
 	}
@@ -305,35 +307,38 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraph::setVertexPositions(zPointArray& pos)
 	{
-		if (pos.size() != zGraphObjectStorage::get(*graphObj).vertexPositions.size()) throw std::invalid_argument("size of position contatiner is not equal to number of graph vertices.");
+		auto& data = zGraphObjectStorage::edit(*graphObj);
+		if (pos.size() != data.positions.size()) throw std::invalid_argument("size of position contatiner is not equal to number of graph vertices.");
 
-		for (int i = 0; i < zGraphObjectStorage::get(*graphObj).vertexPositions.size(); i++)
+		for (int i = 0; i < data.positions.size(); i++)
 		{
-			zGraphObjectStorage::get(*graphObj).vertexPositions[i] = pos[i];
+			data.positions[i] = pos[i];
 		}
 	}
 
 	ZSPACE_INLINE void zFnGraph::setVertexColor(zColor col, bool setEdgeColor)
 	{
-		zGraphObjectStorage::get(*graphObj).vertexColors.clear();
-		zGraphObjectStorage::get(*graphObj).vertexColors.assign(zGraphObjectStorage::get(*graphObj).n_v, col);
+		auto& data = zGraphObjectStorage::edit(*graphObj);
+		data.vertexColors.clear();
+		data.vertexColors.assign(data.numVertices(), col);
 
 		if (setEdgeColor) computeEdgeColorfromVertexColor();
 	}
 
 	ZSPACE_INLINE void zFnGraph::setVertexColors(zColorArray& col, bool setEdgeColor)
 	{
-		if (zGraphObjectStorage::get(*graphObj).vertexColors.size() != zGraphObjectStorage::get(*graphObj).vertices.size())
+		auto& data = zGraphObjectStorage::edit(*graphObj);
+		if (data.vertexColors.size() != data.positions.size())
 		{
-			zGraphObjectStorage::get(*graphObj).vertexColors.clear();
-			for (int i = 0; i < zGraphObjectStorage::get(*graphObj).vertices.size(); i++) zGraphObjectStorage::get(*graphObj).vertexColors.push_back(zColor(1, 0, 0, 1));
+			data.vertexColors.clear();
+			for (int i = 0; i < data.positions.size(); i++) data.vertexColors.push_back(zColor(1, 0, 0, 1));
 		}
 
-		if (col.size() != zGraphObjectStorage::get(*graphObj).vertexColors.size()) throw std::invalid_argument("size of color contatiner is not equal to number of graph vertices.");
+		if (col.size() != data.vertexColors.size()) throw std::invalid_argument("size of color contatiner is not equal to number of graph vertices.");
 
-		for (int i = 0; i < zGraphObjectStorage::get(*graphObj).vertexColors.size(); i++)
+		for (int i = 0; i < data.vertexColors.size(); i++)
 		{
-			zGraphObjectStorage::get(*graphObj).vertexColors[i] = col[i];
+			data.vertexColors[i] = col[i];
 		}
 
 		if (setEdgeColor) computeEdgeColorfromVertexColor();
@@ -342,8 +347,9 @@ namespace zSpace
 	ZSPACE_INLINE void zFnGraph::setEdgeColor(zColor col, bool setVertexColor)
 	{
 
-		zGraphObjectStorage::get(*graphObj).edgeColors.clear();
-		zGraphObjectStorage::get(*graphObj).edgeColors.assign(zGraphObjectStorage::get(*graphObj).n_e, col);
+		auto& data = zGraphObjectStorage::edit(*graphObj);
+		data.edgeColors.clear();
+		data.edgeColors.assign(data.numEdges(), col);
 
 		if (setVertexColor) computeVertexColorfromEdgeColor();
 
@@ -351,11 +357,12 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraph::setEdgeColors(zColorArray& col, bool setVertexColor)
 	{
-		if (col.size() != zGraphObjectStorage::get(*graphObj).edgeColors.size()) throw std::invalid_argument("size of color contatiner is not equal to number of graph half edges.");
+		auto& data = zGraphObjectStorage::edit(*graphObj);
+		if (col.size() != data.edgeColors.size()) throw std::invalid_argument("size of color contatiner is not equal to number of graph edges.");
 
-		for (int i = 0; i < zGraphObjectStorage::get(*graphObj).edgeColors.size(); i++)
+		for (int i = 0; i < data.edgeColors.size(); i++)
 		{
-			zGraphObjectStorage::get(*graphObj).edgeColors[i] = col[i];
+			data.edgeColors[i] = col[i];
 		}
 
 		if (setVertexColor) computeVertexColorfromEdgeColor();
@@ -363,18 +370,20 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraph::setEdgeWeight(double wt)
 	{
-		zGraphObjectStorage::get(*graphObj).edgeWeights.clear();
-		zGraphObjectStorage::get(*graphObj).edgeWeights.assign(zGraphObjectStorage::get(*graphObj).n_e, wt);
+		auto& data = zGraphObjectStorage::edit(*graphObj);
+		data.edgeWeights.clear();
+		data.edgeWeights.assign(data.numEdges(), wt);
 
 	}
 
 	ZSPACE_INLINE void zFnGraph::setEdgeWeights(zDoubleArray& wt)
 	{
-		if (wt.size() != zGraphObjectStorage::get(*graphObj).edgeColors.size()) throw std::invalid_argument("size of wt contatiner is not equal to number of mesh half edges.");
+		auto& data = zGraphObjectStorage::edit(*graphObj);
+		if (wt.size() != data.edgeWeights.size()) throw std::invalid_argument("size of wt contatiner is not equal to number of graph edges.");
 
-		for (int i = 0; i < zGraphObjectStorage::get(*graphObj).edgeWeights.size(); i++)
+		for (int i = 0; i < data.edgeWeights.size(); i++)
 		{
-			zGraphObjectStorage::get(*graphObj).edgeWeights[i] = wt[i];
+			data.edgeWeights[i] = wt[i];
 		}
 	}
 
@@ -382,60 +391,61 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraph::getVertexPositions(zPointArray& pos)
 	{
-		pos = zGraphObjectStorage::get(*graphObj).vertexPositions;
+		pos = zGraphObjectStorage::read(*graphObj).positions;
 	}
 
 	ZSPACE_INLINE zPoint* zFnGraph::getRawVertexPositions()
 	{
 		if (numVertices() == 0) throw std::invalid_argument(" error: null pointer.");
 
-		return &zGraphObjectStorage::get(*graphObj).vertexPositions[0];
+		return &zGraphObjectStorage::edit(*graphObj).positions[0];
 	}
 
 	ZSPACE_INLINE void zFnGraph::getVertexColors(zColorArray& col)
 	{
-		col = zGraphObjectStorage::get(*graphObj).vertexColors;
+		col = zGraphObjectStorage::read(*graphObj).vertexColors;
 	}
 
 	ZSPACE_INLINE void zFnGraph::getVertexWeights(zDoubleArray& weights)
 	{
-		weights = zGraphObjectStorage::get(*graphObj).vertexWeights;
+		weights = zGraphObjectStorage::read(*graphObj).vertexWeights;
 	}
 
 	ZSPACE_INLINE zColor* zFnGraph::getRawVertexColors()
 	{
 		if (numVertices() == 0) throw std::invalid_argument(" error: null pointer.");
 
-		return &zGraphObjectStorage::get(*graphObj).vertexColors[0];
+		return &zGraphObjectStorage::edit(*graphObj).vertexColors[0];
 	}
 
 	ZSPACE_INLINE void zFnGraph::getEdgeColors(zColorArray& col)
 	{
-		col = zGraphObjectStorage::get(*graphObj).edgeColors;
+		col = zGraphObjectStorage::read(*graphObj).edgeColors;
 	}
 
 	ZSPACE_INLINE void zFnGraph::getEdgeWeights(zDoubleArray& weights)
 	{
-		weights = zGraphObjectStorage::get(*graphObj).edgeWeights;
+		weights = zGraphObjectStorage::read(*graphObj).edgeWeights;
 	}
 
 	ZSPACE_INLINE zColor* zFnGraph::getRawEdgeColors()
 	{
 		if (numEdges() == 0) throw std::invalid_argument(" error: null pointer.");
 
-		return &zGraphObjectStorage::get(*graphObj).edgeColors[0];
+		return &zGraphObjectStorage::edit(*graphObj).edgeColors[0];
 	}
 
 	ZSPACE_INLINE zPoint zFnGraph::getCenter()
 	{
 		zPoint out;
+		const auto& data = zGraphObjectStorage::read(*graphObj);
 
-		for (int i = 0; i < zGraphObjectStorage::get(*graphObj).vertexPositions.size(); i++)
+		for (int i = 0; i < data.positions.size(); i++)
 		{
-			out += zGraphObjectStorage::get(*graphObj).vertexPositions[i];
+			out += data.positions[i];
 		}
 
-		out /= zGraphObjectStorage::get(*graphObj).vertexPositions.size();
+		out /= data.positions.size();
 
 		return out;
 
@@ -467,19 +477,15 @@ namespace zSpace
 		{
 
 			centers.clear();
-
-			for (zItGraphEdge e(*graphObj); !e.end(); e++)
-			{
-				if (e.isActive())
-				{
-					centers.push_back(e.getCenter());
-				}
-				else
-				{
-					centers.push_back(zVector());
-
-				}
-			}
+			const auto& data = zGraphObjectStorage::read(*graphObj);
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
+		{
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+			zPoint p0 = data.positions[v0];
+			zPoint p1 = data.positions[v1];
+			centers.push_back((p0 + p1) * 0.5);
+		}
 
 		}
 
@@ -493,22 +499,19 @@ namespace zSpace
 
 		halfEdgeLengths.clear();
 
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
+		const auto& data = zGraphObjectStorage::read(*graphObj);
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 		{
-			if (e.isActive())
-			{
-				double e_len = e.getLength();
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+			zPoint p0 = data.positions[v0];
+			zPoint p1 = data.positions[v1];
+			double e_len = (p1 - p0).length();
 
-				halfEdgeLengths.push_back(e_len);
-				halfEdgeLengths.push_back(e_len);
+			halfEdgeLengths.push_back(e_len);
+			halfEdgeLengths.push_back(e_len);
 
-				total += e_len;
-			}
-			else
-			{
-				halfEdgeLengths.push_back(0);
-				halfEdgeLengths.push_back(0);
-			}
+			total += e_len;
 		}
 
 		return total;
@@ -521,18 +524,16 @@ namespace zSpace
 
 		edgeLengths.clear();
 
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
+		const auto& data = zGraphObjectStorage::read(*graphObj);
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 		{
-			if (e.isActive())
-			{
-				double e_len = e.getLength();
-				edgeLengths.push_back(e_len);
-				total += e_len;
-			}
-			else
-			{
-				edgeLengths.push_back(0);
-			}
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+			zPoint p0 = data.positions[v0];
+			zPoint p1 = data.positions[v1];
+			double e_len = (p1 - p0).length();
+			edgeLengths.push_back(e_len);
+			total += e_len;
 		}
 
 		return total;
@@ -540,43 +541,27 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraph::getEdgeData(zIntArray &edgeConnects)
 	{
-		edgeConnects.clear();
-
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			edgeConnects.push_back(e.getHalfEdge(0).getVertex().getId());
-			edgeConnects.push_back(e.getHalfEdge(1).getVertex().getId());
-		}
+		edgeConnects = zGraphObjectStorage::read(*graphObj).edgeVertexIndices;
 	}
 
 	ZSPACE_INLINE zObjectGraph zFnGraph::getDuplicate(bool planarGraph, zVector graphNormal)
 	{
 		zObjectGraph out;
 
-		if (numVertices() != zGraphObjectStorage::get(*graphObj).vertices.size()) removeInactiveElements(zVertexData);
-		if (numEdges() != zGraphObjectStorage::get(*graphObj).edges.size()) removeInactiveElements(zEdgeData);
-
 		vector<zVector> positions;
 		vector<int> edgeConnects;
 
-
-		positions = zGraphObjectStorage::get(*graphObj).vertexPositions;
+		const auto& data = zGraphObjectStorage::read(*graphObj);
+		positions = data.positions;
 		getEdgeData(edgeConnects);
 
+		zGraphObjectStorage::set(out, positions, edgeConnects);
 
-		if (planarGraph)
-		{
-			graphNormal.normalize();
-
-			zVector x(1, 0, 0);
-			zVector sortRef = graphNormal ^ x;
-
-			zGraphObjectStorage::get(out).create(positions, edgeConnects, graphNormal, sortRef);
-		}
-		else zGraphObjectStorage::get(out).create(positions, edgeConnects);
-
-		zGraphObjectStorage::get(out).vertexColors = zGraphObjectStorage::get(*graphObj).vertexColors;
-		zGraphObjectStorage::get(out).edgeColors = zGraphObjectStorage::get(*graphObj).edgeColors;
+		auto& outData = zGraphObjectStorage::edit(out);
+		outData.vertexColors = data.vertexColors;
+		outData.edgeColors = data.edgeColors;
+		outData.vertexWeights = data.vertexWeights;
+		outData.edgeWeights = data.edgeWeights;
 
 		return out;
 	}
@@ -588,10 +573,7 @@ namespace zSpace
 		vector<int> polyConnects;
 		vector<int> polyCounts;
 
-		if (numVertices() != zGraphObjectStorage::get(*graphObj).vertices.size()) removeInactiveElements(zVertexData);
-		if (numEdges() != zGraphObjectStorage::get(*graphObj).edges.size()) removeInactiveElements(zEdgeData);
-
-		positions = zGraphObjectStorage::get(*graphObj).vertexPositions;
+		positions = zGraphObjectStorage::read(*graphObj).positions;
 
 		vector<vector<int>> edgeVertices;
 		for (zItGraphHalfEdge he(*graphObj); !he.end(); he++)
@@ -1020,13 +1002,13 @@ namespace zSpace
 		if (numVertices() == 0) return;
 
 
-		zVector* pos = getRawVertexPositions();
+		auto& data = zGraphObjectStorage::edit(*graphObj);
 
-		for (int i = 0; i < numVertices(); i++)
+		for (int i = 0; i < data.positions.size(); i++)
 		{
 
-			zVector newPos = pos[i] * transform;
-			pos[i] = newPos;
+			zVector newPos = data.positions[i] * transform;
+			data.positions[i] = newPos;
 		}
 
 	}

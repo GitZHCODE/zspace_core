@@ -19,7 +19,7 @@ namespace zSpace
 	//---- CONSTRUCTOR
 
 	template<typename T>
-	ZSPACE_INLINE zFnMeshField<T>::zFnMeshField()
+	ZSPACE_INLINE zFnMeshFieldBase<T>::zFnMeshFieldBase()
 	{
 		fnType = zFnType::zMeshFieldFn;
 		fieldObj = nullptr;
@@ -27,7 +27,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE zFnMeshField<T>::zFnMeshField(zObjectMeshField<T> &_fieldObj)
+	ZSPACE_INLINE zFnMeshFieldBase<T>::zFnMeshFieldBase(zObjectMeshField<T> &_fieldObj)
 	{
 		fieldObj = &_fieldObj;
 
@@ -39,25 +39,25 @@ namespace zSpace
 	//---- DESTRUCTOR
 
 	template<typename T>
-	ZSPACE_INLINE zFnMeshField<T>::~zFnMeshField() {}
+	ZSPACE_INLINE zFnMeshFieldBase<T>::~zFnMeshFieldBase() {}
 
 	//---- FACTORY METHODS
 
 	template<typename T>
-	ZSPACE_INLINE zFnType zFnMeshField<T>::getType()
+	ZSPACE_INLINE zFnType zFnMeshFieldBase<T>::getType()
 	{
 		return zFnType::zMeshFieldFn;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getBounds(zPoint &minBB, zPoint &maxBB)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getBounds(zPoint &minBB, zPoint &maxBB)
 	{
 		minBB = fieldObj->field.minBB;
 		maxBB = fieldObj->field.maxBB;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::clear()
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::clear()
 	{
 		ringNeighbours.clear();
 		adjacentNeighbours.clear();
@@ -70,7 +70,7 @@ namespace zSpace
 	//---- zScalar &  zVector specilization for create
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _NR, bool _setValuesperVertex, bool _triMesh)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _NR, bool _setValuesperVertex, bool _triMesh)
 	{
 		setValuesperVertex = _setValuesperVertex;
 		if (!_setValuesperVertex) _triMesh = false;
@@ -107,7 +107,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _NR, bool _setValuesperVertex, bool _triMesh)
+	ZSPACE_INLINE void zFnMeshFieldBase<zVector>::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _NR, bool _setValuesperVertex, bool _triMesh)
 	{
 		setValuesperVertex = _setValuesperVertex;
 		if (!_setValuesperVertex) _triMesh = false;
@@ -144,7 +144,7 @@ namespace zSpace
 	//---- zScalar &  zVector specilization for create
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::create(double _unit_X, double _unit_Y, int _n_X, int _n_Y, zPoint _minBB, int _NR, bool _setValuesperVertex, bool _triMesh)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::create(double _unit_X, double _unit_Y, int _n_X, int _n_Y, zPoint _minBB, int _NR, bool _setValuesperVertex, bool _triMesh)
 	{
 		setValuesperVertex = _setValuesperVertex;
 		if (!_setValuesperVertex) _triMesh = false;
@@ -178,7 +178,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::create(double _unit_X, double _unit_Y, int _n_X, int _n_Y, zPoint _minBB, int _NR, bool _setValuesperVertex, bool _triMesh)
+	ZSPACE_INLINE void zFnMeshFieldBase<zVector>::create(double _unit_X, double _unit_Y, int _n_X, int _n_Y, zPoint _minBB, int _NR, bool _setValuesperVertex, bool _triMesh)
 	{
 		setValuesperVertex = _setValuesperVertex;
 		if (!_setValuesperVertex) _triMesh = false;
@@ -212,9 +212,9 @@ namespace zSpace
 	//---- zVector specilization for createVectorFieldFromScalarField
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::createVectorFromScalarField(zObjectMeshField<zScalar> &scalarFieldObj)
+	ZSPACE_INLINE void zFnMeshFieldBase<zVector>::createVectorFromScalarField(zObjectMeshField<zScalar> &scalarFieldObj)
 	{
-		zFnMeshField<zScalar> fnScalarField(scalarFieldObj);
+		zFnMeshFieldBase<zScalar> fnScalarField(scalarFieldObj);
 
 		zVector minBB, maxBB;
 		fnScalarField.getBoundingBox(minBB, maxBB);
@@ -233,7 +233,7 @@ namespace zSpace
 	//---- zScalar &  zVector specilization for getNeighbour_Contained
 	
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getNeighbour_Contained(zPoint &pos, vector<int> &containedNeighbour)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getNeighbour_Contained(zPoint &pos, vector<int> &containedNeighbour)
 	{
 		containedNeighbour.clear();
 
@@ -395,7 +395,7 @@ namespace zSpace
 	}
 	
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::getNeighbour_Contained(zPoint &pos, vector<int> &containedNeighbour)
+	ZSPACE_INLINE void zFnMeshFieldBase<zVector>::getNeighbour_Contained(zPoint &pos, vector<int> &containedNeighbour)
 	{
 		containedNeighbour.clear();
 
@@ -559,13 +559,13 @@ namespace zSpace
 	//---- zScalar &  zVector specilization for getNeighbourPosition_Contained
 	
 	template<typename T>
-	ZSPACE_INLINE zObjectMesh* zFnMeshField<T>::getRawMesh()
+	ZSPACE_INLINE zObjectMesh* zFnMeshFieldBase<T>::getRawMesh()
 	{
 		return this->fieldObj;
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getNeighbourPosition_Contained(zPoint &pos, zPointArray &containedNeighbour)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getNeighbourPosition_Contained(zPoint &pos, zPointArray &containedNeighbour)
 	{
 		containedNeighbour.clear();
 
@@ -582,7 +582,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::getNeighbourPosition_Contained(zPoint &pos, zPointArray &containedNeighbour)
+	ZSPACE_INLINE void zFnMeshFieldBase<zVector>::getNeighbourPosition_Contained(zPoint &pos, zPointArray &containedNeighbour)
 	{
 		containedNeighbour.clear();
 
@@ -601,20 +601,20 @@ namespace zSpace
 	//---- GET METHODS
 	
 	template<typename T>
-	ZSPACE_INLINE int zFnMeshField<T>::numFieldValues()
+	ZSPACE_INLINE int zFnMeshFieldBase<T>::numFieldValues()
 	{
 		return fieldObj->field.fieldValues.size();
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getResolution(int &_n_X, int &_n_Y)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getResolution(int &_n_X, int &_n_Y)
 	{
 		_n_X = fieldObj->field.n_X;
 		_n_Y = fieldObj->field.n_Y;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getUnitDistances(double &_unit_X, double &_unit_Y)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getUnitDistances(double &_unit_X, double &_unit_Y)
 	{
 		_unit_X = fieldObj->field.unit_X;
 		_unit_Y = fieldObj->field.unit_Y;
@@ -622,14 +622,14 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getBoundingBox(zPoint &_minBB, zPoint &_maxBB)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getBoundingBox(zPoint &_minBB, zPoint &_maxBB)
 	{
 		_minBB = fieldObj->field.minBB;
 		_maxBB = fieldObj->field.maxBB;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getPositions(zPointArray &positions)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getPositions(zPointArray &positions)
 	{
 		if (setValuesperVertex) 	fnMesh.getVertexPositions(positions);
 		else fnMesh.getCenters(zFaceData, positions);
@@ -638,7 +638,7 @@ namespace zSpace
 	//---- zScalar and zVector specilization for getFieldValue
 
 	template<>
-	ZSPACE_INLINE bool zFnMeshField<zScalar>::getFieldValue(zPoint &samplePos, zFieldValueType type, zScalar& fieldValue)
+	ZSPACE_INLINE bool zFnMeshFieldBase<zScalar>::getFieldValue(zPoint &samplePos, zFieldValueType type, zScalar& fieldValue)
 	{
 
 		bool out = false;
@@ -760,7 +760,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE bool zFnMeshField<zVector>::getFieldValue(zPoint &samplePos, zFieldValueType type, zVector& fieldValue)
+	ZSPACE_INLINE bool zFnMeshFieldBase<zVector>::getFieldValue(zPoint &samplePos, zFieldValueType type, zVector& fieldValue)
 	{
 
 		bool out = false;
@@ -885,7 +885,7 @@ namespace zSpace
 
 
 	template<>
-	ZSPACE_INLINE bool zFnMeshField<zScalar>::getScalarValue(zScalarArray& scalars, zPoint& samplePos, zFieldValueType type, zScalar& fieldValue)
+	ZSPACE_INLINE bool zFnMeshFieldBase<zScalar>::getScalarValue(zScalarArray& scalars, zPoint& samplePos, zFieldValueType type, zScalar& fieldValue)
 	{
 		if (scalars.size() != numFieldValues())
 		{
@@ -1010,13 +1010,13 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValues(vector<T>& fieldValues)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getFieldValues(vector<T>& fieldValues)
 	{
 		fieldValues = fieldObj->field.fieldValues;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE T* zFnMeshField<T>::getRawFieldValues()
+	ZSPACE_INLINE T* zFnMeshFieldBase<T>::getRawFieldValues()
 	{
 		if (numFieldValues() == 0) throw std::invalid_argument(" error: null pointer.");
 
@@ -1025,7 +1025,7 @@ namespace zSpace
 
 	//---- zScalar specilization for getFieldValue
 	template<>
-	ZSPACE_INLINE zVector zFnMeshField<zScalar>::getGradient(zItMeshScalarField &s, float epsilon )
+	ZSPACE_INLINE zVector zFnMeshFieldBase<zScalar>::getGradient(zItMeshScalarField &s, float epsilon )
 	{
 		
 		bool out = true;
@@ -1062,7 +1062,7 @@ namespace zSpace
 
 	//---- zScalar specilization for getFieldValue
 	template<>
-	ZSPACE_INLINE vector<zVector> zFnMeshField<zScalar>::getGradients(float epsilon)
+	ZSPACE_INLINE vector<zVector> zFnMeshFieldBase<zScalar>::getGradients(float epsilon)
 	{
 		vector<zVector> out;
 
@@ -1075,19 +1075,19 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE bool zFnMeshField<T>::getValuesPerVertexBoolean()
+	ZSPACE_INLINE bool zFnMeshFieldBase<T>::getValuesPerVertexBoolean()
 	{
 		return setValuesperVertex;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE bool zFnMeshField<T>::getTriMeshBoolean()
+	ZSPACE_INLINE bool zFnMeshFieldBase<T>::getTriMeshBoolean()
 	{
 		return triMesh;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldColorDomain(zDomainColor& colDomain)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getFieldColorDomain(zDomainColor& colDomain)
 	{
 		colDomain = fieldColorDomain;
 	}
@@ -1095,13 +1095,13 @@ namespace zSpace
 	//---- SET METHODS
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::setFieldColorDomain(zDomainColor &colDomain)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::setFieldColorDomain(zDomainColor &colDomain)
 	{
 		fieldColorDomain = colDomain;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::setBoundingBox(zPoint &_minBB, zPoint &_maxBB)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::setBoundingBox(zPoint &_minBB, zPoint &_maxBB)
 	{
 		fieldObj->field.minBB = _minBB;
 		fieldObj->field.maxBB = _maxBB;
@@ -1110,7 +1110,7 @@ namespace zSpace
 	//---- zScalar and zVector specilization for setFieldValues
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::setFieldValues(zScalarArray& fValues, zFieldColorType type, float sdfWidth)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::setFieldValues(zScalarArray& fValues, zFieldColorType type, float sdfWidth)
 	{
 		if (fValues.size() == numFieldValues())
 		{			
@@ -1129,7 +1129,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::setFieldValues(vector<zVector>& fValues, zFieldColorType type, float sdfWidth)
+	ZSPACE_INLINE void zFnMeshFieldBase<zVector>::setFieldValues(vector<zVector>& fValues, zFieldColorType type, float sdfWidth)
 	{
 		if (fValues.size() == numFieldValues())
 		{
@@ -1147,7 +1147,7 @@ namespace zSpace
 	//----  2D IDW FIELD METHODS
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectMesh &inMeshObj, T meshValue, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectMesh &inMeshObj, T meshValue, double influence, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnMesh inFnMesh(inMeshObj);
@@ -1193,7 +1193,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectGraph &inGraphObj, T graphValue, double influence, double power, bool normalise )
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectGraph &inGraphObj, T graphValue, double influence, double power, bool normalise )
 	{
 		fieldValues.clear();
 
@@ -1242,7 +1242,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectPointCloud &inPointsObj, T value, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectPointCloud &inPointsObj, T value, double influence, double power, bool normalise)
 	{
 
 		fieldValues.clear();
@@ -1283,7 +1283,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectPointCloud &inPointsObj, vector<T> &values, vector<double>& influences, double power, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectPointCloud &inPointsObj, vector<T> &values, vector<double>& influences, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnPointCloud fnPoints(inPointsObj);
@@ -1326,7 +1326,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zPointArray &inPositions, T value, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zPointArray &inPositions, T value, double influence, double power, bool normalise)
 	{
 
 		fieldValues.clear();
@@ -1367,7 +1367,7 @@ namespace zSpace
 	}
 	
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zPointArray &inPositions, vector<T> &values, zDoubleArray& influences, double power, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zPointArray &inPositions, vector<T> &values, zDoubleArray& influences, double power, bool normalise)
 	{
 		if (inPositions.size() != values.size()) throw std::invalid_argument(" error: size of inPositions and values dont match.");
 		if (inPositions.size() != influences.size()) throw std::invalid_argument(" error: size of inPositions and influences dont match.");
@@ -1409,7 +1409,7 @@ namespace zSpace
 	//----  2D SCALAR FIELD METHODS
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zPointArray &inPositions, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zPointArray &inPositions, bool normalise)
 	{
 		scalars.clear();;
 
@@ -1463,7 +1463,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zPointArray &inPositions, float offset, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zPointArray &inPositions, float offset, bool normalise)
 	{
 		scalars.clear();;
 
@@ -1501,7 +1501,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectPointCloud &inPointsObj, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectPointCloud &inPointsObj, bool normalise)
 	{
 		scalars.clear();;
 
@@ -1556,7 +1556,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectPointCloud &inPointsObj, float offset,  bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectPointCloud &inPointsObj, float offset,  bool normalise)
 	{
 		scalars.clear();;
 
@@ -1597,7 +1597,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectMesh &inMeshObj, float offset,  bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectMesh &inMeshObj, float offset,  bool normalise)
 	{
 		scalars.clear();
 
@@ -1639,7 +1639,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, float offset, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, float offset, bool normalise)
 	{
 		scalars.clear();
 		zFnGraph inFnGraph(inGraphObj);
@@ -1680,7 +1680,7 @@ namespace zSpace
 	}
 	
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectMesh &inMeshObj,float offset, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectMesh &inMeshObj,float offset, bool normalise)
 	{
 		scalars.clear();
 		zFnMesh inFnMesh(inMeshObj);
@@ -1728,7 +1728,7 @@ namespace zSpace
 	
 
 	template<>
-	ZSPACE_INLINE 	void zFnMeshField<zScalar>::getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, float offset, bool normalise)
+	ZSPACE_INLINE 	void zFnMeshFieldBase<zScalar>::getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, float offset, bool normalise)
 	{
 		scalars.clear();
 		zFnGraph inFnGraph(inGraphObj);
@@ -1779,7 +1779,7 @@ namespace zSpace
 	//----  2D SD SCALAR FIELD METHODS
 	
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Polygon(zScalarArray& scalars, zObjectGraph& inGraphObj, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalars_Polygon(zScalarArray& scalars, zObjectGraph& inGraphObj, bool normalise)
 	{
 		scalars.clear();
 		scalars.assign(fnMesh.numVertices(), 0.0);
@@ -1801,7 +1801,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Circle(zScalarArray &scalars, zVector &cen, float r, double annularVal, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalars_Circle(zScalarArray &scalars, zVector &cen, float r, double annularVal, bool normalise)
 	{
 		scalars.clear();
 		scalars.assign(fnMesh.numVertices(), 0.0);
@@ -1820,7 +1820,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Ellipse(zScalarArray& scalars, zVector& cen, float a, float b, double annularVal, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalars_Ellipse(zScalarArray& scalars, zVector& cen, float a, float b, double annularVal, bool normalise)
 	{
 		scalars.clear();
 		scalars.assign(fnMesh.numVertices(), 0.0);
@@ -1839,7 +1839,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Line(zScalarArray &scalars, zVector &v0, zVector &v1, double annularVal, bool normalise )
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalars_Line(zScalarArray &scalars, zVector &v0, zVector &v1, double annularVal, bool normalise )
 	{
 		scalars.clear();
 		scalars.assign(fnMesh.numVertices(), 0.0);
@@ -1856,7 +1856,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Triangle(zScalarArray& scalars, zPoint& p0, zPoint& p1, zPoint& p2, double annularVal, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalars_Triangle(zScalarArray& scalars, zPoint& p0, zPoint& p1, zPoint& p2, double annularVal, bool normalise)
 	{
 		scalars.clear();
 		scalars.assign(fnMesh.numVertices(), 0.0);
@@ -1877,7 +1877,7 @@ namespace zSpace
 
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Square(zScalarArray &scalars, zVector& cen, zVector &dimensions, float annularVal, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalars_Square(zScalarArray &scalars, zVector& cen, zVector &dimensions, float annularVal, bool normalise)
 	{
 		scalars.clear();
 		scalars.assign(fnMesh.numVertices(), 0.0);
@@ -1897,7 +1897,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getScalars_Trapezoid(zScalarArray &scalars, float r1, float r2, float he, float annularVal, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getScalars_Trapezoid(zScalarArray &scalars, float r1, float r2, float he, float annularVal, bool normalise)
 	{
 		scalars.clear();
 		scalars.assign(fnMesh.numVertices(), 0.0);
@@ -1917,7 +1917,7 @@ namespace zSpace
 	//--- COMPUTE METHODS 
 	
 	template<typename T>
-	ZSPACE_INLINE bool zFnMeshField<T>::checkPositionBounds(zPoint &pos, int &index)
+	ZSPACE_INLINE bool zFnMeshFieldBase<T>::checkPositionBounds(zPoint &pos, int &index)
 	{
 		bool out = true;
 
@@ -1934,19 +1934,19 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE bool zFnMeshField<T>::checkBounds_X(int index_X)
+	ZSPACE_INLINE bool zFnMeshFieldBase<T>::checkBounds_X(int index_X)
 	{
 		return (index_X < fieldObj->field.n_X && index_X >= 0);
 	}
 
 	template<typename T>
-	ZSPACE_INLINE bool zFnMeshField<T>::checkBounds_Y(int index_Y)
+	ZSPACE_INLINE bool zFnMeshFieldBase<T>::checkBounds_Y(int index_Y)
 	{
 		return (index_Y < fieldObj->field.n_Y && index_Y >= 0);
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::computeDomain(vector<T> &values, zDomain <T> &domain)
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::computeDomain(vector<T> &values, zDomain <T> &domain)
 	{
 		domain.min = coreUtils.zMin(values);
 		domain.max = coreUtils.zMax(values);
@@ -1955,7 +1955,7 @@ namespace zSpace
 	//---- zScalar and zVector specilization for normliseValues
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::normliseValues(zScalarArray &fieldValues)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::normliseValues(zScalarArray &fieldValues)
 	{
 		zDomainFloat d;
 		computeDomain(fieldValues, d);
@@ -1979,7 +1979,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::normliseValues(vector<zVector> &fieldValues)
+	ZSPACE_INLINE void zFnMeshFieldBase<zVector>::normliseValues(vector<zVector> &fieldValues)
 	{
 		for (int i = 0; i < fieldValues.size(); i++) fieldValues[i].normalize();
 	}
@@ -1987,7 +1987,7 @@ namespace zSpace
 	//---- zScalar specilization for smoothField
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::smoothField(zScalarArray& scalars, int numSmooth, double diffuseDamp, zDiffusionType type)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::smoothField(zScalarArray& scalars, int numSmooth, double diffuseDamp, zDiffusionType type)
 	{
 		for (int k = 0; k < numSmooth; k++)
 		{
@@ -2046,7 +2046,7 @@ namespace zSpace
 	//---- zScalar & zVector specilization for computePositionsInFieldIndex
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::computePositionsInFieldIndex(zPointArray &positions, vector<zPointArray> &fieldIndexPositions)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::computePositionsInFieldIndex(zPointArray &positions, vector<zPointArray> &fieldIndexPositions)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -2065,7 +2065,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::computePositionsInFieldIndex(zPointArray &positions, vector<zPointArray> &fieldIndexPositions)
+	ZSPACE_INLINE void zFnMeshFieldBase<zVector>::computePositionsInFieldIndex(zPointArray &positions, vector<zPointArray> &fieldIndexPositions)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -2086,7 +2086,7 @@ namespace zSpace
 	//---- zScalar & zVector specilization for computePositionIndicesInFieldIndex
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::computePositionIndicesInFieldIndex(zPointArray &positions, vector<zIntArray> &fieldIndexPositionIndicies)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::computePositionIndicesInFieldIndex(zPointArray &positions, vector<zIntArray> &fieldIndexPositionIndicies)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -2105,7 +2105,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zVector>::computePositionIndicesInFieldIndex(zPointArray &positions, vector<zIntArray> &fieldIndexPositionIndicies)
+	ZSPACE_INLINE void zFnMeshFieldBase<zVector>::computePositionIndicesInFieldIndex(zPointArray &positions, vector<zIntArray> &fieldIndexPositionIndicies)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -2125,7 +2125,7 @@ namespace zSpace
 
 
 	template<typename T>
-	ZSPACE_INLINE double zFnMeshField<T>::F_of_r(double &r, double &a, double &b)
+	ZSPACE_INLINE double zFnMeshFieldBase<T>::F_of_r(double &r, double &a, double &b)
 	{
 		if (0 <= r && r <= b / 3.0)return (a * (1.0 - (3.0 * r * r) / (b*b)));
 		if (b / 3.0 <= r && r <= b) return (3 * a / 2 * pow(1.0 - (r / b), 2.0));
@@ -2138,7 +2138,7 @@ namespace zSpace
 	//---- SCALAR BLEND METHODS
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::blend_linear(int currentFrame, int totalFrames, zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::blend_linear(int currentFrame, int totalFrames, zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result)
 	{
 		float weight = (float) currentFrame / (float) totalFrames;
 
@@ -2158,7 +2158,7 @@ namespace zSpace
 	//---- SCALAR BOOLEAN METHODS
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::boolean_union(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::boolean_union(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
 	{
 		vector<float> out;
 
@@ -2173,7 +2173,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::boolean_subtract(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::boolean_subtract(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
 	{
 		vector<float> out;
 
@@ -2188,7 +2188,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::boolean_intersect(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::boolean_intersect(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
 	{
 		vector<float> out;
 
@@ -2203,7 +2203,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::boolean_difference(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::boolean_difference(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
 	{
 		vector<float> AUnionB;
 		boolean_union(fieldValues_A, fieldValues_B, AUnionB, normalise);
@@ -2220,7 +2220,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::boolean_clipwithPlane(zScalarArray& scalars, zPlane& clipPlane)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::boolean_clipwithPlane(zScalarArray& scalars, zPlane& clipPlane)
 	{
 		int i = 0;
 
@@ -2244,7 +2244,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::boolean_clipwithPlane(zScalarArray& fieldValues_A, zScalarArray& fieldValues_Result, zPoint& O, zVector& Z)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::boolean_clipwithPlane(zScalarArray& fieldValues_A, zScalarArray& fieldValues_Result, zPoint& O, zVector& Z)
 	{
 		int i = 0;
 		
@@ -2268,7 +2268,7 @@ namespace zSpace
 	//---- zScalar specilization for updateColors
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::updateColors(zFieldColorType type, float sdfWidth)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::updateColors(zFieldColorType type, float sdfWidth)
 	{
 
 		vector<float> scalars;
@@ -2423,7 +2423,7 @@ namespace zSpace
 	//---- CONTOUR METHODS
 	
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsocontour(zObjectGraph &coutourGraphObj, float inThreshold, int precision, float distTolerance)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getIsocontour(zObjectGraph &coutourGraphObj, float inThreshold, int precision, float distTolerance)
 	{
 		if (contourVertexValues.size() == 0)
 		{		
@@ -2458,7 +2458,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsolineMesh(zObjectMesh &coutourMeshObj, float inThreshold, bool invertMesh)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getIsolineMesh(zObjectMesh &coutourMeshObj, float inThreshold, bool invertMesh)
 	{
 		if (contourVertexValues.size() == 0) return;
 		if (contourVertexValues.size() != numFieldValues())
@@ -2497,7 +2497,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsobandMesh(zObjectMesh &coutourMeshObj, float inThresholdLow, float inThresholdHigh)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getIsobandMesh(zObjectMesh &coutourMeshObj, float inThresholdLow, float inThresholdHigh)
 	{
 		if (contourVertexValues.size() == 0) return;
 
@@ -2557,7 +2557,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnMeshField<T>::createFieldMesh()
+	ZSPACE_INLINE void zFnMeshFieldBase<T>::createFieldMesh()
 	{
 		vector<zVector>positions;
 		vector<int>polyConnects;
@@ -2646,7 +2646,7 @@ namespace zSpace
 
 	
 	template<>
-	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Polygon(zObjectGraph& inGraphObj, zPoint& p)
+	ZSPACE_INLINE float zFnMeshFieldBase<zScalar>::getScalar_Polygon(zObjectGraph& inGraphObj, zPoint& p)
 	{
 		zItGraphVertex v(inGraphObj, 0);
 		
@@ -2690,13 +2690,13 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Circle(zPoint &cen, zPoint &p, float r)
+	ZSPACE_INLINE float zFnMeshFieldBase<zScalar>::getScalar_Circle(zPoint &cen, zPoint &p, float r)
 	{
 		return ((p - cen).length() - r);
 	}
 
 	template<>
-	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Ellipse(zPoint& cen, zPoint& p, float a, float b)
+	ZSPACE_INLINE float zFnMeshFieldBase<zScalar>::getScalar_Ellipse(zPoint& cen, zPoint& p, float a, float b)
 	{
 		p.x = abs(p.x);  p.y = abs(p.y); p.z = abs(p.z);
 		
@@ -2753,7 +2753,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Line(zPoint &p, zPoint &v0, zPoint &v1)
+	ZSPACE_INLINE float zFnMeshFieldBase<zScalar>::getScalar_Line(zPoint &p, zPoint &v0, zPoint &v1)
 	{
 		zVector pa = p - v0;
 		zVector ba = v1 - v0;
@@ -2767,7 +2767,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Triangle(zPoint& p, zPoint& p0, zPoint& p1, zPoint& p2)
+	ZSPACE_INLINE float zFnMeshFieldBase<zScalar>::getScalar_Triangle(zPoint& p, zPoint& p0, zPoint& p1, zPoint& p2)
 	{
 		zVector e0 = p1 - p0, e1 = p2 - p1, e2 = p0 - p2;
 		zVector v0 = p - p0, v1 = p - p1, v2 = p - p2;
@@ -2789,7 +2789,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE float zFnMeshField<zScalar>::getScalar_Square(zPoint &p, zVector& cen, zVector &dimensions)
+	ZSPACE_INLINE float zFnMeshFieldBase<zScalar>::getScalar_Square(zPoint &p, zVector& cen, zVector &dimensions)
 	{
 		zPoint transP = p - cen;
 		transP.x = abs(transP.x); 
@@ -2807,7 +2807,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE double zFnMeshField<zScalar>::getScalar_Trapezoid(zPoint &p, float &r1, float &r2, float &he)
+	ZSPACE_INLINE double zFnMeshFieldBase<zScalar>::getScalar_Trapezoid(zPoint &p, float &r1, float &r2, float &he)
 	{
 		zVector k1 = zVector(r2, he, 0);
 		zVector k2 = zVector((r2 - r1), (2.0 * he), 0);
@@ -2824,7 +2824,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE int zFnMeshField<zScalar>::getIsolineCase(bool vertexBinary[4])
+	ZSPACE_INLINE int zFnMeshFieldBase<zScalar>::getIsolineCase(bool vertexBinary[4])
 	{
 		int out = -1;
 
@@ -2864,7 +2864,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE int zFnMeshField<zScalar>::getIsobandCase(int vertexTernary[4])
+	ZSPACE_INLINE int zFnMeshFieldBase<zScalar>::getIsobandCase(int vertexTernary[4])
 	{
 		int out = -1;
 
@@ -2999,7 +2999,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE zVector zFnMeshField<zScalar>::getContourPosition(float &threshold, zVector& vertex_lower, zVector& vertex_higher, float& thresholdLow, float& thresholdHigh)
+	ZSPACE_INLINE zVector zFnMeshFieldBase<zScalar>::getContourPosition(float &threshold, zVector& vertex_lower, zVector& vertex_higher, float& thresholdLow, float& thresholdHigh)
 	{
 
 		float scaleVal = coreUtils.ofMap(threshold, thresholdLow, thresholdHigh, 0.0f, 1.0f);
@@ -3012,7 +3012,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsolinePoly(zItMeshFace& f , zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float &threshold, bool invertMesh)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getIsolinePoly(zItMeshFace& f , zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float &threshold, bool invertMesh)
 	{
 		vector<zItMeshVertex> fVerts;
 		f.getVertices(fVerts);
@@ -3627,7 +3627,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnMeshField<zScalar>::getIsobandPoly(zItMeshFace& f, zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float &thresholdLow, float &thresholdHigh)
+	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getIsobandPoly(zItMeshFace& f, zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float &thresholdLow, float &thresholdHigh)
 	{
 		vector<zItMeshVertex> fVerts;
 		f.getVertices(fVerts);
@@ -4482,9 +4482,9 @@ namespace zSpace
 
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
 	// explicit instantiation
-	template class zFnMeshField<zVector>;
+	template class zFnMeshFieldBase<zVector>;
 
-	template class zFnMeshField<zScalar>;
+	template class zFnMeshFieldBase<zScalar>;
 
 #endif
 }

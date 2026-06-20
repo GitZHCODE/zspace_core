@@ -121,64 +121,6 @@ namespace zSpace
 		*/
 		void create(zPointArray& _positions, zIntArray& polyCounts, zIntArray& polyConnects, bool staticMesh = false);
 				
-		/*! \brief This method adds a vertex to the mesh. 
-		*
-		*	\param		[in]	_pos				- zPoint holding the position information of the vertex.
-		*	\param		[in]	checkDuplicates		- checks for duplicates if true.
-		*	\param		[out]	vertex			- vertex iterator of the new vertex or existing if it is a duplicate.
-		*	\return				bool				- true if the vertex container is resized.
-		*	\note	 The vertex pointers will need to be computed/ set.
-		*	\since version 0.0.2
-		*/
-		bool addVertex(zPoint &_pos, bool checkDuplicates, zItMeshVertex &vertex);
-
-		/*! \brief This method adds an edge and its symmetry edge to the mesh.
-		*
-		*	\param		[in]	v1			- start vertex index of the edge.
-		*	\param		[in]	v2			- end vertex index of the edge.
-		*	\param		[out]	halfEdge	- hafedge iterator of the new halfedge or existing if it is a duplicate.
-		*	\return				bool		- true if the edges container is resized.
-		*	\note	 The half edge pointers will need to be computed/ set.
-		*	\since version 0.0.2
-		*/
-		bool addEdges(int v1, int v2, bool checkDuplicates, zItMeshHalfEdge &halfEdge);
-
-		/*! \brief This method adds a face to the mesh.
-		*
-		*	\param		[in]	fVertices	- array of ordered vertex index that make up the polygon.
-		*	\param		[out]	face		- face iterator of the new face
-		*	\return				bool		- true if the faces container is resized.
-		*	\since version 0.0.2
-		*/
-		bool addPolygon(zIntArray &fVertices, zItMeshFace &face);
-
-		/*! \brief This method adds a face to the mesh.
-		*
-		*	\param		[in]	fVertices	- array of ordered vertex positions that make up the polygon.
-		*	\param		[out]	face		- face iterator of the new face
-		*	\return				bool		- true if the faces container is resized.
-		*	\since version 0.0.2
-		*/
-		bool addPolygon(zPointArray &fVertices, zItMeshFace &face);
-
-		/*! \brief This method adds a face to the mesh.
-		*
-		*	\param		[out]	face		- face iterator of the new face
-		*	\return				bool		- true if the faces container is resized.
-		*	\note	 The face pointers will need to be computed/ set.
-		*	\since version 0.0.2
-		*/
-		bool addPolygon(zItMeshFace &face);
-
-		/*! \brief This method updated the input face of the mesh.
-		*
-		*	\param		[in]	face		- input face iterator.
-		*	\param		[in]	fVertices	- array of ordered vertex index that make up the polygon.
-		*	\return				bool		- true if the faces container is resized.
-		*	\since version 0.0.2
-		*/
-		bool updatePolygon(zItMeshFace& face, zIntArray& fVertices);
-
 		//--------------------------
 		//--- TOPOLOGY QUERY METHODS 
 		//--------------------------
@@ -952,104 +894,6 @@ namespace zSpace
 		void transformObject(zTransform &transform) override;
 
 		//--------------------------
-		//---- PROTECTED CONTOUR METHODS
-		//--------------------------
-
-		/*! \brief This method gets the isoline case based on the input vertex binary values for triangles.
-		*
-		*	\details based on https://en.wikipedia.org/wiki/Marching_squares. The sequencing is reversed as CCW windings are required.
-		*	\param	[in]	vertexBinary	- vertex binary values.
-		*	\return			int				- case type.
-		*	\since version 0.0.2
-		*/
-		int getIsolineCase_triangle(bool vertexBinary[3]);
-
-public:
-		/*! \brief This method gets the isoline case based on the input vertex binary values for quads.
-		*
-		*	\details based on https://en.wikipedia.org/wiki/Marching_squares. The sequencing is reversed as CCW windings are required.
-		*	\param	[in]	vertexBinary	- vertex binary values.
-		*	\return			int				- case type.
-		*	\since version 0.0.2
-		*/
-		int getIsolineCase(bool vertexBinary[4]);
-
-protected:
-		/*! \brief This method gets the isoline case based on the input vertex ternary values.
-		*
-		*	\details based on https://en.wikipedia.org/wiki/Marching_squares. The sequencing is reversed as CCW windings are required.
-		*	\param	[in]	vertexTernary	- vertex ternary values.
-		*	\return			int				- case type.
-		*	\since version 0.0.2
-		*/
-		int getIsobandCase(int vertexTernary[4]);
-
-		/*! \brief This method return the contour position  given 2 input positions at the input field threshold.
-		*
-		*	\param	[in]	threshold		- field threshold.
-		*	\param	[in]	vertex_lower	- lower threshold position.
-		*	\param	[in]	vertex_higher	- higher threshold position.
-		*	\param	[in]	thresholdLow	- field threshold domain minimum.
-		*	\param	[in]	thresholdHigh	- field threshold domain maximum.
-		*	\since version 0.0.2
-		*/
-		zVector getContourPosition(float &threshold, zVector& vertex_lower, zVector& vertex_higher, float& thresholdLow, float& thresholdHigh);
-
-		/*! \brief This method gets the isoline for the input mesh at the given input face index.
-		*
-		*	\param	[in]	vertexScalars	- input vertex scalar values.
-		*	\param	[in]	f				- input face iterator.
-		*	\param	[in]	positions		- container of positions of the computed polygon.
-		*	\param	[in]	edgeConnects	- container of edge connectivity of the computed polygon.
-		*	\param	[in]	positionVertex	- map of position and vertices, to remove overlapping vertices.
-		*	\param	[in]	threshold		- field threshold.
-		*	\since version 0.0.2
-		*/
-		void getIsoline(zScalarArray& vertexScalars, zItMeshFace& f, zPointArray& positions, zIntArray& edgeConnects, zColorArray& cVertexColor, unordered_map <string, int>& positionVertex, float& threshold, int precision, float distTolerance);
-
-		/*! \brief This method gets the isoline polygon for the input mesh at the given input face index.
-		*
-		*	\param	[in]	vertexScalars	- input vertex scalar values.
-		*	\param	[in]	f				- input face iterator.
-		*	\param	[in]	positions		- container of positions of the computed polygon.
-		*	\param	[in]	polyConnects	- container of polygon connectivity of the computed polygon.
-		*	\param	[in]	polyCounts		- container of number of vertices in the computed polygon.
-		*	\param	[in]	positionVertex	- map of position and vertices, to remove overlapping vertices.
-		*	\param	[in]	threshold		- field threshold.
-		*	\param	[in]	invertMesh	- true if inverted mesh is required.
-		*	\since version 0.0.2
-		*/
-		void getIsolinePoly_mixed(zScalarArray& vertexScalars, zItMeshFace& f, zPointArray& positions, zIntArray& polyConnects, zIntArray& polyCounts, unordered_map <string, int>& positionVertex, float& threshold, bool invertMesh);
-
-
-		/*! \brief This method gets the isoline polygon for the input mesh at the given input face index.
-		*
-		*	\param	[in]	vertexScalars	- input vertex scalar values.
-		*	\param	[in]	f				- input face iterator.
-		*	\param	[in]	positions		- container of positions of the computed polygon.
-		*	\param	[in]	polyConnects	- container of polygon connectivity of the computed polygon.
-		*	\param	[in]	polyCounts		- container of number of vertices in the computed polygon.
-		*	\param	[in]	positionVertex	- map of position and vertices, to remove overlapping vertices.
-		*	\param	[in]	threshold		- field threshold.
-		*	\param	[in]	invertMesh	- true if inverted mesh is required.
-		*	\since version 0.0.2
-		*/
-		void getIsolinePoly(zScalarArray& vertexScalars, zItMeshFace& f, zPointArray& positions, zIntArray& polyConnects, zIntArray& polyCounts, unordered_map <string, int>& positionVertex, float& threshold, bool invertMesh);
-
-
-		/*! \brief This method gets the isoline polygon for the input mesh at the given input face index.
-		*
-		*	\param	[in]	f				- input face iterator.
-		*	\param	[in]	positions		- container of positions of the computed polygon.
-		*	\param	[in]	polyConnects	- container of polygon connectivity of the computed polygon.
-		*	\param	[in]	polyCounts		- container of number of vertices in the computed polygon.
-		*	\param	[in]	positionVertex	- map of position and vertices, to remove overlapping vertices.
-		*	\param	[in]	thresholdLow	- field threshold domain minimum.
-		*	\param	[in]	thresholdHigh	- field threshold domain maximum.
-		*	\since version 0.0.2
-		*/
-		void getIsobandPoly(zScalarArray& vertexScalars, zItMeshFace& f, zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float&thresholdLow, float&thresholdHigh);
-
 
 	private:
 			
@@ -1065,6 +909,12 @@ protected:
 
 		// Temporary implementation helpers used by subdivision and smoothing.
 		// Remove when those algorithms are fully face-list-native.
+		bool addVertex(zPoint &_pos, bool checkDuplicates, zItMeshVertex &vertex);
+		bool addEdges(int v1, int v2, bool checkDuplicates, zItMeshHalfEdge &halfEdge);
+		bool addPolygon(zIntArray &fVertices, zItMeshFace &face);
+		bool addPolygon(zPointArray &fVertices, zItMeshFace &face);
+		bool addPolygon(zItMeshFace &face);
+		bool updatePolygon(zItMeshFace& face, zIntArray& fVertices);
 		zItMeshVertex splitEdge(zItMeshEdge& edge, double edgeFactor = 0.5, bool checkDuplicates = false);
 		zItMeshVertex splitHalfEdge(zItMeshHalfEdge& hEdge, double edgeFactor = 0.5, bool checkDuplicates = false);
 

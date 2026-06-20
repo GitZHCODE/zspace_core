@@ -23,7 +23,7 @@ using namespace std;
 
 namespace zSpace
 {
-	template<typename T> class zFnPointField;
+	template<typename T> class zFnPointFieldBase;
 	class zItPointScalarField;
 	class zItPointVectorField;
 
@@ -50,7 +50,7 @@ namespace zSpace
 	template<typename T>
 	class ZSPACE_API zObjectPointField : public zObjectPointCloud
 	{
-		template<typename U> friend class zFnPointField;
+		template<typename U> friend class zFnPointFieldBase;
 		friend class zItPointScalarField;
 		friend class zItPointVectorField;
 

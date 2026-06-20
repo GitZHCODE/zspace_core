@@ -38,7 +38,7 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \class zFnMeshField
+	/*! \class zFnMeshFieldBase
 	*	\brief A 2D field function set.
 	*
 	*	\tparam				T			- Type to work with zScalar(scalar field) and zVector(vector field).
@@ -50,8 +50,10 @@ namespace zSpace
 	/** @}*/
 
 	template<typename T>
-	class ZSPACE_API zFnMeshField 
+	class ZSPACE_API zFnMeshFieldBase 
 	{
+		friend class zFnMeshFieldBase<zVector>;
+
 	private:
 
 		//--------------------------
@@ -110,14 +112,14 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		zFnMeshField();
+		zFnMeshFieldBase();
 
 		/*! \brief Overloaded constructor.
 		*
 		*	\param		[in]	_fieldObj			- input field2D object.
 		*	\since version 0.0.2
 		*/
-		zFnMeshField(zObjectMeshField<T> &_fieldObj);
+		zFnMeshFieldBase(zObjectMeshField<T> &_fieldObj);
 
 		//--------------------------
 		//---- DESTRUCTOR
@@ -127,7 +129,7 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		~zFnMeshField();
+		~zFnMeshFieldBase();
 
 		//--------------------------
 		//---- OVERRIDE METHODS
@@ -182,12 +184,6 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void create(double _unit_X, double _unit_Y, int _n_X, int _n_Y, zPoint _minBB = zPoint(), int _NR = 1, bool _setValuesperVertex = true, bool _triMesh = true);
-
-		/*! \brief This method creates a vector field from the input scalarfield.
-		*	\param		[in]	scalarFieldObj		- input scalar field object.
-		*	\since version 0.0.2
-		*/
-		void createVectorFromScalarField(zObjectMeshField<zScalar> &scalarFieldObj);
 
 		//--------------------------
 		//---- QUERIES
@@ -268,6 +264,8 @@ namespace zSpace
 		*/
 		bool getFieldValue(zPoint &samplePos, zFieldValueType type, T& fieldValue);
 
+	protected:
+
 		/*! \brief This method gets the value of the field at the input sample position.
 		*
 		*	\param		[in]	samplePos	- index in the fieldvalues container.
@@ -311,6 +309,8 @@ namespace zSpace
 		*	\warning works only with scalar fields
 		*/
 		zVectorArray getGradients(float epsilon = EPS);
+
+	public:
 
 		/*! \brief This method gets the boolean indicating if the field values aligns with mesh vertices or faces.
 		*
@@ -437,6 +437,14 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zPointArray &inPositions, vector<T> &values, vector<double>& influences, double power = 2.0, bool normalise = true);
+
+	protected:
+
+		/*! \brief This method creates a vector field from the input scalarfield.
+		*	\param		[in]	scalarFieldObj		- input scalar field object.
+		*	\since version 0.0.2
+		*/
+		void createVectorFromScalarField(zObjectMeshField<zScalar> &scalarFieldObj);
 
 		//--------------------------
 		//----  2D SCALAR FIELD METHODS
@@ -616,6 +624,8 @@ namespace zSpace
 		*/
 		void getScalars_Trapezoid(zScalarArray &scalars, float r1, float r2, float he, float annularVal = 0, bool normalise = true);
 
+	public:
+
 		//--------------------------
 		//--- COMPUTE METHODS 
 		//--------------------------
@@ -659,6 +669,8 @@ namespace zSpace
 		*/
 		void normliseValues(vector<T> &values);
 		
+	protected:
+
 		/*! \brief This method avarages / smoothens the field values.
 		*
 		* 	\param		[out]	scalars				- container for storing scalar values.
@@ -668,6 +680,8 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void smoothField(zScalarArray& scalars, int numSmooth, double diffuseDamp = 1.0, zDiffusionType type = zAverage);
+
+	public:
 
 		/*! \brief This method computes the field index of each input position and stores them in a container per field index.
 		*
@@ -693,6 +707,8 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		double F_of_r(double &r, double &a, double &b);
+
+	protected:
 
 		//--------------------------
 		//----  BLEND METHODS
@@ -977,6 +993,11 @@ namespace zSpace
 
 	};	
 
+	// Deprecated compatibility alias. New code should use
+	// zFnMeshScalarField or zFnMeshVectorField.
+	template<typename T>
+	using zFnMeshField = zFnMeshFieldBase<T>;
+
 	/** \addtogroup zInterface
 	*	\brief The Application Program Interface of the library.
 	*  @{
@@ -987,19 +1008,53 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \typedef zFnMeshScalarField
-	*	\brief A function set for 2D scalar field.
+	/*! \class zFnMeshScalarField
+	*	\brief A function set for 2D scalar mesh fields.
 	*
-	*	\since version 0.0.2
+	*	\since version 0.0.5
 	*/
-	typedef zFnMeshField<zScalar> zFnMeshScalarField;
+	class ZSPACE_API zFnMeshScalarField : public zFnMeshFieldBase<zScalar>
+	{
+	public:
+		using zFnMeshFieldBase<zScalar>::zFnMeshFieldBase;
+		using zFnMeshFieldBase<zScalar>::getFieldValues;
+		using zFnMeshFieldBase<zScalar>::getScalarValue;
+		using zFnMeshFieldBase<zScalar>::getGradient;
+		using zFnMeshFieldBase<zScalar>::getGradients;
+		using zFnMeshFieldBase<zScalar>::getScalarsAsVertexDistance;
+		using zFnMeshFieldBase<zScalar>::getScalarsAsEdgeDistance;
+		using zFnMeshFieldBase<zScalar>::getScalars_Polygon;
+		using zFnMeshFieldBase<zScalar>::getScalars_Circle;
+		using zFnMeshFieldBase<zScalar>::getScalars_Ellipse;
+		using zFnMeshFieldBase<zScalar>::getScalars_Line;
+		using zFnMeshFieldBase<zScalar>::getScalars_Triangle;
+		using zFnMeshFieldBase<zScalar>::getScalars_Square;
+		using zFnMeshFieldBase<zScalar>::getScalars_Trapezoid;
+		using zFnMeshFieldBase<zScalar>::smoothField;
+		using zFnMeshFieldBase<zScalar>::blend_linear;
+		using zFnMeshFieldBase<zScalar>::boolean_union;
+		using zFnMeshFieldBase<zScalar>::boolean_subtract;
+		using zFnMeshFieldBase<zScalar>::boolean_intersect;
+		using zFnMeshFieldBase<zScalar>::boolean_difference;
+		using zFnMeshFieldBase<zScalar>::boolean_clipwithPlane;
+		using zFnMeshFieldBase<zScalar>::updateColors;
+		using zFnMeshFieldBase<zScalar>::getIsocontour;
+		using zFnMeshFieldBase<zScalar>::getIsolineMesh;
+		using zFnMeshFieldBase<zScalar>::getIsobandMesh;
+	};
 
-	/*! \typedef zFnMeshVectorField
-	*	\brief A function set for 2D scalar field.
+	/*! \class zFnMeshVectorField
+	*	\brief A function set for 2D vector mesh fields.
 	*
-	*	\since version 0.0.2
+	*	\since version 0.0.5
 	*/
-	typedef zFnMeshField<zVector> zFnMeshVectorField;
+	class ZSPACE_API zFnMeshVectorField : public zFnMeshFieldBase<zVector>
+	{
+	public:
+		using zFnMeshFieldBase<zVector>::zFnMeshFieldBase;
+		using zFnMeshFieldBase<zVector>::getFieldValues;
+		using zFnMeshFieldBase<zVector>::createVectorFromScalarField;
+	};
 
 	/** @}*/
 

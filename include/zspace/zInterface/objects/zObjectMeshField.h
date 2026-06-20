@@ -23,7 +23,7 @@ using namespace std;
 
 namespace zSpace
 {
-	template<typename T> class zFnMeshField;
+	template<typename T> class zFnMeshFieldBase;
 	class zItMeshScalarField;
 	class zItMeshVectorField;
 
@@ -50,7 +50,7 @@ namespace zSpace
 	template<typename T>
 	class ZSPACE_API zObjectMeshField : public zObjectMesh
 	{
-		template<typename U> friend class zFnMeshField;
+		template<typename U> friend class zFnMeshFieldBase;
 		friend class zItMeshScalarField;
 		friend class zItMeshVectorField;
 

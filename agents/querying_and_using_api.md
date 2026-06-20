@@ -55,6 +55,8 @@ rg "class ZSPACE_API zFnMesh" include src
 rg "getPrincipalCurvatures" include src tests
 rg "zIO::readMesh|readMesh\\(" include src tests
 rg "zDisplayMesh" include src tests docs agents
+rg "zFnMeshScalarField|zFnPointScalarField" include src tests docs agents
+rg "zFnGraph|zObjectGraph" include src tests docs agents
 ```
 
 ## Answering API Questions
@@ -188,6 +190,39 @@ zSpace::zIO::writeGraph("graph.json", graph);
 Do not suggest `fromJSON`, `toJSON`, `fromOBJ`, or `toOBJ` methods on function
 sets for new code. Format-specific behavior belongs in `zCodec<Format>`.
 
+## Graph Examples
+
+Create and query an edge-list graph:
+
+```cpp
+#include <zspace/interface.h>
+
+zSpace::zObjectGraph graph;
+zSpace::zFnGraph fn(graph);
+
+zSpace::zPointArray positions = {
+    zSpace::zPoint(0, 0, 0),
+    zSpace::zPoint(1, 0, 0),
+    zSpace::zPoint(1, 1, 0)
+};
+zSpace::zIntArray edgeConnects = { 0, 1, 1, 2 };
+
+fn.create(positions, edgeConnects);
+
+zSpace::zDoubleArray edgeLengths;
+fn.getEdgeLengths(edgeLengths);
+```
+
+Use `zFnGraph` for graph creation, counts, bounds, positions, colors, weights,
+edge connectivity, centers, lengths, and transforms. `zObjectGraph` stores an
+edge list as its primary representation; half-edge graph topology is built
+lazily when code asks for ordered traversal through graph iterators or
+topology-specific methods.
+
+Avoid examples that mention direct `zGraph` storage. Use `zItGraphVertex`,
+`zItGraphEdge`, or `zItGraphHalfEdge` only when the question is specifically
+about traversal or topology.
+
 ## Display Examples
 
 Display a mesh:
@@ -236,6 +271,84 @@ for (zSpace::zItPointCloudVertex v(points); !v.end(); v++)
 }
 ```
 
+## Field Examples
+
+Use scalar/vector-specific field function sets in new snippets. The template
+function-set names are compatibility aliases only.
+
+Create and query a 2D mesh scalar field:
+
+```cpp
+#include <zspace/interface.h>
+
+zSpace::zObjectMeshScalarField field;
+zSpace::zFnMeshScalarField fn(field);
+
+fn.create(
+    zSpace::zPoint(-10, -10, 0),
+    zSpace::zPoint(10, 10, 0),
+    50,
+    50);
+
+zSpace::zScalarArray values;
+fn.getFieldValues(values);
+```
+
+Create a 2D vector field from a scalar mesh field:
+
+```cpp
+#include <zspace/interface.h>
+
+zSpace::zObjectMeshScalarField scalarField;
+zSpace::zFnMeshScalarField scalarFn(scalarField);
+
+zSpace::zObjectMeshVectorField vectorField;
+zSpace::zFnMeshVectorField vectorFn(vectorField);
+
+scalarFn.create(
+    zSpace::zPoint(-10, -10, 0),
+    zSpace::zPoint(10, 10, 0),
+    50,
+    50);
+
+vectorFn.create(
+    zSpace::zPoint(-10, -10, 0),
+    zSpace::zPoint(10, 10, 0),
+    50,
+    50);
+
+vectorFn.createVectorFromScalarField(scalarField);
+```
+
+Create and query a 3D point scalar field:
+
+```cpp
+#include <zspace/interface.h>
+
+zSpace::zObjectPointScalarField field;
+zSpace::zFnPointScalarField fn(field);
+
+fn.create(
+    zSpace::zPoint(-10, -10, -10),
+    zSpace::zPoint(10, 10, 10),
+    30,
+    30,
+    30);
+
+zSpace::zScalarArray values;
+fn.getFieldValues(values);
+```
+
+Use these names when answering field questions:
+
+- `zObjectMeshScalarField` with `zFnMeshScalarField` for 2D scalar fields.
+- `zObjectMeshVectorField` with `zFnMeshVectorField` for 2D vector fields.
+- `zObjectPointScalarField` with `zFnPointScalarField` for 3D scalar fields.
+- `zObjectPointVectorField` with `zFnPointVectorField` for 3D vector fields.
+
+Avoid `zFnMeshField<T>` and `zFnPointField<T>` in new examples unless the
+question is specifically about compatibility with older code.
+
 ## Method Discovery Recipes
 
 Find public methods on a function set:
@@ -251,6 +364,14 @@ Find implementation details:
 rg "ZSPACE_INLINE .*zFnMesh::getBounds" src\zInterface\functionsets
 ```
 
+Find field usage:
+
+```powershell
+rg "zFnMeshScalarField|zFnMeshVectorField" include src tests docs agents
+rg "zFnPointScalarField|zFnPointVectorField" include src tests docs agents
+rg "getFieldValues|setFieldValues|getGradient|getGradients" include\zspace\zInterface\functionsets
+```
+
 Find display usage:
 
 ```powershell
@@ -261,6 +382,13 @@ Find IO usage:
 
 ```powershell
 rg "zIO::read|zIO::write|zCodec" include src tests docs agents
+```
+
+Find graph usage:
+
+```powershell
+rg "zFnGraph::create|zFnGraph::getEdgeData|zFnGraph::getEdgeLengths" src tests
+rg "zItGraphVertex|zItGraphEdge|zItGraphHalfEdge" include src tests
 ```
 
 Find migration guidance:
@@ -278,12 +406,14 @@ Use:
 - `zIO` for file operations.
 - `zDisplay*` and `zDisplayScene` for drawing.
 - `zSpace::` qualifiers in standalone snippets.
+- Scalar/vector-specific field function sets instead of field templates.
 
 Avoid:
 
 - New snippets using `zObj*` unless explaining compatibility.
+- New snippets using `zFnMeshField<T>` or `zFnPointField<T>`.
+- Direct use of `zGraph` or `zMesh` storage types in application snippets.
 - Direct access to `.mesh`, `.graph`, `.field`, or `.particle`.
 - Draw methods on objects.
 - File IO through function sets.
 - Host SDK types in default Core/Interface examples.
-

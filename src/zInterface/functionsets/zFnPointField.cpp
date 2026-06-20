@@ -19,14 +19,14 @@ namespace zSpace
 	//---- CONSTRUCTOR
 
 	template<typename T>
-	ZSPACE_INLINE zFnPointField<T>::zFnPointField()
+	ZSPACE_INLINE zFnPointFieldBase<T>::zFnPointFieldBase()
 	{
 		fnType = zFnType::zPointFieldFn;
 		fieldObj = nullptr;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE zFnPointField<T>::zFnPointField(zObjectPointField<T>& _fieldObj)
+	ZSPACE_INLINE zFnPointFieldBase<T>::zFnPointFieldBase(zObjectPointField<T>& _fieldObj)
 	{
 		fieldObj = &_fieldObj;
 		fnPoints = zFnPointCloud(_fieldObj);
@@ -38,27 +38,27 @@ namespace zSpace
 	//---- DESTRUCTOR
 
 	template<typename T>
-	ZSPACE_INLINE zFnPointField<T>::~zFnPointField() {}
+	ZSPACE_INLINE zFnPointFieldBase<T>::~zFnPointFieldBase() {}
 
 	//--------------------------
 	//---- FACTORY METHODS
 	//--------------------------
 
 	template<typename T>
-	ZSPACE_INLINE zFnType zFnPointField<T>::getType()
+	ZSPACE_INLINE zFnType zFnPointFieldBase<T>::getType()
 	{
 		return zFnType::zPointFieldFn;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getBounds(zPoint& minBB, zPoint& maxBB)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getBounds(zPoint& minBB, zPoint& maxBB)
 	{
 		minBB = fieldObj->field.minBB;
 		maxBB = fieldObj->field.maxBB;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::clear()
+	ZSPACE_INLINE void zFnPointFieldBase<T>::clear()
 	{
 
 		fieldObj->field.fieldValues.clear();
@@ -73,7 +73,7 @@ namespace zSpace
 	//---- zScalar &  zVector specilization for create
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _n_Z, int _NR)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _n_Z, int _NR)
 	{
 		fieldObj->field = zField3D<zScalar>(_minBB, _maxBB, _n_X, _n_Y, _n_Z);
 
@@ -117,7 +117,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _n_Z, int _NR)
+	ZSPACE_INLINE void zFnPointFieldBase<zVector>::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _n_Z, int _NR)
 	{
 		fieldObj->field = zField3D<zVector>(_minBB, _maxBB, _n_X, _n_Y, _n_Z);
 
@@ -142,7 +142,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::create(double _unit_X, double _unit_Y, double _unit_Z, int _n_X, int _n_Y, int _n_Z, zPoint _minBB, int _NR)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::create(double _unit_X, double _unit_Y, double _unit_Z, int _n_X, int _n_Y, int _n_Z, zPoint _minBB, int _NR)
 	{
 		fieldObj->field = zField3D<zScalar>(_unit_X, _unit_Y, _unit_Z, _n_X, _n_Y, _n_Z, _minBB);
 
@@ -167,7 +167,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::create(double _unit_X, double _unit_Y, double _unit_Z, int _n_X, int _n_Y, int _n_Z, zPoint _minBB, int _NR)
+	ZSPACE_INLINE void zFnPointFieldBase<zVector>::create(double _unit_X, double _unit_Y, double _unit_Z, int _n_X, int _n_Y, int _n_Z, zPoint _minBB, int _NR)
 	{
 		fieldObj->field = zField3D<zVector>(_unit_X, _unit_Y, _unit_Z, _n_X, _n_Y, _n_Z, _minBB);
 
@@ -192,7 +192,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::createVectorFromScalarField(zFnPointField<zScalar>& inFnScalarField)
+	ZSPACE_INLINE void zFnPointFieldBase<zVector>::createVectorFromScalarField(zFnPointFieldBase<zScalar>& inFnScalarField)
 	{
 		zVector minBB, maxBB;
 		inFnScalarField.getBoundingBox(minBB, maxBB);
@@ -209,13 +209,13 @@ namespace zSpace
 	//--- FIELD QUERY METHODS 
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getNeighbour_Contained(zPoint& pos, zIntArray& containedNeighbour)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getNeighbour_Contained(zPoint& pos, zIntArray& containedNeighbour)
 	{
 
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getNeighbourPosition_Contained(zPoint& pos, zPointArray& containedNeighbour)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getNeighbourPosition_Contained(zPoint& pos, zPointArray& containedNeighbour)
 	{
 
 	}
@@ -223,13 +223,13 @@ namespace zSpace
 	//---- GET METHODS
 
 	template<typename T>
-	ZSPACE_INLINE int zFnPointField<T>::numFieldValues()
+	ZSPACE_INLINE int zFnPointFieldBase<T>::numFieldValues()
 	{
 		return fieldObj->field.fieldValues.size();
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getResolution(int& _n_X, int& _n_Y, int& _n_Z)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getResolution(int& _n_X, int& _n_Y, int& _n_Z)
 	{
 		_n_X = fieldObj->field.n_X;
 		_n_Y = fieldObj->field.n_Y;
@@ -237,7 +237,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getUnitDistances(double& _unit_X, double& _unit_Y, double& _unit_Z)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getUnitDistances(double& _unit_X, double& _unit_Y, double& _unit_Z)
 	{
 		_unit_X = fieldObj->field.unit_X;
 		_unit_Y = fieldObj->field.unit_Y;
@@ -245,7 +245,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getBoundingBox(zPoint& _minBB, zPoint& _maxBB)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getBoundingBox(zPoint& _minBB, zPoint& _maxBB)
 	{
 		_minBB = fieldObj->field.minBB;
 		_maxBB = fieldObj->field.maxBB;
@@ -254,7 +254,7 @@ namespace zSpace
 	//---- zScalar and zVector specilization for getFieldValue
 
 	template<>
-	ZSPACE_INLINE bool zFnPointField<zScalar>::getFieldValue(zPoint& samplePos, zFieldValueType type, zScalar& fieldValue)
+	ZSPACE_INLINE bool zFnPointFieldBase<zScalar>::getFieldValue(zPoint& samplePos, zFieldValueType type, zScalar& fieldValue)
 	{
 
 		bool out = false;
@@ -341,7 +341,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE bool zFnPointField<zVector>::getFieldValue(zVector& samplePos, zFieldValueType type, zVector& fieldValue)
+	ZSPACE_INLINE bool zFnPointFieldBase<zVector>::getFieldValue(zVector& samplePos, zFieldValueType type, zVector& fieldValue)
 	{
 
 		bool out = false;
@@ -428,7 +428,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValues(vector<T>& fieldValues)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValues(vector<T>& fieldValues)
 	{
 		fieldValues = fieldObj->field.fieldValues;
 	}
@@ -436,7 +436,7 @@ namespace zSpace
 	//---- zScalar specilization for getFieldValue
 
 	template<>
-	ZSPACE_INLINE zVector zFnPointField<zScalar>::getGradient(zItPointScalarField& s, float epsilon)
+	ZSPACE_INLINE zVector zFnPointFieldBase<zScalar>::getGradient(zItPointScalarField& s, float epsilon)
 	{
 
 		bool out = true;
@@ -477,7 +477,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE vector<zVector> zFnPointField<zScalar>::getGradients(float epsilon)
+	ZSPACE_INLINE vector<zVector> zFnPointFieldBase<zScalar>::getGradients(float epsilon)
 	{
 		vector<zVector> out;
 
@@ -492,13 +492,13 @@ namespace zSpace
 	//---- SET METHODS
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::setFieldColorDomain(zDomainColor& colDomain)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::setFieldColorDomain(zDomainColor& colDomain)
 	{
 		fieldColorDomain = colDomain;
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::setBoundingBox(zPoint& _minBB, zPoint& _maxBB)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::setBoundingBox(zPoint& _minBB, zPoint& _maxBB)
 	{
 		fieldObj->field.minBB = _minBB;
 		fieldObj->field.maxBB = _maxBB;
@@ -507,7 +507,7 @@ namespace zSpace
 	//---- zScalar and zVector specilization for setFieldValues
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::setFieldValues(zScalarArray& fValues)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::setFieldValues(zScalarArray& fValues)
 	{
 		if (fValues.size() == numFieldValues())
 		{
@@ -523,7 +523,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::setFieldValues(vector<zVector>& fValues)
+	ZSPACE_INLINE void zFnPointFieldBase<zVector>::setFieldValues(vector<zVector>& fValues)
 	{
 		if (fValues.size() == numFieldValues())
 		{
@@ -541,7 +541,7 @@ namespace zSpace
 	//----  3D IDW FIELD METHODS
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectMesh& inMeshObj, T meshValue, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectMesh& inMeshObj, T meshValue, double influence, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnMesh inFnMesh(inMeshObj);
@@ -586,7 +586,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectGraph& inGraphObj, T graphValue, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectGraph& inGraphObj, T graphValue, double influence, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnGraph inFnGraph(inGraphObj);
@@ -634,7 +634,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectPointCloud& inPointsObj, T value, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectPointCloud& inPointsObj, T value, double influence, double power, bool normalise)
 	{
 
 		fieldValues.clear();
@@ -675,7 +675,7 @@ namespace zSpace
 	}
 
 	template <typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectPointCloud& inPointsObj, vector<T>& values, vector<double>& influences, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectPointCloud& inPointsObj, vector<T>& values, vector<double>& influences, double power, bool normalise)
 	{
 		fieldValues.clear();
 		zFnPointCloud inFnPoints(inPointsObj);
@@ -716,7 +716,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zPointArray& inPositions, T value, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zPointArray& inPositions, T value, double influence, double power, bool normalise)
 	{
 
 		fieldValues.clear();
@@ -755,7 +755,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zPointArray& inPositions, vector<T>& values, vector<double>& influences, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zPointArray& inPositions, vector<T>& values, vector<double>& influences, double power, bool normalise)
 	{
 		if (inPositions.size() != values.size()) throw std::invalid_argument(" error: size of inPositions and values dont match.");
 		if (inPositions.size() != influences.size()) throw std::invalid_argument(" error: size of inPositions and influences dont match.");
@@ -796,7 +796,7 @@ namespace zSpace
 	//----  3D SCALAR FIELD METHODS
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectPointCloud& inPointsObj, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectPointCloud& inPointsObj, bool normalise)
 	{
 		scalars.clear();
 
@@ -851,7 +851,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, double offset, bool normalise)
 	{
 		scalars.clear();
 
@@ -892,7 +892,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, double offset, bool normalise)
 	{
 		scalars.clear();
 
@@ -936,7 +936,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, double offset, bool normalise)
 	{
 		scalars.clear();
 		zFnMesh inFnMesh(inMeshObj);
@@ -991,7 +991,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, double offset, bool normalise)
 	{
 		scalars.clear();
 		zFnGraph inFnGraph(inGraphObj);
@@ -1052,32 +1052,32 @@ namespace zSpace
 	//--- COMPUTE METHODS 
 
 	template<typename T>
-	ZSPACE_INLINE bool zFnPointField<T>::checkBounds_X(int index_X)
+	ZSPACE_INLINE bool zFnPointFieldBase<T>::checkBounds_X(int index_X)
 	{
 		return (index_X < fieldObj->field.n_X&& index_X >= 0);
 	}
 
 	template<typename T>
-	ZSPACE_INLINE bool zFnPointField<T>::checkBounds_Y(int index_Y)
+	ZSPACE_INLINE bool zFnPointFieldBase<T>::checkBounds_Y(int index_Y)
 	{
 		return (index_Y < fieldObj->field.n_Y&& index_Y >= 0);
 	}
 
 	template<typename T>
-	ZSPACE_INLINE bool zFnPointField<T>::checkBounds_Z(int index_Z)
+	ZSPACE_INLINE bool zFnPointFieldBase<T>::checkBounds_Z(int index_Z)
 	{
 		return (index_Z < fieldObj->field.n_Z&& index_Z >= 0);
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::computeMinMaxOfScalars(vector<T>& values, T& dMin, T& dMax)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::computeMinMaxOfScalars(vector<T>& values, T& dMin, T& dMax)
 	{
 		dMin = coreUtils.zMin(values);
 		dMax = coreUtils.zMax(values);
 	}
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::computeDomain(vector<T>& values, zDomain <T>& domain)
+	ZSPACE_INLINE void zFnPointFieldBase<T>::computeDomain(vector<T>& values, zDomain <T>& domain)
 	{
 		domain.min = coreUtils.zMin(values);
 		domain.max = coreUtils.zMax(values);
@@ -1086,7 +1086,7 @@ namespace zSpace
 	//---- zScalar and zVector specilization for normliseValues
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::normliseValues(zScalarArray& fieldValues)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::normliseValues(zScalarArray& fieldValues)
 	{
 		zDomainFloat d;
 		computeDomain(fieldValues, d);
@@ -1100,7 +1100,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::normliseValues(vector<zVector>& fieldValues)
+	ZSPACE_INLINE void zFnPointFieldBase<zVector>::normliseValues(vector<zVector>& fieldValues)
 	{
 		for (int i = 0; i < fieldValues.size(); i++) fieldValues[i].normalize();
 	}
@@ -1108,7 +1108,7 @@ namespace zSpace
 	//---- zScalar specilization for smoothField
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::smoothField(int numSmooth, double diffuseDamp, zDiffusionType type)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::smoothField(int numSmooth, double diffuseDamp, zDiffusionType type)
 	{
 		for (int k = 0; k < numSmooth; k++)
 		{
@@ -1166,7 +1166,7 @@ namespace zSpace
 	//---- zScalar & zVector specilization for computePositionsInFieldIndex
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -1185,7 +1185,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions)
+	ZSPACE_INLINE void zFnPointFieldBase<zVector>::computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -1206,7 +1206,7 @@ namespace zSpace
 	//---- zScalar & zVector specilization for computePositionIndicesInFieldIndex
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -1225,7 +1225,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zVector>::computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies)
+	ZSPACE_INLINE void zFnPointFieldBase<zVector>::computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies)
 	{
 		for (int i = 0; i < numFieldValues(); i++)
 		{
@@ -1244,7 +1244,7 @@ namespace zSpace
 	}
 
 	template<typename T>
-	ZSPACE_INLINE double zFnPointField<T>::F_of_r(double& r, double& a, double& b)
+	ZSPACE_INLINE double zFnPointFieldBase<T>::F_of_r(double& r, double& a, double& b)
 	{
 		if (0 <= r && r <= b / 3.0)return (a * (1.0 - (3.0 * r * r) / (b * b)));
 		if (b / 3.0 <= r && r <= b) return (3 * a / 2 * pow(1.0 - (r / b), 2.0));
@@ -1254,7 +1254,7 @@ namespace zSpace
 	//----  SCALAR BOOLEAN METHODS
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::boolean_union(zScalarArray& scalars0, zScalarArray& scalars1, zScalarArray& scalarsResult, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::boolean_union(zScalarArray& scalars0, zScalarArray& scalars1, zScalarArray& scalarsResult, bool normalise)
 	{
 		vector<float> out;
 
@@ -1269,7 +1269,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::boolean_subtract(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::boolean_subtract(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
 	{
 		vector<float> out;
 
@@ -1284,7 +1284,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::boolean_intersect(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::boolean_intersect(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
 	{
 		vector<float> out;
 
@@ -1299,7 +1299,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::boolean_difference(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::boolean_difference(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
 	{
 		vector<float> AUnionB;
 		boolean_union(fieldValues_A, fieldValues_B, AUnionB, normalise);
@@ -1316,7 +1316,7 @@ namespace zSpace
 	}
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::boolean_clipwithPlane(zScalarArray& scalars, zMatrix4& clipPlane)
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::boolean_clipwithPlane(zScalarArray& scalars, zMatrix4& clipPlane)
 	{
 		int i = 0;
 		for (zItPointCloudVertex v(*fieldObj); !v.end(); v++, i++)
@@ -1344,7 +1344,7 @@ namespace zSpace
 	//---- zScalar specilization for updateColors
 
 	template<>
-	ZSPACE_INLINE void zFnPointField<zScalar>::updateColors()
+	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::updateColors()
 	{
 
 		vector<float> scalars;
@@ -1402,7 +1402,7 @@ namespace zSpace
 	//----  PROTECTED METHODS
 
 	template<typename T>
-	ZSPACE_INLINE void zFnPointField<T>::createPointCloud()
+	ZSPACE_INLINE void zFnPointFieldBase<T>::createPointCloud()
 	{
 		vector<zVector>positions;
 
@@ -1444,9 +1444,9 @@ namespace zSpace
 
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
 	// explicit instantiation
-	template class zFnPointField<zVector>;
+	template class zFnPointFieldBase<zVector>;
 
-	template class zFnPointField<zScalar>;
+	template class zFnPointFieldBase<zScalar>;
 
 #endif
 }

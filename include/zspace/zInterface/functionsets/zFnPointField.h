@@ -38,7 +38,7 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \class zFnPointField
+	/*! \class zFnPointFieldBase
 	*	\brief A 3D field function set.
 	*
 	*	\tparam				T			- Type to work with zScalar(scalar field) and zVector(vector field).
@@ -50,8 +50,10 @@ namespace zSpace
 	/** @}*/
 
 	template<typename T>
-	class ZSPACE_API zFnPointField
+	class ZSPACE_API zFnPointFieldBase
 	{
+		friend class zFnPointFieldBase<zVector>;
+
 	protected:
 		//--------------------------
 		//---- PROTECTED ATTRIBUTES
@@ -95,14 +97,14 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		zFnPointField();
+		zFnPointFieldBase();
 
 		/*! \brief Overloaded constructor.
 		*
 		*	\param		[in]	_fieldObj			- input field3D object.	
 		*	\since version 0.0.2
 		*/
-		zFnPointField(zObjectPointField<T> &_fieldObj);
+		zFnPointFieldBase(zObjectPointField<T> &_fieldObj);
 
 		//--------------------------
 		//---- DESTRUCTOR
@@ -112,7 +114,7 @@ namespace zSpace
 		*
 		*	\since version 0.0.2
 		*/
-		~zFnPointField();
+		~zFnPointFieldBase();
 
 		//--------------------------
 		//---- OVERRIDE METHODS
@@ -165,13 +167,6 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void create(double _unit_X, double _unit_Y, double _unit_Z, int _n_X, int _n_Y, int _n_Z, zPoint _minBB = zPoint(), int _NR = 1);
-
-		/*! \brief This method creates a vector field from the input scalarfield.
-		*	\param		[in]	inFnScalarField		- input scalar field function set.
-		*	\since version 0.0.2
-		*/
-		void createVectorFromScalarField(zFnPointField<zScalar> &inFnScalarField);
-				
 
 		//--------------------------
 		//--- FIELD QUERY METHODS 
@@ -248,6 +243,8 @@ namespace zSpace
 		*/
 		void getFieldValues(vector<T>& fieldValues);
 
+	protected:
+
 		/*! \brief This method gets the gradient of the field at the input sample position.
 		*
 		*	\param		[in]	s			- scalar field iterator..
@@ -267,6 +264,8 @@ namespace zSpace
 		*	\warning works only with scalar fields
 		*/
 		vector<zVector> getGradients(float epsilon = EPS);
+
+	public:
 
 		//--------------------------
 		//---- SET METHODS
@@ -372,6 +371,14 @@ namespace zSpace
 		*/
 		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zPointArray &inPositions, vector<T> &values, vector<double>& influences, double power = 2.0, bool normalise = true);
 
+	protected:
+
+		/*! \brief This method creates a vector field from the input scalarfield.
+		*	\param		[in]	inFnScalarField		- input scalar field function set.
+		*	\since version 0.0.2
+		*/
+		void createVectorFromScalarField(zFnPointFieldBase<zScalar> &inFnScalarField);
+
 		//--------------------------
 		//----  3D SCALAR FIELD METHODS
 		//--------------------------
@@ -425,6 +432,8 @@ namespace zSpace
 		*/
 		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, double offset, bool normalise = true);
 
+	public:
+
 		//--------------------------
 		//--- COMPUTE METHODS 
 		//--------------------------
@@ -477,6 +486,8 @@ namespace zSpace
 		*/
 		void normliseValues(vector<T> &values);
 		
+	protected:
+
 		/*! \brief This method avarages / smoothens the field values.
 		*
 		*	\param		[in]	numSmooth			- number of times to smooth.
@@ -486,6 +497,7 @@ namespace zSpace
 		*/
 		void smoothField(int numSmooth, double diffuseDamp = 1.0, zDiffusionType type = zAverage);
 	
+	public:
 
 		/*! \brief This method computes the field index of each input position and stores them in a container per field index.
 		*
@@ -511,6 +523,8 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		double F_of_r(double &r, double &a, double &b);
+
+	protected:
 
 		//--------------------------
 		//----  BOOLEAN METHODS
@@ -592,6 +606,11 @@ namespace zSpace
 
 	};	
 
+	// Deprecated compatibility alias. New code should use
+	// zFnPointScalarField or zFnPointVectorField.
+	template<typename T>
+	using zFnPointField = zFnPointFieldBase<T>;
+
 	/** \addtogroup zInterface
 	*	\brief The Application Program Interface of the library.
 	*  @{
@@ -602,19 +621,39 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \typedef zFnPointScalarField
+	/*! \class zFnPointScalarField
 	*	\brief A function set for 3D scalar field.
 	*
-	*	\since version 0.0.2
+	*	\since version 0.0.5
 	*/
-	typedef zFnPointField<zScalar> zFnPointScalarField;
+	class ZSPACE_API zFnPointScalarField : public zFnPointFieldBase<zScalar>
+	{
+	public:
+		using zFnPointFieldBase<zScalar>::zFnPointFieldBase;
+		using zFnPointFieldBase<zScalar>::getGradient;
+		using zFnPointFieldBase<zScalar>::getGradients;
+		using zFnPointFieldBase<zScalar>::getScalarsAsVertexDistance;
+		using zFnPointFieldBase<zScalar>::getScalarsAsEdgeDistance;
+		using zFnPointFieldBase<zScalar>::smoothField;
+		using zFnPointFieldBase<zScalar>::boolean_union;
+		using zFnPointFieldBase<zScalar>::boolean_subtract;
+		using zFnPointFieldBase<zScalar>::boolean_intersect;
+		using zFnPointFieldBase<zScalar>::boolean_difference;
+		using zFnPointFieldBase<zScalar>::boolean_clipwithPlane;
+		using zFnPointFieldBase<zScalar>::updateColors;
+	};
 
-	/*! \typedef zFnPointVectorField
-	*	\brief A function set for 3D scalar field.
+	/*! \class zFnPointVectorField
+	*	\brief A function set for 3D vector field.
 	*
-	*	\since version 0.0.2
+	*	\since version 0.0.5
 	*/
-	typedef zFnPointField<zVector> zFnPointVectorField;
+	class ZSPACE_API zFnPointVectorField : public zFnPointFieldBase<zVector>
+	{
+	public:
+		using zFnPointFieldBase<zVector>::zFnPointFieldBase;
+		using zFnPointFieldBase<zVector>::createVectorFromScalarField;
+	};
 
 	/** @}*/
 

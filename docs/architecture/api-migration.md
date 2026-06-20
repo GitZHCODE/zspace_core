@@ -51,6 +51,36 @@ libigl, USD, and host SDK dependencies belong in private source directories.
    third-party QuickHull headers and `zParticle` float conversions.
 9. Deprecate and later remove the `zObj*` compatibility names.
 
+## Active Checklist
+
+Update this section after each migration step.
+
+- Mesh face-list API cleanup: completed. Public incremental half-edge
+  construction methods have been removed from `zFnMesh`; private temporary
+  helpers remain only for subdivision/smoothing until those algorithms are
+  face-list-native.
+- Mesh source cleanup: completed. Inactive `#if 0` blocks for removed
+  delete/collapse/flip/split-face topology editing have been deleted.
+- Field API simplification: in progress. Public scalar/vector field function
+  set classes now exist for mesh and point fields. Scalar-only methods are
+  exposed through `zFnMeshScalarField` / `zFnPointScalarField`; vector-field
+  creation from scalar fields is exposed through `zFnMeshVectorField` /
+  `zFnPointVectorField`. The shared templates have been renamed to
+  `zFnMeshFieldBase<T>` / `zFnPointFieldBase<T>` as implementation bases.
+  `zFnMeshField<T>` and `zFnPointField<T>` remain deprecated compatibility
+  aliases during migration. Mesh scalar/vector wrappers now expose normal field
+  value queries directly, so new code does not need to reference the base
+  templates for common field reads.
+- Graph edge-list storage: completed first pass. `zObjectGraph` now owns
+  edge-list storage as the authoritative representation and lazily builds the
+  legacy half-edge `zGraph` cache for iterator/topology operations. Common
+  `zFnGraph` create/count/attribute/bounds/edge-data/center/length/transform
+  methods use the edge-list path.
+- Raw pointer/public dependency audit: pending. Keep performance escape hatches
+  only where needed and document them as advanced API.
+- Interop naming cleanup: pending. Replace remaining internal `zObj*` uses with
+  `zObject*`, preserving compatibility aliases only at the public bridge.
+
 ## Current Transition Rules
 
 - New application code should include `zObject*.h` and use `zObject*` names.
@@ -103,11 +133,12 @@ the face-list representation. Their local geometry and attribute access works
 for manifold and non-manifold meshes. Half-edge traversal remains available
 through topology-dependent methods and `zItMeshHalfEdge` during migration.
 
-Topology-editing methods in `zFnMesh` are transitional compatibility APIs. New
-geometry algorithms should operate on face-list data and replace topology in a
-single validated operation. The remaining cleanup is to remove public
-incremental half-edge editing and reduce internal maintenance to topology
-construction, validation, cache invalidation, and legacy synchronization.
+Incremental topology-editing methods have been removed from the public
+`zFnMesh` API. New geometry algorithms should operate on face-list data and
+replace topology in a single validated operation. Internal half-edge
+maintenance is limited to topology construction, validation, cache
+invalidation, legacy synchronization, and temporary subdivision/smoothing
+helpers during migration.
 
 The following `zFnMesh` algorithms now operate directly on face-list storage:
 
@@ -120,3 +151,23 @@ The following `zFnMesh` algorithms now operate directly on face-list storage:
 These operations support non-manifold input because they do not request the
 lazy half-edge cache. Isoline and isoband extraction accepts triangles, quads,
 and simple polygons rather than relying on quad-only marching-square cases.
+
+## Graph Storage
+
+`zObjectGraph` now uses compact edge-list arrays as its authoritative storage:
+
+- vertex positions;
+- edge endpoint pairs;
+- vertex and edge colors;
+- vertex and edge weights.
+
+The previous half-edge graph is an internal lazy topology cache. Graph IO,
+bulk function-set methods, display, edge length/center queries, and transform
+updates should operate on edge-list data. Half-edge iterators, ordered
+connected-edge traversal, edge splitting, graph mesh widening, and other
+topology-dependent operations build and reuse the cache automatically.
+
+New graph algorithms should prefer the edge-list representation unless they
+need ordered half-edge traversal around vertices. If an algorithm mutates the
+lazy topology cache, the storage bridge syncs the edge-list representation
+before later edge-list reads.
