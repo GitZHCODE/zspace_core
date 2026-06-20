@@ -519,6 +519,36 @@ namespace zSpace
 			return out;
 		}
 
+		vector<zIntArray> getEdgeIncidentFaces(const detail::zMeshFaceListStorage& data)
+		{
+			std::map<std::pair<int, int>, int> edgeIds;
+			for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
+			{
+				const int v0 = data.edgeVertexIndices[edgeId * 2];
+				const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+				const auto endpoints = std::minmax(v0, v1);
+				edgeIds[{ endpoints.first, endpoints.second }] = edgeId;
+			}
+
+			vector<zIntArray> incidentFaces(data.numEdges());
+			for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+			{
+				const int begin = data.faceOffsets[faceId];
+				const int end = data.faceOffsets[faceId + 1];
+				for (int i = begin; i < end; ++i)
+				{
+					const int next = (i + 1 < end) ? i + 1 : begin;
+					const int v0 = data.faceVertexIndices[i];
+					const int v1 = data.faceVertexIndices[next];
+					const auto endpoints = std::minmax(v0, v1);
+					const auto edge = edgeIds.find({ endpoints.first, endpoints.second });
+					if (edge != edgeIds.end()) incidentFaces[edge->second].push_back(faceId);
+				}
+			}
+
+			return incidentFaces;
+		}
+
 		void appendExtrudeSideFace(
 			const std::pair<int, int>& edge,
 			int offset,
@@ -937,15 +967,29 @@ namespace zSpace
 
 	ZSPACE_INLINE bool zFnMesh::checkPointInConvexHull(zPoint &pt)
 	{
-		bool out = true;
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
 		{
-			out = f.checkPointInHalfSpace(pt);
-			if (!out) break;
+			const auto& existingData = zMeshObjectStorage::read(*meshObj);
+			if (existingData.faceNormals.size() != existingData.numFaces()) computeMeshNormals();
 		}
 
-		return out;
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+		{
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
+			if (begin >= end) continue;
+
+			zVector normal = data.faceNormals[faceId];
+			zPoint pointOnFace = data.positions[data.faceVertexIndices[begin]];
+			const double normalLength = sqrt(normal * normal);
+			if (normalLength <= 1.0e-9) continue;
+
+			const double d = (normal * pointOnFace) * -1.0;
+			const double distance = (pt * normal) + d;
+			if ((distance / normalLength) >= 0.0) return false;
+		}
+
+		return true;
 	}
 
 	//--- COMPUTE METHODS 
@@ -1289,34 +1333,24 @@ namespace zSpace
 
 	ZSPACE_INLINE bool zFnMesh::isTriMesh()
 	{
-		bool out = true;
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			if (f.getNumVertices() != 3)
-			{
-				out = false;
-				break;
-			}
+			if ((data.faceOffsets[faceId + 1] - data.faceOffsets[faceId]) != 3) return false;
 		}
 
-		return out;
+		return true;
 	}
 
 	ZSPACE_INLINE bool zFnMesh::isQuadMesh()
 	{
-		bool out = true;
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			if (f.getNumVertices() != 4)
-			{
-				out = false;
-				break;
-			}
+			if ((data.faceOffsets[faceId + 1] - data.faceOffsets[faceId]) != 4) return false;
 		}
 
-		return out;
+		return true;
 	}
 
 	ZSPACE_INLINE void zFnMesh::computeEdgeLoop(zItMeshHalfEdge& heStart, vector<zItMeshHalfEdge>& _heLoop)
@@ -2257,21 +2291,18 @@ namespace zSpace
 		if (nV == 0) return;
 
 		zVectorArray positions(nV);
-		for (zItMeshVertex vertex(*meshObj); !vertex.end(); vertex++)
-		{
-			if (vertex.isActive()) positions[vertex.getId()] = vertex.getPosition();
-		}
+		positions = zMeshObjectStorage::read(*meshObj).positions;
 
 		vector<zIntArray> vertexToVertices(nV);
 		vector<zIntArray> vertexToFaces(nV);
 		vector<zIntArray> faceVertexIds(nF);
 
-		for (zItMeshFace face(*meshObj); !face.end(); face++)
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			if (!face.isActive()) continue;
-
-			int faceId = face.getId();
-			face.getVertices(faceVertexIds[faceId]);
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
+			faceVertexIds[faceId].assign(data.faceVertexIndices.begin() + begin, data.faceVertexIndices.begin() + end);
 
 			const zIntArray& fVerts = faceVertexIds[faceId];
 			for (int i = 0; i < (int)fVerts.size(); ++i)
@@ -2499,24 +2530,36 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getPlanarityDeviationPerFace(zDoubleArray& planarityDevs, zPlanarSolverType type, bool colorFaces, double tolerance)
 	{
-
-		if (planarityDevs.size() != numPolygons())
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		if (planarityDevs.size() != data.numFaces())
 		{
 			planarityDevs.clear();
-			planarityDevs.assign(numPolygons(), -1);
+			planarityDevs.assign(data.numFaces(), -1);
 		}
 
-		
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		zPointArray faceCenters;
+		vector<zIntArray> faceTriangles;
+		zDoubleArray faceVolumes;
+		if (type == zVolumePlanar)
 		{
-			int i = f.getId();
+			getCenters(zFaceData, faceCenters);
+			getMeshTriangles(faceTriangles);
+			getMeshFaceVolumes(faceTriangles, faceCenters, faceVolumes, false);
+		}
 
+		auto& editableData = zMeshObjectStorage::edit(*meshObj);
+		for (int faceId = 0; faceId < editableData.numFaces(); ++faceId)
+		{
 			zPointArray fVerts;
-			f.getVertexPositions(fVerts);
+			const int begin = editableData.faceOffsets[faceId];
+			const int end = editableData.faceOffsets[faceId + 1];
+			fVerts.reserve(end - begin);
+			for (int i = begin; i < end; ++i)
+				fVerts.push_back(editableData.positions[editableData.faceVertexIndices[i]]);
 
 			if (type == zQuadPlanar)
 			{
-				if (fVerts.size() == 3)planarityDevs[i] = 0.0;
+				if (fVerts.size() == 3)planarityDevs[faceId] = 0.0;
 
 				if (fVerts.size() == 4)
 				{
@@ -2524,23 +2567,21 @@ namespace zSpace
 					zPoint pA, pB;
 
 					coreUtils.line_lineClosestPoints(fVerts[0], fVerts[2], fVerts[1], fVerts[3], uA, uB, pA, pB);
-					planarityDevs[i] = pA.distanceTo(pB);
+					planarityDevs[faceId] = pA.distanceTo(pB);
 				}
 				
 			}
 
 			if (type == zVolumePlanar)
 			{
-				zIntArray fTris;
-				zPoint fCenter = f.getCenter();
-				zVector fNorm = f.getNormal();
-				float dev = f.getVolume(fTris, fCenter, false);
-				planarityDevs[i] = abs(dev);
+				planarityDevs[faceId] = abs(faceVolumes[faceId]);
 			}
 
-			if (planarityDevs[i] == -1) continue;
-			if (planarityDevs[i] < tolerance) f.setColor(zGREEN);
-			else f.setColor(zMAGENTA);
+			if (colorFaces && faceId < static_cast<int>(editableData.faceColors.size()))
+			{
+				if (planarityDevs[faceId] == -1) continue;
+				editableData.faceColors[faceId] = (planarityDevs[faceId] < tolerance) ? zGREEN : zMAGENTA;
+			}
 		}
 			
 		
@@ -2550,13 +2591,33 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getEdgeDihedralAngles(zDoubleArray &dihedralAngles)
 	{
-		vector<double> out;
-
-		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
-
-		for (zItMeshEdge e(*meshObj); !e.end(); e++)
 		{
-			out.push_back(e.getDihedralAngle());
+			const auto& existingData = zMeshObjectStorage::read(*meshObj);
+			if (existingData.faceNormals.size() != existingData.numFaces()) computeMeshNormals();
+		}
+
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		vector<zIntArray> edgeIncidentFaces = getEdgeIncidentFaces(data);
+
+		vector<double> out;
+		out.reserve(data.numEdges());
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
+		{
+			if (edgeIncidentFaces[edgeId].size() != 2)
+			{
+				out.push_back(-1.0);
+				continue;
+			}
+
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+			zPoint p0 = data.positions[v0];
+			zPoint p1 = data.positions[v1];
+			zVector edgeVector = p0 - p1;
+			zVector n0 = data.faceNormals[edgeIncidentFaces[edgeId][0]];
+			zVector n1 = data.faceNormals[edgeIncidentFaces[edgeId][1]];
+
+			out.push_back(edgeVector.dihedralAngle(n0, n1));
 		}
 
 		dihedralAngles = out;
@@ -2567,23 +2628,21 @@ namespace zSpace
 		double total = 0.0;
 
 		halfEdgeLengths.clear();
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		halfEdgeLengths.reserve(data.numEdges() * 2);
 
-		for (zItMeshEdge e(*meshObj); !e.end(); e++)
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 		{
-			if (e.isActive())
-			{
-				double e_len = e.getLength();
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+			zPoint p0 = data.positions[v0];
+			zPoint p1 = data.positions[v1];
+			const double edgeLength = p0.distanceTo(p1);
 
-				halfEdgeLengths.push_back(e_len);
-				halfEdgeLengths.push_back(e_len);
+			halfEdgeLengths.push_back(edgeLength);
+			halfEdgeLengths.push_back(edgeLength);
 
-				total += e_len;
-			}
-			else
-			{
-				halfEdgeLengths.push_back(0);
-				halfEdgeLengths.push_back(0);
-			}
+			total += edgeLength;
 		}
 
 		return total;
@@ -2595,19 +2654,19 @@ namespace zSpace
 
 
 		edgeLengths.clear();
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		edgeLengths.reserve(data.numEdges());
 
-		for (zItMeshEdge e(*meshObj); !e.end(); e++)
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 		{
-			if (e.isActive())
-			{
-				double e_len = e.getLength();
-				edgeLengths.push_back(e_len);
-				total += e_len;
-			}
-			else
-			{
-				edgeLengths.push_back(0);
-			}
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+			zPoint p0 = data.positions[v0];
+			zPoint p1 = data.positions[v1];
+			const double edgeLength = p0.distanceTo(p1);
+
+			edgeLengths.push_back(edgeLength);
+			total += edgeLength;
 		}
 
 		return total;
@@ -2758,11 +2817,13 @@ namespace zSpace
 			return;
 		}
 		edgeConnects.clear();
-		for (zItMeshEdge e(*meshObj); !e.end(); e++)
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		vector<zIntArray> edgeIncidentFaces = getEdgeIncidentFaces(data);
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 		{
-			if (e.onBoundary()) continue;
-			edgeConnects.push_back(e.getHalfEdge(0).getVertex().getId());
-			edgeConnects.push_back(e.getHalfEdge(1).getVertex().getId());
+			if (edgeIncidentFaces[edgeId].size() < 2) continue;
+			edgeConnects.push_back(data.edgeVertexIndices[edgeId * 2]);
+			edgeConnects.push_back(data.edgeVertexIndices[edgeId * 2 + 1]);
 		}
 	}
 

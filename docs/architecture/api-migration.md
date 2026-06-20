@@ -63,8 +63,11 @@ Update this section after each migration step.
   color smoothing, and mesh dynamics boundary fixing now operate on face-list
   edges and face boundary counts instead of asking the lazy half-edge cache.
   Mesh extrusion and boundary-edge extrusion now derive boundary sides from
-  face-list edge incidence.
-  Curvature, dual graph/mesh extraction, rainflow graphs, edge-loop tools,
+  face-list edge incidence. Convex-hull half-space checks, triangle/quad mesh
+  classification, edge and half-edge-length compatibility queries, edge
+  dihedral angles, principal-curvature adjacency setup, planarity deviation,
+  and boundary-excluded edge data now read face-list storage directly.
+  Dual graph/mesh extraction, rainflow graphs, edge-loop tools,
   subdivision/smoothing, and mesh dynamics topology force helpers remain
   topology-dependent.
 - Mesh source cleanup: completed. Inactive `#if 0` blocks for removed
@@ -184,6 +187,13 @@ The following `zFnMesh` algorithms now operate directly on face-list storage:
 - vertex averaging and vertex/face color smoothing;
 - mesh dynamics boundary fixing;
 - extrusion and boundary extrusion side-wall generation.
+- convex-hull half-space checks;
+- triangle/quad mesh classification;
+- edge and half-edge-length compatibility queries;
+- edge dihedral-angle queries;
+- principal-curvature adjacency setup;
+- per-face planarity deviation;
+- boundary-excluded edge-data queries.
 
 These operations support non-manifold input because they do not request the
 lazy half-edge cache. Isoline and isoband extraction accepts triangles, quads,

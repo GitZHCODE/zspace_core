@@ -126,9 +126,12 @@ fn.getBounds(minBB, maxBB);
 
 Mesh creation, IO, display, centers, lengths, triangulation, contour/isoband
 extraction, vertex averaging, color smoothing, dynamics boundary fixing, and
-extrusion side-wall construction use the face-list representation.
-Topology-specific methods such as curvature, dual extraction, edge loops,
-subdivision, and smoothing may build the lazy half-edge cache.
+extrusion side-wall construction use the face-list representation. Mesh
+classification, convex-hull checks, edge length queries, dihedral-angle
+queries, planarity deviation, and boundary-excluded edge-data queries are also
+face-list-native.
+Topology-specific methods such as dual extraction, edge loops, subdivision,
+smoothing, and curvature solving may build the lazy half-edge cache.
 
 Read a mesh and query bounds:
 
