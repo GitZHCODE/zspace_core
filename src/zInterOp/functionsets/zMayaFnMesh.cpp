@@ -351,11 +351,6 @@ namespace zSpace
 
 	ZSPACE_INLINE void zMayaFnMesh::setCreaseDataJSON(string outfilename)
 	{
-		// remove inactive elements
-		if (numVertices() != meshObj->mesh.vertices.size()) garbageCollection(zVertexData);
-		if (numEdges() != meshObj->mesh.edges.size()) garbageCollection(zEdgeData);
-		if (numPolygons() != meshObj->mesh.faces.size())garbageCollection(zFaceData);
-
 		// read existing data in the json 
 		json j;		
 

@@ -388,6 +388,152 @@ namespace zSpace
 			area = 0.5 * length;
 			return normalized(normalSum);
 		}
+
+		struct Point2
+		{
+			double x;
+			double y;
+		};
+
+		Point2 projectPoint(const zPoint& point, int axis)
+		{
+			if (axis == 0) return { point.y, point.z };
+			if (axis == 1) return { point.x, point.z };
+			return { point.x, point.y };
+		}
+
+		double signedArea2D(const std::vector<Point2>& points)
+		{
+			double area = 0.0;
+			for (std::size_t i = 0; i < points.size(); ++i)
+			{
+				const auto& a = points[i];
+				const auto& b = points[(i + 1) % points.size()];
+				area += a.x * b.y - b.x * a.y;
+			}
+			return area * 0.5;
+		}
+
+		double cross2D(const Point2& a, const Point2& b, const Point2& c)
+		{
+			return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+		}
+
+		bool pointInTriangle2D(const Point2& point, const Point2& a,
+			const Point2& b, const Point2& c, bool ccw)
+		{
+			const double ab = cross2D(a, b, point);
+			const double bc = cross2D(b, c, point);
+			const double ca = cross2D(c, a, point);
+			const double epsilon = 1.0e-10;
+			return ccw ? (ab >= -epsilon && bc >= -epsilon && ca >= -epsilon)
+				: (ab <= epsilon && bc <= epsilon && ca <= epsilon);
+		}
+
+		zIntArray triangulatePolygon(const zIntArray& polygon, const zPointArray& positions)
+		{
+			zIntArray triangles;
+			if (polygon.size() < 3) return triangles;
+			if (polygon.size() == 3) return polygon;
+
+			double area = 0.0;
+			const zVector normal = computeFaceNormalAndArea(polygon, positions, area);
+			const double ax = std::abs(normal.x);
+			const double ay = std::abs(normal.y);
+			const double az = std::abs(normal.z);
+			const int axis = (ax >= ay && ax >= az) ? 0 : ((ay >= az) ? 1 : 2);
+
+			std::vector<Point2> projected;
+			projected.reserve(polygon.size());
+			for (int id : polygon) projected.push_back(projectPoint(positions[id], axis));
+			const bool ccw = signedArea2D(projected) >= 0.0;
+
+			std::vector<int> remaining(polygon.size());
+			for (int i = 0; i < static_cast<int>(remaining.size()); ++i) remaining[i] = i;
+			while (remaining.size() > 3)
+			{
+				bool found = false;
+				for (int i = 0; i < static_cast<int>(remaining.size()); ++i)
+				{
+					const int previous = remaining[(i + remaining.size() - 1) % remaining.size()];
+					const int current = remaining[i];
+					const int next = remaining[(i + 1) % remaining.size()];
+					const double corner = cross2D(projected[previous], projected[current], projected[next]);
+					if ((ccw && corner <= 1.0e-10) || (!ccw && corner >= -1.0e-10)) continue;
+
+					bool containsPoint = false;
+					for (int candidate : remaining)
+					{
+						if (candidate == previous || candidate == current || candidate == next) continue;
+						if (pointInTriangle2D(projected[candidate], projected[previous],
+							projected[current], projected[next], ccw))
+						{
+							containsPoint = true;
+							break;
+						}
+					}
+					if (containsPoint) continue;
+
+					triangles.push_back(polygon[previous]);
+					triangles.push_back(polygon[current]);
+					triangles.push_back(polygon[next]);
+					remaining.erase(remaining.begin() + i);
+					found = true;
+					break;
+				}
+				if (!found) throw std::invalid_argument("Polygon triangulation failed; polygon may be degenerate or self-intersecting.");
+			}
+
+			for (int index : remaining) triangles.push_back(polygon[index]);
+			return triangles;
+		}
+
+		struct ScalarCorner
+		{
+			zPoint position;
+			float scalar;
+			zColor color;
+		};
+
+		ScalarCorner interpolateCorner(const ScalarCorner& a, const ScalarCorner& b, float threshold)
+		{
+			const float denominator = b.scalar - a.scalar;
+			const float t = std::abs(denominator) <= 1.0e-12f ? 0.0f : (threshold - a.scalar) / denominator;
+			ScalarCorner out;
+			zPoint aPosition = a.position;
+			zPoint bPosition = b.position;
+			out.position = aPosition + (bPosition - aPosition) * t;
+			out.scalar = threshold;
+			out.color.r = a.color.r + (b.color.r - a.color.r) * t;
+			out.color.g = a.color.g + (b.color.g - a.color.g) * t;
+			out.color.b = a.color.b + (b.color.b - a.color.b) * t;
+			out.color.a = a.color.a + (b.color.a - a.color.a) * t;
+			return out;
+		}
+
+		std::vector<ScalarCorner> clipScalarPolygon(
+			const std::vector<ScalarCorner>& input, float threshold, bool keepAbove)
+		{
+			std::vector<ScalarCorner> output;
+			if (input.empty()) return output;
+			auto inside = [&](const ScalarCorner& corner)
+			{
+				return keepAbove ? corner.scalar >= threshold : corner.scalar <= threshold;
+			};
+
+			ScalarCorner previous = input.back();
+			bool previousInside = inside(previous);
+			for (const auto& current : input)
+			{
+				const bool currentInside = inside(current);
+				if (currentInside != previousInside)
+					output.push_back(interpolateCorner(previous, current, threshold));
+				if (currentInside) output.push_back(current);
+				previous = current;
+				previousInside = currentInside;
+			}
+			return output;
+		}
 	}
 
 	//---- CONSTRUCTOR
@@ -436,30 +582,30 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getBounds(zPoint &minBB, zPoint &maxBB)
 	{
-		coreUtils.getBounds(zMeshObjectStorage::get(*meshObj).vertexPositions, minBB, maxBB);
+		zPointArray positions = zMeshObjectStorage::read(*meshObj).positions;
+		coreUtils.getBounds(positions, minBB, maxBB);
 	}
 
 	ZSPACE_INLINE void zFnMesh::clear()
 	{
-		zMeshObjectStorage::get(*meshObj).clear();
+		zMeshObjectStorage::edit(*meshObj).clear();
 	}
 
 	//---- CREATE METHODS
 
 	ZSPACE_INLINE void zFnMesh::reserve(int _n_v, int  _n_e, int _n_f)
 	{
-		zMeshObjectStorage::get(*meshObj).clear();
-
-		zMeshObjectStorage::get(*meshObj).vertices.reserve(_n_v);
-		zMeshObjectStorage::get(*meshObj).faces.reserve(_n_f);
-		zMeshObjectStorage::get(*meshObj).edges.reserve(_n_e);
-		zMeshObjectStorage::get(*meshObj).halfEdges.reserve(_n_e * 2);
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.clear();
+		data.positions.reserve(_n_v);
+		data.faceOffsets.reserve(_n_f + 1);
+		data.edgeVertexIndices.reserve(_n_e * 2);
 	}
 
 	ZSPACE_INLINE void zFnMesh::create(zPointArray& _positions, zIntArray& polyCounts, zIntArray& polyConnects, bool staticMesh)
 	{
 
-		zMeshObjectStorage::get(*meshObj).create(_positions, polyCounts, polyConnects);
+		zMeshObjectStorage::set(*meshObj, _positions, polyCounts, polyConnects);
 			
 		// compute mesh normals
 		computeMeshNormals();
@@ -563,12 +709,12 @@ namespace zSpace
 
 	ZSPACE_INLINE int zFnMesh::numVertices()
 	{
-		return zMeshObjectStorage::get(*meshObj).n_v;
+		return zMeshObjectStorage::read(*meshObj).numVertices();
 	}
 
 	ZSPACE_INLINE int zFnMesh::numEdges()
 	{
-		return zMeshObjectStorage::get(*meshObj).n_e;
+		return zMeshObjectStorage::read(*meshObj).numEdges();
 	}
 
 	ZSPACE_INLINE int zFnMesh::numHalfEdges()
@@ -578,7 +724,7 @@ namespace zSpace
 
 	ZSPACE_INLINE int zFnMesh::numPolygons()
 	{
-		return zMeshObjectStorage::get(*meshObj).n_f;
+		return zMeshObjectStorage::read(*meshObj).numFaces();
 	}
 
 	ZSPACE_INLINE bool zFnMesh::vertexExists(zPoint pos, zItMeshVertex &outVertex, int precisionfactor)
@@ -723,95 +869,90 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::computeEdgeColorfromVertexColor()
 	{
-		for (zItMeshEdge e(*meshObj); !e.end(); e++)
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.edgeColors.assign(data.numEdges(), zColor());
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 		{
-			if (e.isActive())
-			{
-				int v0 = e.getHalfEdge(0).getVertex().getId();
-				int v1 = e.getHalfEdge(0).getVertex().getId();
-
-				zColor col;
-				col.r = (zMeshObjectStorage::get(*meshObj).vertexColors[v0].r + zMeshObjectStorage::get(*meshObj).vertexColors[v1].r) * 0.5;
-				col.g = (zMeshObjectStorage::get(*meshObj).vertexColors[v0].g + zMeshObjectStorage::get(*meshObj).vertexColors[v1].g) * 0.5;
-				col.b = (zMeshObjectStorage::get(*meshObj).vertexColors[v0].b + zMeshObjectStorage::get(*meshObj).vertexColors[v1].b) * 0.5;
-				col.a = (zMeshObjectStorage::get(*meshObj).vertexColors[v0].a + zMeshObjectStorage::get(*meshObj).vertexColors[v1].a) * 0.5;
-
-				if (zMeshObjectStorage::get(*meshObj).edgeColors.size() <= e.getId()) zMeshObjectStorage::get(*meshObj).edgeColors.push_back(col);
-				else zMeshObjectStorage::get(*meshObj).edgeColors[e.getId()] = col;
-			}
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+			zColor& color = data.edgeColors[edgeId];
+			color.r = (data.vertexColors[v0].r + data.vertexColors[v1].r) * 0.5f;
+			color.g = (data.vertexColors[v0].g + data.vertexColors[v1].g) * 0.5f;
+			color.b = (data.vertexColors[v0].b + data.vertexColors[v1].b) * 0.5f;
+			color.a = (data.vertexColors[v0].a + data.vertexColors[v1].a) * 0.5f;
 		}
 	}
 
 	ZSPACE_INLINE void zFnMesh::computeVertexColorfromEdgeColor()
 	{
-		for (zItMeshVertex v(*meshObj); !v.end(); v++)
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		zColorArray colors(data.positions.size(), zColor());
+		zIntArray counts(data.positions.size(), 0);
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 		{
-			if (v.isActive())
+			for (int endpoint = 0; endpoint < 2; ++endpoint)
 			{
-				vector<int> cEdges;
-				v.getConnectedHalfEdges(cEdges);
-
-				zColor col;
-				for (int j = 0; j < cEdges.size(); j++)
-				{
-					col.r += zMeshObjectStorage::get(*meshObj).edgeColors[cEdges[j]].r;
-					col.g += zMeshObjectStorage::get(*meshObj).edgeColors[cEdges[j]].g;
-					col.b += zMeshObjectStorage::get(*meshObj).edgeColors[cEdges[j]].b;
-				}
-
-				col.r /= cEdges.size(); col.g /= cEdges.size(); col.b /= cEdges.size();
-
-				zMeshObjectStorage::get(*meshObj).vertexColors[v.getId()] = col;
+				const int vertexId = data.edgeVertexIndices[edgeId * 2 + endpoint];
+				colors[vertexId].r += data.edgeColors[edgeId].r;
+				colors[vertexId].g += data.edgeColors[edgeId].g;
+				colors[vertexId].b += data.edgeColors[edgeId].b;
+				colors[vertexId].a += data.edgeColors[edgeId].a;
+				counts[vertexId]++;
 			}
 		}
+		for (std::size_t i = 0; i < colors.size(); ++i)
+		{
+			if (counts[i] == 0) continue;
+			colors[i].r /= counts[i]; colors[i].g /= counts[i];
+			colors[i].b /= counts[i]; colors[i].a /= counts[i];
+		}
+		data.vertexColors = std::move(colors);
 	}
 
 	ZSPACE_INLINE void zFnMesh::computeFaceColorfromVertexColor()
 	{
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.faceColors.assign(data.numFaces(), zColor());
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			if (f.isActive())
+			const int count = data.faceOffsets[faceId + 1] - data.faceOffsets[faceId];
+			for (int i = data.faceOffsets[faceId]; i < data.faceOffsets[faceId + 1]; ++i)
 			{
-				vector<int> fVerts;
-				f.getVertices(fVerts);
-
-				zColor col;
-				for (int j = 0; j < fVerts.size(); j++)
-				{
-					col.r += zMeshObjectStorage::get(*meshObj).vertexColors[fVerts[j]].r;
-					col.g += zMeshObjectStorage::get(*meshObj).vertexColors[fVerts[j]].g;
-					col.b += zMeshObjectStorage::get(*meshObj).vertexColors[fVerts[j]].b;
-				}
-
-				col.r /= fVerts.size(); col.g /= fVerts.size(); col.b /= fVerts.size();
-
-				zMeshObjectStorage::get(*meshObj).faceColors[f.getId()] = col;
+				const zColor& source = data.vertexColors[data.faceVertexIndices[i]];
+				data.faceColors[faceId].r += source.r;
+				data.faceColors[faceId].g += source.g;
+				data.faceColors[faceId].b += source.b;
+				data.faceColors[faceId].a += source.a;
 			}
+			data.faceColors[faceId].r /= count; data.faceColors[faceId].g /= count;
+			data.faceColors[faceId].b /= count; data.faceColors[faceId].a /= count;
 		}
 	}
 
 	ZSPACE_INLINE void zFnMesh::computeVertexColorfromFaceColor()
 	{
-		for (zItMeshVertex v(*meshObj); !v.end(); v++)
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		zColorArray colors(data.positions.size(), zColor());
+		zIntArray counts(data.positions.size(), 0);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			if (v.isActive())
+			for (int i = data.faceOffsets[faceId]; i < data.faceOffsets[faceId + 1]; ++i)
 			{
-				vector<int> cFaces;
-				v.getConnectedFaces(cFaces);
-
-				zColor col;
-				for (int j = 0; j < cFaces.size(); j++)
-				{
-					col.r += zMeshObjectStorage::get(*meshObj).faceColors[cFaces[j]].r;
-					col.g += zMeshObjectStorage::get(*meshObj).faceColors[cFaces[j]].g;
-					col.b += zMeshObjectStorage::get(*meshObj).faceColors[cFaces[j]].b;
-				}
-
-				col.r /= cFaces.size(); col.g /= cFaces.size(); col.b /= cFaces.size();
-
-				zMeshObjectStorage::get(*meshObj).vertexColors[v.getId()] = col;
+				const int vertexId = data.faceVertexIndices[i];
+				colors[vertexId].r += data.faceColors[faceId].r;
+				colors[vertexId].g += data.faceColors[faceId].g;
+				colors[vertexId].b += data.faceColors[faceId].b;
+				colors[vertexId].a += data.faceColors[faceId].a;
+				counts[vertexId]++;
 			}
 		}
+		for (std::size_t i = 0; i < colors.size(); ++i)
+		{
+			if (counts[i] == 0) continue;
+			colors[i].r /= counts[i]; colors[i].g /= counts[i];
+			colors[i].b /= counts[i]; colors[i].a /= counts[i];
+		}
+		data.vertexColors = std::move(colors);
 	}
 
 	ZSPACE_INLINE void zFnMesh::smoothColors(int smoothVal, zHEData type)
@@ -899,97 +1040,48 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::computeVertexNormalfromFaceNormal()
 	{
-		zMeshObjectStorage::get(*meshObj).vertexNormals.clear();
-
-		for (zItMeshVertex v(*meshObj); !v.end(); v++)
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.vertexNormals.assign(data.positions.size(), zVector());
+		zIntArray contributions(data.positions.size(), 0);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			if (v.isActive())
+			const zVector normal = faceId < static_cast<int>(data.faceNormals.size())
+				? data.faceNormals[faceId] : zVector();
+			for (int i = data.faceOffsets[faceId]; i < data.faceOffsets[faceId + 1]; ++i)
 			{
-
-				//if (v.getHalfEdge().onBoundary()) v.setHalfEdge(v.getHalfEdge().getSym().getNext());
-
-				vector<int> cFaces;
-				v.getConnectedFaces(cFaces);
-
-				zVector norm;
-
-				for (int j = 0; j < cFaces.size(); j++)
-				{
-					norm += zMeshObjectStorage::get(*meshObj).faceNormals[cFaces[j]];
-				}
-
-				norm /= cFaces.size();
-				norm.normalize();
-				zMeshObjectStorage::get(*meshObj).vertexNormals.push_back(norm);
+				const int vertexId = data.faceVertexIndices[i];
+				data.vertexNormals[vertexId] += normal;
+				contributions[vertexId]++;
 			}
-			else zMeshObjectStorage::get(*meshObj).vertexNormals.push_back(zVector());
+		}
+		for (std::size_t i = 0; i < data.vertexNormals.size(); ++i)
+		{
+			if (contributions[i] > 0) data.vertexNormals[i] /= static_cast<float>(contributions[i]);
+			data.vertexNormals[i].normalize();
 		}
 	}
 
 	ZSPACE_INLINE void zFnMesh::computeMeshNormals()
 	{
-		zMeshObjectStorage::get(*meshObj).faceNormals.clear();
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.faceNormals.assign(data.numFaces(), zVector());
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			if (f.isActive())
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
+			zVector center;
+			for (int i = begin; i < end; ++i) center += data.positions[data.faceVertexIndices[i]];
+			center /= static_cast<float>(end - begin);
+
+			zVector normal;
+			for (int i = begin; i < end; ++i)
 			{
-				// get face vertices and correspondiing positions
-
-				//printf("\n f %i :", f.getId());
-				vector<int> fVerts;
-				f.getVertices(fVerts);
-
-				zVector fCen; // face center
-
-				vector<zVector> points;
-				for (int i = 0; i < fVerts.size(); i++)
-				{
-					//printf(" %i ", fVerts[i]);
-					points.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[fVerts[i]]);
-
-					fCen += zMeshObjectStorage::get(*meshObj).vertexPositions[fVerts[i]];
-				}
-
-				fCen /= fVerts.size();
-
-				zVector fNorm; // face normal
-
-				if (fVerts.size() != 3)
-				{
-					for (int j = 0; j < fVerts.size(); j++)
-					{
-						fNorm += (points[j] - fCen) ^ (points[(j + 1) % fVerts.size()] - fCen);
-					}
-
-
-					//  https://stackoverflow.com/questions/27326636/calculate-normal-vector-of-a-polygon-newells-method
-					/*for (int j = 0; j < fVerts.size(); j++) 
-					{
-						int k = (j + 1) % (fVerts.size());
-						fNorm.x += (points[j].y - points[k].y) * (points[j].z + points[k].z);
-						fNorm.y += (points[j].z - points[k].z) * (points[j].x + points[k].x);
-						fNorm.z += (points[j].x - points[k].x) * (points[j].y + points[k].y);						
-					}*/
-					
-
-
-				}
-				else
-				{
-					zVector cross = (points[1] - points[0]) ^ (points[fVerts.size() - 1] - points[0]);
-					cross.normalize();
-
-					fNorm = cross;
-
-					//printf("\n working! %i ", i);
-				}
-
-				fNorm.normalize();
-				zMeshObjectStorage::get(*meshObj).faceNormals.push_back(fNorm);
-
-							}
-			else zMeshObjectStorage::get(*meshObj).faceNormals.push_back(zVector());
+				const int next = (i + 1 < end) ? i + 1 : begin;
+				normal += (data.positions[data.faceVertexIndices[i]] - center) ^
+					(data.positions[data.faceVertexIndices[next]] - center);
+			}
+			normal.normalize();
+			data.faceNormals[faceId] = normal;
 		}
 		// compute vertex normal
 		computeVertexNormalfromFaceNormal();
@@ -1029,11 +1121,6 @@ namespace zSpace
 			// update position
 			for (int i = 0; i < tempVertPos.size(); i++) zMeshObjectStorage::get(*meshObj).vertexPositions[i] = tempVertPos[i];
 		}
-	}
-
-	ZSPACE_INLINE void zFnMesh::garbageCollection(zHEData type)
-	{
-		removeInactive(type);
 	}
 
 	ZSPACE_INLINE void zFnMesh::makeStatic()
@@ -1271,18 +1358,15 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::setVertexPositions(zPointArray& pos)
 	{
-		if (pos.size() != zMeshObjectStorage::get(*meshObj).vertexPositions.size()) throw std::invalid_argument("size of position contatiner is not equal to number of graph vertices.");
-
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexPositions.size(); i++)
-		{
-			zMeshObjectStorage::get(*meshObj).vertexPositions[i] = pos[i];
-		}
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		if (pos.size() != data.positions.size()) throw std::invalid_argument("size of position container is not equal to number of mesh vertices.");
+		data.positions = pos;
 	}
 
 	ZSPACE_INLINE void zFnMesh::setVertexColor(zColor col, bool setFaceColor)
 	{
-		zMeshObjectStorage::get(*meshObj).vertexColors.clear();
-		zMeshObjectStorage::get(*meshObj).vertexColors.assign(zMeshObjectStorage::get(*meshObj).n_v, col);
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.vertexColors.assign(data.positions.size(), col);
 
 		if (setFaceColor) computeFaceColorfromVertexColor();
 	}
@@ -1295,6 +1379,7 @@ namespace zSpace
 			return;
 		}
 
+		auto& data = zMeshObjectStorage::edit(*meshObj);
 		for (int i = 0; i < vertexScalars.size(); i++)
 		{
 
@@ -1303,7 +1388,7 @@ namespace zSpace
 			if (vertexScalars[i] < 0) col = zColor(0.941, 0, 0.157, 1);
 			if (vertexScalars[i] > 0.0) col = zColor(0, 0.941, 0.157, 1);
 
-			zMeshObjectStorage::get(*meshObj).vertexColors[i] = col;
+			data.vertexColors[i] = col;
 
 		}
 
@@ -1313,59 +1398,39 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::setVertexColors(zColorArray& col, bool setFaceColor)
 	{
-		if (zMeshObjectStorage::get(*meshObj).vertexColors.size() != zMeshObjectStorage::get(*meshObj).vertices.size())
-		{
-			zMeshObjectStorage::get(*meshObj).vertexColors.clear();
-			for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertices.size(); i++) zMeshObjectStorage::get(*meshObj).vertexColors.push_back(zColor(1, 0, 0, 1));
-		}
-
-		if (col.size() != zMeshObjectStorage::get(*meshObj).vertexColors.size()) throw std::invalid_argument("size of color contatiner is not equal to number of mesh vertices.");
-
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexColors.size(); i++)
-		{
-			zMeshObjectStorage::get(*meshObj).vertexColors[i] = col[i];
-		}
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		if (col.size() != data.positions.size()) throw std::invalid_argument("size of color container is not equal to number of mesh vertices.");
+		data.vertexColors = col;
 
 		if (setFaceColor) computeFaceColorfromVertexColor();
 	}
 
 	ZSPACE_INLINE void zFnMesh::setVertexWeight(double wt)
 	{
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexWeights.size(); i++) zMeshObjectStorage::get(*meshObj).vertexWeights[i] = wt;
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.vertexWeights.assign(data.positions.size(), wt);
 	}
 
 	ZSPACE_INLINE void zFnMesh::setVertexWeights(zDoubleArray& wt)
 	{
-		if (wt.size() != zMeshObjectStorage::get(*meshObj).vertexWeights.size()) throw std::invalid_argument("size of wt contatiner is not equal to number of mesh vertices.");
-
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexWeights.size(); i++)
-		{
-			zMeshObjectStorage::get(*meshObj).vertexWeights[i] = wt[i];
-		}
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		if (wt.size() != data.positions.size()) throw std::invalid_argument("size of weight container is not equal to number of mesh vertices.");
+		data.vertexWeights = wt;
 	}
 
 	ZSPACE_INLINE void zFnMesh::setFaceColor(zColor col, bool setVertexColor)
 	{
-		zMeshObjectStorage::get(*meshObj).faceColors.clear();
-		zMeshObjectStorage::get(*meshObj).faceColors.assign(zMeshObjectStorage::get(*meshObj).n_f, col);
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.faceColors.assign(data.numFaces(), col);
 
 		if (setVertexColor) computeVertexColorfromFaceColor();
 	}
 
 	ZSPACE_INLINE void zFnMesh::setFaceColors(zColorArray& col, bool setVertexColor)
 	{
-		if (zMeshObjectStorage::get(*meshObj).faceColors.size() != zMeshObjectStorage::get(*meshObj).faces.size())
-		{
-			zMeshObjectStorage::get(*meshObj).faceColors.clear();
-			for (int i = 0; i < zMeshObjectStorage::get(*meshObj).faces.size(); i++) zMeshObjectStorage::get(*meshObj).faceColors.push_back(zColor(0.5, 0.5, 0.5, 1));
-		}
-
-		if (col.size() != zMeshObjectStorage::get(*meshObj).faceColors.size()) throw std::invalid_argument("size of color contatiner is not equal to number of mesh faces.");
-
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).faceColors.size(); i++)
-		{
-			zMeshObjectStorage::get(*meshObj).faceColors[i] = col[i];
-		}
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		if (col.size() != static_cast<std::size_t>(data.numFaces())) throw std::invalid_argument("size of color container is not equal to number of mesh faces.");
+		data.faceColors = col;
 
 		if (setVertexColor) computeVertexColorfromFaceColor();
 	}
@@ -1395,8 +1460,8 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::setFaceNormals(zVector &fNormal)
 	{
-		zMeshObjectStorage::get(*meshObj).faceNormals.clear();
-		zMeshObjectStorage::get(*meshObj).faceNormals.assign(zMeshObjectStorage::get(*meshObj).n_f, fNormal);
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.faceNormals.assign(data.numFaces(), fNormal);
 
 		// compute normals per face based on vertex normals and store it in faceNormals
 		computeVertexNormalfromFaceNormal();
@@ -1404,11 +1469,9 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::setFaceNormals(zVectorArray &fNormals)
 	{
-		if (zMeshObjectStorage::get(*meshObj).faces.size() != fNormals.size()) throw std::invalid_argument("size of color contatiner is not equal to number of mesh faces.");
-
-		zMeshObjectStorage::get(*meshObj).faceNormals.clear();
-
-		zMeshObjectStorage::get(*meshObj).faceNormals = fNormals;
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		if (static_cast<std::size_t>(data.numFaces()) != fNormals.size()) throw std::invalid_argument("size of normal container is not equal to number of mesh faces.");
+		data.faceNormals = fNormals;
 
 		// compute normals per face based on vertex normals and store it in faceNormals
 		computeVertexNormalfromFaceNormal();
@@ -1416,59 +1479,45 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::setEdgeColor(zColor col, bool setVertexColor)
 	{
-		zMeshObjectStorage::get(*meshObj).edgeColors.clear();
-		zMeshObjectStorage::get(*meshObj).edgeColors.assign(zMeshObjectStorage::get(*meshObj).n_e, col);
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.edgeColors.assign(data.numEdges(), col);
 
 		if (setVertexColor) computeVertexColorfromEdgeColor();
 	}
 
 	ZSPACE_INLINE void zFnMesh::setEdgeColors(zColorArray& col, bool setVertexColor)
 	{
-		if (col.size() != zMeshObjectStorage::get(*meshObj).edgeColors.size()) throw std::invalid_argument("size of color container is not equal to number of mesh edges.");
-
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).edgeColors.size(); i++)
-		{
-			zMeshObjectStorage::get(*meshObj).edgeColors[i] = col[i];
-		}
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		if (col.size() != static_cast<std::size_t>(data.numEdges())) throw std::invalid_argument("size of color container is not equal to number of mesh edges.");
+		data.edgeColors = col;
 
 		if (setVertexColor) computeVertexColorfromEdgeColor();
 	}
 
 	ZSPACE_INLINE void zFnMesh::setEdgeWeight(double wt)
 	{
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).edges.size(); i++) zMeshObjectStorage::get(*meshObj).edgeWeights[i] = wt;
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		data.edgeWeights.assign(data.numEdges(), wt);
 	}
 
 	ZSPACE_INLINE void zFnMesh::setEdgeWeight(int index, double wt)
 	{
-		if (zMeshObjectStorage::get(*meshObj).edgeWeights.size() != zMeshObjectStorage::get(*meshObj).edges.size())
-		{
-			zMeshObjectStorage::get(*meshObj).edgeWeights.clear();
-			for (int i = 0; i < zMeshObjectStorage::get(*meshObj).edges.size(); i++) zMeshObjectStorage::get(*meshObj).edgeWeights.push_back(1);
-
-		}
-
-		zMeshObjectStorage::get(*meshObj).edgeWeights[index] = wt;
-
-		int symEdge = (index % 2 == 0) ? index + 1 : index - 1;
-
-		zMeshObjectStorage::get(*meshObj).edgeWeights[symEdge] = wt;
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		if (index < 0 || index >= data.numEdges()) throw std::invalid_argument("edge index out of bounds.");
+		data.edgeWeights[index] = wt;
 	}
 
 	ZSPACE_INLINE void zFnMesh::setEdgeWeights(zDoubleArray& wt)
 	{
-		if (wt.size() != zMeshObjectStorage::get(*meshObj).edgeWeights.size()) throw std::invalid_argument("size of weight container is not equal to number of mesh edges.");
-
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).edgeWeights.size(); i++)
-		{
-			zMeshObjectStorage::get(*meshObj).edgeWeights[i] = wt[i];
-		}
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		if (wt.size() != static_cast<std::size_t>(data.numEdges())) throw std::invalid_argument("size of weight container is not equal to number of mesh edges.");
+		data.edgeWeights = wt;
 	}
 
 	//--- GET METHODS 
 	ZSPACE_INLINE void zFnMesh::getVertexPositions(zPointArray &pos, bool exludeCornerVertices)
 	{
-		pos = zMeshObjectStorage::get(*meshObj).vertexPositions;
+		pos = zMeshObjectStorage::read(*meshObj).positions;
 
 		//// LB fix: this is crashing when excluding corner vertices 
 		//pos.clear();
@@ -1484,7 +1533,7 @@ namespace zSpace
 	{
 		if (numVertices() == 0) throw std::invalid_argument(" error: null pointer.");
 
-		return &zMeshObjectStorage::get(*meshObj).vertexPositions[0];
+		return zMeshObjectStorage::edit(*meshObj).positions.data();
 	}
 
 	ZSPACE_INLINE void zFnMesh::getRawVertexPositions(float** points)
@@ -1493,119 +1542,118 @@ namespace zSpace
 			
 		
 
-		for (int i = 0; i < numVertices(); i++)
+		auto& positions = zMeshObjectStorage::edit(*meshObj).positions;
+		for (int i = 0; i < static_cast<int>(positions.size()); i++)
 		{
-			points[(i * 3) + 0] = &zMeshObjectStorage::get(*meshObj).vertexPositions[i].x;
-			points[(i * 3) + 1] = &zMeshObjectStorage::get(*meshObj).vertexPositions[i].y;
-			points[(i * 3) + 2] = &zMeshObjectStorage::get(*meshObj).vertexPositions[i].z;
+			points[(i * 3) + 0] = &positions[i].x;
+			points[(i * 3) + 1] = &positions[i].y;
+			points[(i * 3) + 2] = &positions[i].z;
 		}
 
 	}
 
 	ZSPACE_INLINE void zFnMesh::getVertexNormals(zVectorArray& norm)
 	{
-		norm = zMeshObjectStorage::get(*meshObj).vertexNormals;
+		norm = zMeshObjectStorage::read(*meshObj).vertexNormals;
 	}
 
 	ZSPACE_INLINE zVector* zFnMesh::getRawVertexNormals()
 	{
 		if (numVertices() == 0) throw std::invalid_argument(" error: null pointer.");
 
-		return &zMeshObjectStorage::get(*meshObj).vertexNormals[0];
+		return zMeshObjectStorage::edit(*meshObj).vertexNormals.data();
 	}
 
 	ZSPACE_INLINE void zFnMesh::getRawVertexNormals(float** normals)
 	{
 		if (numVertices() == 0) throw std::invalid_argument(" error: null pointer.");
 
-		for (int i = 0; i < numVertices(); i++)
+		auto& vertexNormals = zMeshObjectStorage::edit(*meshObj).vertexNormals;
+		for (int i = 0; i < static_cast<int>(vertexNormals.size()); i++)
 		{
-			normals[(i * 3) + 0] = &zMeshObjectStorage::get(*meshObj).vertexNormals[i].x;
-			normals[(i * 3) + 1] = &zMeshObjectStorage::get(*meshObj).vertexNormals[i].y;
-			normals[(i * 3) + 2] = &zMeshObjectStorage::get(*meshObj).vertexNormals[i].z;
+			normals[(i * 3) + 0] = &vertexNormals[i].x;
+			normals[(i * 3) + 1] = &vertexNormals[i].y;
+			normals[(i * 3) + 2] = &vertexNormals[i].z;
 		}
 
 	}
 
 	ZSPACE_INLINE void zFnMesh::getVertexColors(zColorArray& col)
 	{
-		col = zMeshObjectStorage::get(*meshObj).vertexColors;
+		col = zMeshObjectStorage::read(*meshObj).vertexColors;
 	}
 
 	ZSPACE_INLINE void zFnMesh::getVertexWeights(zDoubleArray& weights)
 	{
-		weights = zMeshObjectStorage::get(*meshObj).vertexWeights;
+		weights = zMeshObjectStorage::read(*meshObj).vertexWeights;
 	}
 
 	ZSPACE_INLINE zColor* zFnMesh::getRawVertexColors()
 	{
 		if (numVertices() == 0) throw std::invalid_argument(" error: null pointer.");
 
-		return &zMeshObjectStorage::get(*meshObj).vertexColors[0];
+		return zMeshObjectStorage::edit(*meshObj).vertexColors.data();
 	}
 
 	ZSPACE_INLINE void zFnMesh::getEdgeColors(zColorArray& col)
 	{
-		col = zMeshObjectStorage::get(*meshObj).edgeColors;
+		col = zMeshObjectStorage::read(*meshObj).edgeColors;
 	}
 
 	ZSPACE_INLINE void zFnMesh::getEdgeWeights(zDoubleArray& weights)
 	{
-		weights = zMeshObjectStorage::get(*meshObj).edgeWeights;
+		weights = zMeshObjectStorage::read(*meshObj).edgeWeights;
 	}
 
 	ZSPACE_INLINE zColor* zFnMesh::getRawEdgeColors()
 	{
 		if (numEdges() == 0) throw std::invalid_argument(" error: null pointer.");
 
-		return &zMeshObjectStorage::get(*meshObj).edgeColors[0];
+		return zMeshObjectStorage::edit(*meshObj).edgeColors.data();
 	}
 
 	ZSPACE_INLINE void zFnMesh::getFaceNormals(zVectorArray& norm)
 	{
-		norm = zMeshObjectStorage::get(*meshObj).faceNormals;
+		norm = zMeshObjectStorage::read(*meshObj).faceNormals;
 	}
 
 	ZSPACE_INLINE zVector* zFnMesh::getRawFaceNormals()
 	{
 		if (numPolygons() == 0) throw std::invalid_argument(" error: null pointer.");
 
-		return &zMeshObjectStorage::get(*meshObj).faceNormals[0];
+		return zMeshObjectStorage::edit(*meshObj).faceNormals.data();
 	}
 
 	ZSPACE_INLINE void zFnMesh::getFaceColors(zColorArray& col)
 	{
-		col = zMeshObjectStorage::get(*meshObj).faceColors;
+		col = zMeshObjectStorage::read(*meshObj).faceColors;
 	}
 
 	ZSPACE_INLINE zColor* zFnMesh::getRawFaceColors()
 	{
 		if (numEdges() == 0) throw std::invalid_argument(" error: null pointer.");
 
-		return &zMeshObjectStorage::get(*meshObj).faceColors[0];
+		return zMeshObjectStorage::edit(*meshObj).faceColors.data();
 	}
 
 	ZSPACE_INLINE zPoint zFnMesh::getCenter()
 	{
 		zPoint out;
-
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexPositions.size(); i++)
-		{
-			out += zMeshObjectStorage::get(*meshObj).vertexPositions[i];
-		}
-
-		out /= zMeshObjectStorage::get(*meshObj).vertexPositions.size();
+		const auto& positions = zMeshObjectStorage::read(*meshObj).positions;
+		for (const auto& position : positions) out += position;
+		if (!positions.empty()) out /= static_cast<float>(positions.size());
 
 		return out;
 	}
 
 	ZSPACE_INLINE void zFnMesh::getCenters(zHEData type, zPointArray &centers)
 	{
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		centers.clear();
+
 		// Mesh Edge 
 		if (type == zHalfEdgeData)
 		{
-			centers.clear();
-
 			for (zItMeshHalfEdge he(*meshObj); !he.end(); he++)
 			{
 				if (he.isActive())
@@ -1621,38 +1669,29 @@ namespace zSpace
 		}
 		else if (type == zEdgeData)
 		{
-			centers.clear();
-
-			for (zItMeshEdge e(*meshObj); !e.end(); e++)
+			centers.reserve(data.numEdges());
+			for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 			{
-				if (e.isActive())
-				{
-					centers.push_back(e.getCenter());
-				}
-				else
-				{
-					centers.push_back(zVector());
-
-				}
+				const int v0 = data.edgeVertexIndices[edgeId * 2];
+				const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+				zPoint p0 = data.positions[v0];
+				zPoint p1 = data.positions[v1];
+				centers.push_back((p0 + p1) * 0.5f);
 			}
 		}
 
 		// Mesh Face 
 		else if (type == zFaceData)
 		{
-			centers.clear();
-
-			for (zItMeshFace f(*meshObj); !f.end(); f++)
+			centers.reserve(data.numFaces());
+			for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 			{
-				if (f.isActive())
-				{
-					centers.push_back(f.getCenter());
-				}
-				else
-				{
-					centers.push_back(zVector());
-
-				}
+				zPoint center;
+				const int begin = data.faceOffsets[faceId];
+				const int end = data.faceOffsets[faceId + 1];
+				for (int i = begin; i < end; ++i) center += data.positions[data.faceVertexIndices[i]];
+				if (end > begin) center /= static_cast<float>(end - begin);
+				centers.push_back(center);
 			}
 		}
 		else throw std::invalid_argument(" error: invalid zHEData type");
@@ -2021,29 +2060,14 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getMeshTriangles(vector<zIntArray> &faceTris)
 	{
-		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() == 0 || zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
-
 		faceTris.clear();
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		faceTris.reserve(data.numFaces());
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			vector<int> Tri_connects;
-			int i = f.getId();
-
-			if (f.isActive())
-			{
-
-				vector<int> fVerts;
-				f.getVertices(fVerts);
-
-				// compute polygon Triangles
-
-
-				int n_Tris = 0;
-				if (fVerts.size() > 0) f.getTriangles(n_Tris, Tri_connects);
-				else Tri_connects = fVerts;
-			}
-			faceTris.push_back(Tri_connects);
+			zIntArray polygon(data.faceVertexIndices.begin() + data.faceOffsets[faceId],
+				data.faceVertexIndices.begin() + data.faceOffsets[faceId + 1]);
+			faceTris.push_back(triangulatePolygon(polygon, data.positions));
 		}
 	}
 
@@ -2054,11 +2078,15 @@ namespace zSpace
 		vector<vector<int>> faceTris;
 		getMeshTriangles(faceTris);
 
-		for (int i = 0; i < faceTris.size(); i++)
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		for (const auto& triangles : faceTris)
 		{
-			for (int j = 0; j < faceTris[i].size(); j += 3)
+			for (int j = 0; j < triangles.size(); j += 3)
 			{
-				double vol = zMeshObjectStorage::get(*meshObj).coreUtils.getSignedTriangleVolume(zMeshObjectStorage::get(*meshObj).vertexPositions[faceTris[i][j + 0]], zMeshObjectStorage::get(*meshObj).vertexPositions[faceTris[i][j + 1]], zMeshObjectStorage::get(*meshObj).vertexPositions[faceTris[i][j + 2]]);
+				zPoint a = data.positions[triangles[j]];
+				zPoint b = data.positions[triangles[j + 1]];
+				zPoint c = data.positions[triangles[j + 2]];
+				double vol = coreUtils.getSignedTriangleVolume(a, b, c);
 
 				out += vol;
 			}
@@ -2074,11 +2102,29 @@ namespace zSpace
 
 		faceVolumes.clear();
 
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		faceVolumes.reserve(data.numFaces());
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			int i = f.getId();
-			double vol = f.getVolume(faceTris[i], fCenters[i], absoluteVolumes);
-
+			double vol = 0.0;
+			for (int j = 0; j < faceTris[faceId].size(); j += 3)
+			{
+				zPoint a = data.positions[faceTris[faceId][j]];
+				zPoint b = data.positions[faceTris[faceId][j + 1]];
+				zPoint c = data.positions[faceTris[faceId][j + 2]];
+				vol += coreUtils.getSignedTriangleVolume(a, b, c);
+			}
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
+			for (int i = begin; i < end; ++i)
+			{
+				const int previous = (i == begin) ? end - 1 : i - 1;
+				zPoint a = data.positions[data.faceVertexIndices[i]];
+				zPoint b = data.positions[data.faceVertexIndices[previous]];
+				zPoint center = fCenters[faceId];
+				vol += coreUtils.getSignedTriangleVolume(a, b, center);
+			}
+			if (absoluteVolumes) vol = std::abs(vol);
 			faceVolumes.push_back(vol);
 		}
 	}
@@ -2513,15 +2559,16 @@ namespace zSpace
 
 	ZSPACE_INLINE double zFnMesh::getPlanarFaceAreas(zDoubleArray &faceAreas)
 	{
-		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
-
 		faceAreas.clear();
-
 		double totalArea = 0;
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		faceAreas.reserve(data.numFaces());
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			double fArea = f.getPlanarFaceArea();
+			zIntArray polygon(data.faceVertexIndices.begin() + data.faceOffsets[faceId],
+				data.faceVertexIndices.begin() + data.faceOffsets[faceId + 1]);
+			double fArea = 0.0;
+			computeFaceNormalAndArea(polygon, data.positions, fArea);
 			faceAreas.push_back(fArea);
 
 			totalArea += fArea;
@@ -2532,54 +2579,33 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getPolygonData(zIntArray(&polyConnects), zIntArray(&polyCounts))
 	{
-		polyConnects.clear();
-		polyCounts.clear();
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
-		{
-			if (!f.isActive()) continue;
-
-			vector<int> facevertices;
-			f.getVertices(facevertices);
-
-			polyCounts.push_back(facevertices.size());
-
-			for (int j = 0; j < facevertices.size(); j++)
-			{
-				polyConnects.push_back(facevertices[j]);
-			}
-		}
+		zMeshObjectStorage::read(*meshObj).polygonData(polyConnects, polyCounts);
 	}
 
 	ZSPACE_INLINE void zFnMesh::getMatrices_trimesh(MatrixXd& V, MatrixXi& F)
 	{
-		zPoint* vPositions = getRawVertexPositions();
-		MatrixXd triMesh_V(numVertices(), 3);
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		MatrixXd triMesh_V(data.numVertices(), 3);
 
 		// fill vertex matrix
-		for (int i = 0; i < numVertices(); i++)
+		for (int i = 0; i < data.numVertices(); i++)
 		{
-			triMesh_V(i, 0) = vPositions[i].x;
-			triMesh_V(i, 1) = vPositions[i].y;
-			triMesh_V(i, 2) = vPositions[i].z;
+			triMesh_V(i, 0) = data.positions[i].x;
+			triMesh_V(i, 1) = data.positions[i].y;
+			triMesh_V(i, 2) = data.positions[i].z;
 		}
 
 		V = triMesh_V;
 
 		// fill triangle matrix
-		MatrixXi FTris(numPolygons(), 3);
-
-		int nTris = 0;
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		MatrixXi FTris(data.numFaces(), 3);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			int i = f.getId();
-
-			zIntArray fVerts;
-			f.getVertices(fVerts);
-
-			FTris(i, 0) = fVerts[0] ;
-			FTris(i, 1) = fVerts[1] ;
-			FTris(i, 2) = fVerts[2] ;
+			const int begin = data.faceOffsets[faceId];
+			if (data.faceOffsets[faceId + 1] - begin != 3)
+				throw std::invalid_argument("getMatrices_trimesh requires triangular faces.");
+			for (int corner = 0; corner < 3; ++corner)
+				FTris(faceId, corner) = data.faceVertexIndices[begin + corner];
 		}
 
 		F = FTris;
@@ -2587,34 +2613,28 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getMatrices_quadmesh(MatrixXd& V, MatrixXi& F)
 	{
-		zPoint* vPositions = getRawVertexPositions();
-		MatrixXd quadMesh_V(numVertices(), 3);
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		MatrixXd quadMesh_V(data.numVertices(), 3);
 
 		// fill vertex matrix
-		for (int i = 0; i < numVertices(); i++)
+		for (int i = 0; i < data.numVertices(); i++)
 		{
-			quadMesh_V(i, 0) = vPositions[i].x;
-			quadMesh_V(i, 1) = vPositions[i].y;
-			quadMesh_V(i, 2) = vPositions[i].z;
+			quadMesh_V(i, 0) = data.positions[i].x;
+			quadMesh_V(i, 1) = data.positions[i].y;
+			quadMesh_V(i, 2) = data.positions[i].z;
 		}
 
 		V = quadMesh_V;
 
 		// fill triangle matrix
-		MatrixXi FQuads(numPolygons(), 4);
-
-		int nTris = 0;
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		MatrixXi FQuads(data.numFaces(), 4);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			int i = f.getId();
-
-			zIntArray fVerts;
-			f.getVertices(fVerts);
-
-			FQuads(i, 0) = fVerts[0];
-			FQuads(i, 1) = fVerts[1];
-			FQuads(i, 2) = fVerts[2];
-			FQuads(i, 3) = fVerts[3];
+			const int begin = data.faceOffsets[faceId];
+			if (data.faceOffsets[faceId + 1] - begin != 4)
+				throw std::invalid_argument("getMatrices_quadmesh requires quadrilateral faces.");
+			for (int corner = 0; corner < 4; ++corner)
+				FQuads(faceId, corner) = data.faceVertexIndices[begin + corner];
 		}
 
 		F = FQuads;
@@ -2622,12 +2642,15 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getEdgeData(zIntArray &edgeConnects, bool excludeBoundary)
 	{
+		if (!excludeBoundary)
+		{
+			edgeConnects = zMeshObjectStorage::read(*meshObj).edgeVertexIndices;
+			return;
+		}
 		edgeConnects.clear();
-		
 		for (zItMeshEdge e(*meshObj); !e.end(); e++)
 		{
-			if (excludeBoundary && e.onBoundary()) continue;
-
+			if (e.onBoundary()) continue;
 			edgeConnects.push_back(e.getHalfEdge(0).getVertex().getId());
 			edgeConnects.push_back(e.getHalfEdge(1).getVertex().getId());
 		}
@@ -2746,30 +2769,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getIsoMesh_mixed(zScalarArray& vertexScalars, float threshold, bool invertMesh, zObjectMesh& coutourMeshObj)
 	{
-
-		if (vertexScalars.size() != numVertices())
-		{
-			throw std::invalid_argument(" error: scalars values to match number of vertices");
-			return;
-		}
-
-		zFnMesh tempFn(coutourMeshObj);
-		tempFn.clear(); // clear memory if the mobject exists.
-
-		vector<zVector>positions;
-		vector<int>polyConnects;
-		vector<int>polyCounts;
-
-		unordered_map <string, int> positionVertex;
-
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
-		{
-			getIsolinePoly_mixed(vertexScalars, f, positions, polyConnects, polyCounts, positionVertex, threshold, invertMesh);
-		}
-
-		tempFn.create(positions, polyCounts, polyConnects);;
-
+		getIsoMesh(vertexScalars, threshold, invertMesh, coutourMeshObj);
 	}
 
 	ZSPACE_INLINE void zFnMesh::getIsoContour(zScalarArray& vertexScalars, float threshold, zPointArray& positions, zIntArray& edgeConnects,  zColorArray& cVertexColor, int precision, float distTolerance, bool selectedFaces, zColor selectedFaceColor)
@@ -2784,23 +2784,54 @@ namespace zSpace
 		positions.clear();
 		edgeConnects.clear();
 		cVertexColor.clear();
-
-		unordered_map <string, int> positionVertex;
-				
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		unordered_map<string, int> positionVertex;
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
 			if (selectedFaces)
 			{
-				if(f.getColor() == selectedFaceColor)
-					getIsoline(vertexScalars, f, positions, edgeConnects, cVertexColor, positionVertex, threshold, precision, distTolerance);
+				if (faceId >= data.faceColors.size()) continue;
+				zColor faceColor = data.faceColors[faceId];
+				if (!(faceColor == selectedFaceColor)) continue;
 			}
-			else getIsoline(vertexScalars, f, positions, edgeConnects, cVertexColor, positionVertex, threshold, precision, distTolerance);
-				
+			std::vector<ScalarCorner> intersections;
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
+			for (int i = begin; i < end; ++i)
+			{
+				const int next = (i + 1 == end) ? begin : i + 1;
+				const int aId = data.faceVertexIndices[i];
+				const int bId = data.faceVertexIndices[next];
+				ScalarCorner a{ data.positions[aId], vertexScalars[aId],
+					aId < data.vertexColors.size() ? data.vertexColors[aId] : zColor() };
+				ScalarCorner b{ data.positions[bId], vertexScalars[bId],
+					bId < data.vertexColors.size() ? data.vertexColors[bId] : zColor() };
+				const float da = a.scalar - threshold;
+				const float db = b.scalar - threshold;
+				if (std::abs(da) <= 1.0e-12f) intersections.push_back(a);
+				if (da * db < 0.0f) intersections.push_back(interpolateCorner(a, b, threshold));
+			}
+			for (std::size_t i = 0; i + 1 < intersections.size(); i += 2)
+			{
+				zPoint segmentStart = intersections[i].position;
+				zPoint segmentEnd = intersections[i + 1].position;
+				if (vectorLength(segmentEnd - segmentStart) <= distTolerance) continue;
+				for (int endpoint = 0; endpoint < 2; ++endpoint)
+				{
+					const auto& corner = intersections[i + endpoint];
+					int vertexId = -1;
+					zPoint position = corner.position;
+					if (!coreUtils.vertexExists(positionVertex, position, precision, vertexId))
+					{
+						vertexId = static_cast<int>(positions.size());
+						positions.push_back(position);
+						cVertexColor.push_back(corner.color);
+						coreUtils.addToPositionMap(positionVertex, position, vertexId, precision);
+					}
+					edgeConnects.push_back(vertexId);
+				}
+			}
 		}
-		
-	
-
 	}
 
 
@@ -2813,176 +2844,160 @@ namespace zSpace
 			return;
 		}
 
-		zFnMesh tempFn(coutourMeshObj);
-		tempFn.clear(); // clear memory if the mobject exists.
-
-		vector<zVector>positions;
-		vector<int>polyConnects;
-		vector<int>polyCounts;
-
-		unordered_map <string, int> positionVertex;
-
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		zPointArray positions;
+		zIntArray polyConnects;
+		zIntArray polyCounts;
+		zColorArray colors;
+		unordered_map<string, int> positionVertex;
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			getIsolinePoly(vertexScalars, f, positions, polyConnects, polyCounts, positionVertex, threshold, invertMesh);
+			std::vector<ScalarCorner> polygon;
+			for (int i = data.faceOffsets[faceId]; i < data.faceOffsets[faceId + 1]; ++i)
+			{
+				const int vertexId = data.faceVertexIndices[i];
+				polygon.push_back({ data.positions[vertexId], vertexScalars[vertexId],
+					vertexId < data.vertexColors.size() ? data.vertexColors[vertexId] : zColor() });
+			}
+			polygon = clipScalarPolygon(polygon, threshold, !invertMesh);
+			if (polygon.size() < 3) continue;
+			polyCounts.push_back(static_cast<int>(polygon.size()));
+			for (const auto& corner : polygon)
+			{
+				int vertexId = -1;
+				zPoint position = corner.position;
+				if (!coreUtils.vertexExists(positionVertex, position, PRECISION, vertexId))
+				{
+					vertexId = static_cast<int>(positions.size());
+					positions.push_back(position);
+					colors.push_back(corner.color);
+					coreUtils.addToPositionMap(positionVertex, position, vertexId, PRECISION);
+				}
+				polyConnects.push_back(vertexId);
+			}
 		}
-
-		tempFn.create(positions, polyCounts, polyConnects);;
+		zFnMesh tempFn(coutourMeshObj);
+		tempFn.create(positions, polyCounts, polyConnects);
+		if (colors.size() == positions.size()) tempFn.setVertexColors(colors, false);
 
 	}
 	
 	ZSPACE_INLINE void zFnMesh::getIsobandMesh(zScalarArray& vertexScalars, float inThresholdLow, float inThresholdHigh, zObjectMesh& coutourMeshObj)
 	{
-		zFnMesh tempFn(coutourMeshObj);
-		tempFn.clear(); // clear memory if the mobject exists.
-
-		vector<zVector>positions;
-		vector<int>polyConnects;
-		vector<int>polyCounts;
-
-		unordered_map <string, int> positionVertex;
-
-		
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		if (vertexScalars.size() != numVertices())
+			throw std::invalid_argument(" error: scalars values to match number of vertices");
+		const float low = std::min(inThresholdLow, inThresholdHigh);
+		const float high = std::max(inThresholdLow, inThresholdHigh);
+		zPointArray positions;
+		zIntArray polyConnects;
+		zIntArray polyCounts;
+		zColorArray colors;
+		unordered_map<string, int> positionVertex;
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			getIsobandPoly(vertexScalars, f, positions, polyConnects, polyCounts, positionVertex, (inThresholdLow < inThresholdHigh) ? inThresholdLow : inThresholdHigh, (inThresholdLow < inThresholdHigh) ? inThresholdHigh : inThresholdLow);
+			std::vector<ScalarCorner> polygon;
+			for (int i = data.faceOffsets[faceId]; i < data.faceOffsets[faceId + 1]; ++i)
+			{
+				const int vertexId = data.faceVertexIndices[i];
+				polygon.push_back({ data.positions[vertexId], vertexScalars[vertexId],
+					vertexId < data.vertexColors.size() ? data.vertexColors[vertexId] : zColor() });
+			}
+			polygon = clipScalarPolygon(polygon, low, true);
+			polygon = clipScalarPolygon(polygon, high, false);
+			if (polygon.size() < 3) continue;
+			polyCounts.push_back(static_cast<int>(polygon.size()));
+			for (const auto& corner : polygon)
+			{
+				int vertexId = -1;
+				zPoint position = corner.position;
+				if (!coreUtils.vertexExists(positionVertex, position, PRECISION, vertexId))
+				{
+					vertexId = static_cast<int>(positions.size());
+					positions.push_back(position);
+					colors.push_back(corner.color);
+					coreUtils.addToPositionMap(positionVertex, position, vertexId, PRECISION);
+				}
+				polyConnects.push_back(vertexId);
+			}
 		}
-
-		//printf("\n %i %i ", positions.size(), polyCounts.size());
-		tempFn.create(positions, polyCounts, polyConnects);;
-		
+		zFnMesh tempFn(coutourMeshObj);
+		tempFn.create(positions, polyCounts, polyConnects);
+		if (colors.size() == positions.size()) tempFn.setVertexColors(colors, false);
 	}
 
 	//---- TRI-MESH MODIFIER METHODS
 
 	ZSPACE_INLINE void zFnMesh::faceTriangulate(zItMeshFace &face)
 	{
-		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() == 0 || zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
+		const auto source = zMeshObjectStorage::read(*meshObj);
+		const int targetFace = face.getId();
+		if (targetFace < 0 || targetFace >= source.numFaces())
+			throw std::out_of_range("faceTriangulate face index is out of range.");
 
-		vector<int> fVerts;
-		face.getVertices(fVerts);
-
-		int numfaces_original = zMeshObjectStorage::get(*meshObj).faces.size();
-		int numHalfEdges_original = zMeshObjectStorage::get(*meshObj).halfEdges.size();
-
-		if (fVerts.size() != 3)
+		zIntArray polygonCounts;
+		zIntArray polygonConnects;
+		zColorArray faceColors;
+		for (int faceId = 0; faceId < source.numFaces(); ++faceId)
 		{
-			// compute polygon Triangles
-			int n_Tris = 0;
-			vector<int> Tri_connects;
-			face.getTriangles(n_Tris, Tri_connects);
-
-			//printf("\n %i numtris: %i %i ", faceIndex, n_Tris, Tri_connects.size());
-
-			for (int j = 0; j < n_Tris; j++)
+			zIntArray polygon(source.faceVertexIndices.begin() + source.faceOffsets[faceId],
+				source.faceVertexIndices.begin() + source.faceOffsets[faceId + 1]);
+			if (faceId == targetFace && polygon.size() > 3)
 			{
-				vector<int> triVerts;
-				triVerts.push_back(Tri_connects[j * 3]);
-				triVerts.push_back(Tri_connects[j * 3 + 1]);
-				triVerts.push_back(Tri_connects[j * 3 + 2]);
-
-				//printf("\n %i %i %i ", Tri_connects[j * 3], Tri_connects[j * 3 + 1], Tri_connects[j * 3 + 2]);
-
-				// check if edges e01, e12 or e20					
-				zItMeshHalfEdge e01, e12, e20;
-
-				bool e01_Boundary = false;
-				bool e12_Boundary = false;
-				bool e20_Boundary = false;
-
-				for (int k = 0; k < triVerts.size(); k++)
+				const zIntArray triangles = triangulatePolygon(polygon, source.positions);
+				for (int i = 0; i < triangles.size(); i += 3)
 				{
-
-					if (k == 0)
-					{
-						addEdges(triVerts[k], triVerts[(k + 1) % triVerts.size()], true, e01);
-
-						if (e01.getId() < numHalfEdges_original)
-						{
-							if (e01.onBoundary())  e01_Boundary = true;
-						}
-					}
-
-					if (k == 1)
-					{
-						addEdges(triVerts[k], triVerts[(k + 1) % triVerts.size()], true, e12);
-
-						if (e12.getId() < numHalfEdges_original)
-						{
-							if (e12.onBoundary())  e12_Boundary = true;
-						}
-					}
-
-					if (k == 2)
-					{
-						addEdges(triVerts[k], triVerts[(k + 1) % triVerts.size()], true, e20);
-
-						if (e20.getId() < numHalfEdges_original)
-						{
-							if (e20.onBoundary())  e20_Boundary = true;
-						}
-					}
+					polygonCounts.push_back(3);
+					polygonConnects.insert(polygonConnects.end(), triangles.begin() + i, triangles.begin() + i + 3);
+					if (faceId < source.faceColors.size()) faceColors.push_back(source.faceColors[faceId]);
 				}
-
-				//printf("\n %i %i %i ", e01.getId(), e12.getId(), e20.getId());
-
-				if (j > 0)
-				{
-					zItMeshFace newFace;
-					bool check = addPolygon(newFace);
-
-					newFace.setHalfEdge(e01);
-
-					if (!e01_Boundary) e01.setFace(newFace);
-					if (!e12_Boundary) e12.setFace(newFace);
-					if (!e20_Boundary) e20.setFace(newFace);
-				}
-				else
-				{
-					if (!e01_Boundary) face.setHalfEdge(e01);
-					else if (!e12_Boundary) face.setHalfEdge(e12);
-					else if (!e20_Boundary) face.setHalfEdge(e20);
-
-
-					if (!e01_Boundary) e01.setFace(face);
-					if (!e12_Boundary) e12.setFace(face);
-					if (!e20_Boundary) e20.setFace(face);
-				}
-
-				// update edge pointers
-				e01.setNext(e12);
-				e12.setPrev(e01);
-
-				e01.setPrev(e20);
-				e20.setNext(e01);
-
-				e12.setNext(e20);
-				e20.setPrev(e12);
+			}
+			else
+			{
+				polygonCounts.push_back(static_cast<int>(polygon.size()));
+				polygonConnects.insert(polygonConnects.end(), polygon.begin(), polygon.end());
+				if (faceId < source.faceColors.size()) faceColors.push_back(source.faceColors[faceId]);
 			}
 		}
+		zMeshObjectStorage::set(*meshObj, source.positions, polygonCounts, polygonConnects);
+		auto& result = zMeshObjectStorage::edit(*meshObj);
+		result.vertexColors = source.vertexColors;
+		result.vertexWeights = source.vertexWeights;
+		result.vertexNormals = source.vertexNormals;
+		result.faceColors = faceColors;
+		computeMeshNormals();
 	}
 
 	ZSPACE_INLINE void zFnMesh::triangulate()
 	{
-		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() == 0 || zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
-
-		// iterate through faces and triangulate faces with more than 3 vetices
-		int numfaces_original = zMeshObjectStorage::get(*meshObj).faces.size();
-
-		for (int i = 0; i < numfaces_original; i++)
+		const auto source = zMeshObjectStorage::read(*meshObj);
+		zIntArray polygonCounts;
+		zIntArray polygonConnects;
+		zColorArray faceColors;
+		for (int faceId = 0; faceId < source.numFaces(); ++faceId)
 		{
-			zItMeshFace f(*meshObj, i);
-			if (!f.isActive()) continue;
-
-			faceTriangulate(f);
+			zIntArray polygon(source.faceVertexIndices.begin() + source.faceOffsets[faceId],
+				source.faceVertexIndices.begin() + source.faceOffsets[faceId + 1]);
+			const zIntArray triangles = triangulatePolygon(polygon, source.positions);
+			for (int i = 0; i < triangles.size(); i += 3)
+			{
+				polygonCounts.push_back(3);
+				polygonConnects.insert(polygonConnects.end(), triangles.begin() + i, triangles.begin() + i + 3);
+				if (faceId < source.faceColors.size()) faceColors.push_back(source.faceColors[faceId]);
+			}
 		}
-
+		zMeshObjectStorage::set(*meshObj, source.positions, polygonCounts, polygonConnects);
+		auto& result = zMeshObjectStorage::edit(*meshObj);
+		result.vertexColors = source.vertexColors;
+		result.vertexWeights = source.vertexWeights;
+		result.vertexNormals = source.vertexNormals;
+		result.faceColors = faceColors;
 		computeMeshNormals();
 	}
 
 	//---- DELETE MODIFIER METHODS
 
+#if 0
 	ZSPACE_INLINE void zFnMesh::deleteVertex(int index, bool removeInactiveElems)
 	{
 		//if (index >= zMeshObjectStorage::get(*meshObj).vertices.size()) throw std::invalid_argument(" error: index out of bounds.");
@@ -3580,6 +3595,8 @@ namespace zSpace
 
 	}
 
+#endif
+
 	ZSPACE_INLINE zItMeshVertex zFnMesh::splitEdge(zItMeshEdge &edge, double edgeFactor, bool checkDuplicates )
 	{
 
@@ -3771,6 +3788,7 @@ namespace zSpace
 		return newVertex;
 	}
 
+#if 0
 	ZSPACE_INLINE int zFnMesh::detachEdge(int index) { return 0; }
 
 	ZSPACE_INLINE void zFnMesh::flipTriangleEdge(zItMeshEdge &edge)
@@ -4052,6 +4070,8 @@ namespace zSpace
 		computeMeshNormals();
 		
 	}
+
+#endif
 
 	ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 	{
@@ -8130,6 +8150,7 @@ namespace zSpace
 		zMeshObjectStorage::get(*meshObj).removeFromHalfEdgesMap(he.getStartVertex().getId(), he.getVertex().getId());
 	}
 
+#if 0
 	ZSPACE_INLINE void zFnMesh::removeInactive(zHEData type)
 	{
 		//  Vertex		
@@ -8257,4 +8278,5 @@ namespace zSpace
 
 		else throw std::invalid_argument(" error: invalid zHEData type");
 	}
+#endif
 }

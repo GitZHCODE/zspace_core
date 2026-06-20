@@ -82,3 +82,41 @@ scene.draw(mesh, display);
 ```
 
 New code should use reusable display styles with `zDisplayScene`.
+
+## Mesh Storage
+
+`zObjectMesh` now uses compact face-list arrays as its authoritative storage:
+
+- vertex positions;
+- face offsets and face-vertex indices;
+- derived unique edge endpoint pairs;
+- vertex, edge, and face attributes.
+
+The previous half-edge mesh is an internal lazy topology cache. Geometry IO,
+display, bulk function-set methods, and vertex/edge/face iteration do not build
+that cache. A half-edge-dependent query builds and reuses it automatically for
+a consistently oriented manifold mesh. Such a query reports an error for a
+non-manifold mesh instead of rejecting the face-list geometry itself.
+
+`zItMeshVertex`, `zItMeshEdge`, and `zItMeshFace` are index-backed facades over
+the face-list representation. Their local geometry and attribute access works
+for manifold and non-manifold meshes. Half-edge traversal remains available
+through topology-dependent methods and `zItMeshHalfEdge` during migration.
+
+Topology-editing methods in `zFnMesh` are transitional compatibility APIs. New
+geometry algorithms should operate on face-list data and replace topology in a
+single validated operation. The remaining cleanup is to remove public
+incremental half-edge editing and reduce internal maintenance to topology
+construction, validation, cache invalidation, and legacy synchronization.
+
+The following `zFnMesh` algorithms now operate directly on face-list storage:
+
+- edge and face centers;
+- face areas, mesh triangles, and volume calculations;
+- triangle and quad matrix extraction;
+- whole-mesh and single-face triangulation;
+- isoline, iso-mesh, and isoband extraction with interpolated colors.
+
+These operations support non-manifold input because they do not request the
+lazy half-edge cache. Isoline and isoband extraction accepts triangles, quads,
+and simple polygons rather than relying on quad-only marching-square cases.

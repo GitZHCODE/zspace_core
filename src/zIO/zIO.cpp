@@ -53,14 +53,13 @@ namespace zSpace
 					sourceEdges[{ edge.first, edge.second }] = i / 2;
 				}
 
+				zIntArray targetEdgeConnects;
+				functionSet.getEdgeData(targetEdgeConnects);
 				zColorArray orderedColors;
 				zDoubleArray orderedWeights;
-				for (zItMeshEdge edge(mesh); !edge.end(); edge++)
+				for (std::size_t i = 0; i + 1 < targetEdgeConnects.size(); i += 2)
 				{
-					zIntArray vertices;
-					edge.getVertices(vertices);
-					if (vertices.size() != 2) continue;
-					const auto endpoints = std::minmax(vertices[0], vertices[1]);
+					const auto endpoints = std::minmax(targetEdgeConnects[i], targetEdgeConnects[i + 1]);
 					const auto source = sourceEdges.find({ endpoints.first, endpoints.second });
 					if (source == sourceEdges.end()) continue;
 					if (source->second < data.edgeColors.size())
@@ -109,25 +108,8 @@ namespace zSpace
 				data.edgeAttributes.push_back({ color.r, color.g, color.b, color.a, weight });
 			}
 
-			for (zItMeshFace face(mesh); !face.end(); face++)
-			{
-				if (!face.isActive()) continue;
-				zIntArray vertices;
-				face.getVertices(vertices);
-				data.polygonCounts.push_back(static_cast<int>(vertices.size()));
-				data.polygonConnects.insert(data.polygonConnects.end(), vertices.begin(), vertices.end());
-			}
-
-			for (zItMeshEdge edge(mesh); !edge.end(); edge++)
-			{
-				if (!edge.isActive()) continue;
-				zIntArray vertices;
-				edge.getVertices(vertices);
-				if (vertices.size() != 2)
-					return zIOResult::error("Mesh contains an edge without two vertices.");
-				data.edgeConnects.push_back(vertices[0]);
-				data.edgeConnects.push_back(vertices[1]);
-			}
+			functionSet.getPolygonData(data.polygonConnects, data.polygonCounts);
+			functionSet.getEdgeData(data.edgeConnects);
 
 			if (data.positions.empty() || data.polygonCounts.empty())
 				return zIOResult::error("Mesh contains no writable geometry.");

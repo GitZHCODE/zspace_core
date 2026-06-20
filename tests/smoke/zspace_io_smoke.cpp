@@ -148,6 +148,29 @@ namespace
 		require(normals.size() == 1 && normals[0].z > 0.99f, "external OBJ normal import");
 	}
 
+	void testNonManifoldMeshIO(const std::filesystem::path& directory)
+	{
+		zObjectMesh source;
+		zFnMesh sourceFn(source);
+		zPointArray positions = {
+			zPoint(0, 0, 0), zPoint(1, 0, 0), zPoint(0.5, 1, 0),
+			zPoint(0.5, -1, 0), zPoint(0.5, 0, 1)
+		};
+		zIntArray counts = { 3, 3, 3 };
+		zIntArray connects = { 0, 1, 2, 1, 0, 3, 0, 1, 4 };
+		sourceFn.create(positions, counts, connects);
+
+		const auto path = directory / "nonmanifold.json";
+		requireSuccess(zIO::writeMesh(path.string(), source));
+
+		zObjectMesh restored;
+		requireSuccess(zIO::readMesh(path.string(), restored));
+		zFnMesh restoredFn(restored);
+		require(restoredFn.numVertices() == 5, "non-manifold IO vertex count");
+		require(restoredFn.numPolygons() == 3, "non-manifold IO polygon count");
+		require(restoredFn.numEdges() == 7, "non-manifold IO edge count");
+	}
+
 	void testGraph(const std::filesystem::path& directory)
 	{
 		zObjectGraph source;
@@ -222,6 +245,7 @@ int main()
 
 		testMesh(directory);
 		testExternalOBJ(directory);
+		testNonManifoldMeshIO(directory);
 		testGraph(directory);
 		testPointCloud(directory);
 

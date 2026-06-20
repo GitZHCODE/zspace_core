@@ -32,11 +32,12 @@ namespace zSpace
 		zDisplayBufferOffsets& offsets = scene.impl_->meshBuffers[&object];
 		const int baseVertex = displayUtils.bufferObj.nVertices;
 
+		zFnMesh fnMesh(object);
+		zIntArray edgeConnects;
+		fnMesh.getEdgeData(edgeConnects);
 		zIntArray edgeIndices;
-		for (zItMeshEdge edge(object); !edge.end(); edge++)
+		for (int edgeId = 0; edgeId < static_cast<int>(edgeConnects.size() / 2); ++edgeId)
 		{
-			if (!edge.isActive()) continue;
-			const int edgeId = edge.getId();
 			if (dihedralEdgesOnly)
 			{
 				if (edgeId >= static_cast<int>(dihedralAngles.size())) continue;
@@ -44,23 +45,17 @@ namespace zSpace
 				if (std::abs(angle) <= angleThreshold && angle != -1) continue;
 			}
 
-			zIntArray vertices;
-			edge.getVertices(vertices);
-			for (int vertexId : vertices) edgeIndices.push_back(vertexId + baseVertex);
+			edgeIndices.push_back(edgeConnects[edgeId * 2] + baseVertex);
+			edgeIndices.push_back(edgeConnects[edgeId * 2 + 1] + baseVertex);
 		}
 		offsets.edge = displayUtils.bufferObj.appendEdgeIndices(edgeIndices);
 
 		zIntArray faceIndices;
-		for (zItMeshFace face(object); !face.end(); face++)
-		{
-			if (!face.isActive()) continue;
-			zIntArray vertices;
-			face.getVertices(vertices);
-			for (int vertexId : vertices) faceIndices.push_back(vertexId + baseVertex);
-		}
+		zIntArray faceCounts;
+		fnMesh.getPolygonData(faceIndices, faceCounts);
+		for (int& vertexId : faceIndices) vertexId += baseVertex;
 		offsets.face = displayUtils.bufferObj.appendFaceIndices(faceIndices);
 
-		zFnMesh fnMesh(object);
 		zPointArray positions;
 		zVectorArray normals;
 		zColorArray colors;
@@ -106,18 +101,15 @@ namespace zSpace
 
 		if (verticesVisible())
 		{
-			for (zItMeshVertex vertex(object); !vertex.end(); vertex++)
+			for (int id = 0; id < static_cast<int>(positions.size()); ++id)
 			{
-				if (!vertex.isActive()) continue;
-				const int id = vertex.getId();
-				zPoint position = vertex.getPosition();
 				const zColor color = id < static_cast<int>(vertexColors.size())
 					? vertexColors[id]
 					: zColor(1, 0, 0, 1);
 				const double weight = id < static_cast<int>(vertexWeights.size())
 					? vertexWeights[id]
 					: 1.0;
-				displayUtils.drawPoint(position, color, weight);
+				displayUtils.drawPoint(positions[id], color, weight);
 			}
 		}
 
@@ -132,21 +124,19 @@ namespace zSpace
 
 		if (edgesVisible())
 		{
-			for (zItMeshEdge edge(object); !edge.end(); edge++)
+			zIntArray edgeConnects;
+			fnMesh.getEdgeData(edgeConnects);
+			for (int id = 0; id < static_cast<int>(edgeConnects.size() / 2); ++id)
 			{
-				if (!edge.isActive()) continue;
-				zPointArray edgePositions;
-				edge.getVertexPositions(edgePositions);
-				if (edgePositions.size() < 2) continue;
-
-				const int id = edge.getId();
 				const zColor color = id < static_cast<int>(edgeColors.size())
 					? edgeColors[id]
 					: zColor();
 				const double weight = id < static_cast<int>(edgeWeights.size())
 					? edgeWeights[id]
 					: 1.0;
-				displayUtils.drawLine(edgePositions[0], edgePositions[1], color, weight);
+				const int a = edgeConnects[id * 2];
+				const int b = edgeConnects[id * 2 + 1];
+				displayUtils.drawLine(positions[a], positions[b], color, weight);
 			}
 		}
 
@@ -162,14 +152,15 @@ namespace zSpace
 
 		if (facesVisible())
 		{
-			for (zItMeshFace face(object); !face.end(); face++)
+			zIntArray polygonConnects;
+			zIntArray polygonCounts;
+			fnMesh.getPolygonData(polygonConnects, polygonCounts);
+			int cursor = 0;
+			for (int id = 0; id < static_cast<int>(polygonCounts.size()); ++id)
 			{
-				if (!face.isActive()) continue;
 				zPointArray facePositions;
-				face.getVertexPositions(facePositions);
-				if (facePositions.empty()) continue;
-
-				const int id = face.getId();
+				for (int i = 0; i < polygonCounts[id]; ++i)
+					facePositions.push_back(positions[polygonConnects[cursor++]]);
 				const zColor color = id < static_cast<int>(faceColors.size())
 					? faceColors[id]
 					: zColor(0.5, 0.5, 0.5, 1);
@@ -201,19 +192,19 @@ namespace zSpace
 		fnMesh.getEdgeColors(colors);
 		fnMesh.getEdgeWeights(weights);
 
-		for (zItMeshEdge edge(object); !edge.end(); edge++)
+		zPointArray vertexPositions;
+		zIntArray edgeConnects;
+		fnMesh.getVertexPositions(vertexPositions);
+		fnMesh.getEdgeData(edgeConnects);
+		for (int id = 0; id < static_cast<int>(edgeConnects.size() / 2); ++id)
 		{
-			if (!edge.isActive()) continue;
-			const int id = edge.getId();
 			if (std::abs(dihedralAngles()[id]) <= dihedralAngleThreshold()) continue;
-
-			zPointArray positions;
-			edge.getVertexPositions(positions);
-			if (positions.size() < 2) continue;
 
 			const zColor color = id < static_cast<int>(colors.size()) ? colors[id] : zColor();
 			const double weight = id < static_cast<int>(weights.size()) ? weights[id] : 1.0;
-			scene.impl_->backend.drawLine(positions[0], positions[1], color, weight);
+			scene.impl_->backend.drawLine(
+				vertexPositions[edgeConnects[id * 2]],
+				vertexPositions[edgeConnects[id * 2 + 1]], color, weight);
 		}
 	}
 
@@ -221,11 +212,15 @@ namespace zSpace
 		zObjectMesh& object,
 		zDisplayScene& scene) const
 	{
-		for (zItMeshVertex vertex(object); !vertex.end(); vertex++)
+		zFnMesh fnMesh(object);
+		zPointArray positions;
+		zVectorArray normals;
+		fnMesh.getVertexPositions(positions);
+		fnMesh.getVertexNormals(normals);
+		for (int id = 0; id < static_cast<int>(positions.size()) && id < static_cast<int>(normals.size()); ++id)
 		{
-			if (!vertex.isActive()) continue;
-			zPoint start = vertex.getPosition();
-			zPoint end = start + vertex.getNormal() * normalScale();
+			zPoint start = positions[id];
+			zPoint end = start + normals[id] * normalScale();
 			scene.impl_->backend.drawLine(start, end, zColor(0, 1, 0, 1));
 		}
 	}
@@ -238,12 +233,12 @@ namespace zSpace
 		if (faceCenters().size() != static_cast<size_t>(fnMesh.numPolygons()))
 			throw std::invalid_argument("error: face centers do not match the mesh faces.");
 
-		for (zItMeshFace face(object); !face.end(); face++)
+		zVectorArray normals;
+		fnMesh.getFaceNormals(normals);
+		for (int id = 0; id < static_cast<int>(normals.size()); ++id)
 		{
-			if (!face.isActive()) continue;
-			const int id = face.getId();
 			zPoint start = faceCenters()[id];
-			zPoint end = start + face.getNormal() * normalScale();
+			zPoint end = start + normals[id] * normalScale();
 			scene.impl_->backend.drawLine(start, end, zColor(0, 1, 0, 1));
 		}
 	}

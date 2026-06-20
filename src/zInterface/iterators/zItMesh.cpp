@@ -24,69 +24,65 @@ namespace zSpace
 	ZSPACE_INLINE zItMeshVertex::zItMeshVertex()
 	{
 		meshObj = nullptr;
+		index = 0;
 	}
 
 	ZSPACE_INLINE zItMeshVertex::zItMeshVertex(zObjectMesh &_meshObj)
 	{
 		meshObj = &_meshObj;
-
-		iter = zMeshObjectStorage::get(*meshObj).vertices.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE zItMeshVertex::zItMeshVertex(zObjectMesh &_meshObj, int _index)
 	{
 		meshObj = &_meshObj;
-
-		iter = zMeshObjectStorage::get(*meshObj).vertices.begin();
-
-		if (_index < 0 && _index >= zMeshObjectStorage::get(*meshObj).vertices.size()) throw std::invalid_argument(" error: index out of bounds");
-		advance(iter, _index);
+		if (_index < 0 || _index >= zMeshObjectStorage::read(*meshObj).numVertices()) throw std::invalid_argument(" error: index out of bounds");
+		index = _index;
 	}
 
 	//---- OVERRIDE METHODS
 
 	ZSPACE_INLINE void zItMeshVertex::begin()
 	{
-		iter = zMeshObjectStorage::get(*meshObj).vertices.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE void zItMeshVertex::operator++(int)
 	{
-		iter++;	
+		index++;
 	}
 
 	ZSPACE_INLINE void zItMeshVertex::operator--(int)
 	{
-		iter--;	
+		index--;
 	}
 
 	ZSPACE_INLINE bool zItMeshVertex::end()
 	{
-		return (iter == zMeshObjectStorage::get(*meshObj).vertices.end()) ? true : false;
+		return !meshObj || index >= zMeshObjectStorage::read(*meshObj).numVertices();
 	}
 
 	ZSPACE_INLINE void zItMeshVertex::reset()
 	{
-		iter = zMeshObjectStorage::get(*meshObj).vertices.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE int zItMeshVertex::size()
 	{
 
-		return zMeshObjectStorage::get(*meshObj).vertices.size();
+		return zMeshObjectStorage::read(*meshObj).numVertices();
 	}
 
 	ZSPACE_INLINE void zItMeshVertex::deactivate()
 	{
-		zMeshObjectStorage::get(*meshObj).vHandles[iter->getId()] = zVertexHandle();
-		iter->reset();
+		throw std::logic_error("Mesh topology editing is not supported by face-list iterators.");
 	}
 
 	//---- TOPOLOGY QUERY METHODS
 
 	ZSPACE_INLINE void zItMeshVertex::getConnectedHalfEdges(zItMeshHalfEdgeArray& halfedges)
 	{
-		if (this->iter->getHalfEdge() == -1) return;
+		if (zMeshObjectStorage::get(*meshObj).vertices[index].getHalfEdge() == -1) return;
 
 		if (!getHalfEdge().isActive()) return;
 
@@ -105,7 +101,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshVertex::getConnectedHalfEdges(zIntArray& halfedgeIndicies)
 	{
-		if (this->iter->getHalfEdge() == -1) return;
+		if (zMeshObjectStorage::get(*meshObj).vertices[index].getHalfEdge() == -1) return;
 
 		if (!getHalfEdge().isActive()) return;
 
@@ -557,37 +553,39 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItMeshVertex::getId()
 	{
-		return iter->getId();
+		return index;
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshVertex::getHalfEdge()
 	{
-		return zItMeshHalfEdge(*meshObj, iter->getHalfEdge());
+		return zItMeshHalfEdge(*meshObj, zMeshObjectStorage::get(*meshObj).vertices[index].getHalfEdge());
 	}
 
 	ZSPACE_INLINE zItVertex zItMeshVertex::getRawIter()
 	{
-		return iter;
+		auto out = zMeshObjectStorage::get(*meshObj).vertices.begin();
+		std::advance(out, index);
+		return out;
 	}
 
 	ZSPACE_INLINE zVector zItMeshVertex::getPosition()
 	{
-		return zMeshObjectStorage::get(*meshObj).vertexPositions[getId()];
+		return zMeshObjectStorage::read(*meshObj).positions[index];
 	}
 
 	ZSPACE_INLINE zVector* zItMeshVertex::getRawPosition()
 	{
-		return &zMeshObjectStorage::get(*meshObj).vertexPositions[getId()];
+		return &zMeshObjectStorage::edit(*meshObj).positions[index];
 	}
 
 	ZSPACE_INLINE zVector zItMeshVertex::getNormal()
 	{
-		return zMeshObjectStorage::get(*meshObj).vertexNormals[getId()];
+		return zMeshObjectStorage::read(*meshObj).vertexNormals[index];
 	}
 
 	ZSPACE_INLINE zVector* zItMeshVertex::getRawNormal()
 	{
-		return &zMeshObjectStorage::get(*meshObj).vertexNormals[getId()];
+		return &zMeshObjectStorage::edit(*meshObj).vertexNormals[index];
 	}
 
 	ZSPACE_INLINE void zItMeshVertex::getNormals(vector<zVector> &vNormals)
@@ -604,19 +602,20 @@ namespace zSpace
 
 	ZSPACE_INLINE zColor zItMeshVertex::getColor()
 	{
-		return zMeshObjectStorage::get(*meshObj).vertexColors[getId()];
+		return zMeshObjectStorage::read(*meshObj).vertexColors[index];
 	}
 
 	ZSPACE_INLINE zColor* zItMeshVertex::getRawColor()
 	{
-		return &zMeshObjectStorage::get(*meshObj).vertexColors[getId()];
+		return &zMeshObjectStorage::edit(*meshObj).vertexColors[index];
 	}
 
 	//---- SET METHODS
 
 	ZSPACE_INLINE void zItMeshVertex::setId(int _id)
 	{
-		iter->setId(_id);
+		if (_id < 0 || _id >= size()) throw std::invalid_argument("vertex index out of bounds.");
+		index = _id;
 	}
 
 	ZSPACE_INLINE void zItMeshVertex::setHalfEdge(zItMeshHalfEdge &he)
@@ -626,26 +625,26 @@ namespace zSpace
 		int id = getId();
 		int heId = he.getId();
 
-		iter->setHalfEdge(heId);
+		zMeshObjectStorage::get(*meshObj).vertices[index].setHalfEdge(heId);
 
 		zMeshObjectStorage::get(*meshObj).vHandles[id].he = heId;
 	}
 
 	ZSPACE_INLINE void zItMeshVertex::setPosition(zVector pos)
 	{
-		zMeshObjectStorage::get(*meshObj).vertexPositions[getId()] = pos;
+		zMeshObjectStorage::edit(*meshObj).positions[index] = pos;
 	}
 
 	ZSPACE_INLINE void zItMeshVertex::setColor(zColor col)
 	{
-		zMeshObjectStorage::get(*meshObj).vertexColors[getId()] = col;
+		zMeshObjectStorage::edit(*meshObj).vertexColors[index] = col;
 	}
 
 	//---- UTILITY METHODS
 
 	ZSPACE_INLINE bool zItMeshVertex::isActive()
 	{
-		return iter->isActive();
+		return meshObj && index >= 0 && index < size();
 	}
 
 	//---- OPERATOR METHODS
@@ -671,23 +670,20 @@ namespace zSpace
 	ZSPACE_INLINE zItMeshEdge::zItMeshEdge()
 	{
 		meshObj = nullptr;
+		index = 0;
 	}
 
 	ZSPACE_INLINE zItMeshEdge::zItMeshEdge(zObjectMesh &_meshObj)
 	{
 		meshObj = &_meshObj;
-
-		iter = zMeshObjectStorage::get(*meshObj).edges.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE zItMeshEdge::zItMeshEdge(zObjectMesh &_meshObj, int _index)
 	{
 		meshObj = &_meshObj;
-
-		iter = zMeshObjectStorage::get(*meshObj).edges.begin();
-
-		if (_index < 0 && _index >= zMeshObjectStorage::get(*meshObj).edges.size()) throw std::invalid_argument(" error: index out of bounds");
-		advance(iter, _index);
+		if (_index < 0 || _index >= zMeshObjectStorage::read(*meshObj).numEdges()) throw std::invalid_argument(" error: index out of bounds");
+		index = _index;
 	}
 
 	//--------------------------
@@ -696,55 +692,55 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshEdge::begin()
 	{
-		iter = zMeshObjectStorage::get(*meshObj).edges.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE void zItMeshEdge::operator++(int)
 	{
-		iter++;
+		index++;
 	}
 
 	ZSPACE_INLINE void zItMeshEdge::operator--(int)
 	{
-		iter--;
+		index--;
 	}
 
 	ZSPACE_INLINE bool zItMeshEdge::end()
 	{
-		return (iter == zMeshObjectStorage::get(*meshObj).edges.end()) ? true : false;
+		return !meshObj || index >= zMeshObjectStorage::read(*meshObj).numEdges();
 	}
 
 	ZSPACE_INLINE void zItMeshEdge::reset()
 	{
-		iter = zMeshObjectStorage::get(*meshObj).edges.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE int zItMeshEdge::size()
 	{
 
-		return zMeshObjectStorage::get(*meshObj).edges.size();
+		return zMeshObjectStorage::read(*meshObj).numEdges();
 	}
 
 	ZSPACE_INLINE void zItMeshEdge::deactivate()
 	{
-		zMeshObjectStorage::get(*meshObj).eHandles[iter->getId()] = zEdgeHandle();
-		iter->reset();
-
-
+		throw std::logic_error("Mesh topology editing is not supported by face-list iterators.");
 	}
 
 	//--- TOPOLOGY QUERY METHODS 
 
 	ZSPACE_INLINE void zItMeshEdge::getVertices(zItMeshVertexArray &verticies)
 	{
-		verticies.push_back(getHalfEdge(0).getVertex());
-		verticies.push_back(getHalfEdge(1).getVertex());
+		zIntArray ids;
+		getVertices(ids);
+		verticies.emplace_back(*meshObj, ids[0]);
+		verticies.emplace_back(*meshObj, ids[1]);
 	}
 
 	ZSPACE_INLINE void zItMeshEdge::getVertices(zIntArray &vertexIndicies)
 	{
-		vertexIndicies.push_back(getHalfEdge(0).getVertex().getId());
-		vertexIndicies.push_back(getHalfEdge(1).getVertex().getId());
+		const auto& edges = zMeshObjectStorage::read(*meshObj).edgeVertexIndices;
+		vertexIndicies.push_back(edges[index * 2]);
+		vertexIndicies.push_back(edges[index * 2 + 1]);
 	}
 
 	ZSPACE_INLINE void zItMeshEdge::getVertexPositions(vector<zVector> &vertPositions)
@@ -755,7 +751,7 @@ namespace zSpace
 
 		for (int i = 0; i < eVerts.size(); i++)
 		{
-			vertPositions.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[eVerts[i]]);
+			vertPositions.push_back(zMeshObjectStorage::read(*meshObj).positions[eVerts[i]]);
 		}
 	}
 
@@ -839,34 +835,37 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItMeshEdge::getId()
 	{
-		return iter->getId();
+		return index;
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshEdge::getHalfEdge(int _index)
 	{	
-		return zItMeshHalfEdge(*meshObj, iter->getHalfEdge(_index));
+		return zItMeshHalfEdge(*meshObj, zMeshObjectStorage::get(*meshObj).edges[index].getHalfEdge(_index));
 	}
 
 	ZSPACE_INLINE zItEdge  zItMeshEdge::getRawIter()
 	{
-		return iter;
+		auto out = zMeshObjectStorage::get(*meshObj).edges.begin();
+		std::advance(out, index);
+		return out;
 	}
 
 	ZSPACE_INLINE zColor zItMeshEdge::getColor()
 	{
-		return zMeshObjectStorage::get(*meshObj).edgeColors[getId()];
+		return zMeshObjectStorage::read(*meshObj).edgeColors[index];
 	}
 
 	ZSPACE_INLINE zColor* zItMeshEdge::getRawColor()
 	{
-		return &zMeshObjectStorage::get(*meshObj).edgeColors[getId()];
+		return &zMeshObjectStorage::edit(*meshObj).edgeColors[index];
 	}
 
 	//---- SET METHODS
 
 	ZSPACE_INLINE void zItMeshEdge::setId(int _id)
 	{
-		iter->setId(_id);
+		if (_id < 0 || _id >= size()) throw std::invalid_argument("edge index out of bounds.");
+		index = _id;
 	}
 
 	ZSPACE_INLINE void zItMeshEdge::setHalfEdge(zItMeshHalfEdge &he, int _index)
@@ -875,7 +874,7 @@ namespace zSpace
 
 		int id = getId();
 		int heId = he.getId();
-		iter->setHalfEdge(heId, _index);
+		zMeshObjectStorage::get(*meshObj).edges[index].setHalfEdge(heId, _index);
 
 		if (_index == 0) zMeshObjectStorage::get(*meshObj).eHandles[id].he0 = heId;
 		if (_index == 1) zMeshObjectStorage::get(*meshObj).eHandles[id].he1 = heId;
@@ -883,19 +882,19 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshEdge::setColor(zColor col)
 	{
-		zMeshObjectStorage::get(*meshObj).edgeColors[getId()] = col;
+		zMeshObjectStorage::edit(*meshObj).edgeColors[index] = col;
 	}
 
 	ZSPACE_INLINE void zItMeshEdge::setWeight(double wt)
 	{
-		zMeshObjectStorage::get(*meshObj).edgeWeights[getId()] = wt;
+		zMeshObjectStorage::edit(*meshObj).edgeWeights[index] = wt;
 	}
 
 	//---- UTILITY METHODS
 
 	ZSPACE_INLINE bool zItMeshEdge::isActive()
 	{
-		return iter->isActive();
+		return meshObj && index >= 0 && index < size();
 	}
 
 	//---- OPERATOR METHODS
@@ -922,65 +921,58 @@ namespace zSpace
 	ZSPACE_INLINE zItMeshFace::zItMeshFace()
 	{
 		meshObj = nullptr;
+		index = 0;
 	}
 
 	ZSPACE_INLINE zItMeshFace::zItMeshFace(zObjectMesh &_meshObj)
 	{
 		meshObj = &_meshObj;
-
-		iter = zMeshObjectStorage::get(*meshObj).faces.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE zItMeshFace::zItMeshFace(zObjectMesh &_meshObj, int _index)
 	{
 		meshObj = &_meshObj;
-
-		iter = zMeshObjectStorage::get(*meshObj).faces.begin();
-
-		if (_index < 0 && _index >= zMeshObjectStorage::get(*meshObj).faces.size()) throw std::invalid_argument(" error: index out of bounds");
-		advance(iter, _index);
+		if (_index < 0 || _index >= zMeshObjectStorage::read(*meshObj).numFaces()) throw std::invalid_argument(" error: index out of bounds");
+		index = _index;
 	}
 
 	//---- OVERRIDE METHODS
 
 	ZSPACE_INLINE void zItMeshFace::begin()
 	{
-		iter = zMeshObjectStorage::get(*meshObj).faces.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE void zItMeshFace::operator++(int)
 	{
-		iter++;
+		index++;
 	}
 
 	ZSPACE_INLINE void zItMeshFace::operator--(int)
 	{
-		iter--;
+		index--;
 	}
 
 	ZSPACE_INLINE bool zItMeshFace::end()
 	{
-		return (iter == zMeshObjectStorage::get(*meshObj).faces.end()) ? true : false;
+		return !meshObj || index >= zMeshObjectStorage::read(*meshObj).numFaces();
 	}
 
 	ZSPACE_INLINE void zItMeshFace::reset()
 	{
-		iter = zMeshObjectStorage::get(*meshObj).faces.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE int zItMeshFace::size()
 	{
 
-		return zMeshObjectStorage::get(*meshObj).faces.size();
+		return zMeshObjectStorage::read(*meshObj).numFaces();
 	}
 
 	ZSPACE_INLINE void zItMeshFace::deactivate()
 	{
-		if (iter != zMeshObjectStorage::get(*meshObj).faces.end())
-		{		
-			zMeshObjectStorage::get(*meshObj).fHandles[iter->getId()] = zFaceHandle();
-			iter->reset();
-		}
+		throw std::logic_error("Mesh topology editing is not supported by face-list iterators.");
 
 	}
 
@@ -1031,24 +1023,16 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItMeshFace::getVertices(zItMeshVertexArray &verticies)
 	{
-		zItMeshHalfEdgeArray faceHEdges;
-		getHalfEdges(faceHEdges);
-
-		for (auto &he : faceHEdges)
-		{
-			verticies.push_back(he.getSym().getVertex());
-		}
+		zIntArray ids;
+		getVertices(ids);
+		for (int id : ids) verticies.emplace_back(*meshObj, id);
 	}
 
 	ZSPACE_INLINE void zItMeshFace::getVertices(zIntArray &vertexIndicies)
 	{
-		zItMeshHalfEdgeArray faceHEdges;
-		getHalfEdges(faceHEdges);
-
-		for (auto &he : faceHEdges)
-		{
-			vertexIndicies.push_back(he.getSym().getVertex().getId());
-		}
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		for (int i = data.faceOffsets[index]; i < data.faceOffsets[index + 1]; ++i)
+			vertexIndicies.push_back(data.faceVertexIndices[i]);
 	}
 
 	ZSPACE_INLINE void zItMeshFace::getVertexPositions(vector<zVector> &vertPositions)
@@ -1059,7 +1043,7 @@ namespace zSpace
 
 		for (int i = 0; i < fVerts.size(); i++)
 		{
-			vertPositions.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[fVerts[i]]);
+			vertPositions.push_back(zMeshObjectStorage::read(*meshObj).positions[fVerts[i]]);
 		}
 	}
 
@@ -1526,17 +1510,19 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItMeshFace::getId()
 	{
-		return iter->getId();
+		return index;
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshFace::getHalfEdge()
 	{
-		return zItMeshHalfEdge(*meshObj, iter->getHalfEdge());
+		return zItMeshHalfEdge(*meshObj, zMeshObjectStorage::get(*meshObj).faces[index].getHalfEdge());
 	}
 
 	ZSPACE_INLINE zItFace  zItMeshFace::getRawIter()
 	{
-		return iter;
+		auto out = zMeshObjectStorage::get(*meshObj).faces.begin();
+		std::advance(out, index);
+		return out;
 	}
 
 	ZSPACE_INLINE void zItMeshFace::getOffsetFacePositions(double offset, vector<zVector>& offsetPositions)
@@ -1661,30 +1647,31 @@ namespace zSpace
 
 	ZSPACE_INLINE zVector zItMeshFace::getNormal()
 	{
-		return zMeshObjectStorage::get(*meshObj).faceNormals[getId()];
+		return zMeshObjectStorage::read(*meshObj).faceNormals[index];
 	}
 
 	ZSPACE_INLINE zVector* zItMeshFace::getRawNormal()
 	{
-		return &zMeshObjectStorage::get(*meshObj).faceNormals[getId()];
+		return &zMeshObjectStorage::edit(*meshObj).faceNormals[index];
 
 	}
 
 	ZSPACE_INLINE zColor zItMeshFace::getColor()
 	{
-		return zMeshObjectStorage::get(*meshObj).faceColors[getId()];
+		return zMeshObjectStorage::read(*meshObj).faceColors[index];
 	}
 
 	ZSPACE_INLINE zColor* zItMeshFace::getRawColor()
 	{
-		return &zMeshObjectStorage::get(*meshObj).faceColors[getId()];
+		return &zMeshObjectStorage::edit(*meshObj).faceColors[index];
 	}
 
 	//---- SET METHODS
 
 	ZSPACE_INLINE void zItMeshFace::setId(int _id)
 	{
-		iter->setId(_id);
+		if (_id < 0 || _id >= size()) throw std::invalid_argument("face index out of bounds.");
+		index = _id;
 	}
 
 	ZSPACE_INLINE void zItMeshFace::setHalfEdge(zItMeshHalfEdge &he)
@@ -1694,25 +1681,25 @@ namespace zSpace
 		int id = getId();
 		int heId = he.getId();
 
-		iter->setHalfEdge(heId);
+		zMeshObjectStorage::get(*meshObj).faces[index].setHalfEdge(heId);
 		zMeshObjectStorage::get(*meshObj).fHandles[id].he = heId;
 	}
 
 	ZSPACE_INLINE void zItMeshFace::setColor(zColor col)
 	{
-		zMeshObjectStorage::get(*meshObj).faceColors[getId()] = col;
+		zMeshObjectStorage::edit(*meshObj).faceColors[index] = col;
 	}
 
 	ZSPACE_INLINE void zItMeshFace::setNormal(zVector norm)
 	{
-		zMeshObjectStorage::get(*meshObj).faceNormals[getId()] = norm;
+		zMeshObjectStorage::edit(*meshObj).faceNormals[index] = norm;
 	}
 
 	//---- UTILITY METHODS
 
 	ZSPACE_INLINE bool zItMeshFace::isActive()
 	{
-		return iter->isActive();
+		return meshObj && index >= 0 && index < size();
 	}
 
 	ZSPACE_INLINE bool zItMeshFace::checkPointInHalfSpace(zPoint & pt)

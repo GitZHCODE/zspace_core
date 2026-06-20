@@ -316,13 +316,6 @@ namespace zSpace
 		*/
 		void averageVertices(int numSteps = 1);
 		
-		/*! \brief This method removes inactive elements from the containers connected with the input type.
-		*
-		*	\param		[in]	type			- zVertexData or zEdgeData or zHalfEdgeData or zFaceData .
-		*	\since version 0.0.2
-		*/
-		void garbageCollection(zHEData type);
-
 		/*! \brief This method makes the mesh a static mesh. Makes the mesh fixed and computes the static edge and face vertex positions if true.
 		*	
 		*	\since version 0.0.2
@@ -825,24 +818,24 @@ namespace zSpace
 
 		/*! \brief This method creates a isocontour graph from the input field mesh at the given field threshold.
 		*
-		*	\details based on https://en.wikipedia.org/wiki/Marching_squares.
+		*	\details Clips polygon edges directly from the face-list representation.
 		*	\param	[in]	vertexScalars	- scalar values per vertex of the mesh.
 		*	\param	[in]	threshold		- input contour threshold value.
 		* 	\param	[out]	coutourGraphObj	- isocontour graph.
 		*	\since version 0.0.4
-		*	\warning	works only with quad meshes.
+		*	\note Works with triangles, quads, and simple polygons.
 		*/
 		void getIsoContour(zScalarArray& vertexScalars, float threshold, zPointArray &positions, zIntArray& edgeConnects , zColorArray& cVertexColor, int precision = PRECISION, float distTolerance = distanceTolerance, bool selectedFaces =false, zColor selectedFaceColor = zColor());
 
 		/*! \brief This method creates a isomesh from the input field mesh at the given field threshold.
 		*
-		*	\details based on https://en.wikipedia.org/wiki/Marching_squares.
+		*	\details Clips each face against the scalar threshold using the face-list representation.
 		*	\param	[in]	vertexScalars	- scalar values per vertex of the mesh.
 		*	\param	[in]	threshold		- input contour threshold value.
 		*	\param	[in]	invertMesh		- true if inverted mesh is required.
 		* 	\param	[out]	coutourMeshObj	- isosurface mesh.		
 		*	\since version 0.0.4
-		*	\warning	works only with quad meshes.
+		*	\note Works with triangles, quads, and simple polygons.
 		*/
 		void getIsoMesh(zScalarArray &vertexScalars, float threshold, bool invertMesh, zObjectMesh& coutourMeshObj);
 		
@@ -854,7 +847,7 @@ namespace zSpace
 		*	\param	[in]	invertMesh		- true if inverted mesh is required.
 		* 	\param	[out]	coutourMeshObj	- isosurface mesh.
 		*	\since version 0.0.4
-		*	\warning	doesnt work with ngon meshes
+		*	\note Works with triangles, quads, and simple polygons.
 		*/
 		void getIsoMesh_mixed(zScalarArray& vertexScalars, float threshold, bool invertMesh, zObjectMesh& coutourMeshObj);
 
@@ -867,7 +860,7 @@ namespace zSpace
 		*	\param	[in]	inThresholdHigh	- field threshold domain maximum.
 		*	\param	[in]	invertMesh		- true if inverted mesh is required.
 		*	\since version 0.0.2
-		*	\warning	works only with vertex color gradients Red to Black.
+		*	\note Preserves interpolated vertex colors when available.
 		*/
 		void getIsobandMesh(zScalarArray& vertexScalars, float inThresholdLow, float inThresholdHigh, zObjectMesh& coutourMeshObj);
 
@@ -887,98 +880,6 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void triangulate();
-
-		//--------------------------
-		//---- DELETE MODIFIER METHODS
-		//--------------------------
-	
-		/*! \brief This method deletes the mesh vertex given by the input vertex index.
-		*
-		*	\param		[in]	index					- index of the vertex to be removed.
-		*	\param		[in]	removeInactiveElems	- inactive elements in the list would be removed if true.
-		*	\since version 0.0.2
-		*/
-		void deleteVertex(int index, bool removeInactiveElems = true);
-
-		/*! \brief This method deletes the mesh face given by the input face index.
-		*
-		*	\param		[in]	index					- index of the face to be removed.
-		*	\param		[in]	removeInactiveElems	- inactive elements in the list would be removed if true.
-		*	\since version 0.0.2
-		*/
-		void deleteFace(int index, bool removeInactiveElems = true);
-
-		/*! \brief This method deletes the mesh edge given by the input face index.
-		*
-		*	\param		[in]	index					- index of the edge to be removed.
-		*	\param		[in]	removeInactiveElements	- inactive elements in the list would be removed if true.
-		*	\since version 0.0.2
-		*/
-		void deleteEdge(zItMeshEdge &edge, bool removeInactiveElements = true);
-
-		//--------------------------
-		//---- TOPOLOGY MODIFIER METHODS
-		//--------------------------
-
-		/*! \brief This method collapses an edge into a vertex.
-		*
-		*	\param		[in]	edge					- iterator of edge to be collapsed.
-		*	\param		[in]	edgeFactor				- position factor of the remaining vertex after collapse on the original egde. Needs to be between 0.0 and 1.0.
-		*	\param		[in]	removeInactiveElems		- inactive elements in the list would be removed if true.
-		*	\since version 0.0.2
-		*/
-		void collapseEdge(zItMeshEdge &edge, double edgeFactor = 0.5, bool removeInactiveElems = true);
-
-		/*! \brief This method splits an edge and inserts a vertex along the edge at the input factor.
-		*
-		*	\param		[in]	edge			- iterator of edge to be split.
-		*	\param		[in]	edgeFactor		- factor in the range [0,1] that represent how far along each edge must the split be done.
-		*	\return				zItMeshVertex	- iterator to new vertex added after splitting the edge.
-		*	\since version 0.0.2
-		*/
-		zItMeshVertex splitEdge(zItMeshEdge &edge, double edgeFactor = 0.5, bool checkDuplicates = false);
-
-		/*! \brief This method splits an edge and inserts a vertex along the edge at the input factor.
-		*
-		*	\param		[in]	hEdge			- iterator of half edge to be split.
-		*	\param		[in]	edgeFactor		- factor in the range [0,1] that represent how far along each edge must the split be done.
-		*	\return				zItMeshVertex	- iterator to new vertex added after splitting the edge.
-		*	\since version 0.0.2
-		*/
-		zItMeshVertex splitHalfEdge(zItMeshHalfEdge& hEdge, double edgeFactor = 0.5, bool checkDuplicates = false);
-
-		/*! \brief This method detaches an edge.
-		*
-		*	\param		[in]	index			- index of the edge to be split.
-		*	\since version 0.0.2
-		*/
-		int detachEdge(int index);
-
-		/*! \brief This method flips the edge shared bettwen two triangular faces.
-		*
-		*	\param		[in]	edge			- iterator of edge.
-		*	\since version 0.0.2
-		*/
-		void flipTriangleEdge(zItMeshEdge &edge);
-
-		/*! \brief This method splits a set of edges and faces of a mesh in a continuous manner.
-		*
-		*	\param		[in]	edgeList		- indicies of the edges to be split.
-		*	\param		[in]	edgeFactor		- array of factors in the range [0,1] that represent how far along each edge must the split be done. This array must have the same number of elements as the edgeList array.
-		*	\since version 0.0.2
-		*/
-		void splitFaces(vector<int> &edgeList, vector<double> &edgeFactor);
-
-		/*! \brief This method splits a face of a mesh.
-		*
-		*	\param		[in]	faceId			- index of the face to be split.
-		*	\param		[in]	e0				- index 0 of the edage to split. Note the index should be an edge of the input face. 
-		*	\param		[in]	e1				- index 1 of the edage to split. Note the index should be an edge of the input face.
-		*	\param		[in]	e0_factor		- factor for edge 0 in the range [0,1] that represent how far along each edge must the split be done. 
-		*	\param		[in]	e1_factor		- factor for edge 1 in the range [0,1] that represent how far along each edge must the split be done.
-		*	\since version 0.0.4
-		*/
-		void splitFace(int faceID, int egdeID0, int edgeID1, float edge0_factor, float edge1_factor);
 
 		/*! \brief This method subdivides all the faces and edges of the mesh.
 		*
@@ -1162,6 +1063,11 @@ protected:
 		*/
 		void setStaticContainers();
 
+		// Temporary implementation helpers used by subdivision and smoothing.
+		// Remove when those algorithms are fully face-list-native.
+		zItMeshVertex splitEdge(zItMeshEdge& edge, double edgeFactor = 0.5, bool checkDuplicates = false);
+		zItMeshVertex splitHalfEdge(zItMeshHalfEdge& hEdge, double edgeFactor = 0.5, bool checkDuplicates = false);
+
 		//--------------------------
 		//---- DEACTIVATE AND REMOVE METHODS
 		//--------------------------
@@ -1179,13 +1085,6 @@ protected:
 		*	\since version 0.0.2
 		*/
 		void removeFromHalfEdgesMap(zItMeshHalfEdge &he);
-
-		/*! \brief This method removes inactive elements from the container connected with the input type.
-		*
-		*	\param		[in]	type			- zVertexData or zHalfEdgeData or zEdgeData or zFaceData.
-		*	\since version 0.0.2
-		*/
-		void removeInactive(zHEData type);
 
 	};
 

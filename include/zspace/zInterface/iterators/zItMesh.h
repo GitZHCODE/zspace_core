@@ -113,6 +113,7 @@ namespace zSpace
 		/*!	\brief iterator of core mesh vertex object  */
 		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItVertex iter;
+		int index = 0;
 
 		/*!	\brief pointer to a mesh object  */
 		zObjectMesh *meshObj;
@@ -453,6 +454,7 @@ namespace zSpace
 
 		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItEdge iter;
+		int index = 0;
 
 		/*!	\brief pointer to a mesh object  */
 		zObjectMesh *meshObj;
@@ -718,6 +720,7 @@ namespace zSpace
 
 		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItFace iter;
+		int index = 0;
 
 		/*!	\brief pointer to a mesh object  */
 		zObjectMesh *meshObj;
