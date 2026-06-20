@@ -118,29 +118,26 @@ namespace zSpace
 		*
 		*	\param		[in]	_positions		- container of type zPoint containing position information of vertices.
 		*	\param		[in]	edgeConnects	- container of edge connections with vertex ids for each edge
-		*	\param		[in]	staticGraph		- makes the graph fixed. Computes the static edge vertex positions if true.
 		*	\since version 0.0.2
 		*/
-		void create(zPointArray(&_positions), zIntArray(&edgeConnects), bool staticGraph = false, int precision = PRECISION);
+		void create(zPointArray(&_positions), zIntArray(&edgeConnects), int precision = PRECISION);
 
 		/*! \brief his method creates a graphfrom the input containers.
 		*
 		*	\param		[in]	_positions		- container of type zPoint containing position information of vertices.
 		*	\param		[in]	edgeConnects	- container of edge connections with vertex ids for each edge
 		*	\param		[in]	graphNormal		- normal of the plane of the graph.
-		*	\param		[in]	staticGraph		- makes the graph fixed. Computes the static edge vertex positions if true.
 		*	\since version 0.0.2
 		*/
-		void create(zPointArray(&_positions), zIntArray(&edgeConnects), zVector &graphNormal, bool staticGraph = false);
+		void create(zPointArray(&_positions), zIntArray(&edgeConnects), zVector &graphNormal);
 
 		/*! \brief This method creates a graph from a mesh.
 		*
 		*	\param		[in]	graphObj			- input mesh object.	
-		*	\param		[in]	staticGraph			- makes the graph fixed. Computes the static edge vertex positions if true.
 		*	\param		[in]	excludeBoundary		- excludes the boundary edge of the input mesh.
 		*	\since version 0.0.4
 		*/
-		void createFromMesh(zObjectMesh &meshObj, bool excludeBoundary = false, bool staticGraph = false);
+		void createFromMesh(zObjectMesh &meshObj, bool excludeBoundary = false);
 
 		/*! \brief This method adds a vertex to the graph.
 		*
@@ -230,12 +227,6 @@ namespace zSpace
 		*/
 		void removeInactiveElements(zHEData type);
 		
-		/*! \brief This method makes the graph a fixed. Computes the static edge vertex positions if true.
-		*
-		*	\since version 0.0.2
-		*/
-		void makeStatic();
-
 		//--------------------------
 		//--- SET METHODS 
 		//--------------------------
@@ -467,12 +458,6 @@ namespace zSpace
 		//--------------------------
 		//---- PRIVATE METHODS
 		//--------------------------
-
-		/*! \brief This method sets the edge vertex position conatiners for static meshes.
-		*
-		*	\since version 0.0.2
-		*/
-		void setStaticContainers();
 
 		/*! \brief Internal topology helper for half-edge operations. */
 		int numHalfEdges();

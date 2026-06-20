@@ -232,18 +232,6 @@ namespace zSpace
 		*/
 		void update(double dT, zIntergrationType type = zEuler, bool clearForce = true, bool clearVelocity = false, bool clearDerivatives = false);
 
-	private:
-
-		//--------------------------
-		//---- PRIVATE METHODS
-		//--------------------------
-
-		/*! \brief This method sets the edge vertex position conatiners for static graphs.
-		*
-		*	\since version 0.0.2
-		*/
-		void setStaticContainers();
-				
 	};
 
 	

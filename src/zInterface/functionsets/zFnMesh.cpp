@@ -602,15 +602,13 @@ namespace zSpace
 		data.edgeVertexIndices.reserve(_n_e * 2);
 	}
 
-	ZSPACE_INLINE void zFnMesh::create(zPointArray& _positions, zIntArray& polyCounts, zIntArray& polyConnects, bool staticMesh)
+	ZSPACE_INLINE void zFnMesh::create(zPointArray& _positions, zIntArray& polyCounts, zIntArray& polyConnects)
 	{
 
 		zMeshObjectStorage::set(*meshObj, _positions, polyCounts, polyConnects);
 			
 		// compute mesh normals
 		computeMeshNormals();
-
-		if (staticMesh) setStaticContainers();
 	}
 
 	ZSPACE_INLINE bool zFnMesh::addVertex(zPoint &_pos, bool checkDuplicates, zItMeshVertex &vertex)
@@ -1141,11 +1139,6 @@ namespace zSpace
 			// update position
 			for (int i = 0; i < tempVertPos.size(); i++) zMeshObjectStorage::get(*meshObj).vertexPositions[i] = tempVertPos[i];
 		}
-	}
-
-	ZSPACE_INLINE void zFnMesh::makeStatic()
-	{
-		setStaticContainers();
 	}
 
 	ZSPACE_INLINE void zFnMesh::makeConvexHull(zPointArray &_pts)
@@ -3851,37 +3844,6 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 	}
 
 	//---- FACTORY METHODS
-
-	//---- PRIVATE METHODS
-	   
-	ZSPACE_INLINE void zFnMesh::setStaticContainers()
-	{
-		zMeshObjectStorage::get(*meshObj).staticGeometry = true;
-
-		vector<vector<int>> edgeVerts;
-
-		for (zItMeshEdge e(*meshObj); !e.end(); e++)
-		{
-			vector<int> verts;
-			e.getVertices(verts);
-
-			edgeVerts.push_back(verts);
-		}
-
-		zMeshObjectStorage::get(*meshObj).setStaticEdgeVertices(edgeVerts);
-
-		vector<vector<int>> faceVerts;
-
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
-		{
-			vector<int> verts;
-			f.getVertices(verts);
-
-			faceVerts.push_back(verts);
-		}
-
-		zMeshObjectStorage::get(*meshObj).setStaticFaceVertices(faceVerts);
-	}
 
 	//---- PRIVATE DEACTIVATE AND REMOVE METHODS
 

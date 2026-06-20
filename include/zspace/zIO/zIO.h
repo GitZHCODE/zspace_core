@@ -27,10 +27,10 @@ namespace zSpace
 	class zIO
 	{
 	public:
-		static ZSPACE_IO zIOResult readMesh(const std::string& path, zObjectMesh& mesh, bool staticGeometry = false);
+		static ZSPACE_IO zIOResult readMesh(const std::string& path, zObjectMesh& mesh);
 		static ZSPACE_IO zIOResult writeMesh(const std::string& path, zObjectMesh& mesh);
 
-		static ZSPACE_IO zIOResult readGraph(const std::string& path, zObjectGraph& graph, bool staticGeometry = false);
+		static ZSPACE_IO zIOResult readGraph(const std::string& path, zObjectGraph& graph);
 		static ZSPACE_IO zIOResult writeGraph(const std::string& path, zObjectGraph& graph);
 
 		static ZSPACE_IO zIOResult readPointCloud(const std::string& path, zObjectPointCloud& points);

@@ -2453,7 +2453,7 @@ namespace zSpace
 			
 		
 
-		tempFn.create(pos, edgeConnects, false, PRECISION);
+		tempFn.create(pos, edgeConnects, PRECISION);
 		//printf("\n %i %i ", tempFn.numVertices(), tempFn.numEdges());
 	}
 
@@ -2637,7 +2637,7 @@ namespace zSpace
 			}
 		}
 
-		fnMesh.create(positions, polyCounts, polyConnects, true);
+		fnMesh.create(positions, polyCounts, polyConnects);
 
 		printf("\n fieldmesh: v %i e %i f %i", fnMesh.numVertices(), fnMesh.numEdges(), fnMesh.numPolygons());
 	}

@@ -187,6 +187,9 @@ zSpace::zIO::readGraph("graph.txt", graph);
 zSpace::zIO::writeGraph("graph.json", graph);
 ```
 
+`readMesh` and `readGraph` do not take static-geometry flags. New code should
+not call `makeStatic()` on mesh or graph function sets.
+
 Do not suggest `fromJSON`, `toJSON`, `fromOBJ`, or `toOBJ` methods on function
 sets for new code. Format-specific behavior belongs in `zCodec<Format>`.
 
@@ -239,6 +242,10 @@ topology-specific methods.
 Simple graph utilities such as color interpolation, vertex averaging, edge
 lengths, and eccentricity center queries use the edge-list representation and
 do not require the half-edge cache.
+
+`getCenters(zHalfEdgeData, ...)` and `getHalfEdgeLengths(...)` are compatibility
+helpers that return two values per graph edge from the edge list. They should
+not be used as a signal that graph topology has been built.
 
 Use `zItGraphVertex` and `zItGraphEdge` for simple indexed traversal and local
 geometry/attribute access. Use `zItGraphHalfEdge` only when the question is

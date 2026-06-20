@@ -355,22 +355,4 @@ namespace zSpace
 		}
 	}
 
-	//---- PRIVATE METHODS
-
-	ZSPACE_INLINE void zFnGraphDynamics::setStaticContainers()
-	{
-		zGraphObjectStorage::get(*graphObj).staticGeometry = true;
-
-		vector<vector<int>> edgeVerts;
-
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			vector<int> verts;
-			e.getVertices(verts);
-
-			edgeVerts.push_back(verts);
-		}
-
-		zGraphObjectStorage::get(*graphObj).setStaticEdgeVertices(edgeVerts);
-	}
 }

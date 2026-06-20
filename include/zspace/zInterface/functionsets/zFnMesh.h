@@ -116,10 +116,9 @@ namespace zSpace
 		*	\param		[in]	_positions		- container of type zPoint containing position information of vertices.
 		*	\param		[in]	polyCounts		- container of type integer with number of vertices per polygon.
 		*	\param		[in]	polyConnects	- polygon connection list with vertex ids for each face.
-		*	\param		[in]	staticMesh		- makes the mesh fixed. Computes the static edge and face vertex positions if true.
 		*	\since version 0.0.2
 		*/
-		void create(zPointArray& _positions, zIntArray& polyCounts, zIntArray& polyConnects, bool staticMesh = false);
+		void create(zPointArray& _positions, zIntArray& polyCounts, zIntArray& polyConnects);
 				
 		//--------------------------
 		//--- TOPOLOGY QUERY METHODS 
@@ -242,12 +241,6 @@ namespace zSpace
 		*/
 		void averageVertices(int numSteps = 1);
 		
-		/*! \brief This method makes the mesh a static mesh. Makes the mesh fixed and computes the static edge and face vertex positions if true.
-		*	
-		*	\since version 0.0.2
-		*/
-		void makeStatic();
-
 		/*! \brief This method makes a convex hull from the input points.
 		*
 		*	\details Based on https://github.com/karimnaaji/3d-quickhull
@@ -890,12 +883,6 @@ namespace zSpace
 		//--------------------------
 		//---- PRIVATE METHODS
 		//--------------------------
-
-		/*! \brief This method sets the edge and face vertex position conatiners for static meshes.
-		*
-		*	\since version 0.0.2
-		*/
-		void setStaticContainers();
 
 		// Temporary implementation helpers used by subdivision and smoothing.
 		// Remove when those algorithms are fully face-list-native.

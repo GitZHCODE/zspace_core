@@ -83,15 +83,12 @@ namespace zSpace
 
 	//---- CREATE METHODS
 
-	ZSPACE_INLINE void zFnGraph::create(zPointArray(&_positions), zIntArray(&edgeConnects), bool staticGraph,int precision)
+	ZSPACE_INLINE void zFnGraph::create(zPointArray(&_positions), zIntArray(&edgeConnects), int precision)
 	{
 		zGraphObjectStorage::set(*graphObj, _positions, edgeConnects);
-		zGraphObjectStorage::setStatic(*graphObj, staticGraph);
-
-		if (staticGraph) setStaticContainers();
 	}
 
-	ZSPACE_INLINE void zFnGraph::create(zPointArray(&_positions), zIntArray(&edgeConnects), zVector &graphNormal, bool staticGraph)
+	ZSPACE_INLINE void zFnGraph::create(zPointArray(&_positions), zIntArray(&edgeConnects), zVector &graphNormal)
 	{
 
 		graphNormal.normalize();
@@ -100,12 +97,9 @@ namespace zSpace
 		zVector sortRef = graphNormal ^ x;
 
 		zGraphObjectStorage::set(*graphObj, _positions, edgeConnects);
-		zGraphObjectStorage::setStatic(*graphObj, staticGraph);
-
-		if (staticGraph) setStaticContainers();
 	}
 
-	ZSPACE_INLINE void zFnGraph::createFromMesh(zObjectMesh &meshObj, bool excludeBoundary, bool staticGraph)
+	ZSPACE_INLINE void zFnGraph::createFromMesh(zObjectMesh &meshObj, bool excludeBoundary)
 	{
 		zFnMesh fnMesh(meshObj);
 
@@ -115,9 +109,7 @@ namespace zSpace
 		fnMesh.getVertexPositions(vertexPositions, excludeBoundary);
 		fnMesh.getEdgeData(edgeConnects, excludeBoundary);
 
-		create(vertexPositions, edgeConnects, staticGraph);
-
-		if (staticGraph) setStaticContainers();
+		create(vertexPositions, edgeConnects);
 	}
 
 	ZSPACE_INLINE bool zFnGraph::addVertex(zPoint &_pos, bool checkDuplicates, zItGraphVertex &vertex)
@@ -319,11 +311,6 @@ namespace zSpace
 		else throw std::invalid_argument(" error: invalid zHEData type");
 	}
 
-	ZSPACE_INLINE void zFnGraph::makeStatic()
-	{
-		setStaticContainers();
-	}
-
 	//--- SET METHODS 
 
 	ZSPACE_INLINE void zFnGraph::setVertexPositions(zPointArray& pos)
@@ -479,18 +466,18 @@ namespace zSpace
 		{
 
 			centers.clear();
+			const auto& data = zGraphObjectStorage::read(*graphObj);
 
-			for (zItGraphHalfEdge he(*graphObj); !he.end(); he++)
+			for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 			{
-				if (he.isActive())
-				{
-					centers.push_back(he.getCenter());
-				}
-				else
-				{
-					centers.push_back(zVector());
+				const int v0 = data.edgeVertexIndices[edgeId * 2];
+				const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+				zPoint p0 = data.positions[v0];
+				zPoint p1 = data.positions[v1];
+				zPoint center = (p0 + p1) * 0.5;
 
-				}
+				centers.push_back(center);
+				centers.push_back(center);
 			}
 
 		}
@@ -1123,25 +1110,6 @@ namespace zSpace
 	}
 
 	//---- PROTECTED FACTORY METHODS
-
-	//---- PRIVATE METHODS
-
-	ZSPACE_INLINE void zFnGraph::setStaticContainers()
-	{
-		zGraphObjectStorage::get(*graphObj).staticGeometry = true;
-
-		vector<vector<int>> edgeVerts;
-
-		for (zItGraphEdge e(*graphObj); !e.end(); e++)
-		{
-			vector<int> verts;
-			e.getVertices(verts);
-
-			edgeVerts.push_back(verts);
-		}
-
-		zGraphObjectStorage::get(*graphObj).setStaticEdgeVertices(edgeVerts);
-	}
 
 	//---- PRIVATE DEACTIVATE AND REMOVE METHODS
 

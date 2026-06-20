@@ -76,8 +76,9 @@ Update this section after each migration step.
   legacy half-edge `zGraph` cache for iterator/topology operations. Common
   `zFnGraph` create/count/attribute/bounds/edge-data/center/length/transform
   methods use the edge-list path. Vertex color averaging from edge colors,
-  graph vertex averaging, and graph eccentricity center queries are now
-  edge-list-native. `zItGraphVertex` and `zItGraphEdge` now use edge-list
+  graph vertex averaging, graph eccentricity center queries, half-edge-shaped
+  center/length compatibility queries are now edge-list-native.
+  `zItGraphVertex` and `zItGraphEdge` now use edge-list
   indices for simple iteration, position/color access, endpoint queries, and
   edge length/center/vector queries; `zItGraphHalfEdge` remains the explicit
   topology path.
@@ -90,6 +91,11 @@ Update this section after each migration step.
   edge-list-facing `edgeExists(v1, v2, edgeId)`. `halfEdgeExists(...)` is no
   longer public and remains only as a protected topology helper for internal
   and interop code that explicitly works with half-edge traversal.
+- Static geometry API cleanup: completed. Public `zFnMesh::makeStatic()`,
+  `zFnGraph::makeStatic()`, static create flags, and the `zIO::readMesh` /
+  `zIO::readGraph` static-geometry flags have been removed. Meshes and graphs
+  are stored in their compact primary representations; legacy static
+  half-edge caches are not part of the public API.
 - Raw pointer/public dependency audit: pending. Keep performance escape hatches
   only where needed and document them as advanced API.
 - Interop naming cleanup: pending. Replace remaining internal `zObj*` uses with

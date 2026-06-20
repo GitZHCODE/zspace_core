@@ -36,13 +36,13 @@ namespace zSpace
 				extension == ".usdc" || extension == ".usdz";
 		}
 
-		zIOResult applyMeshData(io_detail::MeshData& data, zObjectMesh& mesh, bool staticGeometry)
+		zIOResult applyMeshData(io_detail::MeshData& data, zObjectMesh& mesh)
 		{
 			if (data.polygonCounts.empty() || data.polygonConnects.empty())
 				return zIOResult::error("Mesh data contains no polygons.");
 
 			zFnMesh functionSet(mesh);
-			functionSet.create(data.positions, data.polygonCounts, data.polygonConnects, staticGeometry);
+			functionSet.create(data.positions, data.polygonCounts, data.polygonConnects);
 
 			if (data.edgeConnects.size() % 2 == 0 && !data.edgeConnects.empty())
 			{
@@ -116,13 +116,13 @@ namespace zSpace
 			return zIOResult::ok();
 		}
 
-		zIOResult applyGraphData(io_detail::GraphData& data, zObjectGraph& graph, bool staticGeometry)
+		zIOResult applyGraphData(io_detail::GraphData& data, zObjectGraph& graph)
 		{
 			if (data.edgeConnects.empty())
 				return zIOResult::error("Graph data contains no edges.");
 
 			zFnGraph functionSet(graph);
-			functionSet.create(data.positions, data.edgeConnects, staticGeometry);
+			functionSet.create(data.positions, data.edgeConnects);
 
 			if (data.vertexColors.size() == data.positions.size())
 				functionSet.setVertexColors(data.vertexColors);
@@ -159,7 +159,7 @@ namespace zSpace
 		}
 	}
 
-	zIOResult zIO::readMesh(const std::string& path, zObjectMesh& mesh, bool staticGeometry)
+	zIOResult zIO::readMesh(const std::string& path, zObjectMesh& mesh)
 	{
 		io_detail::MeshData data;
 		const std::string extension = extensionOf(path);
@@ -171,7 +171,7 @@ namespace zSpace
 		else return zIOResult::error("Unsupported mesh file extension: " + extension);
 
 		if (!result) return result;
-		return applyMeshData(data, mesh, staticGeometry);
+		return applyMeshData(data, mesh);
 	}
 
 	zIOResult zIO::writeMesh(const std::string& path, zObjectMesh& mesh)
@@ -187,7 +187,7 @@ namespace zSpace
 		return zIOResult::error("Unsupported mesh file extension: " + extension);
 	}
 
-	zIOResult zIO::readGraph(const std::string& path, zObjectGraph& graph, bool staticGeometry)
+	zIOResult zIO::readGraph(const std::string& path, zObjectGraph& graph)
 	{
 		io_detail::GraphData data;
 		const std::string extension = extensionOf(path);
@@ -199,7 +199,7 @@ namespace zSpace
 		else return zIOResult::error("Unsupported graph file extension: " + extension);
 
 		if (!result) return result;
-		return applyGraphData(data, graph, staticGeometry);
+		return applyGraphData(data, graph);
 	}
 
 	zIOResult zIO::writeGraph(const std::string& path, zObjectGraph& graph)

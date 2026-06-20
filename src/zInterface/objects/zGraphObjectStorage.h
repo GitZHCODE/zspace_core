@@ -19,15 +19,13 @@ namespace zSpace
 		mutable std::unique_ptr<zGraph> topology;
 		mutable bool topologyDirty = true;
 		mutable bool edgeListDirty = false;
-		bool staticGraph = false;
 
 		Impl() = default;
 		Impl(const Impl& other)
 			: edgeList(other.edgeList),
 			  topology(other.topology ? std::make_unique<zGraph>(*other.topology) : nullptr),
 			  topologyDirty(other.topologyDirty),
-			  edgeListDirty(other.edgeListDirty),
-			  staticGraph(other.staticGraph)
+			  edgeListDirty(other.edgeListDirty)
 		{
 		}
 	};
@@ -46,7 +44,7 @@ namespace zSpace
 			auto topology = std::make_unique<zGraph>();
 			zPointArray positions = impl.edgeList.positions;
 			zIntArray edgeConnects = impl.edgeList.edgeVertexIndices;
-			topology->create(positions, edgeConnects, impl.staticGraph);
+			topology->create(positions, edgeConnects, false);
 			topology->vertexColors = impl.edgeList.vertexColors;
 			topology->edgeColors = impl.edgeList.edgeColors;
 			topology->vertexWeights = impl.edgeList.vertexWeights;
@@ -149,11 +147,6 @@ namespace zSpace
 			object.impl->edgeListDirty = false;
 		}
 
-		static void setStatic(zObjectGraph& object, bool value)
-		{
-			object.impl->staticGraph = value;
-			object.impl->topologyDirty = true;
-		}
 	};
 }
 
