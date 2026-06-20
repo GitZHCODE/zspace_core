@@ -51,6 +51,16 @@ namespace
 		require(fnGraph.numVertices() == 3, "graph vertex count");
 		require(fnGraph.numEdges() == 2, "graph edge count");
 
+		int edgeCount = 0;
+		for (zItGraphEdge edge(graph); !edge.end(); edge++)
+		{
+			zIntArray edgeVertices;
+			edge.getVertices(edgeVertices);
+			require(edgeVertices.size() == 2, "graph edge-list iterator endpoints");
+			edgeCount++;
+		}
+		require(edgeCount == 2, "graph edge-list iterator count");
+
 		zItGraphVertex vertex(graph, 2);
 		zPoint updated(1, 1.5, 0);
 		vertex.setPosition(updated);

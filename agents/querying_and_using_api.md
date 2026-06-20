@@ -213,15 +213,31 @@ zSpace::zDoubleArray edgeLengths;
 fn.getEdgeLengths(edgeLengths);
 ```
 
+Iterate graph edges:
+
+```cpp
+#include <zspace/interface.h>
+
+zSpace::zObjectGraph graph;
+
+for (zSpace::zItGraphEdge edge(graph); !edge.end(); edge++)
+{
+    zSpace::zIntArray vertices;
+    edge.getVertices(vertices);
+}
+```
+
 Use `zFnGraph` for graph creation, counts, bounds, positions, colors, weights,
 edge connectivity, centers, lengths, and transforms. `zObjectGraph` stores an
 edge list as its primary representation; half-edge graph topology is built
 lazily when code asks for ordered traversal through graph iterators or
 topology-specific methods.
 
-Avoid examples that mention direct `zGraph` storage. Use `zItGraphVertex`,
-`zItGraphEdge`, or `zItGraphHalfEdge` only when the question is specifically
-about traversal or topology.
+Use `zItGraphVertex` and `zItGraphEdge` for simple indexed traversal and local
+geometry/attribute access. Use `zItGraphHalfEdge` only when the question is
+specifically about ordered graph topology.
+
+Avoid examples that mention direct `zGraph` storage.
 
 ## Display Examples
 

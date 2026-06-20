@@ -106,6 +106,9 @@ namespace zSpace
 		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItVertex iter;
 
+		/*!	\brief index in the graph edge-list vertex container. */
+		int index = 0;
+
 		/*!	\brief pointer to a graph object  */
 		zObjectGraph *graphObj;
 
@@ -387,6 +390,9 @@ namespace zSpace
 
 		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zItEdge iter;
+
+		/*!	\brief index in the graph edge-list edge container. */
+		int index = 0;
 
 		/*!	\brief pointer to a graph object  */
 		zObjectGraph *graphObj;
