@@ -46,9 +46,11 @@ libigl, USD, and host SDK dependencies belong in private source directories.
    storage members are now private and reachable only by the owning function
    sets and iterators.
 8. Remove storage headers and third-party dependencies from the installed API.
-   In progress: mesh/graph iterator DLL-interface warnings are now suppressed
-   at the private STL iterator members; remaining warning cleanup is focused on
-   third-party QuickHull headers and `zParticle` float conversions.
+   In progress: mesh/graph/field iterator and field-function-set
+   DLL-interface warnings are suppressed at private STL storage members.
+   Bundled third-party include paths are treated as system includes by CMake,
+   and the `zParticleDerivative` scalar multiplication warning/assignment bug
+   has been fixed.
 9. Deprecate and later remove the `zObj*` compatibility names.
 
 ## Active Checklist
@@ -121,6 +123,9 @@ Update this section after each migration step.
   half-edge caches are not part of the public API.
 - Raw pointer/public dependency audit: pending. Keep performance escape hatches
   only where needed and document them as advanced API.
+- Public header warning cleanup: in progress. Field STL storage and iterator
+  members are isolated from the DLL export surface with targeted warning
+  suppression; bundled dependency headers are now marked `SYSTEM` in CMake.
 - Smoke test expansion: in progress. `zspace_smoke` now covers non-manifold
   face-list creation, face-list mesh algorithms, extrusion, topology-based dual
   graph extraction, scalar/vector mesh fields, point scalar fields, point

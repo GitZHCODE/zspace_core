@@ -67,6 +67,7 @@ namespace zSpace
 		zDomain<float> contourValueDomain;
 
 		/*!	\brief container of field values used for contouring. All values to be in the 0 to 1 domain  */
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		vector<float> contourVertexValues;
 
 	protected:
@@ -99,9 +100,11 @@ namespace zSpace
 		zFnMesh fnMesh;
 
 		/*!	\brief container of the ring neighbourhood indicies.  */
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		vector<zIntArray> ringNeighbours;
 
 		/*!	\brief container of adjacent neighbourhood indicies.  */
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		vector<zIntArray> adjacentNeighbours;
 
 		//--------------------------

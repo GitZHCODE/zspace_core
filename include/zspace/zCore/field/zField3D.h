@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include<zspace/export.h>
 #include<zspace/zCore/base/zVector.h>
 #include<zspace/zCore/base/zColor.h>
 
@@ -77,6 +78,7 @@ namespace zSpace
 		zVector maxBB;
 
 		/*!	\brief container for the field values  */
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		vector<T> fieldValues;
 
 

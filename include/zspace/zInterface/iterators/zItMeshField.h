@@ -93,6 +93,7 @@ namespace zSpace
 	{
 	protected:
 
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		std::vector<float>::iterator iter;
 
 		/*!	\brief pointer to a mesh fieldobject  */
@@ -308,6 +309,7 @@ namespace zSpace
 	{
 	protected:
 
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		zPointArray::iterator iter; 
 
 		/*!	\brief pointer to a mesh fieldobject  */

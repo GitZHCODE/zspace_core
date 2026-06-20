@@ -78,9 +78,11 @@ namespace zSpace
 		//--------------------------
 
 		/*!	\brief container of the ring neighbourhood indicies.  */
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		vector<vector<int>> ringNeighbours;
 
 		/*!	\brief container of adjacent neighbourhood indicies.  */
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		vector<vector<int>> adjacentNeighbours;
 
 		/*!	\brief point cloud function set  */

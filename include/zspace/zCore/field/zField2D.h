@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include<zspace/export.h>
 #include<zspace/zCore/base/zVector.h>
 #include<zspace/zCore/base/zColor.h>
 
@@ -72,6 +73,7 @@ namespace zSpace
 		zVector maxBB;
 
 		/*!	\brief container for the field values  */
+		ZSPACE_SUPPRESS_DLL_INTERFACE
 		vector<T> fieldValues;
 
 		/*!	\brief boolean indicating if the field values size is equal to mesh vertices(true) or equal to mesh faces(false)  */

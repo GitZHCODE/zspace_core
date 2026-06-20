@@ -58,11 +58,15 @@ function(zspace_configure_public_includes target)
     PUBLIC
       $<BUILD_INTERFACE:${ZSPACE_ROOT}>
       $<BUILD_INTERFACE:${ZSPACE_ROOT}/include>
+      $<INSTALL_INTERFACE:include>
+  )
+  target_include_directories(${target}
+    SYSTEM PUBLIC
       $<BUILD_INTERFACE:${ZSPACE_ROOT}/third_party>
       $<BUILD_INTERFACE:${ZSPACE_ROOT}/third_party/depends>
       $<BUILD_INTERFACE:${ZSPACE_ROOT}/third_party/depends/Armadillo>
       $<BUILD_INTERFACE:${ZSPACE_ROOT}/third_party/depends/alglib/cpp/src>
-      $<INSTALL_INTERFACE:include>
+      $<INSTALL_INTERFACE:include/depends>
   )
 endfunction()
 
@@ -308,6 +312,8 @@ if(ZSPACE_BUILD_TESTS)
   )
   target_include_directories(zspace_display_headers PRIVATE
     "${ZSPACE_ROOT}/include"
+  )
+  target_include_directories(zspace_display_headers SYSTEM PRIVATE
     "${ZSPACE_ROOT}/third_party/depends"
   )
   target_compile_definitions(zspace_display_headers PRIVATE

@@ -100,9 +100,10 @@ namespace zSpace
 		zParticleDerivative operator *(double val)
 		{
 			zParticleDerivative out;
+			const float scale = static_cast<float>(val);
 
-			out.dP = this->dP * val;
-			out.dP = this->dV * val;
+			out.dP = this->dP * scale;
+			out.dV = this->dV * scale;
 
 			return out;
 

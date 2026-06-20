@@ -412,6 +412,9 @@ Completed:
 - Field and particle storage members made private with targeted internal access.
 - `zIO` facade introduced for mesh/graph/point and codec-based IO.
 - libigl dependency removed from mesh curvature.
+- Bundled dependency include paths marked as CMake `SYSTEM` includes.
+- Field STL storage/iterator DLL-interface warnings suppressed at private
+  storage members.
 
 Still in progress:
 
@@ -419,7 +422,6 @@ Still in progress:
 - Move template field storage behind a cleaner private/internal boundary if a
   non-template facade is introduced.
 - Keep `zObj*` compatibility aliases until downstream code has migrated.
-- Clean or isolate remaining third-party warning noise, especially QuickHull.
 - Review optional interop boundaries so host SDK types do not leak into the
   default geometry API.
 
@@ -445,4 +447,3 @@ Do not:
 - Add host SDK dependencies to Core, Interface, IO, or Display.
 - Expose raw storage as public object members.
 - Reintroduce libigl for curvature without a clear dependency plan.
-
