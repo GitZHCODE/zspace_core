@@ -630,10 +630,17 @@ namespace zSpace
 	{
 	public:
 		using zFnPointFieldBase<zScalar>::zFnPointFieldBase;
+		using zFnPointFieldBase<zScalar>::create;
+		using zFnPointFieldBase<zScalar>::numFieldValues;
+		using zFnPointFieldBase<zScalar>::getResolution;
+		using zFnPointFieldBase<zScalar>::getUnitDistances;
+		using zFnPointFieldBase<zScalar>::getBoundingBox;
+		using zFnPointFieldBase<zScalar>::getFieldValues;
 		using zFnPointFieldBase<zScalar>::getGradient;
 		using zFnPointFieldBase<zScalar>::getGradients;
 		using zFnPointFieldBase<zScalar>::getScalarsAsVertexDistance;
 		using zFnPointFieldBase<zScalar>::getScalarsAsEdgeDistance;
+		using zFnPointFieldBase<zScalar>::setFieldValues;
 		using zFnPointFieldBase<zScalar>::smoothField;
 		using zFnPointFieldBase<zScalar>::boolean_union;
 		using zFnPointFieldBase<zScalar>::boolean_subtract;
@@ -652,6 +659,13 @@ namespace zSpace
 	{
 	public:
 		using zFnPointFieldBase<zVector>::zFnPointFieldBase;
+		using zFnPointFieldBase<zVector>::create;
+		using zFnPointFieldBase<zVector>::numFieldValues;
+		using zFnPointFieldBase<zVector>::getResolution;
+		using zFnPointFieldBase<zVector>::getUnitDistances;
+		using zFnPointFieldBase<zVector>::getBoundingBox;
+		using zFnPointFieldBase<zVector>::getFieldValues;
+		using zFnPointFieldBase<zVector>::setFieldValues;
 		using zFnPointFieldBase<zVector>::createVectorFromScalarField;
 	};
 

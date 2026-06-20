@@ -208,6 +208,111 @@ namespace
 			"face-list mesh triangulation");
 	}
 
+	void testMeshMigrationCoverage()
+	{
+		zObjectMesh mesh;
+		zFnMesh fnMesh(mesh);
+		zPointArray positions = {
+			zPoint(0, 0, 0),
+			zPoint(1, 0, 0),
+			zPoint(1, 1, 0),
+			zPoint(0, 1, 0),
+			zPoint(2, 0, 0),
+			zPoint(2, 1, 0)
+		};
+		zIntArray polygonCounts = { 4, 4 };
+		zIntArray polygonConnects = { 0, 1, 2, 3, 1, 4, 5, 2 };
+		fnMesh.create(positions, polygonCounts, polygonConnects);
+
+		require(fnMesh.isQuadMesh(), "face-list quad classification");
+		require(!fnMesh.isTriMesh(), "face-list tri classification");
+
+		zDoubleArray edgeLengths;
+		require(std::abs(fnMesh.getEdgeLengths(edgeLengths) - 7.0) < 1.0e-6,
+			"face-list edge lengths");
+		require(edgeLengths.size() == 7, "face-list edge length count");
+
+		zIntArray interiorEdges;
+		fnMesh.getEdgeData(interiorEdges, true);
+		require(interiorEdges.size() == 2, "face-list boundary-excluded edge data");
+
+		zDoubleArray dihedralAngles;
+		fnMesh.getEdgeDihedralAngles(dihedralAngles);
+		require(dihedralAngles.size() == 7, "face-list dihedral angle count");
+
+		zDoubleArray planarity;
+		fnMesh.getPlanarityDeviationPerFace(planarity, zQuadPlanar);
+		require(planarity.size() == 2 && planarity[0] < 1.0e-6 && planarity[1] < 1.0e-6,
+			"face-list planarity deviation");
+
+		zObjectMesh extruded;
+		fnMesh.extrudeMesh(0.1f, extruded);
+		zFnMesh fnExtruded(extruded);
+		require(fnExtruded.numVertices() == 12, "face-list extrusion vertices");
+		require(fnExtruded.numPolygons() == 10, "face-list extrusion faces");
+
+		zObjectMesh tetra;
+		zFnMesh fnTetra(tetra);
+		zPointArray tetraPositions = {
+			zPoint(0, 0, 0),
+			zPoint(1, 0, 0),
+			zPoint(0, 1, 0),
+			zPoint(0, 0, 1)
+		};
+		zIntArray tetraCounts = { 3, 3, 3, 3 };
+		zIntArray tetraConnects = {
+			0, 2, 1,
+			0, 1, 3,
+			1, 2, 3,
+			2, 0, 3
+		};
+		fnTetra.create(tetraPositions, tetraCounts, tetraConnects);
+
+		zObjectGraph dualGraph;
+		zIntArray inEdgeDualEdge;
+		zIntArray dualEdgeInEdge;
+		fnTetra.getDualGraph(dualGraph, inEdgeDualEdge, dualEdgeInEdge, true);
+		zFnGraph fnDualGraph(dualGraph);
+		require(fnDualGraph.numVertices() == 4, "topology dual graph vertices");
+		require(fnDualGraph.numEdges() == 6, "topology dual graph edges");
+	}
+
+	void testFields()
+	{
+		zObjectMeshScalarField meshScalarField;
+		zFnMeshScalarField meshScalarFn(meshScalarField);
+		meshScalarFn.create(zPoint(0, 0, 0), zPoint(2, 2, 0), 3, 3);
+		require(meshScalarFn.numFieldValues() == 9, "mesh scalar field value count");
+
+		zScalarArray meshScalars(meshScalarFn.numFieldValues(), 1.0f);
+		meshScalarFn.setFieldValues(meshScalars);
+		zScalarArray readMeshScalars;
+		meshScalarFn.getFieldValues(readMeshScalars);
+		require(readMeshScalars.size() == meshScalars.size(), "mesh scalar field readback");
+
+		zObjectMeshVectorField meshVectorField;
+		zFnMeshVectorField meshVectorFn(meshVectorField);
+		meshVectorFn.createVectorFromScalarField(meshScalarField);
+		zVectorArray meshVectors;
+		meshVectorFn.getFieldValues(meshVectors);
+		require(meshVectors.size() == meshScalars.size(), "mesh vector field from scalar");
+
+		zObjectPointScalarField pointScalarField;
+		zFnPointScalarField pointScalarFn(pointScalarField);
+		pointScalarFn.create(zPoint(0, 0, 0), zPoint(1, 1, 1), 2, 2, 2);
+		require(pointScalarFn.numFieldValues() == 8, "point scalar field value count");
+
+		zScalarArray pointScalars(pointScalarFn.numFieldValues(), 2.0f);
+		pointScalarFn.setFieldValues(pointScalars);
+		zScalarArray readPointScalars;
+		pointScalarFn.getFieldValues(readPointScalars);
+		require(readPointScalars.size() == pointScalars.size(), "point scalar field readback");
+
+		zObjectPointVectorField pointVectorField;
+		zFnPointVectorField pointVectorFn(pointVectorField);
+		(void)pointVectorFn;
+	}
+
 	void testPointCloud()
 	{
 		zObjectPointCloud points;
@@ -267,6 +372,8 @@ int main()
 		testMeshToGraph(mesh);
 		testNonManifoldMesh();
 		testFaceListMeshAlgorithms();
+		testMeshMigrationCoverage();
+		testFields();
 		testPointCloud();
 		testTransformationMatrixCopy();
 

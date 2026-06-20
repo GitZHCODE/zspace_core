@@ -81,7 +81,13 @@ Update this section after each migration step.
   `zFnMeshField<T>` and `zFnPointField<T>` remain deprecated compatibility
   aliases during migration. Mesh scalar/vector wrappers now expose normal field
   value queries directly, so new code does not need to reference the base
-  templates for common field reads.
+  templates for common field reads. Mesh and point scalar/vector wrappers now
+  explicitly re-export common create/query/set methods, and
+  `zspace/interface.h` includes field objects, iterators, and function sets.
+  Smoke coverage now verifies mesh scalar fields, mesh vector fields generated
+  from scalar fields, point scalar fields, and compile-level point vector field
+  access. Point vector field runtime creation needs a dedicated follow-up pass
+  before it is added to the smoke runtime assertions.
 - Graph edge-list storage: completed first pass. `zObjectGraph` now owns
   edge-list storage as the authoritative representation and lazily builds the
   legacy half-edge `zGraph` cache for iterator/topology operations. Common
@@ -115,6 +121,10 @@ Update this section after each migration step.
   half-edge caches are not part of the public API.
 - Raw pointer/public dependency audit: pending. Keep performance escape hatches
   only where needed and document them as advanced API.
+- Smoke test expansion: in progress. `zspace_smoke` now covers non-manifold
+  face-list creation, face-list mesh algorithms, extrusion, topology-based dual
+  graph extraction, scalar/vector mesh fields, point scalar fields, point
+  vector field compile access, point clouds, and transformation copy behavior.
 - Interop naming cleanup: pending. Replace remaining internal `zObj*` uses with
   `zObject*`, preserving compatibility aliases only at the public bridge.
 

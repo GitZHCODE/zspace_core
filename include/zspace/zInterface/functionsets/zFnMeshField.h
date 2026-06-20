@@ -1017,7 +1017,14 @@ namespace zSpace
 	{
 	public:
 		using zFnMeshFieldBase<zScalar>::zFnMeshFieldBase;
+		using zFnMeshFieldBase<zScalar>::create;
+		using zFnMeshFieldBase<zScalar>::numFieldValues;
+		using zFnMeshFieldBase<zScalar>::getResolution;
+		using zFnMeshFieldBase<zScalar>::getUnitDistances;
+		using zFnMeshFieldBase<zScalar>::getBoundingBox;
+		using zFnMeshFieldBase<zScalar>::getPositions;
 		using zFnMeshFieldBase<zScalar>::getFieldValues;
+		using zFnMeshFieldBase<zScalar>::getRawFieldValues;
 		using zFnMeshFieldBase<zScalar>::getScalarValue;
 		using zFnMeshFieldBase<zScalar>::getGradient;
 		using zFnMeshFieldBase<zScalar>::getGradients;
@@ -1030,6 +1037,7 @@ namespace zSpace
 		using zFnMeshFieldBase<zScalar>::getScalars_Triangle;
 		using zFnMeshFieldBase<zScalar>::getScalars_Square;
 		using zFnMeshFieldBase<zScalar>::getScalars_Trapezoid;
+		using zFnMeshFieldBase<zScalar>::setFieldValues;
 		using zFnMeshFieldBase<zScalar>::smoothField;
 		using zFnMeshFieldBase<zScalar>::blend_linear;
 		using zFnMeshFieldBase<zScalar>::boolean_union;
@@ -1052,7 +1060,15 @@ namespace zSpace
 	{
 	public:
 		using zFnMeshFieldBase<zVector>::zFnMeshFieldBase;
+		using zFnMeshFieldBase<zVector>::create;
+		using zFnMeshFieldBase<zVector>::numFieldValues;
+		using zFnMeshFieldBase<zVector>::getResolution;
+		using zFnMeshFieldBase<zVector>::getUnitDistances;
+		using zFnMeshFieldBase<zVector>::getBoundingBox;
+		using zFnMeshFieldBase<zVector>::getPositions;
 		using zFnMeshFieldBase<zVector>::getFieldValues;
+		using zFnMeshFieldBase<zVector>::getRawFieldValues;
+		using zFnMeshFieldBase<zVector>::setFieldValues;
 		using zFnMeshFieldBase<zVector>::createVectorFromScalarField;
 	};
 

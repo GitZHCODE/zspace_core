@@ -103,6 +103,11 @@ build/ninja-msvc/bin/zSpace_IO.dll
 build/ninja-msvc/bin/zSpace_Display.dll
 ```
 
+`zspace_smoke` includes examples for mesh/graph creation, non-manifold
+face-list behavior, extrusion, topology-based dual graph extraction, mesh
+scalar/vector fields, point scalar fields, point-vector field compile access,
+point clouds, and transformation copy behavior.
+
 ## Mesh Examples
 
 Create and query a mesh:
@@ -319,6 +324,12 @@ for (zSpace::zItPointCloudVertex v(points); !v.end(); v++)
 Use scalar/vector-specific field function sets in new snippets. The template
 function-set names are compatibility aliases only.
 
+The umbrella include is enough for field examples:
+
+```cpp
+#include <zspace/interface.h>
+```
+
 Create and query a 2D mesh scalar field:
 
 ```cpp
@@ -391,6 +402,9 @@ Use these names when answering field questions:
 
 Avoid `zFnMeshField<T>` and `zFnPointField<T>` in new examples unless the
 question is specifically about compatibility with older code.
+
+Prefer mesh scalar/vector and point scalar runtime snippets until point vector
+field runtime creation has a dedicated cleanup pass.
 
 ## Method Discovery Recipes
 
