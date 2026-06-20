@@ -150,17 +150,6 @@ namespace zSpace
 		*/
 		bool addVertex(zPoint &_pos, bool checkDuplicates, zItGraphVertex &vertex);
 
-		/*! \brief This method adds an edge and its symmetry edge to the graph.
-		*
-		*	\param		[in]	v1			- start vertex index of the edge.
-		*	\param		[in]	v2			- end vertex index of the edge.
-		*	\param		[out]	halfEdge	- hafedge iterator of the new halfedge or existing if it is a duplicate.
-		*	\return				bool		- true if the edges container is resized.
-		*	\note	 The half edge pointers will need to be computed/ set.
-		*	\since version 0.0.2
-		*/
-		bool addEdges(int &v1, int &v2, bool checkDuplicates, zItGraphHalfEdge &halfEdge);
-
 		//--------------------------
 		//--- TOPOLOGY QUERY METHODS 
 		//--------------------------
@@ -220,13 +209,6 @@ namespace zSpace
 		*/
 		void averageVertices(int numSteps = 1);
 
-		/*! \brief This method removes inactive elements from the array connected with the input type.
-		*
-		*	\param		[in]	type			- zVertexData or zEdgeData .
-		*	\since version 0.0.2
-		*/
-		void removeInactiveElements(zHEData type);
-		
 		//--------------------------
 		//--- SET METHODS 
 		//--------------------------
@@ -401,19 +383,6 @@ namespace zSpace
 		void getGraphEccentricityCenter(zItGraphVertexArray &outV);
 
 		//--------------------------
-		//---- TOPOLOGY MODIFIER METHODS
-		//--------------------------
-		
-		/*! \brief This method splits an edge and inserts a vertex along the edge at the input factor.
-		*
-		*	\param		[in]	edge			- iterator of the edge to be split.
-		*	\param		[in]	edgeFactor		- factor in the range [0,1] that represent how far along each edge must the split be done.
-		*	\return				zItGraphVertex	- iterator of the new vertex added after splitinng the edge.
-		*	\since version 0.0.2
-		*/
-		zItGraphVertex splitEdge(zItGraphEdge &edge, double edgeFactor = 0.5);
-		
-		//--------------------------
 		//---- TRANSFORM METHODS OVERRIDES
 		//--------------------------
 
@@ -461,6 +430,9 @@ namespace zSpace
 
 		/*! \brief Internal topology helper for half-edge operations. */
 		int numHalfEdges();
+		bool addEdges(int &v1, int &v2, bool checkDuplicates, zItGraphHalfEdge &halfEdge);
+		void removeInactiveElements(zHEData type);
+		zItGraphVertex splitEdge(zItGraphEdge &edge, double edgeFactor = 0.5);
 
 		//--------------------------
 		//---- DEACTIVATE AND REMOVE METHODS

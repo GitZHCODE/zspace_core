@@ -125,10 +125,10 @@ fn.getBounds(minBB, maxBB);
 ```
 
 Mesh creation, IO, display, centers, lengths, triangulation, contour/isoband
-extraction, vertex averaging, color smoothing, and dynamics boundary fixing use
-the face-list representation. Topology-specific methods such as curvature,
-dual extraction, edge loops, subdivision, smoothing, and extrusion boundary
-capping may build the lazy half-edge cache.
+extraction, vertex averaging, color smoothing, dynamics boundary fixing, and
+extrusion side-wall construction use the face-list representation.
+Topology-specific methods such as curvature, dual extraction, edge loops,
+subdivision, and smoothing may build the lazy half-edge cache.
 
 Read a mesh and query bounds:
 
@@ -254,8 +254,8 @@ helpers that return two values per graph edge from the edge list. They should
 not be used as a signal that graph topology has been built.
 
 Graph IO reads and writes edge-list data directly. Graph dynamics boundary
-fixing also uses edge-list valency; angle-force queries still require connected
-vertex topology.
+fixing uses edge-list valency, and angle-force helpers use edge-list adjacency.
+Dual graph extraction is intentionally topology-based.
 
 Use `zItGraphVertex` and `zItGraphEdge` for simple indexed traversal and local
 geometry/attribute access. Use `zItGraphHalfEdge` only when the question is
@@ -458,6 +458,9 @@ Avoid:
 - `zFnMesh::halfEdgeExists()` or `zFnGraph::halfEdgeExists()` in application
   snippets; use public `edgeExists(...)` unless explicitly explaining topology
   internals.
+- Graph topology editing helpers such as `addEdges(...)`, `splitEdge(...)`, or
+  inactive-element cleanup methods; these are internal compatibility helpers,
+  not public API examples.
 - Direct access to `.mesh`, `.graph`, `.field`, or `.particle`.
 - Draw methods on objects.
 - File IO through function sets.

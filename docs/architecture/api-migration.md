@@ -62,9 +62,11 @@ Update this section after each migration step.
 - Mesh face-list algorithm audit: in progress. Vertex averaging, vertex/face
   color smoothing, and mesh dynamics boundary fixing now operate on face-list
   edges and face boundary counts instead of asking the lazy half-edge cache.
+  Mesh extrusion and boundary-edge extrusion now derive boundary sides from
+  face-list edge incidence.
   Curvature, dual graph/mesh extraction, rainflow graphs, edge-loop tools,
-  subdivision/smoothing, extrusion boundary capping, and mesh dynamics topology
-  force helpers remain topology-dependent.
+  subdivision/smoothing, and mesh dynamics topology force helpers remain
+  topology-dependent.
 - Mesh source cleanup: completed. Inactive `#if 0` blocks for removed
   delete/collapse/flip/split-face topology editing have been deleted.
 - Field API simplification: in progress. Public scalar/vector field function
@@ -89,6 +91,11 @@ Update this section after each migration step.
   indices for simple iteration, position/color access, endpoint queries, and
   edge length/center/vector queries; `zItGraphHalfEdge` remains the explicit
   topology path.
+- Graph topology editing cleanup: in progress. Legacy graph `addEdges`,
+  `splitEdge`, and inactive-element removal are no longer public API methods;
+  they remain private topology helpers while legacy topology-dependent code is
+  phased out. Graph dynamics angle forces now use edge-list adjacency for
+  hinge lookup.
 - Public half-edge count cleanup: completed. `zFnMesh::numHalfEdges()` and
   `zFnGraph::numHalfEdges()` are no longer public function-set methods.
   Half-edge counts are topology details and should be queried through
@@ -175,7 +182,8 @@ The following `zFnMesh` algorithms now operate directly on face-list storage:
 - whole-mesh and single-face triangulation;
 - isoline, iso-mesh, and isoband extraction with interpolated colors;
 - vertex averaging and vertex/face color smoothing;
-- mesh dynamics boundary fixing.
+- mesh dynamics boundary fixing;
+- extrusion and boundary extrusion side-wall generation.
 
 These operations support non-manifold input because they do not request the
 lazy half-edge cache. Isoline and isoband extraction accepts triangles, quads,
@@ -193,11 +201,12 @@ and simple polygons rather than relying on quad-only marching-square cases.
 The previous half-edge graph is an internal lazy topology cache. Graph IO,
 bulk function-set methods, display, edge length/center queries, simple
 vertex/edge iteration, endpoint queries, color interpolation, graph smoothing,
-eccentricity centers, graph IO export, graph dynamics boundary fixing, and
-transform updates should operate on edge-list data. Half-edge iterators,
-ordered connected-edge traversal, graph dynamics angle forces, edge splitting,
-graph mesh widening, and other topology-dependent operations build and reuse
-the cache automatically.
+eccentricity centers, graph IO export, graph dynamics boundary and angle-force
+adjacency, and transform updates should operate on edge-list data. Half-edge
+iterators, ordered connected-edge traversal, graph mesh widening, and other
+topology-dependent operations build and reuse the cache automatically.
+
+Dual mesh and dual graph extraction are intentionally topology-based.
 
 New graph algorithms should prefer the edge-list representation unless they
 need ordered half-edge traversal around vertices. If an algorithm mutates the

@@ -267,12 +267,23 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraphDynamics::addAngleForce(double strength, int vId, float restAngle, bool moveHinge)
 	{
-		zItGraphVertex v(*graphObj, vId);
+		const auto& data = zGraphObjectStorage::read(*graphObj);
+		if (vId < 0 || vId >= data.numVertices()) return;
+
 		zIntArray connectedVertices;
-		v.getConnectedVertices(connectedVertices);
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
+		{
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+
+			if (v0 == vId) connectedVertices.push_back(v1);
+			else if (v1 == vId) connectedVertices.push_back(v0);
+		}
+
+		if (connectedVertices.size() < 2) return;
 
 		int v0 = connectedVertices[0];
-		int v1 = v.getId();
+		int v1 = vId;
 		int v2 = connectedVertices[1];
 
 		// Get positions
@@ -321,8 +332,8 @@ namespace zSpace
 	{
 		if (vIds.size() == 0)
 		{
-			//apply force to all edges
-			for (int i = 0; i < numEdges(); i++)
+			//apply force to all valid hinge vertices
+			for (int i = 0; i < numVertices(); i++)
 			{
 				addAngleForce(strength, i, restAngle, moveHinge);
 			}
@@ -332,7 +343,7 @@ namespace zSpace
 			//apply force to specific edges
 			for (int vId : vIds)
 			{
-				addAngleForce(strength, vId, moveHinge);
+				addAngleForce(strength, vId, restAngle, moveHinge);
 			}
 		}
 	}

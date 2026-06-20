@@ -489,6 +489,70 @@ namespace zSpace
 			return triangles;
 		}
 
+		vector<std::pair<int, int>> getBoundaryEdges(const detail::zMeshFaceListStorage& data)
+		{
+			std::map<std::pair<int, int>, int> edgeUseCount;
+			std::map<std::pair<int, int>, std::pair<int, int>> orientedEdges;
+
+			for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+			{
+				const int begin = data.faceOffsets[faceId];
+				const int end = data.faceOffsets[faceId + 1];
+				for (int i = begin; i < end; ++i)
+				{
+					const int next = (i + 1 < end) ? i + 1 : begin;
+					const int v0 = data.faceVertexIndices[i];
+					const int v1 = data.faceVertexIndices[next];
+					const auto key = std::minmax(v0, v1);
+
+					edgeUseCount[key]++;
+					if (orientedEdges.find(key) == orientedEdges.end()) orientedEdges[key] = std::make_pair(v0, v1);
+				}
+			}
+
+			vector<std::pair<int, int>> out;
+			for (const auto& item : edgeUseCount)
+			{
+				if (item.second == 1) out.push_back(orientedEdges[item.first]);
+			}
+
+			return out;
+		}
+
+		void appendExtrudeSideFace(
+			const std::pair<int, int>& edge,
+			int offset,
+			bool thicknessTris,
+			zIntArray& polyCounts,
+			zIntArray& polyConnects)
+		{
+			const int v0 = edge.first;
+			const int v1 = edge.second;
+
+			if (thicknessTris)
+			{
+				polyConnects.push_back(v1);
+				polyConnects.push_back(v0);
+				polyConnects.push_back(v0 + offset);
+
+				polyConnects.push_back(v0 + offset);
+				polyConnects.push_back(v1 + offset);
+				polyConnects.push_back(v1);
+
+				polyCounts.push_back(3);
+				polyCounts.push_back(3);
+			}
+			else
+			{
+				polyConnects.push_back(v1);
+				polyConnects.push_back(v0);
+				polyConnects.push_back(v0 + offset);
+				polyConnects.push_back(v1 + offset);
+
+				polyCounts.push_back(4);
+			}
+		}
+
 		struct ScalarCorner
 		{
 			zPoint position;
@@ -3521,74 +3585,53 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 
 	ZSPACE_INLINE void zFnMesh::extrudeMesh(float extrudeThickness,zObjectMesh &out, bool thicknessTris)
 	{
-		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() == 0 || zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
-		
+		{
+			const auto& existingData = zMeshObjectStorage::read(*meshObj);
+			if (existingData.vertexNormals.size() != existingData.numVertices()) computeMeshNormals();
+		}
+
+		const auto& data = zMeshObjectStorage::read(*meshObj);
 
 		vector<zVector> positions;
 		vector<int> polyCounts;
 		vector<int> polyConnects;
 
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexPositions.size(); i++)
+		for (int i = 0; i < data.numVertices(); i++)
 		{
-			positions.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[i]);
+			positions.push_back(data.positions[i]);
 		}
 
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexPositions.size(); i++)
+		for (int i = 0; i < data.numVertices(); i++)
 		{
-			positions.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[i] + (zMeshObjectStorage::get(*meshObj).vertexNormals[i] * extrudeThickness));
+			zVector normal = data.vertexNormals[i];
+			zPoint position = data.positions[i];
+			positions.push_back(position + (normal * extrudeThickness));
 		}
 
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			vector<int> fVerts;
-			f.getVertices(fVerts);
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
 
-			for (int j = 0; j < fVerts.size(); j++)
+			for (int i = begin; i < end; ++i)
 			{
-				polyConnects.push_back(fVerts[j]);
+				polyConnects.push_back(data.faceVertexIndices[i]);
 			}
 
-			polyCounts.push_back(fVerts.size());
+			polyCounts.push_back(end - begin);
 
-			for (int j = fVerts.size() - 1; j >= 0; j--)
+			for (int i = end - 1; i >= begin; --i)
 			{
-				polyConnects.push_back(fVerts[j] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
+				polyConnects.push_back(data.faceVertexIndices[i] + data.numVertices());
 			}
 
-			polyCounts.push_back(fVerts.size());
+			polyCounts.push_back(end - begin);
 		}
 
-		for (zItMeshHalfEdge he(*meshObj); !he.end(); he++)
+		vector<std::pair<int, int>> boundaryEdges = getBoundaryEdges(data);
+		for (const auto& edge : boundaryEdges)
 		{
-			if (he.onBoundary())
-			{
-				vector<int> eVerts;
-				he.getVertices(eVerts);
-
-				if (thicknessTris)
-				{
-					polyConnects.push_back(eVerts[1]);
-					polyConnects.push_back(eVerts[0]);
-					polyConnects.push_back(eVerts[0] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-
-					polyConnects.push_back(eVerts[0] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-					polyConnects.push_back(eVerts[1] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-					polyConnects.push_back(eVerts[1]);
-
-					polyCounts.push_back(3);
-					polyCounts.push_back(3);
-				}
-				else
-				{
-					polyConnects.push_back(eVerts[1]);
-					polyConnects.push_back(eVerts[0]);
-					polyConnects.push_back(eVerts[0] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-					polyConnects.push_back(eVerts[1] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-
-
-					polyCounts.push_back(4);
-				}
-			}
+			appendExtrudeSideFace(edge, data.numVertices(), thicknessTris, polyCounts, polyConnects);
 		}
 
 		zFnMesh tempFn(out);
@@ -3600,76 +3643,61 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 
 	ZSPACE_INLINE void zFnMesh::extrudeVariableMesh(zFloatArray extrudeThickness, zObjectMesh& out, bool bothSides, bool thicknessTris)
 	{
-		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() == 0 || zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
+		{
+			const auto& existingData = zMeshObjectStorage::read(*meshObj);
+			if (existingData.vertexNormals.size() != existingData.numVertices()) computeMeshNormals();
+		}
 
 		if (extrudeThickness.size() != numVertices()) return;
+
+		const auto& data = zMeshObjectStorage::read(*meshObj);
 
 		vector<zVector> positions;
 		vector<int> polyCounts;
 		vector<int> polyConnects;
 
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexPositions.size(); i++)
+		for (int i = 0; i < data.numVertices(); i++)
 		{
-			if(!bothSides) positions.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[i]);
-			else positions.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[i] + (zMeshObjectStorage::get(*meshObj).vertexNormals[i] * extrudeThickness[i] * -1));
+			zVector normal = data.vertexNormals[i];
+			if(!bothSides) positions.push_back(data.positions[i]);
+			else
+			{
+				zPoint position = data.positions[i];
+				positions.push_back(position + (normal * extrudeThickness[i] * -1));
+			}
 		}
 
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexPositions.size(); i++)
+		for (int i = 0; i < data.numVertices(); i++)
 		{
-			positions.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[i] + (zMeshObjectStorage::get(*meshObj).vertexNormals[i] * extrudeThickness[i]));
+			zVector normal = data.vertexNormals[i];
+			zPoint position = data.positions[i];
+			positions.push_back(position + (normal * extrudeThickness[i]));
 		}
 
-		for (zItMeshFace f(*meshObj); !f.end(); f++)
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			vector<int> fVerts;
-			f.getVertices(fVerts);
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
 
-			for (int j = 0; j < fVerts.size(); j++)
+			for (int i = begin; i < end; ++i)
 			{
-				polyConnects.push_back(fVerts[j]);
+				polyConnects.push_back(data.faceVertexIndices[i]);
 			}
 
-			polyCounts.push_back(fVerts.size());
+			polyCounts.push_back(end - begin);
 
-			for (int j = fVerts.size() - 1; j >= 0; j--)
+			for (int i = end - 1; i >= begin; --i)
 			{
-				polyConnects.push_back(fVerts[j] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
+				polyConnects.push_back(data.faceVertexIndices[i] + data.numVertices());
 			}
 
-			polyCounts.push_back(fVerts.size());
+			polyCounts.push_back(end - begin);
 		}
 
-		for (zItMeshHalfEdge he(*meshObj); !he.end(); he++)
+		vector<std::pair<int, int>> boundaryEdges = getBoundaryEdges(data);
+		for (const auto& edge : boundaryEdges)
 		{
-			if (he.onBoundary())
-			{
-				vector<int> eVerts;
-				he.getVertices(eVerts);
-
-				if (thicknessTris)
-				{
-					polyConnects.push_back(eVerts[1]);
-					polyConnects.push_back(eVerts[0]);
-					polyConnects.push_back(eVerts[0] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-
-					polyConnects.push_back(eVerts[0] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-					polyConnects.push_back(eVerts[1] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-					polyConnects.push_back(eVerts[1]);
-
-					polyCounts.push_back(3);
-					polyCounts.push_back(3);
-				}
-				else
-				{
-					polyConnects.push_back(eVerts[1]);
-					polyConnects.push_back(eVerts[0]);
-					polyConnects.push_back(eVerts[0] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-					polyConnects.push_back(eVerts[1] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-
-
-					polyCounts.push_back(4);
-				}
-			}
+			appendExtrudeSideFace(edge, data.numVertices(), thicknessTris, polyCounts, polyConnects);
 		}
 
 		zFnMesh tempFn(out);
@@ -3681,58 +3709,35 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 
 	ZSPACE_INLINE void zFnMesh::extrudeBoundaryEdge(float extrudeThickness, zObjectMesh &out, bool thicknessTris)
 	{
-		if (zMeshObjectStorage::get(*meshObj).faceNormals.size() == 0 || zMeshObjectStorage::get(*meshObj).faceNormals.size() != zMeshObjectStorage::get(*meshObj).faces.size()) computeMeshNormals();
+		{
+			const auto& existingData = zMeshObjectStorage::read(*meshObj);
+			if (existingData.vertexNormals.size() != existingData.numVertices()) computeMeshNormals();
+		}
 
+		const auto& data = zMeshObjectStorage::read(*meshObj);
 
 		vector<zVector> positions;
 		vector<int> polyCounts;
 		vector<int> polyConnects;
 
 
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexPositions.size(); i++)
+		for (int i = 0; i < data.numVertices(); i++)
 		{
-			positions.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[i]);
+			positions.push_back(data.positions[i]);
 		}
 
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).vertexPositions.size(); i++)
+		for (int i = 0; i < data.numVertices(); i++)
 		{
-			positions.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[i] + (zMeshObjectStorage::get(*meshObj).vertexNormals[i] * extrudeThickness));
+			zVector normal = data.vertexNormals[i];
+			zPoint position = data.positions[i];
+			positions.push_back(position + (normal * extrudeThickness));
 		}	
 
 
-		for (zItMeshHalfEdge he(*meshObj); !he.end(); he++)
+		vector<std::pair<int, int>> boundaryEdges = getBoundaryEdges(data);
+		for (const auto& edge : boundaryEdges)
 		{
-			if (he.onBoundary())
-			{
-				vector<int> eVerts;
-				he.getVertices(eVerts);
-
-				if (thicknessTris)
-				{
-					polyConnects.push_back(eVerts[1]);
-					polyConnects.push_back(eVerts[0]);
-					polyConnects.push_back(eVerts[0] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-
-					polyConnects.push_back(eVerts[0] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-					polyConnects.push_back(eVerts[1] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-					polyConnects.push_back(eVerts[1]);
-
-					polyCounts.push_back(3);
-					polyCounts.push_back(3);
-				}
-				else
-				{
-					polyConnects.push_back(eVerts[1]);
-					polyConnects.push_back(eVerts[0]);
-					polyConnects.push_back(eVerts[0] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-					polyConnects.push_back(eVerts[1] + zMeshObjectStorage::get(*meshObj).vertexPositions.size());
-
-
-					polyCounts.push_back(4);
-				}
-
-
-			}
+			appendExtrudeSideFace(edge, data.numVertices(), thicknessTris, polyCounts, polyConnects);
 		}
 
 		zFnMesh tempFn(out);
