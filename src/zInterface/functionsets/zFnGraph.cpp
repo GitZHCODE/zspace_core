@@ -238,61 +238,77 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraph::computeVertexColorfromEdgeColor()
 	{
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
+		auto& data = zGraphObjectStorage::edit(*graphObj);
+		if (data.edgeColors.size() != data.numEdges()) data.edgeColors.assign(data.numEdges(), zColor(0, 0, 0, 1));
+		if (data.vertexColors.size() != data.numVertices()) data.vertexColors.assign(data.numVertices(), zColor(0, 0, 0, 1));
+
+		vector<zColor> colorSums(data.numVertices(), zColor(0, 0, 0, 0));
+		vector<int> colorCounts(data.numVertices(), 0);
+
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 		{
-			if (v.isActive())
-			{
-				vector<int> cEdges;
-				v.getConnectedHalfEdges(cEdges);
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+			const zColor& edgeColor = data.edgeColors[edgeId];
 
-				zColor col;
-				for (int j = 0; j < cEdges.size(); j++)
-				{
-					col.r += zGraphObjectStorage::get(*graphObj).edgeColors[cEdges[j]].r;
-					col.g += zGraphObjectStorage::get(*graphObj).edgeColors[cEdges[j]].g;
-					col.b += zGraphObjectStorage::get(*graphObj).edgeColors[cEdges[j]].b;
-				}
+			colorSums[v0].r += edgeColor.r;
+			colorSums[v0].g += edgeColor.g;
+			colorSums[v0].b += edgeColor.b;
+			colorSums[v0].a += edgeColor.a;
+			colorCounts[v0]++;
 
-				col.r /= cEdges.size(); col.g /= cEdges.size(); col.b /= cEdges.size();
+			colorSums[v1].r += edgeColor.r;
+			colorSums[v1].g += edgeColor.g;
+			colorSums[v1].b += edgeColor.b;
+			colorSums[v1].a += edgeColor.a;
+			colorCounts[v1]++;
+		}
 
-				zGraphObjectStorage::get(*graphObj).vertexColors[v.getId()] = col;
+		for (int vertexId = 0; vertexId < data.numVertices(); ++vertexId)
+		{
+			if (colorCounts[vertexId] == 0) continue;
 
-			}
+			colorSums[vertexId].r /= colorCounts[vertexId];
+			colorSums[vertexId].g /= colorCounts[vertexId];
+			colorSums[vertexId].b /= colorCounts[vertexId];
+			colorSums[vertexId].a /= colorCounts[vertexId];
+			data.vertexColors[vertexId] = colorSums[vertexId];
 		}
 	}
 
 	ZSPACE_INLINE void zFnGraph::averageVertices(int numSteps)
 	{
+		auto& data = zGraphObjectStorage::edit(*graphObj);
+		vector<zIntArray> adjacency(data.numVertices());
+
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
+		{
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+
+			adjacency[v0].push_back(v1);
+			adjacency[v1].push_back(v0);
+		}
+
 		for (int k = 0; k < numSteps; k++)
 		{
-			vector<zVector> tempVertPos;
+			zPointArray tempVertPos = data.positions;
 
-			for (zItGraphVertex v(*graphObj); !v.end(); v++)
+			for (int vertexId = 0; vertexId < data.numVertices(); ++vertexId)
 			{
-				tempVertPos.push_back(zGraphObjectStorage::get(*graphObj).vertexPositions[v.getId()]);
+				if (adjacency[vertexId].size() == 1) continue;
 
-				if (v.isActive())
+				zPoint avg = data.positions[vertexId];
+				for (int j = 0; j < adjacency[vertexId].size(); j++)
 				{
-					if (!v.checkValency(1))
-					{
-						vector<int> cVerts;
-
-						v.getConnectedVertices(cVerts);
-
-						for (int j = 0; j < cVerts.size(); j++)
-						{
-							zVector p = zGraphObjectStorage::get(*graphObj).vertexPositions[cVerts[j]];
-							tempVertPos[v.getId()] += p;
-						}
-
-						tempVertPos[v.getId()] /= (cVerts.size() + 1);
-					}
+					avg += data.positions[adjacency[vertexId][j]];
 				}
 
+				avg /= (adjacency[vertexId].size() + 1);
+				tempVertPos[vertexId] = avg;
 			}
 
-			// update position
-			for (int i = 0; i < tempVertPos.size(); i++) zGraphObjectStorage::get(*graphObj).vertexPositions[i] = tempVertPos[i];
+			data.positions = tempVertPos;
 		}
 
 	}
@@ -727,7 +743,11 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraph::getGraphEccentricityCenter(zItGraphVertexArray & outV)
 	{
-		const int N = numVertices();	// number of nodes in graph
+		const auto& data = zGraphObjectStorage::read(*graphObj);
+		const int N = data.numVertices();	// number of nodes in graph
+		outV.clear();
+		if (N == 0) return;
+
 		const int INF = 99999;
 		MatrixXi d(N,N);				// distances between nodes
 		VectorXi e(N);					// eccentricity of nodes
@@ -735,17 +755,32 @@ namespace zSpace
 		int rad = INF;					// radius of graph
 		int diam = 0;					// diamater of graph
 
+		vector<zIntArray> adjacency(N);
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
+		{
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+
+			adjacency[v0].push_back(v1);
+			adjacency[v1].push_back(v0);
+		}
+
 		zIntArray boundaryVerts;
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
-			if (v.checkValency(1)) boundaryVerts.push_back(v.getId());
+		for (int vertexId = 0; vertexId < N; vertexId++)
+			if (adjacency[vertexId].size() == 1) boundaryVerts.push_back(vertexId);
 		
 		d.setConstant(INF);
 		e.setZero();
 
-		for (zItGraphHalfEdge he(*graphObj); !he.end(); he++)
+		for (int i = 0; i < N; i++) d(i, i) = 0;
+
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 		{
-			d(he.getStartVertex().getId(), he.getVertex().getId()) = 1;
-			d(he.getStartVertex().getId(), he.getStartVertex().getId()) = 0;
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+
+			d(v0, v1) = 1;
+			d(v1, v0) = 1;
 		}
 
 		// Floyd-Warshall's algorithm

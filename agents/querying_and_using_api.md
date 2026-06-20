@@ -236,6 +236,10 @@ edge list as its primary representation; half-edge graph topology is built
 lazily when code asks for ordered traversal through graph iterators or
 topology-specific methods.
 
+Simple graph utilities such as color interpolation, vertex averaging, edge
+lengths, and eccentricity center queries use the edge-list representation and
+do not require the half-edge cache.
+
 Use `zItGraphVertex` and `zItGraphEdge` for simple indexed traversal and local
 geometry/attribute access. Use `zItGraphHalfEdge` only when the question is
 specifically about ordered graph topology.
