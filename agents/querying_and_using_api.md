@@ -247,6 +247,10 @@ do not require the half-edge cache.
 helpers that return two values per graph edge from the edge list. They should
 not be used as a signal that graph topology has been built.
 
+Graph IO reads and writes edge-list data directly. Graph dynamics boundary
+fixing also uses edge-list valency; angle-force queries still require connected
+vertex topology.
+
 Use `zItGraphVertex` and `zItGraphEdge` for simple indexed traversal and local
 geometry/attribute access. Use `zItGraphHalfEdge` only when the question is
 specifically about ordered graph topology.

@@ -77,7 +77,8 @@ Update this section after each migration step.
   `zFnGraph` create/count/attribute/bounds/edge-data/center/length/transform
   methods use the edge-list path. Vertex color averaging from edge colors,
   graph vertex averaging, graph eccentricity center queries, half-edge-shaped
-  center/length compatibility queries are now edge-list-native.
+  center/length compatibility queries, graph IO export, and graph dynamics
+  boundary fixing are now edge-list-native.
   `zItGraphVertex` and `zItGraphEdge` now use edge-list
   indices for simple iteration, position/color access, endpoint queries, and
   edge length/center/vector queries; `zItGraphHalfEdge` remains the explicit
@@ -184,10 +185,11 @@ and simple polygons rather than relying on quad-only marching-square cases.
 The previous half-edge graph is an internal lazy topology cache. Graph IO,
 bulk function-set methods, display, edge length/center queries, simple
 vertex/edge iteration, endpoint queries, color interpolation, graph smoothing,
-eccentricity centers, and transform updates should operate on edge-list data.
-Half-edge iterators, ordered connected-edge traversal, edge splitting, graph
-mesh widening, and other topology-dependent operations build and reuse the
-cache automatically.
+eccentricity centers, graph IO export, graph dynamics boundary fixing, and
+transform updates should operate on edge-list data. Half-edge iterators,
+ordered connected-edge traversal, graph dynamics angle forces, edge splitting,
+graph mesh widening, and other topology-dependent operations build and reuse
+the cache automatically.
 
 New graph algorithms should prefer the edge-list representation unless they
 need ordered half-edge traversal around vertices. If an algorithm mutates the

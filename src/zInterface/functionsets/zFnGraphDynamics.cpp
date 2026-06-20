@@ -61,15 +61,30 @@ namespace zSpace
 	ZSPACE_INLINE void zFnGraphDynamics::makeDynamic(bool fixBoundary)
 	{
 		//fnParticles.clear();
+		const auto& data = zGraphObjectStorage::read(*graphObj);
+		zIntArray valencies(data.numVertices(), 0);
 
-		for (zItGraphVertex v(*graphObj); !v.end(); v++)
+		if (fixBoundary)
+		{
+			for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
+			{
+				const int v0 = data.edgeVertexIndices[edgeId * 2];
+				const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+
+				valencies[v0]++;
+				valencies[v1]++;
+			}
+		}
+
+		for (int vertexId = 0; vertexId < data.numVertices(); ++vertexId)
 		{
 			bool fixed = false;
 
-			if (fixBoundary) fixed = (v.checkValency(1));
+			if (fixBoundary) fixed = (valencies[vertexId] == 1);
 
 			zObjectParticle p;
-			p.particle = zParticle(*v.getRawPosition(), fixed);
+			zPoint position = data.positions[vertexId];
+			p.particle = zParticle(position, fixed);
 			particlesObj.push_back(p);
 
 			//if (!fixed) setVertexColor(zColor(0, 0, 1, 1));

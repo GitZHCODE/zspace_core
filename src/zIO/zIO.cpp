@@ -10,7 +10,6 @@
 #include <zspace/zInterface/functionsets/zFnGraph.h>
 #include <zspace/zInterface/functionsets/zFnMesh.h>
 #include <zspace/zInterface/functionsets/zFnPointCloud.h>
-#include <zspace/zInterface/iterators/zItGraph.h>
 #include <zspace/zInterface/iterators/zItMesh.h>
 
 #include <algorithm>
@@ -141,17 +140,7 @@ namespace zSpace
 			functionSet.getVertexPositions(data.positions);
 			functionSet.getVertexColors(data.vertexColors);
 			functionSet.getEdgeColors(data.edgeColors);
-
-			for (zItGraphEdge edge(graph); !edge.end(); edge++)
-			{
-				if (!edge.isActive()) continue;
-				zIntArray vertices;
-				edge.getVertices(vertices);
-				if (vertices.size() != 2)
-					return zIOResult::error("Graph contains an edge without two vertices.");
-				data.edgeConnects.push_back(vertices[0]);
-				data.edgeConnects.push_back(vertices[1]);
-			}
+			functionSet.getEdgeData(data.edgeConnects);
 
 			if (data.positions.empty() || data.edgeConnects.empty())
 				return zIOResult::error("Graph contains no writable geometry.");
