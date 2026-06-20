@@ -3,7 +3,7 @@
 
 #include <zspace/zInterface/functionsets/zFnMesh.h>
 #include <zspace/zInterface/iterators/zItMesh.h>
-#include <zspace/zInterface/objects/zObjMesh.h>
+#include <zspace/zInterface/objects/zObjectMesh.h>
 
 namespace zSpace
 {

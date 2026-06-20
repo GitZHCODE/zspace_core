@@ -21,7 +21,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zUnrealFnMesh::zUnrealFnMesh() {}
 
-	ZSPACE_INLINE zUnrealFnMesh::zUnrealFnMesh(zObjMesh &_zspace_meshObj)
+	ZSPACE_INLINE zUnrealFnMesh::zUnrealFnMesh(zObjectMesh &_zspace_meshObj)
 	{
 		meshObj = &_zspace_meshObj;;
 	}

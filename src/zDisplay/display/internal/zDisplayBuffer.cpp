@@ -11,14 +11,14 @@
 //
 
 
-#include<src/zDisplay/display/internal/zObjBuffer.h>
+#include<src/zDisplay/display/internal/zDisplayBuffer.h>
 
 namespace zSpace
 {
 	
 	//----  CONSTRUCTOR
 	   
-	ZSPACE_INLINE zObjBuffer::zObjBuffer()
+	ZSPACE_INLINE zDisplayBuffer::zDisplayBuffer()
 	{
 
 		nVertices = 0;
@@ -30,7 +30,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE zObjBuffer::zObjBuffer(GLint _Max_Num_Verts)
+	ZSPACE_INLINE zDisplayBuffer::zDisplayBuffer(GLint _Max_Num_Verts)
 	{
 		nVertices = 0;
 		nColors = 0;
@@ -80,11 +80,11 @@ namespace zSpace
 
 	//----  DESTRUCTOR
 
-	ZSPACE_INLINE zObjBuffer::~zObjBuffer() {}
+	ZSPACE_INLINE zDisplayBuffer::~zDisplayBuffer() {}
 
 	//----  APPEND METHODS
 
-	ZSPACE_INLINE int zObjBuffer::appendVertexAttributes(zPoint*_positions, zVector* _normals, int size)
+	ZSPACE_INLINE int zDisplayBuffer::appendVertexAttributes(zPoint*_positions, zVector* _normals, int size)
 	{
 
 		int out = nVertices;
@@ -122,7 +122,7 @@ namespace zSpace
 		return out;
 	}
 
-	ZSPACE_INLINE int zObjBuffer::appendVertexAttributes(float* _positions, float* _normals, int numPositions)
+	ZSPACE_INLINE int zDisplayBuffer::appendVertexAttributes(float* _positions, float* _normals, int numPositions)
 	{
 
 		int out = nVertices;
@@ -160,7 +160,7 @@ namespace zSpace
 		return out;
 	}
 
-	ZSPACE_INLINE int zObjBuffer::appendVertexColors(zColor* _colors, int size)
+	ZSPACE_INLINE int zDisplayBuffer::appendVertexColors(zColor* _colors, int size)
 	{
 
 		int out = nColors;
@@ -187,7 +187,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE int zObjBuffer::appendVertexColors(float* _colors, int numPositions)
+	ZSPACE_INLINE int zDisplayBuffer::appendVertexColors(float* _colors, int numPositions)
 	{
 
 		int out = nColors;
@@ -214,7 +214,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE int zObjBuffer::appendEdgeIndices(zIntArray &_edgeIndicies)
+	ZSPACE_INLINE int zDisplayBuffer::appendEdgeIndices(zIntArray &_edgeIndicies)
 	{
 		int out = nEdges;
 
@@ -237,7 +237,7 @@ namespace zSpace
 		return out;
 	}
 
-	ZSPACE_INLINE int zObjBuffer::appendFaceIndices(zIntArray &_faceIndicies)
+	ZSPACE_INLINE int zDisplayBuffer::appendFaceIndices(zIntArray &_faceIndicies)
 	{
 		int out = nFaces;
 
@@ -262,7 +262,7 @@ namespace zSpace
 
 	//----  UPDATE METHODS
 
-	ZSPACE_INLINE void zObjBuffer::updateVertexPositions(zPoint* _positions, int size, int startId)
+	ZSPACE_INLINE void zDisplayBuffer::updateVertexPositions(zPoint* _positions, int size, int startId)
 	{
 
 		GLfloat *positions = new GLfloat[size * vertexAttribStride];
@@ -281,7 +281,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zObjBuffer::updateVertexPositions(float* _positions, int numPositions, int startId)
+	ZSPACE_INLINE void zDisplayBuffer::updateVertexPositions(float* _positions, int numPositions, int startId)
 	{
 
 		GLfloat* positions = new GLfloat[numPositions * vertexAttribStride];
@@ -300,7 +300,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zObjBuffer::updateVertexNormals(zVector* _normals, int size, int &startId)
+	ZSPACE_INLINE void zDisplayBuffer::updateVertexNormals(zVector* _normals, int size, int &startId)
 	{
 		GLfloat *normals = new GLfloat[size * vertexAttribStride];
 
@@ -318,7 +318,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zObjBuffer::updateVertexNormals(float* _normals, int numPositions, int& startId)
+	ZSPACE_INLINE void zDisplayBuffer::updateVertexNormals(float* _normals, int numPositions, int& startId)
 	{
 		GLfloat* normals = new GLfloat[numPositions * vertexAttribStride];
 
@@ -336,7 +336,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zObjBuffer::updateVertexColors(zColor*_colors, int size, int &startId)
+	ZSPACE_INLINE void zDisplayBuffer::updateVertexColors(zColor*_colors, int size, int &startId)
 	{
 		GLfloat *colors = new GLfloat[size * vertexColorStride];
 
@@ -356,7 +356,7 @@ namespace zSpace
 
 	}
 
-	ZSPACE_INLINE void zObjBuffer::updateVertexColors(float* _colors, int numPositions, int& startId)
+	ZSPACE_INLINE void zDisplayBuffer::updateVertexColors(float* _colors, int numPositions, int& startId)
 	{
 		GLfloat* colors = new GLfloat[numPositions * vertexColorStride];
 
@@ -378,7 +378,7 @@ namespace zSpace
 
 	//----  CLEAR METHODS
 
-	ZSPACE_INLINE void zObjBuffer::clearBufferForRewrite()
+	ZSPACE_INLINE void zDisplayBuffer::clearBufferForRewrite()
 	{
 		nVertices = nColors = nEdges = nFaces = 0;
 

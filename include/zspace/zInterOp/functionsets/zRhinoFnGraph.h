@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include<zspace/zInterface/objects/zObjGraph.h>
+#include<zspace/zInterface/objects/zObjectGraph.h>
 #include<zspace/zInterface/functionsets/zFnGraph.h>
 #include<zspace/zInterface/iterators/zItGraph.h>
 
@@ -64,7 +64,7 @@ namespace zSpace
 		*	\param	[in]	_zspace_meshObj			- input zspace mesh object.
 		*	\since version 0.0.4
 		*/
-		zRhinoFnGraph(zObjGraph &_zspace_graphObj);
+		zRhinoFnGraph(zObjectGraph &_zspace_graphObj);
 
 		//--------------------------
 		//---- DESTRUCTOR

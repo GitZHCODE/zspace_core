@@ -57,7 +57,7 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \class zObjBuffer
+	/*! \class zDisplayBuffer
 	*	\brief A vertex buffer object class used to append geometry to the buffer.
 	*	\since version 0.0.1
 	*/
@@ -66,7 +66,7 @@ namespace zSpace
 
 	/** @}*/
 
-	class zObjBuffer
+	class zDisplayBuffer
 	{
 	public:
 
@@ -111,14 +111,14 @@ namespace zSpace
 		*
 		*	\since version 0.0.1
 		*/		
-		zObjBuffer();
+		zDisplayBuffer();
 
 		/*! \brief Overloaded constructor.
 		*
 		*	\param		[in]	_Max_Num_Verts		- size of the buffer to be initialised.
 		*	\since version 0.0.1
 		*/
-		zObjBuffer(GLint _Max_Num_Verts);
+		zDisplayBuffer(GLint _Max_Num_Verts);
 
 		//--------------------------
 		//----  DESTRUCTOR
@@ -128,7 +128,7 @@ namespace zSpace
 		*
 		*	\since version 0.0.1
 		*/
-		~zObjBuffer();
+		~zDisplayBuffer();
 
 		//--------------------------
 		//----  APPEND METHODS

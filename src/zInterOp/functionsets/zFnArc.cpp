@@ -12,9 +12,9 @@
 
 
 #include<zspace/zInterOp/functionsets/zFnArc.h>
-#include<zspace/zInterOp/objects/zObjPlane.h>
+#include<zspace/zInterOp/objects/zObjectPlane.h>
 #include<zspace/zInterOp/functionsets/zFnPlane.h>
-#include<zspace/zInterOp/objects/zObjNurbsCurve.h>
+#include<zspace/zInterOp/objects/zObjectNurbsCurve.h>
 #include<zspace/zInterOp/functionsets/zFnNurbsCurve.h>
 #include<zspace/zInterOp/serialization/zGeometryJson.h>
 
@@ -28,7 +28,7 @@ namespace zSpace
 		arcObj = nullptr;
 	}
 
-	ZSPACE_INLINE zFnArc::zFnArc(zObjArc& _arcObj)
+	ZSPACE_INLINE zFnArc::zFnArc(zObjectArc& _arcObj)
 	{
 		fnType = zFnType::zArcFn;
 		arcObj = &_arcObj;
@@ -62,7 +62,7 @@ namespace zSpace
 	}
 
 	//---- CREATE METHODS
-	ZSPACE_INLINE bool zFnArc::create(zObjPlane& _plane, double _radius, double _angle)
+	ZSPACE_INLINE bool zFnArc::create(zObjectPlane& _plane, double _radius, double _angle)
 	{
 		bool success = false;
 

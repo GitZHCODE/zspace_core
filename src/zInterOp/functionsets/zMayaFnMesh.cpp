@@ -22,7 +22,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zMayaFnMesh::zMayaFnMesh() {}
 
-	ZSPACE_INLINE zMayaFnMesh::zMayaFnMesh(zObjMesh &_zspace_meshObj)
+	ZSPACE_INLINE zMayaFnMesh::zMayaFnMesh(zObjectMesh &_zspace_meshObj)
 	{
 		meshObj = &_zspace_meshObj;;		
 	}

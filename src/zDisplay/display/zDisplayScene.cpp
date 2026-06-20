@@ -1,8 +1,8 @@
 #include <zspace/zDisplay/display/zDisplayScene.h>
 
 #include <src/zDisplay/display/internal/zDisplaySceneImpl.h>
-#include <zspace/zInterface/objects/zObjGraph.h>
-#include <zspace/zInterface/objects/zObjMesh.h>
+#include <zspace/zInterface/objects/zObjectGraph.h>
+#include <zspace/zInterface/objects/zObjectMesh.h>
 
 namespace zSpace
 {

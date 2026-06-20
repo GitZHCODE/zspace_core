@@ -27,7 +27,7 @@ namespace zSpace
 
 	//---- INTEROP METHODS
 
-	ZSPACE_INLINE bool zIOMesh::toZSpaceMesh(MObject &maya_meshObj, zObjMesh &zspace_meshObj)
+	ZSPACE_INLINE bool zIOMesh::toZSpaceMesh(MObject &maya_meshObj, zObjectMesh &zspace_meshObj)
 	{
 		/*MFn::Type fn = MFn::kInvalid;
 		maya_meshObj.hasFn(fn);
@@ -40,7 +40,7 @@ namespace zSpace
 		return true;
 	}
 
-	ZSPACE_INLINE bool zIOMesh::toZSpaceMesh(ON_Mesh &rhino_meshObj, zObjMesh &zspace_meshObj)
+	ZSPACE_INLINE bool zIOMesh::toZSpaceMesh(ON_Mesh &rhino_meshObj, zObjectMesh &zspace_meshObj)
 	{
 		zRhinoFnMesh tempFn(zspace_meshObj);
 		tempFn.fromRhinoMesh(rhino_meshObj);
@@ -48,7 +48,7 @@ namespace zSpace
 		return true;
 	}
 
-	ZSPACE_INLINE bool zIOMesh::toRhinoMesh(zObjMesh &zspace_meshObj, ON_Mesh &rhino_meshObj)
+	ZSPACE_INLINE bool zIOMesh::toRhinoMesh(zObjectMesh &zspace_meshObj, ON_Mesh &rhino_meshObj)
 	{
 		zRhinoFnMesh tempFn(zspace_meshObj);
 		tempFn.toRhinoMesh(rhino_meshObj);
@@ -119,7 +119,7 @@ namespace zSpace
 		return true;
 	}
 
-	ZSPACE_INLINE bool zIOMesh::toMayaMesh(zObjMesh &zspace_meshObj, MObject &maya_meshObj)
+	ZSPACE_INLINE bool zIOMesh::toMayaMesh(zObjectMesh &zspace_meshObj, MObject &maya_meshObj)
 	{
 		MFn::Type fn = MFn::kInvalid;
 		maya_meshObj.hasFn(fn);

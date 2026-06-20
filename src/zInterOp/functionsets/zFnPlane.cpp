@@ -23,7 +23,7 @@ namespace zSpace
 		planeObj = nullptr;
 	}
 
-	ZSPACE_INLINE zFnPlane::zFnPlane(zObjPlane& _planeObj)
+	ZSPACE_INLINE zFnPlane::zFnPlane(zObjectPlane& _planeObj)
 	{
 		fnType = zFnType::zPlaneFn;
 		planeObj = &_planeObj;

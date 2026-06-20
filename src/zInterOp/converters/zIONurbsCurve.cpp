@@ -27,7 +27,7 @@ namespace zSpace
 
 	//---- INTEROP METHODS
 
-	ZSPACE_INLINE bool zIONurbsCurve::toZSpaceCurves(MObjectArray &maya_curves, bool onlyCorners, zObjGraph &zspace_graphObj)
+	ZSPACE_INLINE bool zIONurbsCurve::toZSpaceCurves(MObjectArray &maya_curves, bool onlyCorners, zObjectGraph &zspace_graphObj)
 	{
 		
 		zMayaFnGraph tempFn(zspace_graphObj);
@@ -36,7 +36,7 @@ namespace zSpace
 		return true;
 	}
 
-	ZSPACE_INLINE bool zIONurbsCurve::toZSpaceCurves(ON_ClassArray<ON_NurbsCurve> &rhino_curves, bool onlyCorners, zObjGraph &zspace_graphObj)
+	ZSPACE_INLINE bool zIONurbsCurve::toZSpaceCurves(ON_ClassArray<ON_NurbsCurve> &rhino_curves, bool onlyCorners, zObjectGraph &zspace_graphObj)
 	{
 		zRhinoFnGraph tempFn(zspace_graphObj);
 		tempFn.fromRhinoCurves(rhino_curves, onlyCorners);
@@ -44,7 +44,7 @@ namespace zSpace
 		return true;
 	}
 
-	ZSPACE_INLINE bool zIONurbsCurve::toRhinoCurves(zObjGraph &zspace_graphObj, ON_ClassArray<ON_NurbsCurve> &rhino_curves)
+	ZSPACE_INLINE bool zIONurbsCurve::toRhinoCurves(zObjectGraph &zspace_graphObj, ON_ClassArray<ON_NurbsCurve> &rhino_curves)
 	{
 		zRhinoFnGraph tempFn(zspace_graphObj);
 		tempFn.toRhinoCurves(rhino_curves);
@@ -93,7 +93,7 @@ namespace zSpace
 		return true;
 	}
 
-	ZSPACE_INLINE bool zIONurbsCurve::toMayaCurves(zObjGraph &zspace_graphObj, MObjectArray &maya_curves)
+	ZSPACE_INLINE bool zIONurbsCurve::toMayaCurves(zObjectGraph &zspace_graphObj, MObjectArray &maya_curves)
 	{
 		zMayaFnGraph tempFn(zspace_graphObj);
 		tempFn.toMayaCurves(maya_curves);

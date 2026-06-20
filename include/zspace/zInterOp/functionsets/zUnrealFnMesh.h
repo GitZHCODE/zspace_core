@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include<zspace/zInterface/objects/zObjMesh.h>
+#include<zspace/zInterface/objects/zObjectMesh.h>
 #include<zspace/zInterface/functionsets/zFnMesh.h>
 #include<zspace/zInterface/iterators/zItMesh.h>
 
@@ -64,7 +64,7 @@ namespace zSpace
 		*	\param	[in]	_zspace_meshObj			- input zspace mesh object.
 		*	\since version 0.0.4
 		*/
-		zUnrealFnMesh(zObjMesh &_zspace_meshObj);
+		zUnrealFnMesh(zObjectMesh &_zspace_meshObj);
 
 		//--------------------------
 		//---- DESTRUCTOR

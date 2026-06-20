@@ -3,7 +3,7 @@
 
 #include <zspace/zInterface/functionsets/zFnGraph.h>
 #include <zspace/zInterface/iterators/zItGraph.h>
-#include <zspace/zInterface/objects/zObjGraph.h>
+#include <zspace/zInterface/objects/zObjectGraph.h>
 
 namespace zSpace
 {

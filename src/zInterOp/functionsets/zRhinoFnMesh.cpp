@@ -21,7 +21,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zRhinoFnMesh::zRhinoFnMesh() {}
 
-	ZSPACE_INLINE zRhinoFnMesh::zRhinoFnMesh(zObjMesh &_zspace_meshObj)
+	ZSPACE_INLINE zRhinoFnMesh::zRhinoFnMesh(zObjectMesh &_zspace_meshObj)
 	{
 		meshObj = &_zspace_meshObj;;
 	}

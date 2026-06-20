@@ -55,7 +55,7 @@ namespace  zSpace
 
 	public:
 
-		/*!	\brief check if zObjCompute is valid  */
+		/*!	\brief check if zObjectCompute is valid  */
 		bool isValid = false;
 
 		/*!	\brief container of vertex positions  */

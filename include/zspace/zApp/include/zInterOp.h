@@ -21,7 +21,7 @@
 //--------------------------
 //---- zRhinoObjects
 //--------------------------
-#include <zspace/zInterOp/objects/zObjNurbsCurve.h>
+#include <zspace/zInterOp/objects/zObjectNurbsCurve.h>
 
 //--------------------------
 //---- zRhinoFNSETS

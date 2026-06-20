@@ -21,7 +21,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zUtilsDisplay::zUtilsDisplay(int _bufferSize)
 	{
-		bufferObj = zObjBuffer(_bufferSize);
+		bufferObj = zDisplayBuffer(_bufferSize);
 	}
 
 	//---- DESTRUCTOR

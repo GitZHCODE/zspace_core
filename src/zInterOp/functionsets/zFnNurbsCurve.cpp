@@ -14,9 +14,9 @@
 #include<zspace/zInterOp/functionsets/zFnNurbsCurve.h>
 #include<zspace/zInterOp/serialization/zGeometryJson.h>
 
-#include<zspace/zInterOp/objects/zObjArc.h>
+#include<zspace/zInterOp/objects/zObjectArc.h>
 #include<zspace/zInterOp/functionsets/zFnArc.h>
-#include<zspace/zInterOp/objects/zObjPlane.h>
+#include<zspace/zInterOp/objects/zObjectPlane.h>
 #include<zspace/zInterOp/functionsets/zFnPlane.h>
 
 namespace zSpace
@@ -29,7 +29,7 @@ namespace zSpace
 		nurbsCurveObj = nullptr;
 	}
 
-	ZSPACE_INLINE zFnNurbsCurve::zFnNurbsCurve(zObjNurbsCurve&_nurbsCurveObj)
+	ZSPACE_INLINE zFnNurbsCurve::zFnNurbsCurve(zObjectNurbsCurve&_nurbsCurveObj)
 	{
 		fnType = zFnType::zNurbsCurveFn;
 
@@ -113,7 +113,7 @@ namespace zSpace
 		setDisplayNumPoints(displayNumPoints);
 	}
 
-	ZSPACE_INLINE void zFnNurbsCurve::create(zObjGraph& o_graph, double sampleDist, int degree, bool periodic, bool interpolate, int displayNumPoints)
+	ZSPACE_INLINE void zFnNurbsCurve::create(zObjectGraph& o_graph, double sampleDist, int degree, bool periodic, bool interpolate, int displayNumPoints)
 	{
 		zPointArray positions;
 
@@ -156,7 +156,7 @@ namespace zSpace
 		create(positions, degree, periodic, interpolate, displayNumPoints);
 	}
 
-	ZSPACE_INLINE void zFnNurbsCurve::create(zObjArc& o_arc, int cvNum, int displayNumPoints)
+	ZSPACE_INLINE void zFnNurbsCurve::create(zObjectArc& o_arc, int cvNum, int displayNumPoints)
 	{
 		o_arc.on_arc.GetNurbForm(nurbsCurveObj->curve);
 
@@ -181,7 +181,7 @@ namespace zSpace
 		closestPoint = zPoint(p_curve.x, p_curve.y, p_curve.z);
 	}
 
-	ZSPACE_INLINE void zFnNurbsCurve::closestPoint(zObjNurbsCurve& curveB, zPoint& closestPoint_A, zPoint& closestPoint_B, double& t_A, double& t_B)
+	ZSPACE_INLINE void zFnNurbsCurve::closestPoint(zObjectNurbsCurve& curveB, zPoint& closestPoint_A, zPoint& closestPoint_B, double& t_A, double& t_B)
 	{
 		ON_SimpleArray<const ON_Geometry*> testCrvs;
 		const ON_Geometry* geo = &curveB.curve;
@@ -236,7 +236,7 @@ namespace zSpace
 		}
 	}
 
-	ZSPACE_INLINE void zFnNurbsCurve::computeSubCurve(double t0, double t1, bool normalise, zObjNurbsCurve& out_SubCurve, int displayNumPoints)
+	ZSPACE_INLINE void zFnNurbsCurve::computeSubCurve(double t0, double t1, bool normalise, zObjectNurbsCurve& out_SubCurve, int displayNumPoints)
 	{
 		ON_Interval interval(t0, t1);
 
@@ -291,7 +291,7 @@ namespace zSpace
 		}
 	}
 
-	ZSPACE_INLINE void zFnNurbsCurve::intersect(zObjNurbsCurve& curveB, zPointArray& intersectionPts_A, zPointArray& intersectionPts_B, zDoubleArray& tParams_A, zDoubleArray& tParams_B)
+	ZSPACE_INLINE void zFnNurbsCurve::intersect(zObjectNurbsCurve& curveB, zPointArray& intersectionPts_A, zPointArray& intersectionPts_B, zDoubleArray& tParams_A, zDoubleArray& tParams_B)
 	{
 		intersectionPts_A.clear();
 		intersectionPts_B.clear();

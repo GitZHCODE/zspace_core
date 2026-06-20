@@ -21,7 +21,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zIOMeshSurface::zIOMeshSurface() {}
 
-	ZSPACE_INLINE zIOMeshSurface::zIOMeshSurface(MObject &_maya_meshObj, zObjMesh &_zspace_meshObj) 
+	ZSPACE_INLINE zIOMeshSurface::zIOMeshSurface(MObject &_maya_meshObj, zObjectMesh &_zspace_meshObj) 
 	{
 		// check for quad mesh
 		inputQuadMesh = makeQuadMesh(_maya_meshObj);
@@ -69,7 +69,7 @@ namespace zSpace
 
 		//Smooth zspace mesh
 		zIOMesh meshIO;
-		zObjMesh zspace_SmoothMeshObj;
+		zObjectMesh zspace_SmoothMeshObj;
 		meshIO.toZSpaceMesh(maya_SmoothMeshObj, zspace_SmoothMeshObj);
 
 		// low poly half edge -> nurbs curve

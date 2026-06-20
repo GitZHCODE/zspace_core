@@ -21,7 +21,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zRhinoFnGraph::zRhinoFnGraph() {}
 
-	ZSPACE_INLINE zRhinoFnGraph::zRhinoFnGraph(zObjGraph &_zspace_graphObj)
+	ZSPACE_INLINE zRhinoFnGraph::zRhinoFnGraph(zObjectGraph &_zspace_graphObj)
 	{
 		graphObj = &_zspace_graphObj;;
 	}

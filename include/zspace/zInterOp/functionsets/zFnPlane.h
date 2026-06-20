@@ -20,7 +20,7 @@
 #include <zspace/zInterface/objects/zObject.h>
 #include <zspace/zInterOp/sdk/zRhinoInclude.h>
 #include<zspace/zInterface/functionsets/zFn.h>
-#include<zspace/zInterOp/objects/zObjPlane.h>
+#include<zspace/zInterOp/objects/zObjectPlane.h>
 
 namespace zSpace
 {
@@ -51,8 +51,8 @@ namespace zSpace
 		//---- PROTECTED ATTRIBUTES
 		//--------------------------
 
-		/*!	\brief pointer to a zObjPlane object  */
-		zObjPlane *planeObj;	
+		/*!	\brief pointer to a zObjectPlane object  */
+		zObjectPlane *planeObj;	
 
 	public:
 
@@ -72,10 +72,10 @@ namespace zSpace
 
 		/*! \brief Overloaded constructor.
 		*
-		*	\param		[in]	_planeObj			- input zObjPlane object.
+		*	\param		[in]	_planeObj			- input zObjectPlane object.
 		*	\since version 0.0.4
 		*/
-		zFnPlane(zObjPlane& _planeObj);
+		zFnPlane(zObjectPlane& _planeObj);
 
 
 		//--------------------------

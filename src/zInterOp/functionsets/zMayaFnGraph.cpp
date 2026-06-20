@@ -21,7 +21,7 @@ namespace zSpace
 
 	ZSPACE_INLINE zMayaFnGraph::zMayaFnGraph() {}
 
-	ZSPACE_INLINE zMayaFnGraph::zMayaFnGraph(zObjGraph &_zspace_graphObj)
+	ZSPACE_INLINE zMayaFnGraph::zMayaFnGraph(zObjectGraph &_zspace_graphObj)
 	{
 		graphObj = &_zspace_graphObj;;
 	}

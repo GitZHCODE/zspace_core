@@ -24,7 +24,7 @@ namespace zSpace
 		*	\brief Internal shared half-edge storage used by graph and mesh geometry.
 		*
 		*	This type is not part of the public object API. Client code should access geometry
-		*	through zObjMesh/zFnMesh, zObjGraph/zFnGraph, and their iterators.
+		*	through zObjectMesh/zFnMesh, zObjectGraph/zFnGraph, and their iterators.
 		*/
 		class ZSPACE_CORE zHalfEdgeTopology
 		{

@@ -53,7 +53,7 @@ namespace zSpace
 		zUtilsCore coreUtils;
 
 		/*!	\brief pointer to a zspace mesh object  */
-		zObjMesh *zspace_meshObj;
+		zObjectMesh *zspace_meshObj;
 
 		/*!	\brief pointer to a maya mesh object  */
 		MObject *maya_meshObj;
@@ -85,7 +85,7 @@ namespace zSpace
 		*	\param		[in]	_zspace_meshObj			- input zspace mesh object.
 		*	\since version 0.0.4
 		*/
-		zIOMeshSurface(MObject &_maya_meshObj, zObjMesh &_zspace_meshObj );
+		zIOMeshSurface(MObject &_maya_meshObj, zObjectMesh &_zspace_meshObj );
 
 		//--------------------------
 		//---- DESTRUCTOR

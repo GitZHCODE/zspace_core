@@ -130,8 +130,9 @@ Update this section after each migration step.
   face-list creation, face-list mesh algorithms, extrusion, topology-based dual
   graph extraction, scalar/vector mesh fields, point scalar fields, point
   vector field compile access, point clouds, and transformation copy behavior.
-- Interop naming cleanup: pending. Replace remaining internal `zObj*` uses with
-  `zObject*`, preserving compatibility aliases only at the public bridge.
+- Interop naming cleanup: completed first pass. Active InterOp function sets,
+  converters, and Display internals now use `zObject*` names; `zObj*`
+  remains only as compatibility aliases and migration documentation.
 
 ## Current Transition Rules
 

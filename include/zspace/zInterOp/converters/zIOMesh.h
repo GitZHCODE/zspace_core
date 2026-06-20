@@ -79,7 +79,7 @@ namespace zSpace
 		*	\param		[out]		zspace_meshObj	- output zspace mesh object.
 		*	\since version 0.0.4
 		*/
-		bool toZSpaceMesh(MObject &maya_meshObj, zObjMesh &zspace_meshObj);
+		bool toZSpaceMesh(MObject &maya_meshObj, zObjectMesh &zspace_meshObj);
 
 		/*! \brief This method creates the zspace mesh from the input rhino mesh.
 		*
@@ -87,7 +87,7 @@ namespace zSpace
 		*	\param		[out]		zspace_meshObj	- output zspace mesh object.
 		*	\since version 0.0.4
 		*/
-		bool toZSpaceMesh(ON_Mesh &rhino_meshObj, zObjMesh &zspace_meshObj);
+		bool toZSpaceMesh(ON_Mesh &rhino_meshObj, zObjectMesh &zspace_meshObj);
 
 		/*! \brief This method creates the rhino mesh from the input zspace mesh.
 		*
@@ -95,7 +95,7 @@ namespace zSpace
 		*	\param		[out]		ON_Mesh			- output rhino mesh object.
 		*	\since version 0.0.4
 		*/
-		bool toRhinoMesh(zObjMesh &zspace_meshObj, ON_Mesh &rhino_meshObj);
+		bool toRhinoMesh(zObjectMesh &zspace_meshObj, ON_Mesh &rhino_meshObj);
 
 		/*! \brief This method creates the rhino mesh from the input maya mesh.
 		*
@@ -111,7 +111,7 @@ namespace zSpace
 		*	\param		[out]		maya_meshObj	- output maya mesh object.
 		*	\since version 0.0.4
 		*/
-		bool toMayaMesh(zObjMesh &zspace_meshObj, MObject &maya_meshObj);
+		bool toMayaMesh(zObjectMesh &zspace_meshObj, MObject &maya_meshObj);
 
 		/*! \brief This method creates the maya mesh from the input rhino mesh.
 		*

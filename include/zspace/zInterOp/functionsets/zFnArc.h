@@ -16,9 +16,9 @@
 #pragma once
 
 #include<zspace/zInterface/functionsets/zFn.h>
-#include<zspace/zInterOp/objects/zObjArc.h>
-#include<zspace/zInterOp/objects/zObjPlane.h>
-#include<zspace/zInterOp/objects/zObjNurbsCurve.h>
+#include<zspace/zInterOp/objects/zObjectArc.h>
+#include<zspace/zInterOp/objects/zObjectPlane.h>
+#include<zspace/zInterOp/objects/zObjectNurbsCurve.h>
 #include<zspace/zInterOp/functionsets/zFnNurbsCurve.h>
 
 namespace zSpace
@@ -50,7 +50,7 @@ namespace zSpace
 		//---- PROTECTED ATTRIBUTES
 		//--------------------------
 		/*!	\brief pointer to a arc object  */
-		zObjArc *arcObj;
+		zObjectArc *arcObj;
 
 	public:
 
@@ -73,7 +73,7 @@ namespace zSpace
 		*	\param		[in]	_arcObj			- input arcObj object.
 		*	\since version 0.0.4
 		*/
-		zFnArc(zObjArc& _arcObj);
+		zFnArc(zObjectArc& _arcObj);
 
 
 		//--------------------------
@@ -102,13 +102,13 @@ namespace zSpace
 
 		/*! \brief This method creates a circle from the input plane containers.
 		*
-		*	\param		[in]	_plane		- container of zObjPlane.
+		*	\param		[in]	_plane		- container of zObjectPlane.
 		*	\param		[in]	_radius	    - container of radius.
 		*	\param		[in]	_angle		- container of angle.
 		*  	\return				bool        - boolean of success or not
 		*	\since version 0.0.4
 		*/
-		bool create(zObjPlane& _plane, double _radius, double _angle = Z_TWO_PI);			
+		bool create(zObjectPlane& _plane, double _radius, double _angle = Z_TWO_PI);			
 
 		/*! \brief This method creates a circle through three 3d points.
 		*

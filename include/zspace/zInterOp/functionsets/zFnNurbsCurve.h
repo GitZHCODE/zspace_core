@@ -16,14 +16,14 @@
 #pragma once
 
 #include<zspace/zInterface/functionsets/zFn.h>
-#include<zspace/zInterOp/objects/zObjNurbsCurve.h>
+#include<zspace/zInterOp/objects/zObjectNurbsCurve.h>
 
-#include<zspace/zInterface/objects/zObjGraph.h>
+#include<zspace/zInterface/objects/zObjectGraph.h>
 #include<zspace/zInterface/functionsets/zFnGraph.h>
 
-#include<zspace/zInterOp/objects/zObjArc.h>
+#include<zspace/zInterOp/objects/zObjectArc.h>
 #include<zspace/zInterOp/functionsets/zFnArc.h>
-#include<zspace/zInterOp/objects/zObjPlane.h>
+#include<zspace/zInterOp/objects/zObjectPlane.h>
 #include<zspace/zInterOp/functionsets/zFnPlane.h>
 
 
@@ -57,7 +57,7 @@ namespace zSpace
 		//--------------------------
 
 		/*!	\brief pointer to a graph object  */
-		zObjNurbsCurve *nurbsCurveObj;	
+		zObjectNurbsCurve *nurbsCurveObj;	
 
 
 	public:
@@ -81,7 +81,7 @@ namespace zSpace
 		*	\param		[in]	_nurbsCurveObj			- input nurbscurve object.
 		*	\since version 0.0.2
 		*/
-		zFnNurbsCurve(zObjNurbsCurve&_nurbsCurveObj);
+		zFnNurbsCurve(zObjectNurbsCurve&_nurbsCurveObj);
 
 
 		//--------------------------
@@ -130,9 +130,9 @@ namespace zSpace
 		*	\warning	only works on a continuous polyline graph.
 		*	\since version 0.0.2
 		*/
-		void create(zObjGraph& in_graph, double sampleDist, int degree, bool periodic, bool interpolate, int displayNumPoints);
+		void create(zObjectGraph& in_graph, double sampleDist, int degree, bool periodic, bool interpolate, int displayNumPoints);
 
-		void create(zObjArc& o_arc, int cvNum, int displayNumPoints);
+		void create(zObjectArc& o_arc, int cvNum, int displayNumPoints);
 
 		//--------------------------
 		//--- TOPOLOGY QUERY METHODS 
@@ -166,7 +166,7 @@ namespace zSpace
 		*	\param		[out]	t_B				- output curve parameter on curve B.
 		*	\since version 0.0.2
 		*/
-		void closestPoint(zObjNurbsCurve& curveB, zPoint& closestPoint_A, zPoint& closestPoint_B, double& t_A, double& t_B);
+		void closestPoint(zObjectNurbsCurve& curveB, zPoint& closestPoint_A, zPoint& closestPoint_B, double& t_A, double& t_B);
 
 		/*! \brief This method divides the curve by input segment count.
 		*
@@ -195,7 +195,7 @@ namespace zSpace
 		*	\param		[in]	displayNumPoints	- output sub curve display num points.
 		*	\since version 0.0.2
 		*/
-		void computeSubCurve(double t0, double t1, bool normalise, zObjNurbsCurve& out_SubCurve, int displayNumPoints = 100);
+		void computeSubCurve(double t0, double t1, bool normalise, zObjectNurbsCurve& out_SubCurve, int displayNumPoints = 100);
 
 		/*! \brief This method reverses the curve direction.
 		*
@@ -225,7 +225,7 @@ namespace zSpace
 		*	\param		[out]	tParams_B			- output on curve parameters on curveB where intersections happened.
 		*	\since version 0.0.2
 		*/
-		void intersect(zObjNurbsCurve& curveB, zPointArray& intersectionPts_A, zPointArray& intersectionPts_B, zDoubleArray& tParams_A, zDoubleArray& tParams_B);
+		void intersect(zObjectNurbsCurve& curveB, zPointArray& intersectionPts_A, zPointArray& intersectionPts_B, zDoubleArray& tParams_A, zDoubleArray& tParams_B);
 
 		/*! \brief This method computes the intersection on the curve itself.
 		*

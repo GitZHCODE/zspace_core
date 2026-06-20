@@ -80,7 +80,7 @@ namespace zSpace
 		*	\param		[out]		zspace_graphObj	- output zspace graph object.
 		*	\since version 0.0.4
 		*/
-		bool toZSpaceCurves(MObjectArray &maya_curves, bool onlyCorners, zObjGraph &zspace_graphObj);
+		bool toZSpaceCurves(MObjectArray &maya_curves, bool onlyCorners, zObjectGraph &zspace_graphObj);
 
 		/*! \brief This method creates the zspace graph from the input rhino nurbs curve.
 		*
@@ -89,7 +89,7 @@ namespace zSpace
 		*	\param		[out]		zspace_graphObj	- output zspace graph object.
 		*	\since version 0.0.4
 		*/
-		bool toZSpaceCurves(ON_ClassArray<ON_NurbsCurve> &rhino_curves, bool onlyCorners, zObjGraph &zspace_graphObj);
+		bool toZSpaceCurves(ON_ClassArray<ON_NurbsCurve> &rhino_curves, bool onlyCorners, zObjectGraph &zspace_graphObj);
 
 		/*! \brief This method creates the zspace mesh from the input maya mesh.
 		*
@@ -97,7 +97,7 @@ namespace zSpace
 		*	\param		[out]		rhino_curve		- output rhino nurbs curve object.
 		*	\since version 0.0.4
 		*/
-		bool toRhinoCurves(zObjGraph &zspace_graphObj, ON_ClassArray<ON_NurbsCurve> &rhino_curves);
+		bool toRhinoCurves(zObjectGraph &zspace_graphObj, ON_ClassArray<ON_NurbsCurve> &rhino_curves);
 
 		/*! \brief This method creates the rhino curve from the input maya curve.
 		*
@@ -113,7 +113,7 @@ namespace zSpace
 		*	\param		[out]		maya_curves		- output array of maya curve objects.
 		*	\since version 0.0.4
 		*/
-		bool toMayaCurves(zObjGraph &zspace_graphObj, MObjectArray &maya_curves);
+		bool toMayaCurves(zObjectGraph &zspace_graphObj, MObjectArray &maya_curves);
 
 		/*! \brief This method creates the rhino nurbs curve from the input maya nurbs curve.
 		*

@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include<src/zDisplay/display/internal/zObjBuffer.h>
+#include<src/zDisplay/display/internal/zDisplayBuffer.h>
 
 #if defined(__CUDACC__)  || defined(ZSPACE_UNREAL_INTEROP) || defined(ZSPACE_MAYA_INTEROP)
 	// All defined OK so do nothing
@@ -52,7 +52,7 @@ namespace zSpace
 		//--------------------------
 
 		/*!	\brief Buffer object  */
-		zObjBuffer bufferObj;
+		zDisplayBuffer bufferObj;
 		
 		//--------------------------
 		//---- CONSTRUCTOR
