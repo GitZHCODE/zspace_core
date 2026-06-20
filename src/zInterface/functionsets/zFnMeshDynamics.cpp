@@ -12,6 +12,10 @@
 
 
 #include<zspace/zInterface/functionsets/zFnMeshDynamics.h>
+#include <src/zInterface/objects/zMeshObjectStorage.h>
+
+#include <algorithm>
+#include <map>
 
 namespace zSpace
 {
@@ -61,15 +65,41 @@ namespace zSpace
 	{
 		//fnParticles.clear();
 		particlesObj.clear();
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		vector<bool> boundaryVertices(data.numVertices(), false);
 
-		for (zItMeshVertex v(*meshObj); !v.end(); v++)
+		if (fixBoundary)
+		{
+			std::map<std::pair<int, int>, int> edgeUseCount;
+			for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+			{
+				const int begin = data.faceOffsets[faceId];
+				const int end = data.faceOffsets[faceId + 1];
+				for (int i = begin; i < end; ++i)
+				{
+					const int next = (i + 1 < end) ? i + 1 : begin;
+					const auto key = std::minmax(data.faceVertexIndices[i], data.faceVertexIndices[next]);
+					edgeUseCount[key]++;
+				}
+			}
+
+			for (const auto& item : edgeUseCount)
+			{
+				if (item.second != 1) continue;
+				boundaryVertices[item.first.first] = true;
+				boundaryVertices[item.first.second] = true;
+			}
+		}
+
+		for (int vertexId = 0; vertexId < data.numVertices(); ++vertexId)
 		{
 			bool fixed = false;
 
-			if (fixBoundary) fixed = (v.onBoundary());
+			if (fixBoundary) fixed = boundaryVertices[vertexId];
 
 			zObjectParticle p;
-			p.particle = zParticle(*v.getRawPosition(), fixed);
+			zPoint position = data.positions[vertexId];
+			p.particle = zParticle(position, fixed);
 			particlesObj.push_back(p);
 
 			if (!fixed) setVertexColor(zColor(0, 0, 1, 1));
@@ -105,17 +135,30 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMeshDynamics::setFixed_boundary()
 	{
-		for (zItMeshVertex v(*meshObj); !v.end(); v++)
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		std::map<std::pair<int, int>, int> edgeUseCount;
+		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
-			if (v.onBoundary())
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
+			for (int i = begin; i < end; ++i)
 			{
-				if (v.getId() < particlesObj.size())
-				{
-					zFnParticle fnParticle(particlesObj[v.getId()]);
-					fnParticle.setFixed(true);
-				}
+				const int next = (i + 1 < end) ? i + 1 : begin;
+				const auto key = std::minmax(data.faceVertexIndices[i], data.faceVertexIndices[next]);
+				edgeUseCount[key]++;
 			}
-			
+		}
+
+		for (const auto& item : edgeUseCount)
+		{
+			if (item.second != 1) continue;
+
+			for (int vertexId : { item.first.first, item.first.second })
+			{
+				if (vertexId >= particlesObj.size()) continue;
+				zFnParticle fnParticle(particlesObj[vertexId]);
+				fnParticle.setFixed(true);
+			}
 		}
 	}
 

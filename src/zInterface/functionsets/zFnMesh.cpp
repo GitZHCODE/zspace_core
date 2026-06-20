@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <map>
 #include <queue>
 #include <utility>
 
@@ -975,81 +976,104 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::smoothColors(int smoothVal, zHEData type)
 	{
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		if (type == zVertexData && data.vertexColors.size() != data.numVertices())
+			data.vertexColors.assign(data.numVertices(), zColor(1, 0, 0, 1));
+		if (type == zFaceData && data.faceColors.size() != data.numFaces())
+			data.faceColors.assign(data.numFaces(), zColor(1, 0, 0, 1));
+
+		vector<zIntArray> vertexAdjacency(data.numVertices());
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
+		{
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+			vertexAdjacency[v0].push_back(v1);
+			vertexAdjacency[v1].push_back(v0);
+		}
+
+		vector<zIntArray> faceAdjacency(data.numFaces());
+		if (type == zFaceData)
+		{
+			std::map<std::pair<int, int>, int> edgeFace;
+			for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+			{
+				const int begin = data.faceOffsets[faceId];
+				const int end = data.faceOffsets[faceId + 1];
+				for (int i = begin; i < end; ++i)
+				{
+					const int next = (i + 1 < end) ? i + 1 : begin;
+					const int a = data.faceVertexIndices[i];
+					const int b = data.faceVertexIndices[next];
+					const auto key = std::minmax(a, b);
+					auto it = edgeFace.find(key);
+					if (it == edgeFace.end()) edgeFace[key] = faceId;
+					else
+					{
+						faceAdjacency[faceId].push_back(it->second);
+						faceAdjacency[it->second].push_back(faceId);
+					}
+				}
+			}
+		}
+
 		for (int j = 0; j < smoothVal; j++)
 		{
 			if (type == zVertexData)
 			{
-				vector<zColor> tempColors;
+				zColorArray tempColors = data.vertexColors;
 
-				for (zItMeshVertex v(*meshObj); !v.end(); v++)
+				for (int vertexId = 0; vertexId < data.numVertices(); ++vertexId)
 				{
 					zColor col;
-					//if (v.isActive())
-					//{
-						vector<int> cVerts;
-						v.getConnectedVertices(cVerts);
+					col.r = data.vertexColors[vertexId].r;
+					col.g = data.vertexColors[vertexId].g;
+					col.b = data.vertexColors[vertexId].b;
+					col.a = data.vertexColors[vertexId].a;
 
-						zColor currentCol = zMeshObjectStorage::get(*meshObj).vertexColors[v.getId()];
+					for (int connectedVertex : vertexAdjacency[vertexId])
+					{
+						col.r += data.vertexColors[connectedVertex].r;
+						col.g += data.vertexColors[connectedVertex].g;
+						col.b += data.vertexColors[connectedVertex].b;
+						col.a += data.vertexColors[connectedVertex].a;
+					}
 
-
-						for (int j = 0; j < cVerts.size(); j++)
-						{
-							col.r += zMeshObjectStorage::get(*meshObj).vertexColors[cVerts[j]].r;
-							col.g += zMeshObjectStorage::get(*meshObj).vertexColors[cVerts[j]].g;
-							col.b += zMeshObjectStorage::get(*meshObj).vertexColors[cVerts[j]].b;
-						}
-
-						col.r += (currentCol.r); col.g += (currentCol.g); col.b += (currentCol.b);
-
-						col.r /= cVerts.size(); col.g /= cVerts.size(); col.b /= cVerts.size();
-					//}
-
-					tempColors.push_back(col);
+					const float denominator = static_cast<float>(vertexAdjacency[vertexId].size() + 1);
+					col.r /= denominator; col.g /= denominator;
+					col.b /= denominator; col.a /= denominator;
+					tempColors[vertexId] = col;
 				}
 
-				for (zItMeshVertex v(*meshObj); !v.end(); v++)
-				{
-					//if (v.isActive())
-					//{
-						zMeshObjectStorage::get(*meshObj).vertexColors[v.getId()] = (tempColors[v.getId()]);
-					//}
-				}
+				data.vertexColors = tempColors;
 			}
 
 			else if (type == zFaceData)
 			{
-				vector<zColor> tempColors;
+				zColorArray tempColors = data.faceColors;
 
-				for (zItMeshFace f(*meshObj); !f.end(); f++)
+				for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 				{
 					zColor col;
-					if (f.isActive())
+					col.r = data.faceColors[faceId].r;
+					col.g = data.faceColors[faceId].g;
+					col.b = data.faceColors[faceId].b;
+					col.a = data.faceColors[faceId].a;
+
+					for (int connectedFace : faceAdjacency[faceId])
 					{
-						vector<int> cFaces;
-						f.getConnectedFaces(cFaces);
-
-						zColor currentCol = zMeshObjectStorage::get(*meshObj).faceColors[f.getId()];
-						for (int j = 0; j < cFaces.size(); j++)
-						{
-							col.r += zMeshObjectStorage::get(*meshObj).faceColors[cFaces[j]].r;
-							col.g += zMeshObjectStorage::get(*meshObj).faceColors[cFaces[j]].g;
-							col.b += zMeshObjectStorage::get(*meshObj).faceColors[cFaces[j]].b;
-						}
-
-						col.r += (currentCol.r); col.g += (currentCol.g); col.b += (currentCol.b);
-						col.r /= cFaces.size(); col.g /= cFaces.size(); col.b /= cFaces.size();
+						col.r += data.faceColors[connectedFace].r;
+						col.g += data.faceColors[connectedFace].g;
+						col.b += data.faceColors[connectedFace].b;
+						col.a += data.faceColors[connectedFace].a;
 					}
 
-					tempColors.push_back(col);
+					const float denominator = static_cast<float>(faceAdjacency[faceId].size() + 1);
+					col.r /= denominator; col.g /= denominator;
+					col.b /= denominator; col.a /= denominator;
+					tempColors[faceId] = col;
 				}
 
-				for (zItMeshFace f(*meshObj); !f.end(); f++)
-				{
-					if (f.isActive())
-					{
-						zMeshObjectStorage::get(*meshObj).faceColors[f.getId()] = (tempColors[f.getId()]);
-					}
-				}
+				data.faceColors = tempColors;
 			}
 
 			else throw std::invalid_argument(" error: invalid zHEData type");
@@ -1109,35 +1133,37 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::averageVertices(int numSteps)
 	{
+		auto& data = zMeshObjectStorage::edit(*meshObj);
+		vector<zIntArray> adjacency(data.numVertices());
+
+		for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
+		{
+			const int v0 = data.edgeVertexIndices[edgeId * 2];
+			const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+
+			adjacency[v0].push_back(v1);
+			adjacency[v1].push_back(v0);
+		}
+
 		for (int k = 0; k < numSteps; k++)
 		{
-			vector<zVector> tempVertPos;
+			zPointArray tempVertPos = data.positions;
 
-			for (zItMeshVertex v(*meshObj); !v.end(); v++)
+			for (int vertexId = 0; vertexId < data.numVertices(); ++vertexId)
 			{
-				tempVertPos.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[v.getId()]);
+				if (adjacency[vertexId].size() == 1) continue;
 
-				if (v.isActive())
+				zPoint avg = data.positions[vertexId];
+				for (int connectedVertex : adjacency[vertexId])
 				{
-					if (!v.checkValency(1))
-					{
-						vector<int> cVerts;
-
-						v.getConnectedVertices(cVerts);
-
-						for (int j = 0; j < cVerts.size(); j++)
-						{
-							zVector p = zMeshObjectStorage::get(*meshObj).vertexPositions[cVerts[j]];
-							tempVertPos[v.getId()] += p;
-						}
-
-						tempVertPos[v.getId()] /= (cVerts.size() + 1);
-					}
+					avg += data.positions[connectedVertex];
 				}
+
+				avg /= static_cast<float>(adjacency[vertexId].size() + 1);
+				tempVertPos[vertexId] = avg;
 			}
 
-			// update position
-			for (int i = 0; i < tempVertPos.size(); i++) zMeshObjectStorage::get(*meshObj).vertexPositions[i] = tempVertPos[i];
+			data.positions = tempVertPos;
 		}
 	}
 

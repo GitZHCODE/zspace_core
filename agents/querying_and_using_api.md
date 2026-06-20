@@ -124,6 +124,12 @@ zSpace::zPoint maxBB;
 fn.getBounds(minBB, maxBB);
 ```
 
+Mesh creation, IO, display, centers, lengths, triangulation, contour/isoband
+extraction, vertex averaging, color smoothing, and dynamics boundary fixing use
+the face-list representation. Topology-specific methods such as curvature,
+dual extraction, edge loops, subdivision, smoothing, and extrusion boundary
+capping may build the lazy half-edge cache.
+
 Read a mesh and query bounds:
 
 ```cpp

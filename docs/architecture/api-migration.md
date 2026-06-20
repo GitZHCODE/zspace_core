@@ -59,6 +59,12 @@ Update this section after each migration step.
   construction methods have been removed from `zFnMesh`; private temporary
   helpers remain only for subdivision/smoothing until those algorithms are
   face-list-native.
+- Mesh face-list algorithm audit: in progress. Vertex averaging, vertex/face
+  color smoothing, and mesh dynamics boundary fixing now operate on face-list
+  edges and face boundary counts instead of asking the lazy half-edge cache.
+  Curvature, dual graph/mesh extraction, rainflow graphs, edge-loop tools,
+  subdivision/smoothing, extrusion boundary capping, and mesh dynamics topology
+  force helpers remain topology-dependent.
 - Mesh source cleanup: completed. Inactive `#if 0` blocks for removed
   delete/collapse/flip/split-face topology editing have been deleted.
 - Field API simplification: in progress. Public scalar/vector field function
@@ -167,7 +173,9 @@ The following `zFnMesh` algorithms now operate directly on face-list storage:
 - face areas, mesh triangles, and volume calculations;
 - triangle and quad matrix extraction;
 - whole-mesh and single-face triangulation;
-- isoline, iso-mesh, and isoband extraction with interpolated colors.
+- isoline, iso-mesh, and isoband extraction with interpolated colors;
+- vertex averaging and vertex/face color smoothing;
+- mesh dynamics boundary fixing.
 
 These operations support non-manifold input because they do not request the
 lazy half-edge cache. Isoline and isoband extraction accepts triangles, quads,
