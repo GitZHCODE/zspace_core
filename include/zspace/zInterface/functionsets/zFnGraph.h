@@ -180,12 +180,6 @@ namespace zSpace
 		*/
 		int numEdges();
 
-		/*! \brief This method returns the number of half edges in the graph .
-		*	\return				number of half edges.
-		*	\since version 0.0.2
-		*/
-		int numHalfEdges();
-
 		/*! \brief This method detemines if a vertex already exists at the input position
 		*
 		*	\param		[in]		pos					- position to be checked.
@@ -484,6 +478,9 @@ namespace zSpace
 		*	\since version 0.0.2
 		*/
 		void setStaticContainers();
+
+		/*! \brief Internal topology helper for half-edge operations. */
+		int numHalfEdges();
 
 		//--------------------------
 		//---- DEACTIVATE AND REMOVE METHODS

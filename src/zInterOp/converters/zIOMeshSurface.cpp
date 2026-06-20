@@ -73,10 +73,13 @@ namespace zSpace
 		meshIO.toZSpaceMesh(maya_SmoothMeshObj, zspace_SmoothMeshObj);
 
 		// low poly half edge -> nurbs curve
-		rhino_nurbsCurve.SetCapacity(zspace_FnMesh.numHalfEdges());
+		zItMeshHalfEdge halfEdgeIt(zspace_SmoothMeshObj);
+		const int numHalfEdges = halfEdgeIt.size();
+
+		rhino_nurbsCurve.SetCapacity(numHalfEdges);
 
 		zBoolArray halfEdgeVisited;
-		halfEdgeVisited.assign(zspace_FnMesh.numHalfEdges(), false);
+		halfEdgeVisited.assign(numHalfEdges, false);
 
 		for (zItMeshVertex v(zspace_SmoothMeshObj); !v.end(); v++)
 		{

@@ -137,12 +137,6 @@ namespace zSpace
 		*/
 		int numEdges();
 
-		/*! \brief This method returns the number of half edges in the mesh.
-		*	\return				int - number of half edges.
-		*	\since version 0.0.2
-		*/
-		int numHalfEdges();
-
 		/*! \brief This method returns the number of polygons in the mesh
 		*
 		*	\return		int		-	number of polygons
@@ -909,6 +903,7 @@ namespace zSpace
 
 		// Temporary implementation helpers used by subdivision and smoothing.
 		// Remove when those algorithms are fully face-list-native.
+		int numHalfEdges();
 		bool addVertex(zPoint &_pos, bool checkDuplicates, zItMeshVertex &vertex);
 		bool addEdges(int v1, int v2, bool checkDuplicates, zItMeshHalfEdge &halfEdge);
 		bool addPolygon(zIntArray &fVertices, zItMeshFace &face);

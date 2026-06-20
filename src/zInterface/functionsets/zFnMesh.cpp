@@ -1949,7 +1949,8 @@ namespace zSpace
 
 		// compute dualEdge_inEdge
 		dualEdge_inEdge.clear();
-		dualEdge_inEdge.assign(fnDualGraph.numHalfEdges(), -1);
+		zItGraphHalfEdge dualHalfEdgeIt(dualGraphObj);
+		dualEdge_inEdge.assign(dualHalfEdgeIt.size(), -1);
 
 		// compute inEdge to dualEdge	
 		inEdge_dualEdge.clear();

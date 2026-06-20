@@ -79,6 +79,11 @@ Update this section after each migration step.
   edge-list indices for simple iteration, position/color access, endpoint
   queries, and edge length/center/vector queries; `zItGraphHalfEdge` remains
   the explicit topology path.
+- Public half-edge count cleanup: completed. `zFnMesh::numHalfEdges()` and
+  `zFnGraph::numHalfEdges()` are no longer public function-set methods.
+  Half-edge counts are topology details and should be queried through
+  `zItMeshHalfEdge::size()` / `zItGraphHalfEdge::size()` only when code is
+  explicitly using half-edge traversal.
 - Raw pointer/public dependency audit: pending. Keep performance escape hatches
   only where needed and document them as advanced API.
 - Interop naming cleanup: pending. Replace remaining internal `zObj*` uses with

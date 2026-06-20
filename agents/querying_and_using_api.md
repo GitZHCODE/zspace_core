@@ -429,6 +429,8 @@ Avoid:
 - New snippets using `zObj*` unless explaining compatibility.
 - New snippets using `zFnMeshField<T>` or `zFnPointField<T>`.
 - Direct use of `zGraph` or `zMesh` storage types in application snippets.
+- `zFnMesh::numHalfEdges()` or `zFnGraph::numHalfEdges()`; use half-edge
+  iterator `size()` only inside explicit topology traversal examples.
 - Direct access to `.mesh`, `.graph`, `.field`, or `.particle`.
 - Draw methods on objects.
 - File IO through function sets.
