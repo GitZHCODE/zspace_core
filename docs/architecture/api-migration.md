@@ -90,6 +90,9 @@ Update this section after each migration step.
   from scalar fields, point scalar fields, and compile-level point vector field
   access. Point vector field runtime creation needs a dedicated follow-up pass
   before it is added to the smoke runtime assertions.
+  Mesh scalar-field iso contour/isoline/isoband methods are now lightweight
+  wrappers over `zFnMesh`; the old field-local marching-squares helper
+  implementation has been removed.
 - Graph edge-list storage: completed first pass. `zObjectGraph` now owns
   edge-list storage as the authoritative representation and lazily builds the
   legacy half-edge `zGraph` cache for iterator/topology operations. Common

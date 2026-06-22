@@ -939,61 +939,6 @@ namespace zSpace
 		double getScalar_Trapezoid(zPoint &p, float &r1, float &r2, float &he);
 
 
-		/*! \brief This method gets the isoline case based on the input vertex binary values.
-		*
-		*	\details based on https://en.wikipedia.org/wiki/Marching_squares. The sequencing is reversed as CCW windings are required.
-		*	\param	[in]	vertexBinary	- vertex binary values.
-		*	\return			int				- case type.
-		*	\since version 0.0.2
-		*/
-		int getIsolineCase(bool vertexBinary[4]);
-
-		/*! \brief This method gets the isoline case based on the input vertex ternary values.
-		*
-		*	\details based on https://en.wikipedia.org/wiki/Marching_squares. The sequencing is reversed as CCW windings are required.
-		*	\param	[in]	vertexTernary	- vertex ternary values.
-		*	\return			int				- case type.
-		*	\since version 0.0.2
-		*/
-		int getIsobandCase(int vertexTernary[4]);
-
-		/*! \brief This method return the contour position  given 2 input positions at the input field threshold.
-		*
-		*	\param	[in]	threshold		- field threshold.
-		*	\param	[in]	vertex_lower	- lower threshold position.
-		*	\param	[in]	vertex_higher	- higher threshold position.
-		*	\param	[in]	thresholdLow	- field threshold domain minimum.
-		*	\param	[in]	thresholdHigh	- field threshold domain maximum.
-		*	\since version 0.0.2
-		*/
-		zVector getContourPosition(float &threshold, zVector& vertex_lower, zVector& vertex_higher, float& thresholdLow, float& thresholdHigh);
-
-		/*! \brief This method gets the isoline polygon for the input mesh at the given input face index.
-		*
-		*	\param	[in]	f				- input face iterator.
-		*	\param	[in]	positions		- container of positions of the computed polygon.
-		*	\param	[in]	polyConnects	- container of polygon connectivity of the computed polygon.
-		*	\param	[in]	polyCounts		- container of number of vertices in the computed polygon.
-		*	\param	[in]	positionVertex	- map of position and vertices, to remove overlapping vertices.
-		*	\param	[in]	threshold		- field threshold.
-		*	\param	[in]	invertMesh	- true if inverted mesh is required.
-		*	\since version 0.0.2
-		*/
-		void getIsolinePoly(zItMeshFace& f , zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float &threshold, bool invertMesh);
-
-		/*! \brief This method gets the isoline polygon for the input mesh at the given input face index.
-		*
-		*	\param	[in]	f				- input face iterator.
-		*	\param	[in]	positions		- container of positions of the computed polygon.
-		*	\param	[in]	polyConnects	- container of polygon connectivity of the computed polygon.
-		*	\param	[in]	polyCounts		- container of number of vertices in the computed polygon.
-		*	\param	[in]	positionVertex	- map of position and vertices, to remove overlapping vertices.
-		*	\param	[in]	thresholdLow	- field threshold domain minimum.
-		*	\param	[in]	thresholdHigh	- field threshold domain maximum.
-		*	\since version 0.0.2
-		*/
-		void getIsobandPoly(zItMeshFace& f, zPointArray &positions, zIntArray &polyConnects, zIntArray &polyCounts, unordered_map <string, int> &positionVertex, float &thresholdLow, float &thresholdHigh);
-
 	};	
 
 	// Deprecated compatibility alias. New code should use
