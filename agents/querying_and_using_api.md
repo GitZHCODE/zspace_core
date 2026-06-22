@@ -348,6 +348,81 @@ zSpace::zScalarArray values;
 fn.getFieldValues(values);
 ```
 
+Create an SDF circle and extract its zero contour:
+
+```cpp
+#include <zspace/interface.h>
+#include <cmath>
+
+zSpace::zObjectMeshScalarField sdfField;
+zSpace::zFnMeshScalarField sdfFn(sdfField);
+
+sdfFn.create(
+    zSpace::zPoint(-10, -10, 0),
+    zSpace::zPoint(10, 10, 0),
+    80,
+    80);
+
+zSpace::zScalarArray sdfValues;
+sdfValues.resize(sdfFn.numFieldValues());
+
+const zSpace::zPoint center(0, 0, 0);
+const float radius = 4.0f;
+
+for (zSpace::zItMeshScalarField it(sdfField); !it.end(); it++)
+{
+    zSpace::zPoint p = it.getPosition();
+    sdfValues[it.getId()] = p.distanceTo(center) - radius;
+}
+
+sdfFn.setFieldValues(sdfValues, zSpace::zFieldColorType::zFieldSDF, 0.25f);
+
+zSpace::zObjectGraph contourGraph;
+sdfFn.getIsocontour(contourGraph, 0.0f);
+
+zSpace::zObjectMesh contourMesh;
+sdfFn.getIsolineMesh(contourMesh, 0.0f);
+```
+
+Create a narrow isoband around the SDF boundary:
+
+```cpp
+#include <zspace/interface.h>
+
+zSpace::zObjectMesh bandMesh;
+const float bandWidth = 0.15f;
+
+sdfFn.getIsobandMesh(bandMesh, -bandWidth, bandWidth);
+```
+
+Combine two SDFs, then contour the result:
+
+```cpp
+#include <zspace/interface.h>
+
+zSpace::zScalarArray circleA;
+zSpace::zScalarArray circleB;
+circleA.resize(sdfFn.numFieldValues());
+circleB.resize(sdfFn.numFieldValues());
+
+const zSpace::zPoint centerA(-2, 0, 0);
+const zSpace::zPoint centerB(2, 0, 0);
+
+for (zSpace::zItMeshScalarField it(sdfField); !it.end(); it++)
+{
+    zSpace::zPoint p = it.getPosition();
+    circleA[it.getId()] = p.distanceTo(centerA) - 3.0f;
+    circleB[it.getId()] = p.distanceTo(centerB) - 3.0f;
+}
+
+zSpace::zScalarArray unionValues;
+sdfFn.boolean_union(circleA, circleB, unionValues, false);
+sdfFn.setFieldValues(unionValues, zSpace::zFieldColorType::zFieldSDF, 0.25f);
+
+zSpace::zObjectMesh unionContour;
+sdfFn.getIsolineMesh(unionContour, 0.0f);
+```
+
 Create a 2D vector field from a scalar mesh field:
 
 ```cpp
