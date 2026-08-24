@@ -103,9 +103,6 @@ namespace zSpace
 	{
 	protected:
 
-		ZSPACE_SUPPRESS_DLL_INTERFACE
-		zItVertex iter;
-
 		/*!	\brief index in the graph edge-list vertex container. */
 		int index = 0;
 
@@ -256,13 +253,6 @@ namespace zSpace
 		*/
 		zItGraphHalfEdge getHalfEdge();
 
-		/*! \brief This method gets the raw internal iterator.
-		*
-		*	\return			zItVertex		- raw iterator
-		*	\since version 0.0.3
-		*/
-		zItVertex  getRawIter();
-
 		/*! \brief This method gets position of the vertex.
 		*
 		*	\return				zPoint					- vertex position.
@@ -388,9 +378,6 @@ namespace zSpace
 	{
 	protected:
 
-		ZSPACE_SUPPRESS_DLL_INTERFACE
-		zItEdge iter;
-
 		/*!	\brief index in the graph edge-list edge container. */
 		int index = 0;
 
@@ -508,13 +495,6 @@ namespace zSpace
 		*/
 		zItGraphHalfEdge getHalfEdge(int _index);
 
-		/*! \brief This method gets the raw internal iterator.
-		*
-		*	\return			zItEdge		- raw iterator
-		*	\since version 0.0.3
-		*/
-		zItEdge  getRawIter();
-
 		/*! \brief This method gets color of the edge.
 		*
 		*	\return				zColor					- edge color.
@@ -626,8 +606,7 @@ namespace zSpace
 	{
 	protected:
 
-		ZSPACE_SUPPRESS_DLL_INTERFACE
-		zItHalfEdge iter;
+		int index = -1;
 
 		/*!	\brief pointer to a graph object  */
 		zObjectGraph *graphObj;
@@ -797,13 +776,6 @@ namespace zSpace
 		*	\since version 0.0.3
 		*/
 		zItGraphEdge getEdge();
-
-		/*! \brief This method gets the raw internal iterator.
-		*
-		*	\return			zItHalfEdge		- raw iterator
-		*	\since version 0.0.3
-		*/
-		zItHalfEdge  getRawIter();
 
 		/*! \brief This method gets color of the halfedge.
 		*

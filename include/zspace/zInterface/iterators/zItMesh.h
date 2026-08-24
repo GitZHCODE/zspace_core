@@ -110,9 +110,6 @@ namespace zSpace
 	{
 	protected:
 
-		/*!	\brief iterator of core mesh vertex object  */
-		ZSPACE_SUPPRESS_DLL_INTERFACE
-		zItVertex iter;
 		int index = 0;
 
 		/*!	\brief pointer to a mesh object  */
@@ -298,13 +295,6 @@ namespace zSpace
 		*/
 		zItMeshHalfEdge getHalfEdge();	
 
-		/*! \brief This method gets the raw internal iterator.
-		*
-		*	\return			zItVertex		- raw iterator
-		*	\since version 0.0.3
-		*/
-		zItVertex  getRawIter();
-
 		/*! \brief This method gets position of the vertex.
 		*
 		*	\return				zVector					- vertex position.
@@ -452,8 +442,6 @@ namespace zSpace
 	{
 	protected:
 
-		ZSPACE_SUPPRESS_DLL_INTERFACE
-		zItEdge iter;
 		int index = 0;
 
 		/*!	\brief pointer to a mesh object  */
@@ -598,13 +586,6 @@ namespace zSpace
 		*/
 		zItMeshHalfEdge getHalfEdge(int _index);
 
-		/*! \brief This method gets the raw internal iterator.
-		*
-		*	\return			zItEdge		- raw iterator
-		*	\since version 0.0.3
-		*/
-		zItEdge  getRawIter();
-
 		/*! \brief This method gets color of the edge.
 		*
 		*	\return				zColor					- edge color.
@@ -718,8 +699,6 @@ namespace zSpace
 	{
 	protected:
 
-		ZSPACE_SUPPRESS_DLL_INTERFACE
-		zItFace iter;
 		int index = 0;
 
 		/*!	\brief pointer to a mesh object  */
@@ -900,13 +879,6 @@ namespace zSpace
 		*/
 		zItMeshHalfEdge getHalfEdge();
 
-		/*! \brief This method gets the raw internal iterator.
-		*
-		*	\return			zItFace		- raw iterator
-		*	\since version 0.0.3
-		*/
-		zItFace  getRawIter();
-
 		/*! \brief This method gets the offset positions of the face.
 		*
 		*	\details	beased on http://pyright.blogspot.com/2014/11/polygon-offset-using-vector-math-in.html
@@ -1065,8 +1037,7 @@ namespace zSpace
 	{
 	protected:
 
-		ZSPACE_SUPPRESS_DLL_INTERFACE
-		zItHalfEdge iter;
+		int index = -1;
 
 		/*!	\brief pointer to a mesh object  */
 		zObjectMesh *meshObj;
@@ -1260,13 +1231,6 @@ namespace zSpace
 		*/
 		zItMeshEdge getEdge();
 		
-		/*! \brief This method gets the raw internal iterator.
-		*
-		*	\return			zItHalfEdge		- raw iterator
-		*	\since version 0.0.3
-		*/
-		zItHalfEdge  getRawIter();
-
 		/*! \brief This method gets color of the halfedge.
 		*
 		*	\return				zColor					- halfedge color.

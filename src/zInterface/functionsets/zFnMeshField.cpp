@@ -2357,16 +2357,16 @@ namespace zSpace
 					// SDFs
 					if (type == zFieldColorType::zFieldSDF)
 					{
-						if (scalars[i] < -sdfWidth)
-						{
-							//temp = coreUtils.blendColor(scalars[i], dVal, dCol, zHSV);
+						const float maxAbsValue = coreUtils.zMax(std::abs(contourValueDomain.min), std::abs(contourValueDomain.max));
+						const float zeroBand = sdfWidth * maxAbsValue;
 
-							cols[i] = fieldColorDomain.min;/*zColor(0, 0.550, 0.950, 1);*/
+						if (scalars[i] < -zeroBand)
+						{
+							cols[i] = zGREY;
 						}
-						else if (scalars[i] > sdfWidth)
+						else if (scalars[i] > zeroBand)
 						{
-
-							cols[i] = /*zColor(0.25, 0.25, 0.25, 1)*/ fieldColorDomain.max;
+							cols[i] = zWHITE;
 						}
 						else cols[i] = zMAGENTA;
 					}
@@ -2421,54 +2421,135 @@ namespace zSpace
 	}
 
 	//---- CONTOUR METHODS
-	
+
 	template<>
 	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getIsocontour(zObjectGraph &coutourGraphObj, float inThreshold, int precision, float distTolerance)
 	{
-		if (contourVertexValues.size() == 0) return;
+		zScalarArray fieldValues;
+		getFieldValues(fieldValues);
 
-		if (contourVertexValues.size() != numFieldValues())
+		zScalarArray vertexValues;
+		if (fnMesh.numVertices() == fieldValues.size())
 		{
-			throw std::invalid_argument(" error: invalid contour condition. Call updateColors method. ");
+			vertexValues = fieldValues;
+		}
+		else if (fnMesh.numPolygons() == fieldValues.size())
+		{
+			vertexValues.assign(fnMesh.numVertices(), 0.0f);
+			for (zItMeshVertex v(*fieldObj); !v.end(); v++)
+			{
+				vector<int> cFaces;
+				v.getConnectedFaces(cFaces);
+
+				if (cFaces.empty()) continue;
+
+				double val = 0.0;
+				for (int j = 0; j < cFaces.size(); j++)
+				{
+					val += fieldValues[cFaces[j]];
+				}
+				val /= cFaces.size();
+
+				vertexValues[v.getId()] = static_cast<zScalar>(val);
+			}
+		}
+		else
+		{
+			throw std::invalid_argument(" error: invalid contour condition. Field values must match mesh vertices or mesh faces.");
 		}
 
 		vector<zVector> pos;
 		vector<int> edgeConnects;
 		zColorArray vColors;
 
-		fnMesh.getIsoContour(contourVertexValues, inThreshold, pos, edgeConnects, vColors, precision, distTolerance);
+		fnMesh.getIsoContour(vertexValues, inThreshold, pos, edgeConnects, vColors, precision, distTolerance);
 
 		zFnGraph tempFn(coutourGraphObj);
 		tempFn.clear();
 
-		tempFn.create(pos, edgeConnects, PRECISION);
+		if (!pos.empty() && !edgeConnects.empty())
+		{
+			tempFn.create(pos, edgeConnects, PRECISION);
+		}
 	}
 
 	template<>
 	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getIsolineMesh(zObjectMesh &coutourMeshObj, float inThreshold, bool invertMesh)
 	{
-		if (contourVertexValues.size() == 0) return;
-		if (contourVertexValues.size() != numFieldValues())
+		zScalarArray fieldValues;
+		getFieldValues(fieldValues);
+
+		zScalarArray vertexValues;
+		if (fnMesh.numVertices() == fieldValues.size())
 		{
-			throw std::invalid_argument(" error: invalid contour condition.  Call updateColors method.");
+			vertexValues = fieldValues;
+		}
+		else if (fnMesh.numPolygons() == fieldValues.size())
+		{
+			vertexValues.assign(fnMesh.numVertices(), 0.0f);
+			for (zItMeshVertex v(*fieldObj); !v.end(); v++)
+			{
+				vector<int> cFaces;
+				v.getConnectedFaces(cFaces);
+
+				if (cFaces.empty()) continue;
+
+				double val = 0.0;
+				for (int j = 0; j < cFaces.size(); j++)
+				{
+					val += fieldValues[cFaces[j]];
+				}
+				val /= cFaces.size();
+
+				vertexValues[v.getId()] = static_cast<zScalar>(val);
+			}
+		}
+		else
+		{
+			throw std::invalid_argument(" error: invalid contour condition. Field values must match mesh vertices or mesh faces.");
 		}
 
-		fnMesh.getIsoMesh(contourVertexValues, inThreshold, invertMesh, coutourMeshObj);
+		fnMesh.getIsoMesh(vertexValues, inThreshold, invertMesh, coutourMeshObj);
 	}
 
 	template<>
 	ZSPACE_INLINE void zFnMeshFieldBase<zScalar>::getIsobandMesh(zObjectMesh &coutourMeshObj, float inThresholdLow, float inThresholdHigh)
 	{
-		if (contourVertexValues.size() == 0) return;
+		zScalarArray fieldValues;
+		getFieldValues(fieldValues);
 
-		if (contourVertexValues.size() != numFieldValues())
+		zScalarArray vertexValues;
+		if (fnMesh.numVertices() == fieldValues.size())
 		{
-			throw std::invalid_argument(" error: invalid contour condition.  Call updateColors method.");
+			vertexValues = fieldValues;
+		}
+		else if (fnMesh.numPolygons() == fieldValues.size())
+		{
+			vertexValues.assign(fnMesh.numVertices(), 0.0f);
+			for (zItMeshVertex v(*fieldObj); !v.end(); v++)
+			{
+				vector<int> cFaces;
+				v.getConnectedFaces(cFaces);
+
+				if (cFaces.empty()) continue;
+
+				double val = 0.0;
+				for (int j = 0; j < cFaces.size(); j++)
+				{
+					val += fieldValues[cFaces[j]];
+				}
+				val /= cFaces.size();
+
+				vertexValues[v.getId()] = static_cast<zScalar>(val);
+			}
+		}
+		else
+		{
+			throw std::invalid_argument(" error: invalid contour condition. Field values must match mesh vertices or mesh faces.");
 		}
 
-		fnMesh.getIsobandMesh(contourVertexValues, inThresholdLow, inThresholdHigh, coutourMeshObj);
+		fnMesh.getIsobandMesh(vertexValues, inThresholdLow, inThresholdHigh, coutourMeshObj);
 	}
-
 	template<typename T>
 	ZSPACE_INLINE void zFnMeshFieldBase<T>::createFieldMesh()
 	{

@@ -14,6 +14,7 @@
 #include<zspace/zInterface/iterators/zItGraph.h>
 #include <src/zInterface/objects/zGraphObjectStorage.h>
 #include <src/zCore/geometry/detail/zGraphStorage.h>
+#include <unordered_set>
 
 //---- ZIT_GRAPH_VERTEX ------------------------------------------------------------------------------
 
@@ -60,7 +61,7 @@ namespace zSpace
 
 	ZSPACE_INLINE bool zItGraphVertex::end()
 	{
-		return index >= zGraphObjectStorage::read(*graphObj).numVertices();
+		return !graphObj || index >= zGraphObjectStorage::read(*graphObj).numVertices();
 	}
 
 	ZSPACE_INLINE void zItGraphVertex::reset()
@@ -70,7 +71,7 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItGraphVertex::size()
 	{
-
+		if (!graphObj) return 0;
 		return zGraphObjectStorage::read(*graphObj).numVertices();
 	}
 
@@ -279,14 +280,11 @@ namespace zSpace
 
 	ZSPACE_INLINE zItGraphHalfEdge zItGraphVertex::getHalfEdge()
 	{
-		return zItGraphHalfEdge(*graphObj, zGraphObjectStorage::get(*graphObj).vertices[index].getHalfEdge());
-	}
-
-	ZSPACE_INLINE zItVertex zItGraphVertex::getRawIter()
-	{
-		iter = zGraphObjectStorage::get(*graphObj).vertices.begin();
-		advance(iter, index);
-		return iter;
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		auto& graphData = zGraphObjectStorage::get(*graphObj);
+		const int halfedgeId = graphData.vertices[index].getHalfEdge();
+		if (halfedgeId < 0 || halfedgeId >= static_cast<int>(graphData.halfEdges.size())) throw std::invalid_argument(" error: halfedge index out of bounds.");
+		return zItGraphHalfEdge(*graphObj, halfedgeId);
 	}
 
 	ZSPACE_INLINE zPoint zItGraphVertex::getPosition()
@@ -313,6 +311,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItGraphVertex::setId(int _id)
 	{
+		if (_id < 0 || _id >= size()) throw std::invalid_argument("vertex index out of bounds.");
 		index = _id;
 	}
 
@@ -405,7 +404,7 @@ namespace zSpace
 
 	ZSPACE_INLINE bool zItGraphEdge::end()
 	{
-		return index >= zGraphObjectStorage::read(*graphObj).numEdges();
+		return !graphObj || index >= zGraphObjectStorage::read(*graphObj).numEdges();
 	}
 
 	ZSPACE_INLINE void zItGraphEdge::reset()
@@ -415,7 +414,7 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItGraphEdge::size()
 	{
-
+		if (!graphObj) return 0;
 		return zGraphObjectStorage::read(*graphObj).numEdges();
 	}
 
@@ -494,14 +493,12 @@ namespace zSpace
 
 	ZSPACE_INLINE zItGraphHalfEdge zItGraphEdge::getHalfEdge(int _index)
 	{
-		return zItGraphHalfEdge(*graphObj, zGraphObjectStorage::get(*graphObj).edges[index].getHalfEdge(_index));
-	}
-
-	ZSPACE_INLINE zItEdge  zItGraphEdge::getRawIter()
-	{
-		iter = zGraphObjectStorage::get(*graphObj).edges.begin();
-		advance(iter, index);
-		return iter;
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		if (_index < 0 || _index > 1) throw std::invalid_argument(" error: halfedge slot out of bounds.");
+		auto& graphData = zGraphObjectStorage::get(*graphObj);
+		const int halfedgeId = graphData.edges[index].getHalfEdge(_index);
+		if (halfedgeId < 0 || halfedgeId >= static_cast<int>(graphData.halfEdges.size())) throw std::invalid_argument(" error: halfedge index out of bounds.");
+		return zItGraphHalfEdge(*graphObj, halfedgeId);
 	}
 
 	ZSPACE_INLINE zColor zItGraphEdge::getColor()
@@ -518,6 +515,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zItGraphEdge::setId(int _id)
 	{
+		if (_id < 0 || _id >= size()) throw std::invalid_argument("edge index out of bounds.");
 		index = _id;
 	}
 
@@ -575,62 +573,62 @@ namespace zSpace
 	ZSPACE_INLINE zItGraphHalfEdge::zItGraphHalfEdge()
 	{
 		graphObj = nullptr;
+		index = -1;
 	}
 
 	ZSPACE_INLINE zItGraphHalfEdge::zItGraphHalfEdge(zObjectGraph &_graphObj)
 	{
 		graphObj = &_graphObj;
-
-		iter = zGraphObjectStorage::get(*graphObj).halfEdges.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE zItGraphHalfEdge::zItGraphHalfEdge(zObjectGraph &_graphObj, int _index)
 	{
 		graphObj = &_graphObj;
+		index = _index;
 
-		iter = zGraphObjectStorage::get(*graphObj).halfEdges.begin();
-
-		if (_index < 0 && _index >= zGraphObjectStorage::get(*graphObj).halfEdges.size()) throw std::invalid_argument(" error: index out of bounds");
-		advance(iter, _index);
+		if (_index < 0 || _index >= zGraphObjectStorage::get(*graphObj).halfEdges.size()) throw std::invalid_argument(" error: index out of bounds");
 	}
 
 	//---- OVERRIDE METHODS
 
 	ZSPACE_INLINE void zItGraphHalfEdge::begin()
 	{
-		iter = zGraphObjectStorage::get(*graphObj).halfEdges.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::operator++(int)
 	{
-		iter++;
+		index++;
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::operator--(int)
 	{
-		iter--;
+		index--;
 	}
 
 	ZSPACE_INLINE bool zItGraphHalfEdge::end()
 	{
-		return (iter == zGraphObjectStorage::get(*graphObj).halfEdges.end()) ? true : false;
+		return !graphObj || index >= static_cast<int>(zGraphObjectStorage::get(*graphObj).halfEdges.size());
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::reset()
 	{
-		iter = zGraphObjectStorage::get(*graphObj).halfEdges.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE int zItGraphHalfEdge::size()
 	{
-
+		if (!graphObj) return 0;
 		return zGraphObjectStorage::get(*graphObj).halfEdges.size();
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::deactivate()
 	{
-		zGraphObjectStorage::get(*graphObj).heHandles[iter->getId()] = zHalfEdgeHandle();
-		iter->reset();
+		if (!isActive()) return;
+		auto& graphData = zGraphObjectStorage::get(*graphObj);
+		graphData.heHandles[index] = zHalfEdgeHandle();
+		graphData.halfEdges[index].reset();
 	}
 
 	//--- TOPOLOGY QUERY METHODS 
@@ -712,7 +710,8 @@ namespace zSpace
 
 	ZSPACE_INLINE bool zItGraphHalfEdge::onBoundary()
 	{
-		return (iter->getFace() == -1) ? true : false;
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		return zGraphObjectStorage::get(*graphObj).halfEdges[index].getFace() == -1;
 	}
 
 	ZSPACE_INLINE zVector zItGraphHalfEdge::getCenter()
@@ -743,60 +742,78 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItGraphHalfEdge::getId()
 	{
-		return iter->getId();
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		return index;
 	}
 
 	ZSPACE_INLINE zItGraphHalfEdge zItGraphHalfEdge::getSym()
 	{
-		return zItGraphHalfEdge(*graphObj, iter->getSym());
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int symId = zGraphObjectStorage::get(*graphObj).halfEdges[index].getSym();
+		if (symId == -1) throw std::invalid_argument(" error: sym index is -1. ");
+		return zItGraphHalfEdge(*graphObj, symId);
 	}
 
 	ZSPACE_INLINE zItGraphHalfEdge zItGraphHalfEdge::getNext()
 	{
-		return zItGraphHalfEdge(*graphObj, iter->getNext());
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int nextId = zGraphObjectStorage::get(*graphObj).halfEdges[index].getNext();
+		if (nextId == -1) throw std::invalid_argument(" error: next index is -1. ");
+		return zItGraphHalfEdge(*graphObj, nextId);
 	}
 
 	ZSPACE_INLINE zItGraphHalfEdge zItGraphHalfEdge::getPrev()
 	{
-		return zItGraphHalfEdge(*graphObj, iter->getPrev());
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int prevId = zGraphObjectStorage::get(*graphObj).halfEdges[index].getPrev();
+		if (prevId == -1) throw std::invalid_argument(" error: prev index is -1. ");
+		return zItGraphHalfEdge(*graphObj, prevId);
 	}
 
 	ZSPACE_INLINE zItGraphVertex zItGraphHalfEdge::getVertex()
 	{
-		return zItGraphVertex(*graphObj, iter->getVertex());
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int vertexId = zGraphObjectStorage::get(*graphObj).halfEdges[index].getVertex();
+		if (vertexId == -1) throw std::invalid_argument(" error: vertex index is -1. ");
+		return zItGraphVertex(*graphObj, vertexId);
 	}
 
 	ZSPACE_INLINE zItGraphEdge zItGraphHalfEdge::getEdge()
 	{
-		return zItGraphEdge(*graphObj, iter->getEdge());
-	}
-
-	ZSPACE_INLINE zItHalfEdge  zItGraphHalfEdge::getRawIter()
-	{
-		return iter;
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int edgeId = zGraphObjectStorage::get(*graphObj).halfEdges[index].getEdge();
+		if (edgeId == -1) throw std::invalid_argument(" error: edge index is -1. ");
+		return zItGraphEdge(*graphObj, edgeId);
 	}
 
 	ZSPACE_INLINE zColor zItGraphHalfEdge::getColor()
 	{
-		return zGraphObjectStorage::get(*graphObj).edgeColors[iter->getEdge()];
+		zItGraphEdge edge = getEdge();
+		return zGraphObjectStorage::get(*graphObj).edgeColors[edge.getId()];
 	}
 
 	ZSPACE_INLINE zColor* zItGraphHalfEdge::getRawColor()
 	{
-		return &zGraphObjectStorage::get(*graphObj).edgeColors[iter->getEdge()];
+		zItGraphEdge edge = getEdge();
+		return &zGraphObjectStorage::get(*graphObj).edgeColors[edge.getId()];
 	}
 
 	//---- SET METHODS
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setId(int _id)
 	{
-		iter->setId(_id);
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		zGraphObjectStorage::get(*graphObj).halfEdges[index].setId(_id);
+		index = _id;
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setSym(zItGraphHalfEdge &he)
 	{
-		iter->setSym(he.getId());
-		he.iter->setSym(getId());
+		auto& graphData = zGraphObjectStorage::get(*graphObj);
+		const int id = getId();
+		const int symId = he.getId();
+		graphData.halfEdges[id].setSym(symId);
+		graphData.halfEdges[symId].setSym(id);
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setNext(zItGraphHalfEdge &he)
@@ -806,12 +823,13 @@ namespace zSpace
 		int id = getId();
 		int nextId = he.getId();
 
-		iter->setNext(nextId);
+		auto& graphData = zGraphObjectStorage::get(*graphObj);
+		graphData.halfEdges[id].setNext(nextId);
 		//he.setPrev(*this);
-		he.iter->setPrev(id);
+		graphData.halfEdges[nextId].setPrev(id);
 
-		zGraphObjectStorage::get(*graphObj).heHandles[id].n = nextId;
-		zGraphObjectStorage::get(*graphObj).heHandles[nextId].p = id;
+		graphData.heHandles[id].n = nextId;
+		graphData.heHandles[nextId].p = id;
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setPrev(zItGraphHalfEdge &he)
@@ -820,43 +838,46 @@ namespace zSpace
 		int id = getId();
 		int prevId = he.getId();
 
-		iter->setPrev(prevId);
+		auto& graphData = zGraphObjectStorage::get(*graphObj);
+		graphData.halfEdges[id].setPrev(prevId);
 		//he.setNext(*this);
-		he.iter->setNext(id);
+		graphData.halfEdges[prevId].setNext(id);
 
-		zGraphObjectStorage::get(*graphObj).heHandles[id].p = prevId;
-		zGraphObjectStorage::get(*graphObj).heHandles[prevId].n = id;
+		graphData.heHandles[id].p = prevId;
+		graphData.heHandles[prevId].n = id;
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setVertex(zItGraphVertex &v)
 	{
 		//iter->setVertex(&zGraphObjectStorage::get(*graphObj).vertices[v.getId()]);
 
-		iter->setVertex(v.getId());
-
 		int id = getId();
 		int vId = v.getId();
+		auto& graphData = zGraphObjectStorage::get(*graphObj);
 
-		zGraphObjectStorage::get(*graphObj).heHandles[id].v = vId;
+		graphData.halfEdges[id].setVertex(vId);
+		graphData.heHandles[id].v = vId;
 	}
 
 	ZSPACE_INLINE void zItGraphHalfEdge::setEdge(zItGraphEdge &e)
 	{
 		//iter->setEdge(&zGraphObjectStorage::get(*graphObj).edges[e.getId()]);
 
-		iter->setEdge(e.getId());
-
 		int id = getId();
 		int eId = e.getId();
+		auto& graphData = zGraphObjectStorage::get(*graphObj);
 
-		zGraphObjectStorage::get(*graphObj).heHandles[id].e = eId;
+		graphData.halfEdges[id].setEdge(eId);
+		graphData.heHandles[id].e = eId;
 	}
 
 	//---- UTILITY METHODS
 
 	ZSPACE_INLINE bool zItGraphHalfEdge::isActive()
 	{
-		return iter->isActive();
+		if (!graphObj) return false;
+		const auto& halfEdges = zGraphObjectStorage::get(*graphObj).halfEdges;
+		return index >= 0 && index < static_cast<int>(halfEdges.size()) && halfEdges[index].isActive();
 	}
 
 	//---- OPERATOR METHODS

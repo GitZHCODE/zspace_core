@@ -3449,200 +3449,188 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 
 	ZSPACE_INLINE void zFnMesh::smoothMesh(int numDivisions, bool smoothCorner)
 	{
-		vector<zVector> fCenters;
-		vector<zVector> tempECenters;
-		vector<zVector> eCenters;
+		if (numDivisions <= 0) return;
+
+		struct EdgeSubdivisionData
+		{
+			int a = -1;
+			int b = -1;
+			zIntArray faces;
+			int pointIndex = -1;
+		};
+
+		auto addUnique = [](zIntArray& values, int value)
+		{
+			if (std::find(values.begin(), values.end(), value) == values.end())
+				values.push_back(value);
+		};
 
 		for (int j = 0; j < numDivisions; j++)
 		{
-			// get face centers
-			fCenters.clear();
-			getCenters(zFaceData, fCenters);
+			const auto& source = zMeshObjectStorage::read(*meshObj);
+			const int vertexCount = source.numVertices();
+			const int faceCount = source.numFaces();
+			if (vertexCount == 0 || faceCount == 0) return;
 
-			// get edge centers
-		
-			tempECenters.clear();
+			zPointArray faceCenters(faceCount, zPoint());
+			std::map<std::pair<int, int>, EdgeSubdivisionData> edges;
+			vector<zIntArray> vertexFaces(vertexCount);
+			vector<zIntArray> vertexNeighbors(vertexCount);
+			vector<zIntArray> boundaryNeighbors(vertexCount);
+			zVectorArray edgeMidpointSums(vertexCount, zVector());
+			zIntArray incidentEdgeCounts(vertexCount, 0);
 
-			eCenters.clear();
-			getCenters(zEdgeData, eCenters);
-
-			tempECenters = eCenters;
-
-			zVector* vPositions = 	getRawVertexPositions();
-
-			int numOriginalVertices = numVertices();
-			int numOriginalEdges = numEdges();
-
-			// compute new smooth positions of the edge centers
-			for (int i =0; i< numOriginalEdges; i++)
+			for (int faceId = 0; faceId < faceCount; ++faceId)
 			{
+				const int begin = source.faceOffsets[faceId];
+				const int end = source.faceOffsets[faceId + 1];
+				const int count = end - begin;
+				if (count < 3) continue;
 
-				zItMeshEdge e(*meshObj, i);
+				for (int i = begin; i < end; ++i)
+				{
+					const int vertexId = source.faceVertexIndices[i];
+					faceCenters[faceId] += source.positions[vertexId];
+					addUnique(vertexFaces[vertexId], faceId);
+				}
+				faceCenters[faceId] /= static_cast<float>(count);
 
-				if (e.onBoundary()) continue;
-
-				zVector newPos;			
-
-				vector<int> eVerts;
-				e.getVertices(eVerts);
-				for (auto &vId : eVerts) newPos += vPositions[vId];
-
-
-				vector<int> eFaces;
-				e.getFaces(eFaces);
-				for (auto &fId : eFaces) newPos += fCenters[fId];
-
-				newPos /= (eFaces.size() + eVerts.size());
-
-				eCenters[i] = newPos;
+				for (int i = begin; i < end; ++i)
+				{
+					const int next = (i + 1 < end) ? i + 1 : begin;
+					const int a = source.faceVertexIndices[i];
+					const int b = source.faceVertexIndices[next];
+					const auto key = std::minmax(a, b);
+					auto& edge = edges[{ key.first, key.second }];
+					edge.a = key.first;
+					edge.b = key.second;
+					addUnique(edge.faces, faceId);
+					addUnique(vertexNeighbors[a], b);
+					addUnique(vertexNeighbors[b], a);
+				}
 			}
 
-			// compute new smooth positions for the original vertices
-			for (int i = 0; i < numOriginalVertices; i++)
+			for (const auto& item : edges)
 			{
-				zItMeshVertex v(*meshObj, i);
+				const auto& edge = item.second;
+				zVector a = source.positions[edge.a];
+				zVector b = source.positions[edge.b];
+				zVector midpoint = (a + b) * 0.5f;
+				edgeMidpointSums[edge.a] += midpoint;
+				edgeMidpointSums[edge.b] += midpoint;
+				incidentEdgeCounts[edge.a]++;
+				incidentEdgeCounts[edge.b]++;
 
-				if (v.onBoundary())
+				if (edge.faces.size() == 1)
 				{
-					vector<zItMeshEdge> cEdges;
-					v.getConnectedEdges(cEdges);
+					addUnique(boundaryNeighbors[edge.a], edge.b);
+					addUnique(boundaryNeighbors[edge.b], edge.a);
+				}
+			}
 
-					if (!smoothCorner && cEdges.size() == 2) continue;
-
-					zVector P = vPositions[i];
-					//int n = 1; // rosetta , not matching with maya
-					int n = 0;
-
-					zVector R(0,0,0);
-					for (auto &e : cEdges)
+			zPointArray newPositions = source.positions;
+			for (int vertexId = 0; vertexId < vertexCount; ++vertexId)
+			{
+				zVector P = source.positions[vertexId];
+				if (!boundaryNeighbors[vertexId].empty())
+				{
+					if (!smoothCorner && incidentEdgeCounts[vertexId] == 2)
 					{
-						if (e.onBoundary())
-						{
-							R += tempECenters[e.getId()];
-							n++;
-						}
+						newPositions[vertexId] = P;
+						continue;
 					}
 
-					// rosetta , not matching with maya
-					//vPositions[i] = (P + R) / n; 
+					if (boundaryNeighbors[vertexId].size() >= 2)
+					{
+						zVector n0 = source.positions[boundaryNeighbors[vertexId][0]];
+						zVector n1 = source.positions[boundaryNeighbors[vertexId][1]];
+						newPositions[vertexId] = (P * 0.75f) + ((n0 + n1) * 0.125f);
+					}
+					else newPositions[vertexId] = P;
 
-					vPositions[i] = (P / n) + (R / (n*n));				
+					continue;
+				}
+
+				const int n = static_cast<int>(vertexFaces[vertexId].size());
+				if (n == 0 || incidentEdgeCounts[vertexId] == 0)
+				{
+					newPositions[vertexId] = P;
+					continue;
+				}
+
+				zVector F;
+				for (int faceId : vertexFaces[vertexId]) F += faceCenters[faceId];
+				F /= static_cast<float>(n);
+
+				zVector R = edgeMidpointSums[vertexId];
+				R /= static_cast<float>(incidentEdgeCounts[vertexId]);
+
+				newPositions[vertexId] = (F + (R * 2.0f) + (P * static_cast<float>(n - 3))) / static_cast<float>(n);
+			}
+
+			for (auto& item : edges)
+			{
+				auto& edge = item.second;
+				zVector a = source.positions[edge.a];
+				zVector b = source.positions[edge.b];
+				zVector edgePoint;
+				if (edge.faces.size() >= 2)
+				{
+					edgePoint = (a + b + faceCenters[edge.faces[0]] + faceCenters[edge.faces[1]]) * 0.25f;
 				}
 				else
 				{
-					zVector R;
-
-					vector<int> cEdges;
-					v.getConnectedEdges(cEdges);
-
-					for (auto &eId : cEdges) R += tempECenters[eId];
-					R /= cEdges.size();
-
-					zVector F;
-					vector<int> cFaces;
-					v.getConnectedFaces(cFaces);
-					for (auto &fId : cFaces) F += fCenters[fId];
-					F /= cFaces.size();
-
-					zVector P = vPositions[i];
-					int n = cFaces.size();
-
-					vPositions[i] = (F + (R * 2) + (P * (n - 3))) / n;
+					edgePoint = (a + b) * 0.5f;
 				}
+
+				edge.pointIndex = static_cast<int>(newPositions.size());
+				newPositions.push_back(edgePoint);
 			}
 
-			// split edges at center			
-			for (int i = 0; i < numOriginalEdges; i++)
+			zIntArray facePointIndices(faceCount, -1);
+			for (int faceId = 0; faceId < faceCount; ++faceId)
 			{
-				zItMeshEdge e(*meshObj,i);
-				if (e.isActive())
-				{			
-					zItMeshHalfEdge he = e.getHalfEdge(0);
-					zItMeshVertex newVert = splitHalfEdge(he,0.5,false);
-					newVert.setPosition(eCenters[i]);
-				}
+				facePointIndices[faceId] = static_cast<int>(newPositions.size());
+				newPositions.push_back(faceCenters[faceId]);
 			}
 
+			zIntArray newCounts;
+			zIntArray newConnects;
+			newCounts.reserve(source.faceVertexIndices.size());
+			newConnects.reserve(source.faceVertexIndices.size() * 4);
 
-
-			// add faces
-			int numOriginalFaces = numPolygons();
-			
-			for (int i = 0; i < numOriginalFaces; i++)
+			for (int faceId = 0; faceId < faceCount; ++faceId)
 			{
-				zItMeshFace f(*meshObj, i);
+				const int begin = source.faceOffsets[faceId];
+				const int end = source.faceOffsets[faceId + 1];
+				if (end - begin < 3) continue;
 
-				if (!f.isActive()) continue;
-
-				zIntArray fEdges;
-				f.getHalfEdges(fEdges);	
-
-				// disable current face
-				//f.deactivate();
-
-				// check if vertex exists if not add new vertex
-				zItMeshVertex vertexCen;
-				addVertex(fCenters[i], true, vertexCen);
-
-				// add new faces				
-				int startId = 0;
-				zItMeshHalfEdge he_0(*meshObj, fEdges[0]);
-				if (he_0.getVertex().getId() < numOriginalVertices) startId = 1;
-
-				for (int k = startId; k < fEdges.size() + startId; k += 2)
+				for (int i = begin; i < end; ++i)
 				{
-					vector<int> newFVerts;
+					const int previous = (i == begin) ? end - 1 : i - 1;
+					const int next = (i + 1 < end) ? i + 1 : begin;
 
-					zItMeshHalfEdge he(*meshObj, fEdges[k]);
-					newFVerts.push_back(he.getVertex().getId());
+					const int vertexId = source.faceVertexIndices[i];
+					const int previousVertexId = source.faceVertexIndices[previous];
+					const int nextVertexId = source.faceVertexIndices[next];
 
-					newFVerts.push_back(vertexCen.getId());
+					const auto previousEdgeKey = std::minmax(previousVertexId, vertexId);
+					const auto nextEdgeKey = std::minmax(vertexId, nextVertexId);
+					const int previousEdgePoint = edges[{ previousEdgeKey.first, previousEdgeKey.second }].pointIndex;
+					const int nextEdgePoint = edges[{ nextEdgeKey.first, nextEdgeKey.second }].pointIndex;
 
-					newFVerts.push_back(he.getPrev().getStartVertex().getId());
-
-					newFVerts.push_back(he.getPrev().getVertex().getId());
-
-
-					if (k == startId)
-					{
-						updatePolygon(f, newFVerts);
-					}
-					else
-					{
-						zItMeshFace newF;
-						addPolygon(newFVerts, newF);
-					}
-					
+					newCounts.push_back(4);
+					newConnects.push_back(vertexId);
+					newConnects.push_back(nextEdgePoint);
+					newConnects.push_back(facePointIndices[faceId]);
+					newConnects.push_back(previousEdgePoint);
 				}
-
-			
 			}
 
-			// update half edge handles. 
-			/*for (int i = 0; i < zMeshObjectStorage::get(*meshObj).heHandles.size(); i++)
-			{
-				if (zMeshObjectStorage::get(*meshObj).heHandles[i].f != -1)
-				{
-					zMeshObjectStorage::get(*meshObj).heHandles[i].f -= numOriginalFaces;
-					zMeshObjectStorage::get(*meshObj).halfEdges[i].setFace(zMeshObjectStorage::get(*meshObj).heHandles[i].f);
-				}
-			}*/
-
-			/*for (zItMeshHalfEdge he(*meshObj); !he.end(); he++)
-			{
-				printf("\n %i |n %i p %i | v %i %i | f %i", he.getId(), he.getNext().getId(), he.getPrev().getId(), he.getStartVertex().getId(), he.getVertex().getId(), (!he.onBoundary()) ? he.getFace().getId() : -2);
-			}*/
-
-			// remove inactive faces
-			//garbageCollection(zFaceData);
-			//printf("\n faces a %i ", numPolygons());
-
-			
-
+			zMeshObjectStorage::set(*meshObj, newPositions, newCounts, newConnects);
 			computeMeshNormals();
-		}	
+		}
 	}
-
 
 	ZSPACE_INLINE void zFnMesh::extrudeMesh(float extrudeThickness,zObjectMesh &out, bool thicknessTris)
 	{

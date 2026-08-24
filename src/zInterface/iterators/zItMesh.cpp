@@ -14,6 +14,7 @@
 #include<zspace/zInterface/iterators/zItMesh.h>
 #include <src/zInterface/objects/zMeshObjectStorage.h>
 #include <src/zCore/geometry/detail/zMeshStorage.h>
+#include <unordered_set>
 
 //---- ZIT_MESH_VERTEX ------------------------------------------------------------------------------
 
@@ -69,7 +70,7 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItMeshVertex::size()
 	{
-
+		if (!meshObj) return 0;
 		return zMeshObjectStorage::read(*meshObj).numVertices();
 	}
 
@@ -558,14 +559,11 @@ namespace zSpace
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshVertex::getHalfEdge()
 	{
-		return zItMeshHalfEdge(*meshObj, zMeshObjectStorage::get(*meshObj).vertices[index].getHalfEdge());
-	}
-
-	ZSPACE_INLINE zItVertex zItMeshVertex::getRawIter()
-	{
-		auto out = zMeshObjectStorage::get(*meshObj).vertices.begin();
-		std::advance(out, index);
-		return out;
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		auto& meshData = zMeshObjectStorage::get(*meshObj);
+		const int halfedgeId = meshData.vertices[index].getHalfEdge();
+		if (halfedgeId < 0 || halfedgeId >= static_cast<int>(meshData.halfEdges.size())) throw std::invalid_argument(" error: halfedge index out of bounds.");
+		return zItMeshHalfEdge(*meshObj, halfedgeId);
 	}
 
 	ZSPACE_INLINE zVector zItMeshVertex::getPosition()
@@ -717,7 +715,7 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItMeshEdge::size()
 	{
-
+		if (!meshObj) return 0;
 		return zMeshObjectStorage::read(*meshObj).numEdges();
 	}
 
@@ -840,14 +838,12 @@ namespace zSpace
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshEdge::getHalfEdge(int _index)
 	{	
-		return zItMeshHalfEdge(*meshObj, zMeshObjectStorage::get(*meshObj).edges[index].getHalfEdge(_index));
-	}
-
-	ZSPACE_INLINE zItEdge  zItMeshEdge::getRawIter()
-	{
-		auto out = zMeshObjectStorage::get(*meshObj).edges.begin();
-		std::advance(out, index);
-		return out;
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		if (_index < 0 || _index > 1) throw std::invalid_argument(" error: halfedge slot out of bounds.");
+		auto& meshData = zMeshObjectStorage::get(*meshObj);
+		const int halfedgeId = meshData.edges[index].getHalfEdge(_index);
+		if (halfedgeId < 0 || halfedgeId >= static_cast<int>(meshData.halfEdges.size())) throw std::invalid_argument(" error: halfedge index out of bounds.");
+		return zItMeshHalfEdge(*meshObj, halfedgeId);
 	}
 
 	ZSPACE_INLINE zColor zItMeshEdge::getColor()
@@ -966,7 +962,7 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItMeshFace::size()
 	{
-
+		if (!meshObj) return 0;
 		return zMeshObjectStorage::read(*meshObj).numFaces();
 	}
 
@@ -981,43 +977,54 @@ namespace zSpace
 	ZSPACE_INLINE void zItMeshFace::getHalfEdges(zItMeshHalfEdgeArray &halfedges)
 	{
 		halfedges.clear();
+		if (!isActive()) return;
 
-
-		if (!getHalfEdge().onBoundary())
+		zItMeshHalfEdge start;
+		try
 		{
-			zItMeshHalfEdge start = getHalfEdge();
-			zItMeshHalfEdge e = getHalfEdge();
-
-			bool exit = false;
-
-			do
-			{
-				halfedges.push_back(e);
-				e = e.getNext();
-
-			} while (e != start);
+			start = getHalfEdge();
+			if (start.onBoundary()) return;
+		}
+		catch (...)
+		{
+			return;
 		}
 
+		zItMeshHalfEdge e = start;
+		std::unordered_set<int> visitedHalfedges;
+		const int maxSteps = static_cast<int>(zMeshObjectStorage::get(*meshObj).halfEdges.size());
+		int stepCount = 0;
+
+		while (stepCount++ < maxSteps)
+		{
+			const int currentId = e.getId();
+			if (visitedHalfedges.find(currentId) != visitedHalfedges.end()) break;
+
+			visitedHalfedges.insert(currentId);
+			halfedges.push_back(e);
+
+			try
+			{
+				e = e.getNext();
+			}
+			catch (...)
+			{
+				break;
+			}
+
+			if (e == start) break;
+		}
 	}
 
 	ZSPACE_INLINE void zItMeshFace::getHalfEdges(zIntArray &halfedgeIndicies)
 	{
 		halfedgeIndicies.clear();
 
-
-		if (!getHalfEdge().onBoundary())
+		zItMeshHalfEdgeArray halfedges;
+		getHalfEdges(halfedges);
+		for (auto& he : halfedges)
 		{
-			zItMeshHalfEdge start = getHalfEdge();
-			zItMeshHalfEdge e = getHalfEdge();
-
-			bool exit = false;
-
-			do
-			{
-				halfedgeIndicies.push_back(e.getId());
-				e = e.getNext();
-
-			} while (e != start);
+			halfedgeIndicies.push_back(he.getId());
 		}
 	}
 
@@ -1515,14 +1522,11 @@ namespace zSpace
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshFace::getHalfEdge()
 	{
-		return zItMeshHalfEdge(*meshObj, zMeshObjectStorage::get(*meshObj).faces[index].getHalfEdge());
-	}
-
-	ZSPACE_INLINE zItFace  zItMeshFace::getRawIter()
-	{
-		auto out = zMeshObjectStorage::get(*meshObj).faces.begin();
-		std::advance(out, index);
-		return out;
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		auto& meshData = zMeshObjectStorage::get(*meshObj);
+		const int halfedgeId = meshData.faces[index].getHalfEdge();
+		if (halfedgeId < 0 || halfedgeId >= static_cast<int>(meshData.halfEdges.size())) throw std::invalid_argument(" error: halfedge index out of bounds.");
+		return zItMeshHalfEdge(*meshObj, halfedgeId);
 	}
 
 	ZSPACE_INLINE void zItMeshFace::getOffsetFacePositions(double offset, vector<zVector>& offsetPositions)
@@ -1767,62 +1771,62 @@ namespace zSpace
 	ZSPACE_INLINE zItMeshHalfEdge::zItMeshHalfEdge()
 	{
 		meshObj = nullptr;
+		index = -1;
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge::zItMeshHalfEdge(zObjectMesh &_meshObj)
 	{
 		meshObj = &_meshObj;
-
-		iter = zMeshObjectStorage::get(*meshObj).halfEdges.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge::zItMeshHalfEdge(zObjectMesh &_meshObj, int _index)
 	{
 		meshObj = &_meshObj;
+		index = _index;
 
-		iter = zMeshObjectStorage::get(*meshObj).halfEdges.begin();
-
-		if (_index < 0 && _index >= zMeshObjectStorage::get(*meshObj).halfEdges.size()) throw std::invalid_argument(" error: index out of bounds");
-		advance(iter, _index);
+		if (_index < 0 || _index >= zMeshObjectStorage::get(*meshObj).halfEdges.size()) throw std::invalid_argument(" error: index out of bounds");
 	}
 
 	//---- OVERRIDE METHODS
 
 	ZSPACE_INLINE void zItMeshHalfEdge::begin()
 	{
-		iter = zMeshObjectStorage::get(*meshObj).halfEdges.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::operator++(int)
 	{
-		iter++;
+		index++;
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::operator--(int)
 	{
-		iter--;
+		index--;
 	}
 
 	ZSPACE_INLINE bool zItMeshHalfEdge::end()
 	{
-		return (iter == zMeshObjectStorage::get(*meshObj).halfEdges.end()) ? true : false;
+		return !meshObj || index >= static_cast<int>(zMeshObjectStorage::get(*meshObj).halfEdges.size());
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::reset()
 	{
-		iter = zMeshObjectStorage::get(*meshObj).halfEdges.begin();
+		index = 0;
 	}
 
 	ZSPACE_INLINE int zItMeshHalfEdge::size()
 	{
-
+		if (!meshObj) return 0;
 		return zMeshObjectStorage::get(*meshObj).halfEdges.size();
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::deactivate()
 	{
-		zMeshObjectStorage::get(*meshObj).heHandles[iter->getId()] = zHalfEdgeHandle();
-		iter->reset();
+		if (!isActive()) return;
+		auto& meshData = zMeshObjectStorage::get(*meshObj);
+		meshData.heHandles[index] = zHalfEdgeHandle();
+		meshData.halfEdges[index].reset();
 	}
 
 	//--- TOPOLOGY QUERY METHODS 
@@ -1914,7 +1918,8 @@ namespace zSpace
 
 	ZSPACE_INLINE bool zItMeshHalfEdge::onBoundary()
 	{
-		return (iter->getFace() == -1) ? true : false;
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		return zMeshObjectStorage::get(*meshObj).halfEdges[index].getFace() == -1;
 	}
 
 	ZSPACE_INLINE zVector zItMeshHalfEdge::getCenter()
@@ -1945,71 +1950,86 @@ namespace zSpace
 
 	ZSPACE_INLINE int zItMeshHalfEdge::getId()
 	{
-		return iter->getId();
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		return index;
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshHalfEdge::getSym()
 	{
-		if(iter->getSym() == -1) throw std::invalid_argument(" error: sym index is -1. "); 
-		return zItMeshHalfEdge(*meshObj, iter->getSym());
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int symId = zMeshObjectStorage::get(*meshObj).halfEdges[index].getSym();
+		if(symId == -1) throw std::invalid_argument(" error: sym index is -1. "); 
+		return zItMeshHalfEdge(*meshObj, symId);
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshHalfEdge::getNext()
 	{
-		if (iter->getNext() == -1) throw std::invalid_argument(" error: next index is -1. ");
-		return zItMeshHalfEdge(*meshObj, iter->getNext());
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int nextId = zMeshObjectStorage::get(*meshObj).halfEdges[index].getNext();
+		if (nextId == -1) throw std::invalid_argument(" error: next index is -1. ");
+		return zItMeshHalfEdge(*meshObj, nextId);
 	}
 
 	ZSPACE_INLINE zItMeshHalfEdge zItMeshHalfEdge::getPrev()
 	{
-		if (iter->getPrev() == -1) throw std::invalid_argument(" error: prev index is -1. ");
-		return zItMeshHalfEdge(*meshObj, iter->getPrev());
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int prevId = zMeshObjectStorage::get(*meshObj).halfEdges[index].getPrev();
+		if (prevId == -1) throw std::invalid_argument(" error: prev index is -1. ");
+		return zItMeshHalfEdge(*meshObj, prevId);
 	}
 
 	ZSPACE_INLINE zItMeshVertex zItMeshHalfEdge::getVertex()
 	{
-		if (iter->getVertex() == -1) throw std::invalid_argument(" error: vertex index is -1. ");
-		return zItMeshVertex(*meshObj, iter->getVertex());
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int vertexId = zMeshObjectStorage::get(*meshObj).halfEdges[index].getVertex();
+		if (vertexId == -1) throw std::invalid_argument(" error: vertex index is -1. ");
+		return zItMeshVertex(*meshObj, vertexId);
 	}
 
 	ZSPACE_INLINE zItMeshFace zItMeshHalfEdge::getFace()
 	{
-		if (iter->getFace() == -1) throw std::invalid_argument(" error: face index is -1. ");
-		return zItMeshFace(*meshObj, iter->getFace());
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int faceId = zMeshObjectStorage::get(*meshObj).halfEdges[index].getFace();
+		if (faceId == -1) throw std::invalid_argument(" error: face index is -1. ");
+		return zItMeshFace(*meshObj, faceId);
 	}
 
 	ZSPACE_INLINE zItMeshEdge zItMeshHalfEdge::getEdge()
 	{
-		if (iter->getEdge() == -1) throw std::invalid_argument(" error: edge index is -1. ");
-		return zItMeshEdge(*meshObj, iter->getEdge());
-	}
-
-	ZSPACE_INLINE zItHalfEdge  zItMeshHalfEdge::getRawIter()
-	{
-		return iter;
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		const int edgeId = zMeshObjectStorage::get(*meshObj).halfEdges[index].getEdge();
+		if (edgeId == -1) throw std::invalid_argument(" error: edge index is -1. ");
+		return zItMeshEdge(*meshObj, edgeId);
 	}
 
 	ZSPACE_INLINE zColor zItMeshHalfEdge::getColor()
 	{
-		return zMeshObjectStorage::get(*meshObj).edgeColors[iter->getEdge()];
+		zItMeshEdge edge = getEdge();
+		return zMeshObjectStorage::get(*meshObj).edgeColors[edge.getId()];
 	}
 
 	ZSPACE_INLINE zColor* zItMeshHalfEdge::getRawColor()
 	{
-		return &zMeshObjectStorage::get(*meshObj).edgeColors[iter->getEdge()];
+		zItMeshEdge edge = getEdge();
+		return &zMeshObjectStorage::get(*meshObj).edgeColors[edge.getId()];
 	}
 
 	//---- SET METHODS
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setId(int _id)
 	{
-		iter->setId(_id);
+		if (!isActive()) throw std::invalid_argument(" error: out of bounds.");
+		zMeshObjectStorage::get(*meshObj).halfEdges[index].setId(_id);
+		index = _id;
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setSym(zItMeshHalfEdge &he)
 	{
-		iter->setSym(he.getId());
-		he.iter->setSym(getId());
+		auto& meshData = zMeshObjectStorage::get(*meshObj);
+		const int id = getId();
+		const int symId = he.getId();
+		meshData.halfEdges[id].setSym(symId);
+		meshData.halfEdges[symId].setSym(id);
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setNext(zItMeshHalfEdge &he)
@@ -2019,12 +2039,13 @@ namespace zSpace
 		int id = getId();
 		int nextId = he.getId();
 
-		iter->setNext(nextId);
+		auto& meshData = zMeshObjectStorage::get(*meshObj);
+		meshData.halfEdges[id].setNext(nextId);
 		//he.setPrev(*this);
-		he.iter->setPrev(id);
+		meshData.halfEdges[nextId].setPrev(id);
 
-		zMeshObjectStorage::get(*meshObj).heHandles[id].n = nextId;
-		zMeshObjectStorage::get(*meshObj).heHandles[nextId].p = id;
+		meshData.heHandles[id].n = nextId;
+		meshData.heHandles[nextId].p = id;
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setPrev(zItMeshHalfEdge &he)
@@ -2034,49 +2055,52 @@ namespace zSpace
 		int id = getId();
 		int prevId = he.getId();
 
-		iter->setPrev(prevId);
+		auto& meshData = zMeshObjectStorage::get(*meshObj);
+		meshData.halfEdges[id].setPrev(prevId);
 		//he.setNext(*this);
-		he.iter->setNext(id);
+		meshData.halfEdges[prevId].setNext(id);
 
-		zMeshObjectStorage::get(*meshObj).heHandles[id].p = prevId;
-		zMeshObjectStorage::get(*meshObj).heHandles[prevId].n = id;
+		meshData.heHandles[id].p = prevId;
+		meshData.heHandles[prevId].n = id;
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setVertex(zItMeshVertex &v)
 	{
-		iter->setVertex(v.getId());
-
 		int id = getId();
 		int vId = v.getId();
+		auto& meshData = zMeshObjectStorage::get(*meshObj);
 
-		zMeshObjectStorage::get(*meshObj).heHandles[id].v = vId;
+		meshData.halfEdges[id].setVertex(vId);
+		meshData.heHandles[id].v = vId;
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setEdge(zItMeshEdge &e)
 	{
-		iter->setEdge(e.getId());
-
 		int id = getId();
 		int eId = e.getId();
+		auto& meshData = zMeshObjectStorage::get(*meshObj);
 
-		zMeshObjectStorage::get(*meshObj).heHandles[id].e = eId;
+		meshData.halfEdges[id].setEdge(eId);
+		meshData.heHandles[id].e = eId;
 	}
 
 	ZSPACE_INLINE void zItMeshHalfEdge::setFace(zItMeshFace &f)
 	{
-		iter->setFace(f.getId());
-
 		int id = getId();
 		int fId = f.getId();
+		auto& meshData = zMeshObjectStorage::get(*meshObj);
 
-		zMeshObjectStorage::get(*meshObj).heHandles[id].f = fId;
+		meshData.halfEdges[id].setFace(fId);
+		meshData.heHandles[id].f = fId;
 	}
 
 	//---- UTILITY METHODS
 
 	ZSPACE_INLINE bool zItMeshHalfEdge::isActive()
 	{
-		return iter->isActive();
+		if (!meshObj) return false;
+		const auto& halfEdges = zMeshObjectStorage::get(*meshObj).halfEdges;
+		return index >= 0 && index < static_cast<int>(halfEdges.size()) && halfEdges[index].isActive();
 	}
 
 	//---- OPERATOR METHODS

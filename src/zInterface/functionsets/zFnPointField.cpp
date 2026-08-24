@@ -1373,18 +1373,18 @@ namespace zSpace
 			{
 
 				//SDFs
-					if (scalars[i] <= 0)
-					{
-						//temp = coreUtils.blendColor(scalars[i], dVal, dCol, zHSV);
+					const float maxAbsValue = coreUtils.zMax(std::abs(contourValueDomain.min), std::abs(contourValueDomain.max));
+					const float zeroBand = 0.1f * maxAbsValue;
 
-						cols[i] = zColor(0, 0.550, 0.950, 1);
-					}
-					else if (scalars[i] > 0)
+					if (scalars[i] < -zeroBand)
 					{
-						cols[i] = zColor(0.950, 0, 0.55, 1);
-						//cols[i] = zColor(0.25, 0.25, 0.25, 1) /*dCol.max*/;
+						cols[i] = zGREY;
 					}
-					else cols[i] = zColor(0.950, 0, 0.55, 1);
+					else if (scalars[i] > zeroBand)
+					{
+						cols[i] = zWHITE;
+					}
+					else cols[i] = zMAGENTA;
 
 				//if (scalars[i] < contourValueDomain.min) cols[i] = fieldColorDomain.min;
 				//else if (scalars[i] > contourValueDomain.max) cols[i] = fieldColorDomain.max;
