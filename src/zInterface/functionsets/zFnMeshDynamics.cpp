@@ -263,14 +263,14 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMeshDynamics::addLoadForce(double strength, int vId, zVector& vec)
 	{
-		vec.normalize();
-		zVector pForce = vec * strength;
-		for (auto& oParticle : particlesObj)
-		{
-			zFnParticle fnParticle(oParticle);
-			zVector force = pForce;
-			fnParticle.addForce(force);
-		}
+		if (vId < 0 || vId >= static_cast<int>(particlesObj.size()))
+			throw std::out_of_range("Dynamics vertex index out of range.");
+		if (!std::isfinite(strength)) throw std::invalid_argument("Nonfinite dynamics force strength.");
+		zVector force = vec;
+		if (force.length() == 0) return;
+		force.normalize(); force *= strength;
+		zFnParticle particle(particlesObj[vId]);
+		particle.addForce(force);
 	}
 
 	ZSPACE_INLINE void zFnMeshDynamics::addPlaneForce(double strength, zIntArray vIds, zPoint& targetCenter, zVector& targetNormal)

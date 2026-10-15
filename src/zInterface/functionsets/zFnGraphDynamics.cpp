@@ -60,7 +60,8 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraphDynamics::makeDynamic(bool fixBoundary)
 	{
-		//fnParticles.clear();
+		particlesObj.clear();
+		zPoint* positions = getRawVertexPositions();
 		const auto& data = zGraphObjectStorage::read(*graphObj);
 		zIntArray valencies(data.numVertices(), 0);
 
@@ -83,8 +84,7 @@ namespace zSpace
 			if (fixBoundary) fixed = (valencies[vertexId] == 1);
 
 			zObjectParticle p;
-			zPoint position = data.positions[vertexId];
-			p.particle = zParticle(position, fixed);
+			p.particle = zParticle(positions[vertexId], fixed);
 			particlesObj.push_back(p);
 
 			//if (!fixed) setVertexColor(zColor(0, 0, 1, 1));
@@ -175,14 +175,14 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnGraphDynamics::addLoadForce(double strength, int vId, zVector& vec)
 	{
-		vec.normalize();
-		zVector pForce = vec * strength;
-		for (auto& oParticle : particlesObj)
-		{
-			zFnParticle fnParticle(oParticle);
-			zVector force = pForce;
-			fnParticle.addForce(force);
-		}
+		if (vId < 0 || vId >= static_cast<int>(particlesObj.size()))
+			throw std::out_of_range("Dynamics vertex index out of range.");
+		if (!std::isfinite(strength)) throw std::invalid_argument("Nonfinite dynamics force strength.");
+		zVector force = vec;
+		if (force.length() == 0) return;
+		force.normalize(); force *= strength;
+		zFnParticle particle(particlesObj[vId]);
+		particle.addForce(force);
 	}
 
 	ZSPACE_INLINE void zFnGraphDynamics::addSpringForce(double strength, int eId, float restLength)

@@ -1,5 +1,6 @@
 #include <zspace/interface.h>
 #include <zspace/zInterface/functionsets/zFnMeshDynamics.h>
+#include <zspace/zInterface/functionsets/zFnGraphDynamics.h>
 
 #include <cmath>
 #include <iostream>
@@ -17,6 +18,25 @@ namespace
 	}
 
 #include "mesh_iterator_geometry_fixture.h"
+
+	void testDynamicsVertexLoads()
+	{
+		zPointArray points={zPoint(0,0,0),zPoint(1,0,0),zPoint(0,1,0)};
+		zIntArray edges={0,1,1,2},counts={3},connects={0,1,2};
+		zObjectGraph graph;zFnGraph(graph).create(points,edges);zFnGraphDynamics graphDynamics(graph);
+		graphDynamics.makeDynamic(false);graphDynamics.makeDynamic(false);
+		zVector load(0,0,1);graphDynamics.addLoadForce(2,1,load);graphDynamics.update(1,zEuler,true,true,true);
+		auto gp=graphDynamics.getRawVertexPositions();
+		require(gp[0].z==0&&gp[1].z==2&&gp[2].z==0,"graph load targets one persistent vertex");
+		zIntArray fixed={1};graphDynamics.setFixed(fixed);graphDynamics.addLoadForce(2,1,load);graphDynamics.update(1,zEuler,true,true,true);
+		require(gp[1].z==2,"graph dynamics preserves fixed vertices");
+		zObjectMesh mesh;zFnMesh(mesh).create(points,counts,connects);zFnMeshDynamics meshDynamics(mesh);meshDynamics.makeDynamic(false);
+		meshDynamics.addLoadForce(2,1,load);meshDynamics.update(1,zEuler,true,true,true);
+		auto mp=meshDynamics.getRawVertexPositions();
+		require(mp[0].z==0&&mp[1].z==2&&mp[2].z==0,"mesh load targets only the requested vertex");
+		bool rejected=false;try{meshDynamics.addLoadForce(1,3,load);}catch(const std::out_of_range&){rejected=true;}
+		require(rejected,"dynamics rejects an invalid vertex index");
+	}
 
 	void testOrigami()
 	{
@@ -458,6 +478,7 @@ int main(int argc, char** argv)
 		zSpace::zObjectGraph graph;
 
 		testMesh(mesh);
+		testDynamicsVertexLoads();
 		testOrigami();
 		testGraph(graph);
 		testMeshToGraph(mesh);
