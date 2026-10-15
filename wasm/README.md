@@ -65,14 +65,88 @@ From this repository root:
 wasm\scripts\build-wasm.bat
 ```
 
-The script expects Emscripten to be installed at `%USERPROFILE%\emsdk` or
-available on `PATH`.
+The script requires CMake 3.21+ and Ninja on `PATH`, and expects Emscripten to
+be installed at `%USERPROFILE%\emsdk` or available on `PATH` (for example,
+after running `emsdk_env.bat`).
+
+The standard SDK-free target is defined in `wasm/CMakeLists.txt`. The existing
+batch entrypoint configures it with `emcmake`, then builds with Ninja. Project
+objects and compiler-generated header dependencies are retained under
+`wasm/build/standard/`. An unchanged invocation does no compilation or linking;
+source edits rebuild their objects, header edits rebuild dependent objects,
+and source additions/removals under `src/zCore`, `src/zInterface`, and `src/zIO`
+automatically regenerate the build graph. The existing field/compute source
+exclusions remain in effect. CMake/Ninja also track changed compile/link options.
+
+The default uses the available logical processors, capped at sixteen jobs
+(six if the processor count is unavailable). Set a positive integer to tune
+memory use and throughput; use fewer jobs on machines with limited RAM:
+
+```bat
+set "ZSPACE_WASM_JOBS=4"
+wasm\scripts\build-wasm.bat
+```
+
+Expensive translation units start early using object-library groups, while the
+linker receives the original source order. A shared precompiled header (PCH)
+reuses the bundled Eigen and JSON headers across those groups. Its generated
+helper object is never linked into the runtime. Editing PCH inputs regenerates
+the PCH and rebuilds its consumers; other headers retain their normal dependency
+tracking. No-op configuration leaves the helper source and PCH unchanged.
+
+PCH is enabled by default. To compare builds or troubleshoot a toolchain issue:
+
+```bat
+set "ZSPACE_WASM_USE_PCH=OFF"
+wasm\scripts\build-wasm.bat
+```
+
+Set it to `ON` or clear the variable to restore the default. Changing this setting
+automatically rebuilds affected objects. The original optimization, exception,
+compiler definitions and linker options are preserved; PCH only adds the compiler
+options needed to produce and consume the shared header artifact.
+
+`ZSPACE_WASM_BUILD_DIR` and `ZSPACE_WASM_OUT_DIR` optionally select separate
+build and output directories, useful for diagnostics. Use absolute paths and a
+separate build directory for each runtime configuration. For example:
+
+```bat
+set "ZSPACE_WASM_BUILD_DIR=%CD%\wasm\tmp\diagnostic\build"
+set "ZSPACE_WASM_OUT_DIR=%CD%\wasm\tmp\diagnostic\out"
+wasm\scripts\build-wasm.bat
+```
+
+The wrapper deliberately uses no CMake build type or global C++ flags: the
+target preserves `-O2`, C++17 and `-fexceptions`, without Release defaults such
+as `-O3` or `-DNDEBUG`. Export discovery, runtime methods, browser environment
+and memory/filesystem settings are unchanged. `EM_CACHE` holds Emscripten's
+system libraries; Ninja's build directory holds project objects. After an
+Emscripten upgrade, use a fresh build directory or clean the target first:
+
+```bat
+cmake --build wasm\build\standard --target clean
+wasm\scripts\build-wasm.bat
+```
+
+The standard build and OpenUSD build use separate CMake projects and build
+directories. No OpenUSD SDK or threading requirements are added to the
+standard runtime. Generated files in `wasm/build`, `wasm/tmp`, `wasm/cache` and
+`wasm/out` remain ignored by Git.
 
 Generated files are written to:
 
 ```text
 wasm/out/zspace_core.js
 wasm/out/zspace_core.wasm
+```
+
+After building the default outputs, run the self-contained runtime regressions:
+
+```bat
+node wasm/scripts/test-planarity.mjs
+node wasm/scripts/test-minimal-surface.mjs
+node wasm/scripts/test-solver-display.mjs
+node wasm/scripts/test-origami.mjs
 ```
 
 ## Minimal Surface Convergence
