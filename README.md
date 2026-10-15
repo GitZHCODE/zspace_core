@@ -213,15 +213,24 @@ The active build uses this folder structure:
 include/zspace/        Public headers for zCore, zInterface, zDisplay, and zInterOp.
 src/zCore/             Geometry data structures and foundational utilities.
 src/zInterface/        Geometry objects, iterators, and function sets.
+src/zIO/               Geometry import/export and codecs.
 src/zDisplay/          Optional scene, display settings, model, and OpenGL backend.
 src/zInterOp/          Optional host and SDK interoperability.
 third_party/depends/   Vendored third-party dependencies used by the current code.
 scripts/               Active developer scripts, including the CMake + Ninja build wrapper.
+wasm/                  Browser bridge, build definitions and runtime output.
+tests/                 Correctness fixtures, smoke tests and optional benchmarks.
+docs/                  Maintained architecture and development guidance.
+reports/               Historical implementation and performance evidence.
 legacy/                Archived Visual Studio solution/projects and old deploy batch scripts.
 build/                 Generated CMake/Ninja build output. This folder is ignored by git.
 ```
 
 `legacy/visualstudio` is kept for reference only. The maintained build entry point is the root `CMakeLists.txt`.
+
+Use [verification by change](docs/development/verification.md) to select relevant
+checks, [core test layout](tests/README.md) for test ownership, and the
+[report index](reports/README.md) for historical evidence.
 
 ## Citation
 
