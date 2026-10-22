@@ -3018,3 +3018,5 @@ extern "C"
 	ZSPACE_WASM_EXPORT double zspace_analysis_max_abs_value() { return gBuffers.analysisMaxAbsValue; }
 	ZSPACE_WASM_EXPORT const char* zspace_last_error_ptr() { return gBuffers.lastError.c_str(); }
 }
+
+#include "usd_document.h"

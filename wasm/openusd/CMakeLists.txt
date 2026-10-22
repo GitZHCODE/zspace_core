@@ -28,21 +28,23 @@ target_compile_definitions(zspace_core PRIVATE ZSPACE_STATIC_LIBRARY ZSPACE_IO_O
 target_compile_options(zspace_core PRIVATE -fexceptions -pthread
   -include "${ZSPACE_ROOT}/wasm/bridge/zspace_wasm_compat.h")
 zspace_link_openusd(zspace_core)
-# Preserve static initialization and schema registries. CMake can reorder the
-# raw --whole-archive flags in OpenUSD's exported targets away from their
-# libraries; its library feature keeps each archive wrapped correctly.
+# Preserve static registration once per archive; avoid repeated transitive archives.
 set(CMAKE_CXX_LINK_LIBRARY_USING_WHOLE_ARCHIVE
   "LINKER:--whole-archive" "<LINK_ITEM>" "LINKER:--no-whole-archive")
 set(CMAKE_CXX_LINK_LIBRARY_USING_WHOLE_ARCHIVE_SUPPORTED TRUE)
-foreach(usdTarget IN LISTS ZSPACE_OPENUSD_TARGETS)
-  get_target_property(usdDependencies ${usdTarget} INTERFACE_LINK_LIBRARIES)
-  if(usdDependencies)
-    list(REMOVE_ITEM usdDependencies "-Wl,--whole-archive" "-Wl,--no-whole-archive")
-    set_property(TARGET ${usdTarget} PROPERTY INTERFACE_LINK_LIBRARIES "${usdDependencies}")
-  endif()
-  set_property(TARGET zspace_core PROPERTY LINK_LIBRARY_OVERRIDE_${usdTarget} WHOLE_ARCHIVE)
+file(GLOB usdArchives "${ZSPACE_OPENUSD_ROOT}/lib/libusd_*.a")
+if(NOT usdArchives)
+  message(FATAL_ERROR "Expected a static WASM OpenUSD SDK")
+endif()
+set_property(TARGET zspace_core PROPERTY LINK_LIBRARIES "")
+foreach(archive IN LISTS usdArchives)
+  target_link_libraries(zspace_core PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,${archive}>")
 endforeach()
-
+target_link_libraries(zspace_core PRIVATE "${ZSPACE_OPENUSD_ROOT}/lib/libtbb.a")
+target_include_directories(zspace_core SYSTEM PRIVATE "${ZSPACE_OPENUSD_ROOT}/include")
+target_compile_definitions(zspace_core PRIVATE PXR_STATIC)
+target_link_options(zspace_core PRIVATE
+  "SHELL:--embed-file \"${ZSPACE_OPENUSD_ROOT}/lib/usd@/usd\"")
 target_link_options(zspace_core PRIVATE -fexceptions -pthread --use-port=zlib
   "-sMODULARIZE=1" "-sEXPORT_ES6=1" "-sENVIRONMENT=web,node"
   "-sALLOW_MEMORY_GROWTH=1" "-sFORCE_FILESYSTEM=1" "-sPTHREAD_POOL_SIZE=2"
