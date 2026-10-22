@@ -28,26 +28,13 @@ target_compile_definitions(zspace_core PRIVATE ZSPACE_STATIC_LIBRARY ZSPACE_IO_O
 target_compile_options(zspace_core PRIVATE -fexceptions -pthread
   -include "${ZSPACE_ROOT}/wasm/bridge/zspace_wasm_compat.h")
 zspace_link_openusd(zspace_core)
-# Preserve static registration once per archive; avoid repeated transitive archives.
-set(CMAKE_CXX_LINK_LIBRARY_USING_WHOLE_ARCHIVE
-  "LINKER:--whole-archive" "<LINK_ITEM>" "LINKER:--no-whole-archive")
-set(CMAKE_CXX_LINK_LIBRARY_USING_WHOLE_ARCHIVE_SUPPORTED TRUE)
-file(GLOB usdArchives "${ZSPACE_OPENUSD_ROOT}/lib/libusd_*.a")
-if(NOT usdArchives)
-  message(FATAL_ERROR "Expected a static WASM OpenUSD SDK")
-endif()
-set_property(TARGET zspace_core PROPERTY LINK_LIBRARIES "")
-foreach(archive IN LISTS usdArchives)
-  target_link_libraries(zspace_core PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,${archive}>")
-endforeach()
-target_link_libraries(zspace_core PRIVATE "${ZSPACE_OPENUSD_ROOT}/lib/libtbb.a")
-target_include_directories(zspace_core SYSTEM PRIVATE "${ZSPACE_OPENUSD_ROOT}/include")
-target_compile_definitions(zspace_core PRIVATE PXR_STATIC)
-target_link_options(zspace_core PRIVATE
-  "SHELL:--embed-file \"${ZSPACE_OPENUSD_ROOT}/lib/usd@/usd\"")
 target_link_options(zspace_core PRIVATE -fexceptions -pthread --use-port=zlib
   "-sMODULARIZE=1" "-sEXPORT_ES6=1" "-sENVIRONMENT=web,node"
   "-sALLOW_MEMORY_GROWTH=1" "-sFORCE_FILESYSTEM=1" "-sPTHREAD_POOL_SIZE=2"
   "-sEXPORTED_RUNTIME_METHODS=['HEAPF32','HEAPU32','UTF8ToString','FS','ccall','PThread']")
 set_target_properties(zspace_core PROPERTIES SUFFIX ".js"
   RUNTIME_OUTPUT_DIRECTORY "${ZSPACE_ROOT}/wasm/out/openusd")
+
+add_custom_command(TARGET zspace_core POST_BUILD
+  COMMAND "${CMAKE_COMMAND}" "-DROOT=$<TARGET_FILE_DIR:zspace_core>"
+    -P "${ZSPACE_ROOT}/cmake/WriteWasmManifest.cmake" VERBATIM)

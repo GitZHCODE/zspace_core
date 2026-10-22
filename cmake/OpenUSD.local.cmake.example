@@ -1,0 +1,3 @@
+# Copy to OpenUSD.local.cmake (ignored by Git), or use environment variables.
+set(ZSPACE_OPENUSD_ROOT_WINDOWS_X64 "D:/SDK/OpenUSD/windows-26.08")
+set(ZSPACE_OPENUSD_ROOT_WASM32 "D:/SDK/OpenUSD/wasm-26.08")

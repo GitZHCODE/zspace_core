@@ -13,7 +13,7 @@ option(ZSPACE_BUILD_INTEROP "Build zSpace interop DLL" OFF)
 option(ZSPACE_BUILD_TESTS "Build zSpace CLI smoke tests" OFF)
 option(ZSPACE_BUILD_SHARED "Build zSpace libraries as DLLs" ON)
 option(ZSPACE_WITH_OPENGL "Link bundled OpenGL helper libraries" ON)
-option(ZSPACE_IO_WITH_OPENUSD "Enable OpenUSD mesh IO (requires an external SDK)" OFF)
+option(ZSPACE_IO_WITH_OPENUSD "Enable Core OpenUSD IO (built-in or local SDK)" OFF)
 set(ZSPACE_OPENUSD_ROOT "" CACHE PATH "OpenUSD SDK installation root")
 set(ZSPACE_OPENUSD_RUNTIME_ROOT "" CACHE PATH "Optional runtime root for a split OpenUSD devkit")
 option(ZSPACE_WITH_MAYA "Enable Autodesk Maya interop code" OFF)
@@ -134,6 +134,8 @@ if(ZSPACE_BUILD_INTERFACE)
 
 endif()
 
+include(cmake/ZSpaceRuntime.cmake)
+
 if(ZSPACE_BUILD_IO)
   if(NOT TARGET zSpace_Interface)
     message(FATAL_ERROR "ZSPACE_BUILD_IO requires ZSPACE_BUILD_INTERFACE=ON")
@@ -167,6 +169,10 @@ if(ZSPACE_BUILD_IO)
   if(ZSPACE_IO_WITH_OPENUSD)
     include(cmake/ZSpaceOpenUSD.cmake)
     zspace_link_openusd(zSpace_IO)
+    zspace_prepare_io_runtime()
+    if(NOT ZSPACE_BUILD_SHARED)
+      install(DIRECTORY "${ZSPACE_OPENUSD_ROOT}/" DESTINATION share/zspace/openusd)
+    endif()
     target_compile_definitions(zSpace_IO PRIVATE ZSPACE_IO_OPENUSD)
   endif()
 endif()
@@ -251,6 +257,7 @@ install(EXPORT zspaceTargets
 )
 
 install(FILES
+  "${ZSPACE_ROOT}/cmake/ZSpaceRuntime.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/zspaceConfig.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/zspaceConfigVersion.cmake"
   DESTINATION lib/cmake/zspace

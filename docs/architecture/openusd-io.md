@@ -75,9 +75,9 @@ node wasm/scripts/test-openusd.mjs
 node wasm/scripts/test-openusd-buffers.mjs
 ```
 
-Reusable SDKs live outside the repositories. The WASM scripts default to
-`$env:USERPROFILE/source/sdks/OpenUSD/wasm-26.08`; `-SdkRoot` on the SDK builder
-and `-OpenUSDRoot` on the runtime builder override this location. The SDK builder
+Core resolves the runtime SDK from its built-in layout or local configuration;
+see [SDK configuration](../development/openusd-sdk.md). The runtime builder
+requires no SDK path. The separate SDK builder accepts `-SdkRoot` and
 reuses an installed SDK unless `-Rebuild` is supplied. New source downloads,
 dependency sources and compiler intermediates go under
 `$env:USERPROFILE/source/sdks/OpenUSD/cache/wasm-26.08` (override with `-CacheRoot`).
@@ -219,8 +219,93 @@ fetch counts and the enclosing import durations rather than those worker entries
 
 ## Tests
 
+### Generic document API
+
+`USDdoc` (`<zspace/zIO/zUSDapi.h>`, linked through `zspace::io`)
+provides default-time USD document queries and authoring. Unlike the single-mesh
+codec, it enumerates prims and attributes, returns world-transformed points and
+flattens indexed primvars. It contains no slicer names, settings or unit policy.
+Native C++, the `USDdoc_*` WASM bridge and Python's
+`zspace.core.USDdoc` use this same C++ implementation.
+
+- `open`, `close`: own a detached root-layer copy, leaving the source unchanged.
+- `readMetadata`: `zUSDMetadata` with units, up axis and prim records.
+- `readPrim`: `zUSDPrimInfo` with path, type, attribute names and reflection flag.
+- `readAttribute`: `zUSDAttribute` with exact USD type, typed value, custom flag
+  and interpolation. Indexed primvars are expanded; XYZ arrays are flat.
+- `readCustomLayerData`: a map of keys to typed values.
+- `readPoints`: world-space XYZ doubles in source units.
+- `applyEdits`: a `zUSDEdits` transaction with removals, prim/attribute records
+  and custom-layer-data changes. Failed edits leave the document unchanged.
+- `save` and `text`: explicitly export the root layer or return USDA text.
+
+The old JSON methods are removed, with no compatibility aliases. `zUSDData`
+uses a C++ variant: bool, int32, uint32, float32, float64, string and typed
+int/uint/float/double/string arrays. Tokens retain their USD type but carry strings;
+point/normal/vector triples retain their role and float/double precision.
+Nested dictionaries, matrices and other unsupported types fail explicitly.
+Type/payload mismatches, nonfinite authoring values and invalid vector lengths
+fail before commit. Queries use default time; this is not an animation API.
+
+Python passes dictionaries and lists directly through pybind, without JSON
+serialization. Numeric sequences are copied to typed C++ vectors; this is not
+zero-copy NumPy IO. WASM transfers numeric arrays in typed linear-memory buffers
+and exchanges strings separately. JavaScript objects are not serialized.
+The browser wrapper copies returned buffers before the next bridge call and
+frees upload buffers after the bridge copies them. Separate WASM instances still
+have separate memories. No unit or up-axis conversion occurs inside this API.
+The bridge owns one active document; callbacks must remain synchronous.
+Rebuild Core, Python bindings and the matching WASM runtime before using these
+new methods; old binaries do not provide the new ABI.
+
+Saving does not package external assets or rewrite their relative paths; keep
+the referenced files reachable when relocating an exported layer. Browser IO
+uses the WASM filesystem, so referenced files must also be present there. Use
+`/tmp/output.usda` for browser exports, then read its bytes for download.
+
+Slicer interpretation belongs to the host adapters: Alice's `userSrc/zspace/slicer/SlicerIO.cpp`,
+the viewer's `slicingUSD.ts`, and Python's `zspace.io.slicing_usd`. These convert
+geometry and dimensional settings to Z-up millimetres, preserve ratios and
+export results back in source units. Toolsets links only Core/Interface and
+does not include or link OpenUSD. The desktop adapter retains 500-character
+USDA array wrapping; whitespace is not part of the shared schema.
+
 `zspace.io.smoke` is backend-aware: OFF tests disabled-support reporting, ON
 tests all four extensions, opacity, standard normals, legacy attribute names,
 indexed colors, reference composition, object-space first-mesh behavior and
 invalid topology preserving the destination. Run the full Release build and
 CTest with the SDK's runtime dependencies available.
+
+`readPoints` returns `std::vector<std::array<double, 3>>` in C++ and a list
+of XYZ triples in Python. The WASM bridge flattens these triples for its numeric
+buffer contract, so the browser API still returns a flat coordinate array.
+
+
+### Typed attribute access
+
+`USDdoc` exposes `readBool`, `readInt`, `readFloat`, `readDouble`,
+`readString`, `readIntArray`, `readFloatArray`, and `readDoubleArray`.
+The floating-point readers accept USD float or double values of the same
+scalar/array shape, with finite-value and overflow checks. Integer and boolean
+readers require their corresponding USD types. `readString` accepts string and
+token attributes. Missing required values and incompatible types throw.
+
+Each reader has a `tryRead?` counterpart. In C++, a missing attribute returns
+`false` without changing the output argument; Python returns `None`, and the
+TypeScript wrapper returns `undefined`. An existing empty array is a valid value;
+applications may choose to retain their defaults for it. A missing prim remains
+an error.
+
+The matching static `write?` methods add typed attributes to a prim edit, without
+performing IO. Call `applyEdits` once to validate and commit the batch atomically.
+Python uses a prim dictionary and TypeScript a prim object; neither serializes
+JSON. The C++ representation is `zUSDPrimEdit`.
+
+```cpp
+float spacing = 8.0f;
+doc.tryReadFloat("/Slicer_setting", "slicer:LayerSpacing", spacing);
+zUSDEdits edits;
+edits.prims.push_back({"/Result", "Scope", {}});
+USDdoc::writeFloat(edits.prims.back(), "spacing", spacing);
+doc.applyEdits(edits);
+```

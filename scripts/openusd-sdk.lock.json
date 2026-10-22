@@ -1,0 +1,7 @@
+{
+  "artifact": "openusd-native-26.08-windows-x64",
+  "platform": "windows-x64",
+  "version": "26.08",
+  "source": "https://github.com/GitZHACODE/zspace_alice2/releases/download/openusd-sdk-26.08-357d5957a28a/openusd-native-26.08-windows-x64.zip",
+  "sha256": "357d5957a28ae48994112617ce76e098805734c638fd17f235212fc9eacb10e1"
+}

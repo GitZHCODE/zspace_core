@@ -1,11 +1,9 @@
 param(
-  [string]$OpenUSDRoot = (Join-Path $env:USERPROFILE "source/sdks/OpenUSD/wasm-26.08"),
   [string]$EmsdkRoot = (Join-Path $env:USERPROFILE "emsdk"),
   [int]$Jobs = 6
 )
 $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
-$sdkRoot = (Resolve-Path -LiteralPath $OpenUSDRoot).Path
 $EmsdkRoot = (Resolve-Path -LiteralPath $EmsdkRoot).Path
 $emscripten = Join-Path $EmsdkRoot "upstream/emscripten"
 $pythonDir = Get-ChildItem (Join-Path $EmsdkRoot "python") -Directory |
@@ -24,8 +22,8 @@ $cmake = (Get-Command cmake -ErrorAction Stop).Source
 $toolchain = Join-Path $emscripten "cmake/Modules/Platform/Emscripten.cmake"
 & $cmake -S (Join-Path $repoRoot "wasm/openusd") -B (Join-Path $repoRoot "wasm/build/openusd") `
   -Upxr_DIR -UTBB_DIR `
-  -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" "-DZSPACE_OPENUSD_ROOT=$sdkRoot" `
-  "-DCMAKE_BUILD_TYPE=Release" "-DCMAKE_FIND_ROOT_PATH=$sdkRoot"
+  -G Ninja "-DCMAKE_TOOLCHAIN_FILE=$toolchain" `
+  "-DCMAKE_BUILD_TYPE=Release"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $cmake --build (Join-Path $repoRoot "wasm/build/openusd") --parallel $Jobs
 exit $LASTEXITCODE

@@ -115,16 +115,16 @@ zSpace::zIO::writeGraph("graph.json", graph);
 Formats are selected from the file extension. OBJ, JSON, and graph TXT codecs are
 built into `zSpace_IO`. Optional OpenUSD support reads and writes USDA, USDC,
 and USDZ. `.usd` writing remains USDA text for compatibility. TinyUSDZ has been
-replaced; the default SDK-free build disables USD. Enable it with an external
-headless OpenUSD SDK:
+replaced; the default SDK-free build disables USD. Core resolves a built-in or
+local headless SDK when enabled (see [SDK configuration](docs/development/openusd-sdk.md)):
 
 ```powershell
-cmake --preset ninja-msvc -DZSPACE_IO_WITH_OPENUSD=ON -DZSPACE_OPENUSD_ROOT="C:/SDKs/OpenUSD"
+cmake --preset ninja-msvc -DZSPACE_IO_WITH_OPENUSD=ON
 cmake --build --preset ninja-msvc-release --parallel
 ```
 
-The SDK's runtime libraries and plugin/schema resources must remain available
-when running applications. No Git submodule or OpenUSD source checkout is
+Core packages runtime libraries and plugin/schema resources. Applications use
+`zspace_deploy_runtime(TARGET app COMPONENTS io)` for output deployment. No Git submodule or OpenUSD source checkout is
 required in this repository. See [OpenUSD setup and validation](docs/architecture/openusd-io.md)
 for native SDK layouts, compatibility details, and the separate WASM build.
 

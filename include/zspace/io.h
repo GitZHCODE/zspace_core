@@ -5,5 +5,6 @@
 
 #include <zspace/interface.h>
 #include <zspace/zIO/zIO.h>
+#include <zspace/zIO/zUSDapi.h>
 
 #endif
