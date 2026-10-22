@@ -67,6 +67,7 @@ namespace zSpace
 			void addToHalfEdgesMap(int v1, int v2, int index);
 			void removeFromHalfEdgesMap(int v1, int v2);
 			bool halfEdgeExists(int v1, int v2, int& outEdgeId);
+			bool halfEdgeExists(int v1, int v2, int& outEdgeId) const;
 		};
 	}
 }

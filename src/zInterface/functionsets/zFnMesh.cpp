@@ -857,7 +857,7 @@ namespace zSpace
 
 	ZSPACE_INLINE int zFnMesh::numHalfEdges()
 	{
-		return zMeshObjectStorage::get(*meshObj).n_he;
+		return zMeshObjectStorage::get(static_cast<const zObjectMesh&>(*meshObj)).n_he;
 	}
 
 	ZSPACE_INLINE int zFnMesh::numPolygons()
@@ -877,7 +877,7 @@ namespace zSpace
 	
 	ZSPACE_INLINE bool zFnMesh::halfEdgeExists(int v1, int v2, int &outHalfEdgeId)
 	{
-		return zMeshObjectStorage::get(*meshObj).halfEdgeExists(v1, v2, outHalfEdgeId);
+		return zMeshObjectStorage::get(static_cast<const zObjectMesh&>(*meshObj)).halfEdgeExists(v1, v2, outHalfEdgeId);
 	}
 
 	ZSPACE_INLINE bool zFnMesh::halfEdgeExists(int v1, int v2, zItMeshHalfEdge &outHalfEdge)
@@ -1870,6 +1870,7 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getDualMesh(zObjectMesh &dualMeshObj, zIntArray &inEdge_dualEdge, zIntArray &dualEdge_inEdge, bool excludeBoundary, bool keepExistingBoundary, bool rotate90)
 	{
+		zUtilsCore coreUtils;
 		vector<zVector> positions;
 		vector<int> polyConnects;
 		vector<int> polyCounts;
@@ -1885,7 +1886,7 @@ namespace zSpace
 		// store map for input mesh edge to new vertex Id
 		vector<int> inEdge_dualVertex;
 
-		//for (int i = 0; i < zMeshObjectStorage::get(*meshObj).edgeActive.size(); i++)
+		//for (int i = 0; i < zMeshObjectStorage::get(static_cast<const zObjectMesh&>(*meshObj)).edgeActive.size(); i++)
 		for (zItMeshHalfEdge he(*meshObj); !he.end(); he++)
 		{
 			inEdge_dualVertex.push_back(-1);
@@ -1923,7 +1924,7 @@ namespace zSpace
 				{
 					int eId = e.getId();
 					int index = -1;
-					bool checkRepeat = zMeshObjectStorage::get(*meshObj).coreUtils.checkRepeatElement(inEdge_dualVertex[eId], tempPolyConnects, index);
+					bool checkRepeat = coreUtils.checkRepeatElement(inEdge_dualVertex[eId], tempPolyConnects, index);
 					if (!checkRepeat) tempPolyConnects.push_back(inEdge_dualVertex[eId]);
 
 					if (keepExistingBoundary)
@@ -1946,13 +1947,13 @@ namespace zSpace
 						{
 							//printf("\n working2!");
 							//tempPolyConnects.push_back(positions.size());
-							//positions.push_back(zMeshObjectStorage::get(*meshObj).vertexPositions[vId]);
+							//positions.push_back(zMeshObjectStorage::get(static_cast<const zObjectMesh&>(*meshObj)).vertexPositions[vId]);
 
 						}
 					}
 
 					index = -1;
-					checkRepeat = zMeshObjectStorage::get(*meshObj).coreUtils.checkRepeatElement(inEdge_dualVertex[eId], tempPolyConnects, index);
+					checkRepeat = coreUtils.checkRepeatElement(inEdge_dualVertex[eId], tempPolyConnects, index);
 					if (!checkRepeat) tempPolyConnects.push_back(inEdge_dualVertex[eId]);
 
 					e = e.getSym();
@@ -1982,32 +1983,37 @@ namespace zSpace
 			}
 		}
 
-		zMeshObjectStorage::get(dualMeshObj).create(positions, polyCounts, polyConnects);
-
-		// rotate by 90
-
-		if (rotate90)
 		{
-			zVector meshNorm = zMeshObjectStorage::get(*meshObj).vertexNormals[0];
-			meshNorm.normalize();
+			// Complete destination edits before any readback synchronizes its face-list.
+			auto& dualTopology = zMeshObjectStorage::get(dualMeshObj);
+			dualTopology.create(positions, polyCounts, polyConnects);
 
-			// bounding box
-			zVector minBB, maxBB;
-			zMeshObjectStorage::get(*meshObj).coreUtils.getBounds(zMeshObjectStorage::get(dualMeshObj).vertexPositions, minBB, maxBB);
+			// rotate by 90
 
-			zVector cen = (maxBB + minBB) * 0.5;
-
-			for (int i = 0; i < zMeshObjectStorage::get(dualMeshObj).vertexPositions.size(); i++)
+			if (rotate90)
 			{
-				zMeshObjectStorage::get(dualMeshObj).vertexPositions[i] -= cen;
-				zMeshObjectStorage::get(dualMeshObj).vertexPositions[i] = zMeshObjectStorage::get(dualMeshObj).vertexPositions[i].rotateAboutAxis(meshNorm, -90);
+				zVector meshNorm = zMeshObjectStorage::get(static_cast<const zObjectMesh&>(*meshObj)).vertexNormals[0];
+				meshNorm.normalize();
+
+				// bounding box
+				zVector minBB, maxBB;
+				coreUtils.getBounds(dualTopology.vertexPositions, minBB, maxBB);
+
+				zVector cen = (maxBB + minBB) * 0.5;
+
+				for (int i = 0; i < dualTopology.vertexPositions.size(); i++)
+				{
+					dualTopology.vertexPositions[i] -= cen;
+					dualTopology.vertexPositions[i] = dualTopology.vertexPositions[i].rotateAboutAxis(meshNorm, -90);
+				}
 			}
+
 		}
 
 		// compute dualEdge_inEdge
 		dualEdge_inEdge.clear();
 
-		for (auto &he : zMeshObjectStorage::get(dualMeshObj).halfEdges)
+		for (auto &he : zMeshObjectStorage::get(static_cast<const zObjectMesh&>(dualMeshObj)).halfEdges)
 		{
 			dualEdge_inEdge.push_back(-1);
 		}
@@ -2021,7 +2027,7 @@ namespace zSpace
 			int v2 = (i % 2 == 0) ? inEdge_dualVertex[i + 1] : inEdge_dualVertex[i - 1];
 
 			int eId;
-			bool chk = zMeshObjectStorage::get(dualMeshObj).halfEdgeExists(v1, v2, eId);
+			bool chk = zMeshObjectStorage::get(static_cast<const zObjectMesh&>(dualMeshObj)).halfEdgeExists(v1, v2, eId);
 			if (chk) inEdge_dualEdge.push_back(eId);
 			else inEdge_dualEdge.push_back(-1);
 
@@ -2070,7 +2076,7 @@ namespace zSpace
 			}
 		}
 
-		for (int i = 0; i < zMeshObjectStorage::get(*meshObj).halfEdges.size(); i += 2)
+		for (int i = 0; i < zMeshObjectStorage::get(static_cast<const zObjectMesh&>(*meshObj)).halfEdges.size(); i += 2)
 		{
 			int v_0 = inEdge_dualVertex[i];
 			int v_1 = inEdge_dualVertex[i + 1];
@@ -2087,7 +2093,7 @@ namespace zSpace
 
 		if (PlanarMesh)
 		{
-			zVector graphNorm = zMeshObjectStorage::get(*meshObj).vertexNormals[0];
+			zVector graphNorm = zMeshObjectStorage::get(static_cast<const zObjectMesh&>(*meshObj)).vertexNormals[0];
 			graphNorm.normalize();
 
 			fnDualGraph.create(positions, edgeConnects, graphNorm);
@@ -2099,7 +2105,7 @@ namespace zSpace
 
 		if (rotate90 && PlanarMesh)
 		{
-			zVector graphNorm = zMeshObjectStorage::get(*meshObj).vertexNormals[0];
+			zVector graphNorm = zMeshObjectStorage::get(static_cast<const zObjectMesh&>(*meshObj)).vertexNormals[0];
 			graphNorm.normalize();
 
 			// bounding box
@@ -2775,6 +2781,7 @@ namespace zSpace
 
 	ZSPACE_INLINE double zFnMesh::getVertexAreas(zPointArray &faceCenters, zPointArray &edgeCenters, zFloatArray &vertexAreas)
 	{
+		zUtilsCore coreUtils;
 		vector<float> out;
 
 		double totalArea = 0;
@@ -2801,15 +2808,15 @@ namespace zSpace
 
 					if (cE.getFace().getId() != nE.getSym().getFace().getId()) continue;
 
-					zVector vPos = zMeshObjectStorage::get(*meshObj).vertexPositions[i];
+					zVector vPos = zMeshObjectStorage::get(static_cast<const zObjectMesh&>(*meshObj)).vertexPositions[i];
 					zVector fCen = faceCenters[cE.getFace().getId()];
 					zVector currentEdge_cen = edgeCenters[cE.getId()];
 					zVector nextEdge_cen = edgeCenters[nE.getId()];
 
-					double Area1 = zMeshObjectStorage::get(*meshObj).coreUtils.getTriangleArea(vPos, currentEdge_cen, fCen);
+					double Area1 = coreUtils.getTriangleArea(vPos, currentEdge_cen, fCen);
 					vArea += (Area1);
 
-					double Area2 = zMeshObjectStorage::get(*meshObj).coreUtils.getTriangleArea(vPos, nextEdge_cen, fCen);
+					double Area2 = coreUtils.getTriangleArea(vPos, nextEdge_cen, fCen);
 					vArea += (Area2);
 
 				}

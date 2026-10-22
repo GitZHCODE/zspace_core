@@ -191,6 +191,12 @@ namespace zSpace
 		}
 
 	public:
+		// Internal cache diagnostic; observing state must not synchronize it.
+		static bool needsFaceListSync(const zObjectMesh& object)
+		{
+			return object.impl->faceListDirty;
+		}
+
 		static bool hasTopology(const zObjectMesh& object)
 		{
 			return object.impl->topology && !object.impl->topologyDirty;

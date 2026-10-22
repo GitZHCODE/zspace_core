@@ -87,6 +87,11 @@ namespace zSpace
 
 		ZSPACE_INLINE bool zHalfEdgeTopology::halfEdgeExists(int v1, int v2, int& outEdgeId)
 		{
+			return static_cast<const zHalfEdgeTopology&>(*this).halfEdgeExists(v1, v2, outEdgeId);
+		}
+
+		ZSPACE_INLINE bool zHalfEdgeTopology::halfEdgeExists(int v1, int v2, int& outEdgeId) const
+		{
 			string e1 = (to_string(v1) + "," + to_string(v2));
 			auto existing = existingHalfEdges.find(e1);
 

@@ -18,6 +18,7 @@ namespace
 	}
 
 #include "mesh_iterator_geometry_fixture.h"
+#include "mesh_const_access_fixture.h"
 
 	void testDynamicsVertexLoads()
 	{
@@ -486,6 +487,7 @@ int main(int argc, char** argv)
 		testFaceListMeshAlgorithms();
 		testMeshMigrationCoverage();
 		testMeshIteratorGeometry();
+		testMeshConstAccess();
 		testSmoothBatchAndBounds();
 		testFlatGeometryTopologyMigration();
 		testFields();

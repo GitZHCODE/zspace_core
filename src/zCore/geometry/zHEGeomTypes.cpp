@@ -44,6 +44,11 @@ namespace zSpace
 
 	ZSPACE_INLINE int zEdge::getHalfEdge(int _index)
 	{
+		return static_cast<const zEdge&>(*this).getHalfEdge(_index);
+	}
+
+	ZSPACE_INLINE int zEdge::getHalfEdge(int _index) const
+	{
 		return this->he[_index];
 	}
 
@@ -104,6 +109,11 @@ namespace zSpace
 
 	ZSPACE_INLINE int zHalfEdge::getSym()
 	{
+		return static_cast<const zHalfEdge&>(*this).getSym();
+	}
+
+	ZSPACE_INLINE int zHalfEdge::getSym() const
+	{
 		return this->sym;
 	}
 
@@ -114,6 +124,11 @@ namespace zSpace
 	}
 
 	ZSPACE_INLINE int zHalfEdge::getPrev()
+	{
+		return static_cast<const zHalfEdge&>(*this).getPrev();
+	}
+
+	ZSPACE_INLINE int zHalfEdge::getPrev() const
 	{
 		return this->prev;
 	}
@@ -126,6 +141,11 @@ namespace zSpace
 
 	ZSPACE_INLINE int zHalfEdge::getNext()
 	{
+		return static_cast<const zHalfEdge&>(*this).getNext();
+	}
+
+	ZSPACE_INLINE int zHalfEdge::getNext() const
+	{
 		return this->next;
 	}
 
@@ -137,6 +157,11 @@ namespace zSpace
 
 	ZSPACE_INLINE int zHalfEdge::getVertex()
 	{
+		return static_cast<const zHalfEdge&>(*this).getVertex();
+	}
+
+	ZSPACE_INLINE int zHalfEdge::getVertex() const
+	{
 		return this->v;
 	}
 
@@ -147,6 +172,11 @@ namespace zSpace
 
 	ZSPACE_INLINE int zHalfEdge::getFace()
 	{
+		return static_cast<const zHalfEdge&>(*this).getFace();
+	}
+
+	ZSPACE_INLINE int zHalfEdge::getFace() const
+	{
 		return this->f;
 	}
 
@@ -156,6 +186,11 @@ namespace zSpace
 	}
 
 	ZSPACE_INLINE int zHalfEdge::getEdge()
+	{
+		return static_cast<const zHalfEdge&>(*this).getEdge();
+	}
+
+	ZSPACE_INLINE int zHalfEdge::getEdge() const
 	{
 		return this->e;
 	}
@@ -228,6 +263,11 @@ namespace zSpace
 
 	ZSPACE_INLINE int zVertex::getHalfEdge()
 	{
+		return static_cast<const zVertex&>(*this).getHalfEdge();
+	}
+
+	ZSPACE_INLINE int zVertex::getHalfEdge() const
+	{
 		return this->he;
 	}
 
@@ -281,6 +321,11 @@ namespace zSpace
 	}
 
 	ZSPACE_INLINE int zFace::getHalfEdge()
+	{
+		return static_cast<const zFace&>(*this).getHalfEdge();
+	}
+
+	ZSPACE_INLINE int zFace::getHalfEdge() const
 	{
 		return this->he;
 	}

@@ -117,6 +117,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE int getHalfEdge(int _index);
+		int getHalfEdge(int _index) const;
 
 		/*! \brief This method sets the half edge pointer of current edge at the input index.
 		*
@@ -242,6 +243,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE int getSym();
+		int getSym() const;
 
 		/*! \brief This method sets the symmetry edge of current zEdge to the the input edge
 		*
@@ -256,6 +258,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE int getPrev();
+		int getPrev() const;
 
 		/*! \brief This method sets the previous half edge of current half edge to the the input half edge.
 		*
@@ -270,6 +273,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE int getNext();
+		int getNext() const;
 
 		/*! \brief This method sets the next edge of current half edge to the the input half edge
 		*
@@ -284,6 +288,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE int getVertex();
+		int getVertex() const;
 
 		/*! \brief This method sets the vertex pointed to by the current half edge to the the input vertex.
 		*
@@ -298,6 +303,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE int getFace();
+		int getFace() const;
 
 		/*! \brief This method sets the face pointed to by the current half edge to the the input face.
 		*
@@ -312,6 +318,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE int getEdge();
+		int getEdge() const;
 
 		/*! \brief This method sets the edge pointed to by the current halfedge to the the input edge.
 		*
@@ -418,6 +425,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE int getHalfEdge();
+		int getHalfEdge() const;
 
 		/*! \brief This method sets the half edge of the current vertex to the the input half edge
 		*
@@ -522,6 +530,7 @@ namespace zSpace
 		*	\since version 0.0.1
 		*/
 		ZSPACE_CUDA_CALLABLE int getHalfEdge();
+		int getHalfEdge() const;
 
 		/*! \brief This method sets the associated edge of current zFace to the the input edge
 		*
