@@ -414,6 +414,15 @@ namespace
 		zFnMeshScalarField meshScalarFn(meshScalarField);
 		meshScalarFn.create(zPoint(0, 0, 0), zPoint(2, 2, 0), 3, 3);
 		require(meshScalarFn.numFieldValues() == 9, "mesh scalar field value count");
+		require(meshScalarFn.getIndex(1, 1) == 4, "mesh scalar field center index");
+		int ix = -1, iy = -1;
+		meshScalarFn.getIndices(4, ix, iy);
+		require(ix == 1 && iy == 1, "mesh scalar field center coords");
+		zIntArray ring2D, adj2D;
+		meshScalarFn.getNeighbour_Ring(4, 1, ring2D);
+		meshScalarFn.getNeighbour_Adjacents(4, adj2D);
+		require(ring2D.size() == 9, "mesh scalar field ring neighbours");
+		require(adj2D.size() == 5, "mesh scalar field adjacent neighbours");
 
 		zScalarArray meshScalars(meshScalarFn.numFieldValues(), 1.0f);
 		meshScalarFn.setFieldValues(meshScalars);
@@ -441,7 +450,10 @@ namespace
 
 		zObjectPointVectorField pointVectorField;
 		zFnPointVectorField pointVectorFn(pointVectorField);
-		(void)pointVectorFn;
+		pointVectorFn.createVectorFromScalarField(pointScalarField);
+		zVectorArray pointVectors;
+		pointVectorFn.getFieldValues(pointVectors);
+		require(pointVectors.size() == pointScalars.size(), "point vector field from scalar");
 	}
 
 	void testPointCloud()

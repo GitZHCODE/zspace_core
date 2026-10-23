@@ -38,12 +38,30 @@ namespace zSpace
 		//clear containers
 		clear();
 
-		int num_edges = computeNumEdges(polyCounts, polyConnects);
+		const std::size_t numVertices = _positions.size();
+		const std::size_t numFaces = polyCounts.size();
+		const std::size_t estimatedHalfEdges = polyConnects.size() + 2;
+		const std::size_t estimatedEdges = (polyConnects.size() / 2) + 1;
 
-		//vertices.reserve(_positions.size() /*+ 1*/);
-		//faces.reserve(polyCounts.size() /*+ 1*/);
-		//edges.reserve(num_edges/* + 1*/);
-		//halfEdges.reserve(num_edges * 2 /*+ 2*/);
+		vertices.reserve(numVertices);
+		vertexPositions.reserve(numVertices);
+		vHandles.reserve(numVertices);
+		vertexColors.reserve(numVertices);
+		vertexWeights.reserve(numVertices);
+		positionVertex.reserve(numVertices);
+
+		faces.reserve(numFaces);
+		fHandles.reserve(numFaces);
+		faceColors.reserve(numFaces);
+
+		edges.reserve(estimatedEdges);
+		eHandles.reserve(estimatedEdges);
+		edgeColors.reserve(estimatedEdges);
+		edgeWeights.reserve(estimatedEdges);
+
+		halfEdges.reserve(estimatedHalfEdges);
+		heHandles.reserve(estimatedHalfEdges);
+		existingHalfEdges.reserve(estimatedHalfEdges);
 
 		// create vertices
 
@@ -59,6 +77,7 @@ namespace zSpace
 			int num_faceVerts = polyCounts[i];
 
 			fVerts.clear();
+			fVerts.reserve(num_faceVerts);
 			for (int j = 0; j < num_faceVerts; j++)
 			{
 				fVerts.push_back(polyConnects[polyconnectsCurrentIndex + j]);

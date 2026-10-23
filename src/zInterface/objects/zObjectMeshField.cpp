@@ -10,29 +10,60 @@
 // Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
 //
 
-
-#include<zspace/zInterface/objects/zObjectMeshField.h>
+#include <zspace/zInterface/objects/zObjectMeshField.h>
+#include <src/zInterface/objects/zFieldObjectStorage.h>
 
 namespace zSpace
 {
-
-	//---- CONSTRUCTOR
-	
-	template<typename T>
-	ZSPACE_INLINE zObjectMeshField<T>::zObjectMeshField()
+	ZSPACE_INLINE zObjectMeshScalarField::zObjectMeshScalarField()
+		: zObjectMesh(), fieldImpl(std::make_unique<Impl>())
 	{
 	}
 
-	//---- DESTRUCTOR
+	ZSPACE_INLINE zObjectMeshScalarField::zObjectMeshScalarField(const zObjectMeshScalarField& other)
+		: zObjectMesh(other), fieldImpl(std::make_unique<Impl>(*other.fieldImpl))
+	{
+	}
 
-	template<typename T>
-	ZSPACE_INLINE zObjectMeshField<T>::~zObjectMeshField() {}
+	ZSPACE_INLINE zObjectMeshScalarField::zObjectMeshScalarField(zObjectMeshScalarField&& other) noexcept = default;
 
-#if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
-	// explicit instantiation
-	template class zObjectMeshField<zVector>;
+	ZSPACE_INLINE zObjectMeshScalarField& zObjectMeshScalarField::operator=(const zObjectMeshScalarField& other)
+	{
+		if (this != &other)
+		{
+			zObjectMesh::operator=(other);
+			*fieldImpl = *other.fieldImpl;
+		}
+		return *this;
+	}
 
-	template class zObjectMeshField<zScalar>;
+	ZSPACE_INLINE zObjectMeshScalarField& zObjectMeshScalarField::operator=(zObjectMeshScalarField&& other) noexcept = default;
 
-#endif
+	ZSPACE_INLINE zObjectMeshScalarField::~zObjectMeshScalarField() = default;
+
+	ZSPACE_INLINE zObjectMeshVectorField::zObjectMeshVectorField()
+		: zObjectMesh(), fieldImpl(std::make_unique<Impl>())
+	{
+	}
+
+	ZSPACE_INLINE zObjectMeshVectorField::zObjectMeshVectorField(const zObjectMeshVectorField& other)
+		: zObjectMesh(other), fieldImpl(std::make_unique<Impl>(*other.fieldImpl))
+	{
+	}
+
+	ZSPACE_INLINE zObjectMeshVectorField::zObjectMeshVectorField(zObjectMeshVectorField&& other) noexcept = default;
+
+	ZSPACE_INLINE zObjectMeshVectorField& zObjectMeshVectorField::operator=(const zObjectMeshVectorField& other)
+	{
+		if (this != &other)
+		{
+			zObjectMesh::operator=(other);
+			*fieldImpl = *other.fieldImpl;
+		}
+		return *this;
+	}
+
+	ZSPACE_INLINE zObjectMeshVectorField& zObjectMeshVectorField::operator=(zObjectMeshVectorField&& other) noexcept = default;
+
+	ZSPACE_INLINE zObjectMeshVectorField::~zObjectMeshVectorField() = default;
 }

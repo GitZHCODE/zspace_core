@@ -14,9 +14,7 @@
 
 #include <zspace/zInterface/iterators/zItGraph.h>
 #include <zspace/zInterface/iterators/zItMesh.h>
-#include <zspace/zInterface/iterators/zItMeshField.h>
 #include <zspace/zInterface/iterators/zItPointCloud.h>
-#include <zspace/zInterface/iterators/zItPointField.h>
 
 #include <zspace/zInterface/functionsets/zFnGraph.h>
 #include <zspace/zInterface/functionsets/zFnMesh.h>

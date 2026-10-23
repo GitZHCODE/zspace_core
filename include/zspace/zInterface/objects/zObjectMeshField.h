@@ -18,14 +18,16 @@
 #include <zspace/zInterface/objects/zObjectMesh.h>
 #include <zspace/zCore/field/zField2D.h>
 
+#include <memory>
+#include <type_traits>
 #include <vector>
 using namespace std;
 
 namespace zSpace
 {
-	template<typename T> class zFnMeshFieldBase;
-	class zItMeshScalarField;
-	class zItMeshVectorField;
+	class zFieldObjectStorage;
+	class zFnMeshScalarField;
+	class zFnMeshVectorField;
 
 	/** \addtogroup zInterface
 	*	\brief The Application Program Interface of the library.
@@ -37,88 +39,61 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \class zObjectMeshField
-	*	\brief A template 2D field mesh object class.
-	*	\tparam				T			- Type to work with zScalar(scalar field) and zVector(vector field).
+	/*! \class zObjectMeshScalarField
+	*	\brief A 2D scalar field mesh object class.
 	*	\since version 0.0.2
 	*/
-
-	/** @}*/
-
-	/** @}*/
-	
-	template<typename T>
-	class ZSPACE_API zObjectMeshField : public zObjectMesh
+	class ZSPACE_API zObjectMeshScalarField : public zObjectMesh
 	{
-		template<typename U> friend class zFnMeshFieldBase;
-		friend class zItMeshScalarField;
-		friend class zItMeshVectorField;
+		friend class zFieldObjectStorage;
+		friend class zFnMeshScalarField;
+		friend class zFnMeshVectorField;
 
 	private:
-		//--------------------------
-		//---- PRIVATE ATTRIBUTES
-		//--------------------------
-
-		/*! \brief field 2D */
-		zField2D<T> field;
+		class Impl;
+		ZSPACE_SUPPRESS_DLL_INTERFACE
+		std::unique_ptr<Impl> fieldImpl;
 
 	public:
-
-		//--------------------------
-		//---- CONSTRUCTOR
-		//--------------------------
-
-		/*! \brief Default constructor.
-		*
-		*	\since version 0.0.2
-		*/
-		zObjectMeshField();
-
-		//--------------------------
-		//---- DESTRUCTOR
-		//--------------------------
-
-		/*! \brief Default destructor.
-		*
-		*	\since version 0.0.2
-		*/
-		~zObjectMeshField();		
-
-		//--------------------------
-		//---- OVERRIDE METHODS
-		//--------------------------
-			
+		zObjectMeshScalarField();
+		zObjectMeshScalarField(const zObjectMeshScalarField& other);
+		zObjectMeshScalarField(zObjectMeshScalarField&& other) noexcept;
+		zObjectMeshScalarField& operator=(const zObjectMeshScalarField& other);
+		zObjectMeshScalarField& operator=(zObjectMeshScalarField&& other) noexcept;
+		~zObjectMeshScalarField();
 	};
 
-	/** \addtogroup zInterface
-	*	\brief The Application Program Interface of the library.
-	*  @{
-	*/
-
-	/** \addtogroup zObjects
-	*	\brief The object classes of the library.
-	*  @{
-	*/
-
-	/*! \typedef zObjectMeshScalarField
-	*	\brief A 2D scalar field mesh object.
-	*
+	/*! \class zObjectMeshVectorField
+	*	\brief A 2D vector field mesh object class.
 	*	\since version 0.0.2
 	*/
-	typedef zObjectMeshField<zScalar> zObjectMeshScalarField;
+	class ZSPACE_API zObjectMeshVectorField : public zObjectMesh
+	{
+		friend class zFieldObjectStorage;
+		friend class zFnMeshScalarField;
+		friend class zFnMeshVectorField;
 
-	/*! \typedef zObjectMeshVectorField
-	*	\brief A 2D scalar field mesh object.
-	*
-	*	\since version 0.0.2
-	*/
-	typedef zObjectMeshField<zVector> zObjectMeshVectorField;
+	private:
+		class Impl;
+		ZSPACE_SUPPRESS_DLL_INTERFACE
+		std::unique_ptr<Impl> fieldImpl;
+
+	public:
+		zObjectMeshVectorField();
+		zObjectMeshVectorField(const zObjectMeshVectorField& other);
+		zObjectMeshVectorField(zObjectMeshVectorField&& other) noexcept;
+		zObjectMeshVectorField& operator=(const zObjectMeshVectorField& other);
+		zObjectMeshVectorField& operator=(zObjectMeshVectorField&& other) noexcept;
+		~zObjectMeshVectorField();
+	};
+
+	template<typename T>
+	using zObjectMeshField = std::conditional_t<std::is_same_v<T, zScalar>, zObjectMeshScalarField, zObjectMeshVectorField>;
 
 	/** @}*/
 
 	/** @}*/
 
-	
 	/** \addtogroup zCore
 	*	\brief The core datastructures of the library.
 	*  @{
@@ -158,7 +133,6 @@ namespace zSpace
 	/** @}*/
 	/** @}*/
 }
-
 
 #if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
 // All defined OK so do nothing

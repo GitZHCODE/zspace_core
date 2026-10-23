@@ -51,6 +51,11 @@ namespace zSpace
 
 		friend class zFnPointCloud;
 		friend class zItPointCloudVertex;
+		friend class zFieldObjectStorage;
+		friend class zFnMeshScalarField;
+		friend class zFnMeshVectorField;
+		friend class zFnPointScalarField;
+		friend class zFnPointVectorField;
 
 	public:
 		//--------------------------

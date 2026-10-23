@@ -16,7 +16,7 @@ file(GLOB_RECURSE sources CONFIGURE_DEPENDS
   "${ZSPACE_ROOT}/src/zIO/*.cpp")
 # Match the established WASM source set; field/compute implementations are not
 # supported by the existing bridge build.
-list(FILTER sources EXCLUDE REGEX "/(zFnComputeMesh|zObjectComputeMesh|zFnMeshField|zFnPointField|zObjectMeshField|zObjectPointField|zObjectComputeField2D)\\.cpp$")
+list(FILTER sources EXCLUDE REGEX "/(zFnComputeMesh|zObjectComputeMesh|zObjectComputeField2D)\\.cpp$")
 add_executable(zspace_core ${sources}
   "${ZSPACE_ROOT}/wasm/bridge/zspace_core_wasm_bridge.cpp"
   "${ZSPACE_ROOT}/wasm/bridge/default_live_sketch.cpp")

@@ -108,8 +108,12 @@ namespace zSpace::detail
 		edgeColors.reserve(estimatedEdges);
 		edgeWeights.reserve(estimatedEdges);
 
-		std::unordered_map<std::uint64_t, int> edges;
-		edges.reserve(estimatedEdges);
+		std::vector<int> head(positions.size(), -1);
+		std::vector<int> edgeTarget;
+		std::vector<int> edgeNext;
+		edgeTarget.reserve(estimatedEdges);
+		edgeNext.reserve(estimatedEdges);
+
 		for (int faceId = 0; faceId < numFaces(); ++faceId)
 		{
 			const int begin = faceOffsets[faceId];
@@ -118,21 +122,36 @@ namespace zSpace::detail
 			{
 				const int next = (i + 1 < end) ? i + 1 : begin;
 				const auto endpoints = std::minmax(faceVertexIndices[i], faceVertexIndices[next]);
-				const auto key = keyOf(endpoints.first, endpoints.second);
-				// Shared corners must not allocate a temporary node on a hit.
-				const auto inserted = edges.try_emplace(key, static_cast<int>(edges.size()));
-				if (!inserted.second)
+				const int u = endpoints.first;
+				const int v = endpoints.second;
+
+				int existingEdge = -1;
+				for (int e = head[u]; e != -1; e = edgeNext[e])
 				{
-					edgeUseCounts[inserted.first->second]++;
+					if (edgeTarget[e] == v)
+					{
+						existingEdge = e;
+						break;
+					}
+				}
+				if (existingEdge != -1)
+				{
+					edgeUseCounts[existingEdge]++;
 					continue;
 				}
 
-				edgeVertexIndices.push_back(endpoints.first);
-				edgeVertexIndices.push_back(endpoints.second);
+				const int newEdgeId = static_cast<int>(edgeTarget.size());
+				edgeTarget.push_back(v);
+				edgeNext.push_back(head[u]);
+				head[u] = newEdgeId;
+
+				edgeVertexIndices.push_back(u);
+				edgeVertexIndices.push_back(v);
 				edgeFirstVertices.push_back(faceVertexIndices[i]);
 				edgeUseCounts.push_back(1);
 				if (hasPreviousEdgeAttributes)
 				{
+					const auto key = keyOf(u, v);
 					const auto old = oldEdges.find(key);
 					edgeColors.push_back(old != oldEdges.end() && old->second < static_cast<int>(previousColors.size())
 						? previousColors[old->second] : zColor(0, 0, 0, 0));

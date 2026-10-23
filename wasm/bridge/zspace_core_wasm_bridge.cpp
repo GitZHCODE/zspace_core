@@ -12,7 +12,13 @@
 #include <src/zIO/codecs/zCodecOBJ.h>
 #include <src/zIO/codecs/zCodecUSD.h>
 #include <src/zIO/internal/zIOData.h>
+#include <src/zInterface/objects/zFieldObjectStorage.h>
+#include <src/zInterface/objects/zGraphObjectStorage.h>
 #include <src/zInterface/objects/zMeshObjectStorage.h>
+#include <zspace/zInterface/functionsets/zFnMeshField.h>
+#include <zspace/zInterface/functionsets/zFnPointField.h>
+#include <zspace/zInterface/objects/zObjectMeshField.h>
+#include <zspace/zInterface/objects/zObjectPointField.h>
 #include <src/zCore/geometry/detail/zMeshProfile.h>
 
 #include <algorithm>
@@ -1069,19 +1075,155 @@ namespace
 	void copyActiveMeshToRenderBuffers()
 	{
 		zSpace::zFnMesh meshFn(activeMeshObject());
-		const auto& positions = zSpace::zMeshObjectStorage::read(activeMeshObject()).positions;
+		const auto& data = zSpace::zMeshObjectStorage::read(activeMeshObject());
+		const auto& positions = data.positions;
 
 		float minScalar = 1.0e9f;
 		float maxScalar = -1.0e9f;
-		std::vector<float> scalars;
-		scalars.reserve(positions.size());
-		for (const auto& position : positions)
+		if (data.vertexColors.size() < positions.size())
 		{
-			scalars.push_back(position.z);
-			minScalar = std::min(minScalar, position.z);
-			maxScalar = std::max(maxScalar, position.z);
+			for (const auto& position : positions)
+			{
+				minScalar = std::min(minScalar, position.z);
+				maxScalar = std::max(maxScalar, position.z);
+			}
 		}
-		copyMeshToRenderBuffers(meshFn, scalars, minScalar, maxScalar);
+		static const std::vector<float> emptyScalars;
+		copyMeshToRenderBuffers(meshFn, emptyScalars, minScalar, maxScalar);
+	}
+
+	void updateActiveMeshDynamicRenderBuffers()
+	{
+		const auto& data = zSpace::zMeshObjectStorage::read(activeMeshObject());
+		const auto& meshPositions = data.positions;
+		const auto& meshNormals = data.vertexNormals;
+		const auto& meshFaceNormals = data.faceNormals;
+		const auto& meshColors = data.vertexColors;
+		const auto& meshFaceColors = data.faceColors;
+		const auto& polyConnects = data.faceVertexIndices;
+		const int nF = data.numFaces();
+
+		if (gBuffers.faceCounts.size() != static_cast<std::size_t>(nF) ||
+			gBuffers.faceConnects.size() != polyConnects.size() ||
+			gBuffers.positions.size() != meshPositions.size() * 3 ||
+			gBuffers.normals.size() != meshPositions.size() * 3 ||
+			gBuffers.colors.size() != meshPositions.size() * 3 ||
+			gBuffers.edgeCenters.size() * 2 != gBuffers.edgeIndices.size() * 3)
+		{
+			copyActiveMeshToRenderBuffers();
+			return;
+		}
+
+		float minScalar = 1.0e9f;
+		float maxScalar = -1.0e9f;
+		if (meshColors.size() < meshPositions.size())
+		{
+			for (const auto& position : meshPositions)
+			{
+				minScalar = std::min(minScalar, position.z);
+				maxScalar = std::max(maxScalar, position.z);
+			}
+		}
+
+		for (std::size_t i = 0; i < meshPositions.size(); ++i)
+		{
+			const zSpace::zPoint& position = meshPositions[i];
+			const std::size_t base = i * 3;
+			gBuffers.positions[base] = position.x;
+			gBuffers.positions[base + 1] = position.y;
+			gBuffers.positions[base + 2] = position.z;
+
+			const zSpace::zVector normal = i < meshNormals.size() ? meshNormals[i] : zSpace::zVector(0, 0, 1);
+			gBuffers.normals[base] = normal.x;
+			gBuffers.normals[base + 1] = normal.y;
+			gBuffers.normals[base + 2] = normal.z;
+
+			if (i < meshColors.size())
+			{
+				gBuffers.colors[base] = meshColors[i].r;
+				gBuffers.colors[base + 1] = meshColors[i].g;
+				gBuffers.colors[base + 2] = meshColors[i].b;
+			}
+			else
+			{
+				gBuffers.colors[base] = ramp(position.z, minScalar, maxScalar, 0);
+				gBuffers.colors[base + 1] = ramp(position.z, minScalar, maxScalar, 1);
+				gBuffers.colors[base + 2] = ramp(position.z, minScalar, maxScalar, 2);
+			}
+		}
+
+		const bool hasFaceColors = meshFaceColors.size() == static_cast<std::size_t>(nF);
+		if (hasFaceColors && gBuffers.faceColors.size() == gBuffers.indices.size())
+		{
+			std::size_t triColorOffset = 0;
+			for (int faceIndex = 0; faceIndex < nF; ++faceIndex)
+			{
+				const int begin = data.faceOffsets[faceIndex];
+				const int end = data.faceOffsets[faceIndex + 1];
+				const int count = end - begin;
+				if (count < 3 || end > static_cast<int>(polyConnects.size())) continue;
+				const int first = polyConnects[begin];
+				const zSpace::zColor& color = meshFaceColors[faceIndex];
+				for (int i = 1; i < count - 1; ++i)
+				{
+					const int a = polyConnects[begin + i];
+					const int b = polyConnects[begin + i + 1];
+					if (first < 0 || a < 0 || b < 0) continue;
+					if (first >= static_cast<int>(meshPositions.size()) ||
+						a >= static_cast<int>(meshPositions.size()) ||
+						b >= static_cast<int>(meshPositions.size())) continue;
+					if (triColorOffset + 2 < gBuffers.faceColors.size())
+					{
+						gBuffers.faceColors[triColorOffset] = color.r;
+						gBuffers.faceColors[triColorOffset + 1] = color.g;
+						gBuffers.faceColors[triColorOffset + 2] = color.b;
+					}
+					triColorOffset += 3;
+				}
+			}
+		}
+
+		gBuffers.faceCenters.clear();
+		gBuffers.faceNormals.clear();
+		for (int faceIndex = 0; faceIndex < nF; ++faceIndex)
+		{
+			const int begin = data.faceOffsets[faceIndex];
+			const int end = data.faceOffsets[faceIndex + 1];
+			const int count = end - begin;
+			if (count < 2 || end > static_cast<int>(polyConnects.size())) continue;
+
+			zSpace::zPoint center(0, 0, 0);
+			for (int i = begin; i < end; ++i)
+			{
+				const int vertexIndex = polyConnects[i];
+				if (vertexIndex >= 0 && static_cast<std::size_t>(vertexIndex) < meshPositions.size())
+					center += meshPositions[vertexIndex];
+			}
+			center /= static_cast<float>(count);
+			gBuffers.faceCenters.push_back(center.x);
+			gBuffers.faceCenters.push_back(center.y);
+			gBuffers.faceCenters.push_back(center.z);
+
+			const zSpace::zVector faceNormal = static_cast<std::size_t>(faceIndex) < meshFaceNormals.size()
+				? meshFaceNormals[faceIndex]
+				: zSpace::zVector(0, 0, 1);
+			gBuffers.faceNormals.push_back(faceNormal.x);
+			gBuffers.faceNormals.push_back(faceNormal.y);
+			gBuffers.faceNormals.push_back(faceNormal.z);
+		}
+
+		const std::size_t validEdgeCount = gBuffers.edgeIndices.size() / 2;
+		for (std::size_t e = 0; e < validEdgeCount; ++e)
+		{
+			const std::uint32_t a = gBuffers.edgeIndices[e * 2];
+			const std::uint32_t b = gBuffers.edgeIndices[e * 2 + 1];
+			zSpace::zPoint start = meshPositions[a];
+			const zSpace::zPoint center = (start + meshPositions[b]) * 0.5f;
+			const std::size_t base = e * 3;
+			gBuffers.edgeCenters[base] = center.x;
+			gBuffers.edgeCenters[base + 1] = center.y;
+			gBuffers.edgeCenters[base + 2] = center.z;
+		}
 	}
 
 	zSpace::zPointArray currentMeshPositions()
@@ -1115,7 +1257,7 @@ namespace
 		zSpace::zPointArray restored = positions;
 		meshFn.setVertexPositions(restored);
 		meshFn.computeMeshNormals();
-		copyActiveMeshToRenderBuffers();
+		updateActiveMeshDynamicRenderBuffers();
 		clearPrimitiveBuffers();
 		gSolverEquilibriumReached = false;
 		gSolverMinResidual = 0.0;
@@ -1166,7 +1308,7 @@ namespace
 		return forces;
 	}
 
-	void updateSolverResidualDiagnostics(const zSpace::zPointArray& positions)
+	void updateSolverResidualDiagnostics(const zSpace::zPointArray& positions, bool origamiDiagnosticsFresh = false)
 	{
 		gSolverMaxAreaForceResidual = 0.0;
 		gSolverMinResidual = 0.0;
@@ -1190,8 +1332,11 @@ namespace
 		if (gSolverParams.mode == 2)
 		{
 			if (!gSolverReady) return;
-			zSpace::zVectorArray forces;
-			gMeshDynamics.getOrigamiForces(gOrigamiSettings, forces, gOrigamiDiagnostics);
+			if (!origamiDiagnosticsFresh)
+			{
+				zSpace::zVectorArray forces;
+				gMeshDynamics.getOrigamiForces(gOrigamiSettings, forces, gOrigamiDiagnostics);
+			}
 			gSolverMaxResidual = gOrigamiDiagnostics.maxAngleError * 180.0 / 3.141592653589793;
 			gSolverResidualCount = static_cast<int>(positions.size());
 			gSolverEquilibriumReached = gSolverMaxResidual < gSolverParams.residualThreshold
@@ -1661,10 +1806,9 @@ namespace
 
 	double averageMeshEdgeLength(zSpace::zFnMesh& meshFn)
 	{
-		zSpace::zPointArray positions;
-		zSpace::zIntArray edgeConnects;
-		meshFn.getVertexPositions(positions);
-		meshFn.getEdgeData(edgeConnects);
+		const auto& data = zSpace::zMeshObjectStorage::read(*meshFn.object());
+		const auto& positions = data.positions;
+		const auto& edgeConnects = data.edgeVertexIndices;
 		double total = 0.0;
 		int count = 0;
 		for (std::size_t i = 0; i + 1 < edgeConnects.size(); i += 2)
@@ -1672,7 +1816,9 @@ namespace
 			const int a = edgeConnects[i];
 			const int b = edgeConnects[i + 1];
 			if (a < 0 || b < 0 || a >= static_cast<int>(positions.size()) || b >= static_cast<int>(positions.size())) continue;
-			total += positions[a].distanceTo(positions[b]);
+			zSpace::zPoint pa = positions[a];
+			zSpace::zPoint pb = positions[b];
+			total += pa.distanceTo(pb);
 			++count;
 		}
 		return count > 0 ? total / static_cast<double>(count) : 1.0;
@@ -1931,8 +2077,39 @@ extern "C"
 			}
 
 			meshFn.setFaceColors(colors, false);
-			meshFn.computeMeshNormals();
-			copyActiveMeshToRenderBuffers();
+			const auto& data = zSpace::zMeshObjectStorage::read(activeMeshObject());
+			if (gBuffers.faceCounts.size() == colors.size() &&
+				gBuffers.faceConnects.size() == data.faceVertexIndices.size())
+			{
+				gBuffers.faceColors.clear();
+				gBuffers.faceColors.reserve(gBuffers.indices.size());
+				for (int faceIndex = 0; faceIndex < data.numFaces(); ++faceIndex)
+				{
+					const int begin = data.faceOffsets[faceIndex];
+					const int end = data.faceOffsets[faceIndex + 1];
+					const int count = end - begin;
+					if (count < 3 || end > static_cast<int>(data.faceVertexIndices.size())) continue;
+					const int first = data.faceVertexIndices[begin];
+					const zSpace::zColor& color = colors[faceIndex];
+					for (int i = 1; i < count - 1; ++i)
+					{
+						const int a = data.faceVertexIndices[begin + i];
+						const int b = data.faceVertexIndices[begin + i + 1];
+						if (first < 0 || a < 0 || b < 0) continue;
+						if (first >= static_cast<int>(data.positions.size()) ||
+							a >= static_cast<int>(data.positions.size()) ||
+							b >= static_cast<int>(data.positions.size())) continue;
+						gBuffers.faceColors.push_back(color.r);
+						gBuffers.faceColors.push_back(color.g);
+						gBuffers.faceColors.push_back(color.b);
+					}
+				}
+			}
+			else
+			{
+				meshFn.computeMeshNormals();
+				copyActiveMeshToRenderBuffers();
+			}
 			clearPrimitiveBuffers();
 			return 1;
 		}
@@ -2026,8 +2203,20 @@ extern "C"
 				colors.push_back(colorFromSignedValue(value, displayThreshold, maxAbsValue, negativeColor, zeroColor, positiveColor));
 
 			meshFn.setVertexColors(colors, false);
-			meshFn.computeMeshNormals();
-			copyActiveMeshToRenderBuffers();
+			if (gBuffers.positions.size() == colors.size() * 3 && gBuffers.colors.size() == colors.size() * 3)
+			{
+				for (std::size_t i = 0; i < colors.size(); ++i)
+				{
+					gBuffers.colors[i * 3] = colors[i].r;
+					gBuffers.colors[i * 3 + 1] = colors[i].g;
+					gBuffers.colors[i * 3 + 2] = colors[i].b;
+				}
+			}
+			else
+			{
+				meshFn.computeMeshNormals();
+				copyActiveMeshToRenderBuffers();
+			}
 			clearPrimitiveBuffers();
 			return 1;
 		}
@@ -2055,13 +2244,13 @@ extern "C"
 			zSpace::zCurvatureArray principalCurvatures;
 			zSpace::zVectorArray pVector1;
 			zSpace::zVectorArray pVector2;
-			zSpace::zPointArray positions;
 			meshFn.getPrincipalCurvatures(principalCurvatures, pVector1, pVector2);
-			meshFn.getVertexPositions(positions);
+			const auto& positions = zSpace::zMeshObjectStorage::read(activeMeshObject()).positions;
 			if (positions.empty() || pVector1.empty() || pVector2.empty())
 				throw std::runtime_error("zFnMesh returned no principal curvature directions.");
 
-			copyActiveMeshToRenderBuffers();
+			if (gBuffers.positions.size() != positions.size() * 3)
+				copyActiveMeshToRenderBuffers();
 			clearPrimitiveBuffers();
 			const float vectorScale = static_cast<float>(averageMeshEdgeLength(meshFn)) * std::max(0.0f, scale);
 			const zSpace::zColor k1Color(k1R, k1G, k1B, 1.0f);
@@ -2659,7 +2848,7 @@ extern "C"
 				}
 				++gSolverFrame;
 
-				updateSolverResidualDiagnostics(currentMeshPositions());
+				updateSolverResidualDiagnostics(currentMeshPositions(), gSolverParams.mode == 2 && subStepCount > 0);
 				if (gSolverEquilibriumReached) break;
 			}
 
@@ -2667,7 +2856,7 @@ extern "C"
 			{
 				zSpace::zFnMesh(activeMeshObject()).computeMeshNormals();
 			}
-			copyActiveMeshToRenderBuffers();
+			updateActiveMeshDynamicRenderBuffers();
 			copySolverPreviewToPrimitiveBuffers(false);
 			return 1;
 		}
@@ -3100,3 +3289,5 @@ extern "C"
 	ZSPACE_WASM_EXPORT double zspace_analysis_max_abs_value() { return gBuffers.analysisMaxAbsValue; }
 	ZSPACE_WASM_EXPORT const char* zspace_last_error_ptr() { return gBuffers.lastError.c_str(); }
 }
+
+#include "field_bridge.h"
