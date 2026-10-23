@@ -107,10 +107,17 @@ else()
   add_executable(zspace_core ${wasm_sources})
   zspace_wasm_configure_compilation(zspace_core)
 endif()
+option(ZSPACE_WASM_FAST_LINK
+  "Skip binaryen wasm-opt pass at link time for faster incremental development builds" OFF)
+set(zspace_wasm_link_opt -O2)
+if(ZSPACE_WASM_FAST_LINK)
+  set(zspace_wasm_link_opt -O0)
+endif()
+
 set_target_properties(zspace_core PROPERTIES
   LINKER_LANGUAGE CXX SUFFIX ".js"
   RUNTIME_OUTPUT_DIRECTORY "${ZSPACE_WASM_OUT_DIR}")
-target_link_options(zspace_core PRIVATE -O2 -fexceptions
+target_link_options(zspace_core PRIVATE ${zspace_wasm_link_opt} -fexceptions
   "-sMODULARIZE=1" "-sEXPORT_ES6=1" "-sENVIRONMENT=web"
   "-sALLOW_MEMORY_GROWTH=1" "-sFORCE_FILESYSTEM=1"
   "-sEXPORTED_RUNTIME_METHODS=['HEAPF32','HEAPU32','UTF8ToString','FS','ccall']")
@@ -125,16 +132,21 @@ add_custom_command(TARGET zspace_core POST_BUILD
 # The helper object is a build dependency only and is never linked into WASM.
 option(ZSPACE_WASM_USE_PCH "Reuse precompiled Eigen and JSON headers" ON)
 if(ZSPACE_WASM_USE_PCH)
+  set(zspace_wasm_pch_headers
+    <depends/Eigen/Dense>
+    <depends/Eigen/Sparse>
+    <depends/nlohmann/json.hpp>
+    <zspace/zCore/base/zTypeDef.h>)
   if(ZSPACE_WASM_SCHEDULE_HEAVY_FIRST)
     file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/zspace_wasm_pch_stub.cpp"
       CONTENT "// Unlinked helper for the shared precompiled header.\n")
     add_library(zspace_wasm_pch OBJECT "${CMAKE_CURRENT_BINARY_DIR}/zspace_wasm_pch_stub.cpp")
     zspace_wasm_configure_compilation(zspace_wasm_pch)
-    target_precompile_headers(zspace_wasm_pch PRIVATE <depends/Eigen/Dense> <depends/nlohmann/json.hpp>)
+    target_precompile_headers(zspace_wasm_pch PRIVATE ${zspace_wasm_pch_headers})
     foreach(index IN LISTS heavy_chunks normal_chunks)
       target_precompile_headers(zspace_wasm_part_${index} REUSE_FROM zspace_wasm_pch)
     endforeach()
   else()
-    target_precompile_headers(zspace_core PRIVATE <depends/Eigen/Dense> <depends/nlohmann/json.hpp>)
+    target_precompile_headers(zspace_core PRIVATE ${zspace_wasm_pch_headers})
   endif()
 endif()

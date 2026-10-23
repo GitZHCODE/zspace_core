@@ -39,6 +39,12 @@ namespace zSpace
 
 	class zMeshObjectStorage
 	{
+		static std::uint64_t edgeKey(int a, int b)
+		{
+			const auto endpoints = std::minmax(a, b);
+			return (std::uint64_t(std::uint32_t(endpoints.first)) << 32) | std::uint32_t(endpoints.second);
+		}
+
 		static void requireManifold(const detail::zMeshFaceListStorage& data)
 		{
 			struct EdgeUse
@@ -46,7 +52,8 @@ namespace zSpace
 				int count = 0;
 				int direction = 0;
 			};
-			std::map<std::pair<int, int>, EdgeUse> uses;
+			std::unordered_map<std::uint64_t, EdgeUse> uses;
+			uses.reserve(static_cast<std::size_t>(data.numEdges()));
 
 			for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 			{
@@ -58,7 +65,7 @@ namespace zSpace
 					const int a = data.faceVertexIndices[i];
 					const int b = data.faceVertexIndices[next];
 					const auto endpoints = std::minmax(a, b);
-					auto& use = uses[{ endpoints.first, endpoints.second }];
+					auto& use = uses[edgeKey(endpoints.first, endpoints.second)];
 					const int direction = (a == endpoints.first) ? 1 : -1;
 					if (use.count >= 2)
 						throw std::runtime_error("This topology query requires a manifold mesh; an edge has more than two incident faces.");
@@ -90,21 +97,19 @@ namespace zSpace
 			topology->faceColors = impl.faceList.faceColors;
 			topology->vertexWeights = impl.faceList.vertexWeights;
 
-			std::map<std::pair<int, int>, int> sourceEdges;
+			std::unordered_map<std::uint64_t, int> sourceEdges;
+			sourceEdges.reserve(static_cast<std::size_t>(impl.faceList.numEdges()));
 			for (std::size_t i = 0; i + 1 < impl.faceList.edgeVertexIndices.size(); i += 2)
 			{
-				const auto endpoints = std::minmax(
-					impl.faceList.edgeVertexIndices[i], impl.faceList.edgeVertexIndices[i + 1]);
-				sourceEdges[{ endpoints.first, endpoints.second }] = static_cast<int>(i / 2);
+				sourceEdges[edgeKey(impl.faceList.edgeVertexIndices[i], impl.faceList.edgeVertexIndices[i + 1])] = static_cast<int>(i / 2);
 			}
 			for (int edgeId = 0; edgeId < topology->n_e; ++edgeId)
 			{
 				const int halfEdge0 = topology->edges[edgeId].getHalfEdge(0);
 				const int halfEdge1 = topology->edges[edgeId].getHalfEdge(1);
-				const std::pair<int, int> endpoints = std::minmax(
+				const auto source = sourceEdges.find(edgeKey(
 					topology->halfEdges[halfEdge0].getVertex(),
-					topology->halfEdges[halfEdge1].getVertex());
-				const auto source = sourceEdges.find({ endpoints.first, endpoints.second });
+					topology->halfEdges[halfEdge1].getVertex()));
 				if (source == sourceEdges.end()) continue;
 				if (source->second < static_cast<int>(impl.faceList.edgeColors.size()))
 					topology->edgeColors[edgeId] = impl.faceList.edgeColors[source->second];
@@ -165,9 +170,10 @@ namespace zSpace
 			if (faceColors.size() == counts.size()) rebuilt.faceColors = std::move(faceColors);
 			if (faceNormals.size() == counts.size()) rebuilt.faceNormals = std::move(faceNormals);
 
-			std::map<std::pair<int, int>, int> rebuiltEdges;
+			std::unordered_map<std::uint64_t, int> rebuiltEdges;
+			rebuiltEdges.reserve(static_cast<std::size_t>(rebuilt.numEdges()));
 			for (std::size_t i = 0; i + 1 < rebuilt.edgeVertexIndices.size(); i += 2)
-				rebuiltEdges[{ rebuilt.edgeVertexIndices[i], rebuilt.edgeVertexIndices[i + 1] }] = static_cast<int>(i / 2);
+				rebuiltEdges[edgeKey(rebuilt.edgeVertexIndices[i], rebuilt.edgeVertexIndices[i + 1])] = static_cast<int>(i / 2);
 			for (std::size_t edgeId = 0; edgeId < topology.edges.size(); ++edgeId)
 			{
 				if (!topology.edges[edgeId].isActive()) continue;
@@ -177,8 +183,7 @@ namespace zSpace
 				const int oldB = topology.halfEdges[he1].getVertex();
 				if (oldA < 0 || oldB < 0 || oldA >= static_cast<int>(vertexMap.size()) ||
 					oldB >= static_cast<int>(vertexMap.size())) continue;
-				const auto endpoints = std::minmax(vertexMap[oldA], vertexMap[oldB]);
-				const auto target = rebuiltEdges.find({ endpoints.first, endpoints.second });
+				const auto target = rebuiltEdges.find(edgeKey(vertexMap[oldA], vertexMap[oldB]));
 				if (target == rebuiltEdges.end()) continue;
 				if (edgeId < topology.edgeColors.size()) rebuilt.edgeColors[target->second] = topology.edgeColors[edgeId];
 				if (edgeId < topology.edgeWeights.size()) rebuilt.edgeWeights[target->second] = topology.edgeWeights[edgeId];

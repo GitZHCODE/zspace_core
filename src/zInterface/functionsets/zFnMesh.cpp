@@ -20,8 +20,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <map>
 #include <queue>
+#include <unordered_map>
 #include <utility>
 
 namespace zSpace
@@ -262,31 +264,30 @@ namespace zSpace
 			if (std::find(values.begin(), values.end(), value) == values.end()) values.push_back(value);
 		}
 
-		void getKRingVertices(int start, int kRing, zIntArray& out, const vector<zIntArray>& vertexToVertices,
+		void getKRingVertices(int start, int kRing, zIntArray& out, zIntArray& depths, const vector<zIntArray>& vertexToVertices,
 			vector<int>& visited, int stamp)
 		{
 			out.clear();
+			depths.clear();
 			if (start < 0 || start >= (int)vertexToVertices.size()) return;
 
-			std::queue<std::pair<int, int>> queue;
-
-			queue.push(std::make_pair(start, 0));
+			out.push_back(start);
+			depths.push_back(0);
 			visited[start] = stamp;
 
-			while (!queue.empty())
+			for (size_t head = 0; head < out.size(); ++head)
 			{
-				std::pair<int, int> current = queue.front();
-				queue.pop();
-				out.push_back(current.first);
+				const int current = out[head];
+				const int depth = depths[head];
+				if (depth >= kRing) continue;
 
-				if (current.second >= kRing) continue;
-
-				for (int neighbour : vertexToVertices[current.first])
+				for (int neighbour : vertexToVertices[current])
 				{
 					if (neighbour < 0 || neighbour >= (int)visited.size() || visited[neighbour] == stamp) continue;
 
 					visited[neighbour] = stamp;
-					queue.push(std::make_pair(neighbour, current.second + 1));
+					out.push_back(neighbour);
+					depths.push_back(depth + 1);
 				}
 			}
 		}
@@ -361,24 +362,23 @@ namespace zSpace
 			}
 		}
 
-		zVector computeFaceNormalAndArea(const zIntArray& faceVertices, const zVectorArray& positions, double& area)
+		zVector computeFaceNormalAndArea(const int* faceVertices, int count, const zVectorArray& positions, double& area)
 		{
 			area = 0.0;
-			if (faceVertices.size() < 3) return zVector();
+			if (!faceVertices || count < 3) return zVector();
 
 			zVector centroid;
-			for (int vertexId : faceVertices)
+			for (int i = 0; i < count; ++i)
 			{
-				zVector position = positions[vertexId];
-				centroid += position;
+				centroid += positions[faceVertices[i]];
 			}
-			centroid /= (float)faceVertices.size();
+			centroid /= (float)count;
 
 			zVector normalSum;
-			for (int i = 0; i < (int)faceVertices.size(); ++i)
+			for (int i = 0; i < count; ++i)
 			{
 				zVector p1 = positions[faceVertices[i]];
-				zVector p2 = positions[faceVertices[(i + 1) % faceVertices.size()]];
+				zVector p2 = positions[faceVertices[(i + 1 < count) ? (i + 1) : 0]];
 				zVector v1 = p1 - centroid;
 				zVector v2 = p2 - centroid;
 				normalSum += (v1 ^ v2);
@@ -389,6 +389,11 @@ namespace zSpace
 
 			area = 0.5 * length;
 			return normalized(normalSum);
+		}
+
+		zVector computeFaceNormalAndArea(const zIntArray& faceVertices, const zVectorArray& positions, double& area)
+		{
+			return computeFaceNormalAndArea(faceVertices.data(), static_cast<int>(faceVertices.size()), positions, area);
 		}
 
 		struct Point2
@@ -492,6 +497,29 @@ namespace zSpace
 
 		vector<std::pair<int, int>> getBoundaryEdges(const detail::zMeshFaceListStorage& data)
 		{
+			vector<std::pair<int, int>> out;
+			const int nE = data.numEdges();
+			if (data.edgeUseCounts.size() == static_cast<size_t>(nE) &&
+				data.edgeFirstVertices.size() == static_cast<size_t>(nE) &&
+				data.edgeVertexIndices.size() == static_cast<size_t>(nE * 2))
+			{
+				for (int edgeId = 0; edgeId < nE; ++edgeId)
+				{
+					if (data.edgeUseCounts[edgeId] != 1) continue;
+					const int minV = data.edgeVertexIndices[edgeId * 2];
+					const int maxV = data.edgeVertexIndices[edgeId * 2 + 1];
+					const int v0 = data.edgeFirstVertices[edgeId];
+					const int v1 = (v0 == minV) ? maxV : minV;
+					out.emplace_back(v0, v1);
+				}
+				std::sort(out.begin(), out.end(),
+					[](const std::pair<int, int>& a, const std::pair<int, int>& b)
+					{
+						return std::minmax(a.first, a.second) < std::minmax(b.first, b.second);
+					});
+				return out;
+			}
+
 			std::map<std::pair<int, int>, int> edgeUseCount;
 			std::map<std::pair<int, int>, std::pair<int, int>> orientedEdges;
 
@@ -511,7 +539,6 @@ namespace zSpace
 				}
 			}
 
-			vector<std::pair<int, int>> out;
 			for (const auto& item : edgeUseCount)
 			{
 				if (item.second == 1) out.push_back(orientedEdges[item.first]);
@@ -522,13 +549,18 @@ namespace zSpace
 
 		vector<zIntArray> getEdgeIncidentFaces(const detail::zMeshFaceListStorage& data)
 		{
-			std::map<std::pair<int, int>, int> edgeIds;
+			auto keyOf = [](int a, int b) {
+				const auto endpoints = std::minmax(a, b);
+				return (std::uint64_t(std::uint32_t(endpoints.first)) << 32) | std::uint32_t(endpoints.second);
+			};
+
+			std::unordered_map<std::uint64_t, int> edgeIds;
+			edgeIds.reserve(static_cast<std::size_t>(data.numEdges()));
 			for (int edgeId = 0; edgeId < data.numEdges(); ++edgeId)
 			{
 				const int v0 = data.edgeVertexIndices[edgeId * 2];
 				const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
-				const auto endpoints = std::minmax(v0, v1);
-				edgeIds[{ endpoints.first, endpoints.second }] = edgeId;
+				edgeIds[keyOf(v0, v1)] = edgeId;
 			}
 
 			vector<zIntArray> incidentFaces(data.numEdges());
@@ -541,8 +573,7 @@ namespace zSpace
 					const int next = (i + 1 < end) ? i + 1 : begin;
 					const int v0 = data.faceVertexIndices[i];
 					const int v1 = data.faceVertexIndices[next];
-					const auto endpoints = std::minmax(v0, v1);
-					const auto edge = edgeIds.find({ endpoints.first, endpoints.second });
+					const auto edge = edgeIds.find(keyOf(v0, v1));
 					if (edge != edgeIds.end()) incidentFaces[edge->second].push_back(faceId);
 				}
 			}
@@ -2315,46 +2346,48 @@ namespace zSpace
 
 		const int radius = 5;
 		const bool useKring = true;
-		const int nV = numVertices();
-		const int nF = numPolygons();
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		const int nV = data.numVertices();
+		const int nF = data.numFaces();
 
 		vertexCurvatures.assign(nV, zCurvature());
-		pVector1.assign(numVertices(), zVector());
-		pVector2.assign(numVertices(), zVector());
+		pVector1.assign(nV, zVector());
+		pVector2.assign(nV, zVector());
 
 		if (nV == 0) return;
 
-		zVectorArray positions(nV);
-		positions = zMeshObjectStorage::read(*meshObj).positions;
+		const zVectorArray& positions = data.positions;
 
 		vector<zIntArray> vertexToVertices(nV);
 		vector<zIntArray> vertexToFaces(nV);
-		vector<zIntArray> faceVertexIds(nF);
+		zVectorArray faceNormals(nF);
+		zDoubleArray faceAreas(nF, 0.0);
 
-		const auto& data = zMeshObjectStorage::read(*meshObj);
-		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+		double edgeLengthSum = 0.0;
+		int edgeLengthCount = 0;
+
+		for (int faceId = 0; faceId < nF; ++faceId)
 		{
 			const int begin = data.faceOffsets[faceId];
 			const int end = data.faceOffsets[faceId + 1];
-			faceVertexIds[faceId].assign(data.faceVertexIndices.begin() + begin, data.faceVertexIndices.begin() + end);
+			const int count = end - begin;
+			const int* fVerts = data.faceVertexIndices.data() + begin;
 
-			const zIntArray& fVerts = faceVertexIds[faceId];
-			for (int i = 0; i < (int)fVerts.size(); ++i)
+			faceNormals[faceId] = computeFaceNormalAndArea(fVerts, count, positions, faceAreas[faceId]);
+
+			for (int i = 0; i < count; ++i)
 			{
-				int u = fVerts[i];
-				int v = fVerts[(i + 1) % fVerts.size()];
+				const int u = fVerts[i];
+				const int v = fVerts[(i + 1 < count) ? (i + 1) : 0];
 
 				appendUnique(vertexToVertices[u], v);
 				appendUnique(vertexToVertices[v], u);
 				appendUnique(vertexToFaces[u], faceId);
-			}
-		}
 
-		zVectorArray faceNormals(nF);
-		zDoubleArray faceAreas(nF, 0.0);
-		for (int i = 0; i < nF; ++i)
-		{
-			faceNormals[i] = computeFaceNormalAndArea(faceVertexIds[i], positions, faceAreas[i]);
+				zVector edge = zVector(positions[v]) - positions[u];
+				edgeLengthSum += vectorLength(edge);
+				edgeLengthCount++;
+			}
 		}
 
 		zVectorArray vertexNormals(nV);
@@ -2371,40 +2404,29 @@ namespace zSpace
 		}
 
 		double averageEdgeLength = 1.0;
-		double edgeLengthSum = 0.0;
-		int edgeLengthCount = 0;
-		for (const zIntArray& fVerts : faceVertexIds)
-		{
-			for (int i = 0; i < (int)fVerts.size(); ++i)
-			{
-				zVector edge = positions[fVerts[(i + 1) % fVerts.size()]] - positions[fVerts[i]];
-				edgeLengthSum += vectorLength(edge);
-				edgeLengthCount++;
-			}
-		}
 		if (edgeLengthCount > 0) averageEdgeLength = edgeLengthSum / (double)edgeLengthCount;
 
 		double scaledRadius = averageEdgeLength * (double)radius;
 
 		vector<int> neighbourhoodVisits(nV, 0);
 		zIntArray neighbourhood;
-		for (zItMeshVertex vertex(*meshObj); !vertex.end(); vertex++)
+		zIntArray neighbourhoodDepths;
+		zIntArray filteredNeighbourhood;
+		for (int id = 0; id < nV; ++id)
 		{
-			int id = vertex.getId();
-
-			if (!vertex.isActive() || vertexToVertices[id].empty())
+			if (vertexToVertices[id].empty())
 			{
 				vertexCurvatures[id].k1 = 0;
 				vertexCurvatures[id].k2 = 0;
 				continue;
 			}
 
-			if (useKring) getKRingVertices(id, radius, neighbourhood, vertexToVertices, neighbourhoodVisits, id + 1);
+			if (useKring) getKRingVertices(id, radius, neighbourhood, neighbourhoodDepths, vertexToVertices, neighbourhoodVisits, id + 1);
 			else getSphereVertices(id, scaledRadius, neighbourhood, 6, vertexToVertices, positions);
 
 			if (neighbourhood.size() < 6) continue;
 
-			zIntArray filteredNeighbourhood;
+			filteredNeighbourhood.clear();
 			zVector ppn = vertexNormals[id];
 			for (int neighbour : neighbourhood)
 			{
@@ -2414,19 +2436,19 @@ namespace zSpace
 
 			if (filteredNeighbourhood.size() >= 6 && filteredNeighbourhood.size() < neighbourhood.size())
 			{
-				neighbourhood = filteredNeighbourhood;
+				neighbourhood.swap(filteredNeighbourhood);
 			}
 
 			if (neighbourhood.size() < 6) continue;
 
 			zVector normal = vertexNormals[id];
-			zVector diff = positions[vertexToVertices[id][0]] - positions[id];
+			zVector diff = zVector(positions[vertexToVertices[id][0]]) - positions[id];
 			zVector xAxis = diff - (normal * (float)(diff * normal));
 			if (vectorLength(xAxis) < 1.0e-9)
 			{
 				for (int j = 1; j < (int)vertexToVertices[id].size(); ++j)
 				{
-					diff = positions[vertexToVertices[id][j]] - positions[id];
+					diff = zVector(positions[vertexToVertices[id][j]]) - positions[id];
 					xAxis = diff - (normal * (float)(diff * normal));
 					if (vectorLength(xAxis) > 1.0e-9) break;
 				}
@@ -2453,7 +2475,7 @@ namespace zSpace
 
 			for (int neighbour : neighbourhood)
 			{
-				zVector tangent = positions[neighbour] - center;
+				zVector tangent = zVector(positions[neighbour]) - center;
 				double u = tangent * xAxis;
 				double v = tangent * yAxis;
 				double n = tangent * normal;
@@ -2559,7 +2581,15 @@ namespace zSpace
 		vector<double> angleSums(nV, 0.0);
 		vector<double> vertexAreas(nV, 0.0);
 		vector<bool> boundaryVertices(nV, false);
-		map<pair<int, int>, int> edgeUseCounts;
+		const int nE = data.numEdges();
+		const bool hasPrebuiltEdges =
+			data.edgeUseCounts.size() == static_cast<size_t>(nE) &&
+			data.edgeVertexIndices.size() == static_cast<size_t>(nE * 2);
+		std::unordered_map<std::uint64_t, int> fallbackEdgeUseCounts;
+		auto edgeKey = [](int a, int b) {
+			const auto endpoints = std::minmax(a, b);
+			return (std::uint64_t(std::uint32_t(endpoints.first)) << 32) | std::uint32_t(endpoints.second);
+		};
 
 		for (int faceId = 0; faceId < nF; ++faceId)
 		{
@@ -2568,8 +2598,6 @@ namespace zSpace
 			const int count = end - begin;
 			if (count < 3 || begin < 0 || end > static_cast<int>(data.faceVertexIndices.size())) continue;
 
-			zIntArray faceVertices;
-			faceVertices.reserve(count);
 			bool validFace = true;
 			for (int i = begin; i < end; ++i)
 			{
@@ -2579,16 +2607,15 @@ namespace zSpace
 					validFace = false;
 					break;
 				}
-				faceVertices.push_back(vertexId);
 			}
 			if (!validFace) continue;
 
+			const int a = data.faceVertexIndices[begin];
+			const zVector& pa = data.positions[a];
 			for (int i = 1; i + 1 < count; ++i)
 			{
-				const int a = faceVertices[0];
-				const int b = faceVertices[i];
-				const int c = faceVertices[i + 1];
-				const zVector& pa = data.positions[a];
+				const int b = data.faceVertexIndices[begin + i];
+				const int c = data.faceVertexIndices[begin + i + 1];
 				const zVector& pb = data.positions[b];
 				const zVector& pc = data.positions[c];
 				const double area = triangleArea(pa, pb, pc);
@@ -2604,20 +2631,39 @@ namespace zSpace
 				vertexAreas[c] += areaShare;
 			}
 
-			for (int i = 0; i < count; ++i)
+			if (!hasPrebuiltEdges)
 			{
-				const int a = faceVertices[i];
-				const int b = faceVertices[(i + 1) % count];
-				if (a == b) continue;
-				edgeUseCounts[std::minmax(a, b)] += 1;
+				for (int i = 0; i < count; ++i)
+				{
+					const int v0 = data.faceVertexIndices[begin + i];
+					const int v1 = data.faceVertexIndices[begin + ((i + 1 < count) ? (i + 1) : 0)];
+					if (v0 == v1) continue;
+					fallbackEdgeUseCounts[edgeKey(v0, v1)] += 1;
+				}
 			}
 		}
 
-		for (const auto& item : edgeUseCounts)
+		if (hasPrebuiltEdges)
 		{
-			if (item.second > 1) continue;
-			boundaryVertices[item.first.first] = true;
-			boundaryVertices[item.first.second] = true;
+			for (int edgeId = 0; edgeId < nE; ++edgeId)
+			{
+				if (data.edgeUseCounts[edgeId] > 1) continue;
+				const int v0 = data.edgeVertexIndices[edgeId * 2];
+				const int v1 = data.edgeVertexIndices[edgeId * 2 + 1];
+				if (v0 >= 0 && v0 < nV) boundaryVertices[v0] = true;
+				if (v1 >= 0 && v1 < nV) boundaryVertices[v1] = true;
+			}
+		}
+		else
+		{
+			for (const auto& item : fallbackEdgeUseCounts)
+			{
+				if (item.second > 1) continue;
+				const int v0 = static_cast<int>(item.first >> 32);
+				const int v1 = static_cast<int>(item.first & 0xFFFFFFFFu);
+				if (v0 >= 0 && v0 < nV) boundaryVertices[v0] = true;
+				if (v1 >= 0 && v1 < nV) boundaryVertices[v1] = true;
+			}
 		}
 
 		for (int vertexId = 0; vertexId < nV; ++vertexId)

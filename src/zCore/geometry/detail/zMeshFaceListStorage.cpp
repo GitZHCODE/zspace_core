@@ -80,24 +80,36 @@ namespace zSpace::detail
 		auto keyOf = [](int a, int b) {
 			return (std::uint64_t(std::uint32_t(a)) << 32) | std::uint32_t(b);
 		};
+		const bool hasPreviousEdgeAttributes = !edgeVertexIndices.empty() && (!edgeColors.empty() || !edgeWeights.empty());
 		std::unordered_map<std::uint64_t, int> oldEdges;
-		oldEdges.reserve(numEdges());
-		for (std::size_t i = 0; i + 1 < edgeVertexIndices.size(); i += 2)
+		zColorArray previousColors;
+		zDoubleArray previousWeights;
+		if (hasPreviousEdgeAttributes)
 		{
-			const auto endpoints = std::minmax(edgeVertexIndices[i], edgeVertexIndices[i + 1]);
-			oldEdges[keyOf(endpoints.first, endpoints.second)] = static_cast<int>(i / 2);
+			oldEdges.reserve(numEdges());
+			for (std::size_t i = 0; i + 1 < edgeVertexIndices.size(); i += 2)
+			{
+				const auto endpoints = std::minmax(edgeVertexIndices[i], edgeVertexIndices[i + 1]);
+				oldEdges[keyOf(endpoints.first, endpoints.second)] = static_cast<int>(i / 2);
+			}
+			previousColors = std::move(edgeColors);
+			previousWeights = std::move(edgeWeights);
 		}
 
-		const zColorArray previousColors = edgeColors;
-		const zDoubleArray previousWeights = edgeWeights;
+		const std::size_t estimatedEdges = (faceVertexIndices.size() / 2) + 1;
 		edgeVertexIndices.clear();
 		edgeFirstVertices.clear();
 		edgeUseCounts.clear();
 		edgeColors.clear();
 		edgeWeights.clear();
+		edgeVertexIndices.reserve(estimatedEdges * 2);
+		edgeFirstVertices.reserve(estimatedEdges);
+		edgeUseCounts.reserve(estimatedEdges);
+		edgeColors.reserve(estimatedEdges);
+		edgeWeights.reserve(estimatedEdges);
 
 		std::unordered_map<std::uint64_t, int> edges;
-		edges.reserve(faceVertexIndices.size());
+		edges.reserve(estimatedEdges);
 		for (int faceId = 0; faceId < numFaces(); ++faceId)
 		{
 			const int begin = faceOffsets[faceId];
@@ -119,11 +131,19 @@ namespace zSpace::detail
 				edgeVertexIndices.push_back(endpoints.second);
 				edgeFirstVertices.push_back(faceVertexIndices[i]);
 				edgeUseCounts.push_back(1);
-				const auto old = oldEdges.find(key);
-				edgeColors.push_back(old != oldEdges.end() && old->second < static_cast<int>(previousColors.size())
-					? previousColors[old->second] : zColor(0, 0, 0, 0));
-				edgeWeights.push_back(old != oldEdges.end() && old->second < static_cast<int>(previousWeights.size())
-					? previousWeights[old->second] : 1.0);
+				if (hasPreviousEdgeAttributes)
+				{
+					const auto old = oldEdges.find(key);
+					edgeColors.push_back(old != oldEdges.end() && old->second < static_cast<int>(previousColors.size())
+						? previousColors[old->second] : zColor(0, 0, 0, 0));
+					edgeWeights.push_back(old != oldEdges.end() && old->second < static_cast<int>(previousWeights.size())
+						? previousWeights[old->second] : 1.0);
+				}
+				else
+				{
+					edgeColors.push_back(zColor(0, 0, 0, 0));
+					edgeWeights.push_back(1.0);
+				}
 			}
 		}
 	}

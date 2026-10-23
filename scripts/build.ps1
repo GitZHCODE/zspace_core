@@ -31,10 +31,29 @@ if ($OpenUSDRoot) {
   $usdRootPath = (Resolve-Path -LiteralPath $OpenUSDRoot).Path
   $usdArgument = " -DZSPACE_IO_WITH_OPENUSD=ON -DZSPACE_OPENUSD_ROOT=`"$usdRootPath`""
 }
-$command = "`"$vcvars`" && `"$cmakeExe`" --preset $preset -DCMAKE_BUILD_TYPE=$Configuration$usdArgument && `"$cmakeExe`" --build --preset $buildPreset --parallel"
+$buildDir = Join-Path $repoRoot "build/$preset"
+$ninjaFile = Join-Path $buildDir "build.ninja"
+$stampFile = Join-Path $buildDir "zspace_config.stamp"
+$expectedStamp = "$Configuration|$usdArgument"
+$needConfigure = $true
+if (!$env:ZSPACE_FORCE_CONFIGURE -and (Test-Path $ninjaFile) -and (Test-Path $stampFile)) {
+  $currentStamp = (Get-Content $stampFile -Raw).Trim()
+  if ($currentStamp -eq $expectedStamp) {
+    $needConfigure = $false
+  }
+}
+
+if ($needConfigure) {
+  $command = "`"$vcvars`" && `"$cmakeExe`" --preset $preset -DCMAKE_BUILD_TYPE=$Configuration$usdArgument && `"$cmakeExe`" --build --preset $buildPreset --parallel"
+} else {
+  $command = "`"$vcvars`" && `"$cmakeExe`" --build --preset $buildPreset --parallel"
+}
 Push-Location $repoRoot
 try {
   cmd.exe /d /s /c $command
+  if ($LASTEXITCODE -eq 0 -and $needConfigure -and (Test-Path $buildDir)) {
+    [System.IO.File]::WriteAllText($stampFile, $expectedStamp)
+  }
 } finally {
   Pop-Location
 }
