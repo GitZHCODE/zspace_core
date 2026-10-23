@@ -6,6 +6,7 @@ project(zspace_core
 )
 
 option(ZSPACE_BUILD_INTERFACE "Build zSpace interface DLL" ON)
+option(ZSPACE_USE_PCH "Use precompiled headers for native targets" ON)
 option(ZSPACE_GRAPH_PROFILE "Enable internal graph benchmark counters" OFF)
 option(ZSPACE_BUILD_IO "Build zSpace IO DLL" ON)
 option(ZSPACE_BUILD_DISPLAY "Build zSpace display DLL" ON)
@@ -101,6 +102,21 @@ if(MSVC)
   target_compile_definitions(zSpace_Core PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 
+if(ZSPACE_USE_PCH)
+  target_precompile_headers(zSpace_Core PRIVATE
+    <vector>
+    <string>
+    <map>
+    <unordered_map>
+    <cmath>
+    <algorithm>
+    <memory>
+    <depends/Eigen/Dense>
+    <depends/Eigen/Sparse>
+    <depends/nlohmann/json.hpp>
+  )
+endif()
+
 if(ZSPACE_BUILD_INTERFACE)
   file(GLOB_RECURSE ZSPACE_INTERFACE_SOURCES CONFIGURE_DEPENDS
     "${ZSPACE_ROOT}/src/zInterface/*.cpp"
@@ -131,6 +147,22 @@ if(ZSPACE_BUILD_INTERFACE)
   endif()
 
   target_link_libraries(zSpace_Interface PUBLIC zspace::core)
+
+  if(ZSPACE_USE_PCH)
+    target_precompile_headers(zSpace_Interface PRIVATE
+      <vector>
+      <string>
+      <map>
+      <unordered_map>
+      <cmath>
+      <algorithm>
+      <memory>
+      <depends/Eigen/Dense>
+      <depends/Eigen/Sparse>
+      <depends/nlohmann/json.hpp>
+      <zspace/zCore/base/zTypeDef.h>
+    )
+  endif()
 
 endif()
 
@@ -163,6 +195,22 @@ if(ZSPACE_BUILD_IO)
   endif()
 
   target_link_libraries(zSpace_IO PUBLIC zspace::interface)
+
+  if(ZSPACE_USE_PCH)
+    target_precompile_headers(zSpace_IO PRIVATE
+      <vector>
+      <string>
+      <map>
+      <unordered_map>
+      <cmath>
+      <algorithm>
+      <memory>
+      <depends/Eigen/Dense>
+      <depends/Eigen/Sparse>
+      <depends/nlohmann/json.hpp>
+      <zspace/zCore/base/zTypeDef.h>
+    )
+  endif()
 
   if(ZSPACE_IO_WITH_OPENUSD)
     include(cmake/ZSpaceOpenUSD.cmake)
@@ -273,6 +321,9 @@ if(ZSPACE_BUILD_TESTS)
 
   add_executable(zspace_mesh_benchmark "${ZSPACE_ROOT}/tests/performance/mesh_functionset_benchmark.cpp")
   target_link_libraries(zspace_mesh_benchmark PRIVATE zspace::interface)
+
+  add_executable(zspace_field_benchmark "${ZSPACE_ROOT}/tests/performance/field_functionset_benchmark.cpp")
+  target_link_libraries(zspace_field_benchmark PRIVATE zspace::interface)
 
   add_executable(zspace_graph_benchmark "${ZSPACE_ROOT}/tests/performance/graph_functionset_benchmark.cpp")
   target_link_libraries(zspace_graph_benchmark PRIVATE zspace::interface)

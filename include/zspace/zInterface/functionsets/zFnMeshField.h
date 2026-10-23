@@ -15,936 +15,20 @@
 
 #pragma once
 
-#include<zspace/zInterface/objects/zObjectGraph.h>
-#include<zspace/zInterface/objects/zObjectMesh.h>
-#include<zspace/zInterface/objects/zObjectPointCloud.h>
-#include<zspace/zInterface/objects/zObjectMeshField.h>
+#include <zspace/zInterface/objects/zObjectGraph.h>
+#include <zspace/zInterface/objects/zObjectMesh.h>
+#include <zspace/zInterface/objects/zObjectPointCloud.h>
+#include <zspace/zInterface/objects/zObjectMeshField.h>
 
-#include<zspace/zInterface/functionsets/zFnMesh.h>
-#include<zspace/zInterface/functionsets/zFnGraph.h>
-#include<zspace/zInterface/functionsets/zFnPointCloud.h>
+#include <zspace/zInterface/functionsets/zFnMesh.h>
+#include <zspace/zInterface/functionsets/zFnGraph.h>
+#include <zspace/zInterface/functionsets/zFnPointCloud.h>
 
-#include<zspace/zInterface/iterators/zItMeshField.h>
+#include <type_traits>
 
 namespace zSpace
 {
-	/** \addtogroup zInterface
-	*	\brief The Application Program Interface of the library.
-	*  @{
-	*/
-
-	/** \addtogroup zFuntionSets
-	*	\brief The function set classes of the library.
-	*  @{
-	*/
-
-	/*! \class zFnMeshFieldBase
-	*	\brief A 2D field function set.
-	*
-	*	\tparam				T			- Type to work with zScalar(scalar field) and zVector(vector field).
-	*	\since version 0.0.2
-	*/	
-
-	/** @}*/
-
-	/** @}*/
-
-	template<typename T>
-	class ZSPACE_API zFnMeshFieldBase 
-	{
-		friend class zFnMeshFieldBase<zVector>;
-
-	private:
-
-		//--------------------------
-		//---- PRIVATE ATTRIBUTES
-		//--------------------------	
-
-		/*!	\brief function type  */
-		zFnType fnType;
-			   		
-		/*!	\brief contour value domain.  */
-		zDomain<float> contourValueDomain;
-
-		/*!	\brief container of field values used for contouring. All values to be in the 0 to 1 domain  */
-		ZSPACE_SUPPRESS_DLL_INTERFACE
-		vector<float> contourVertexValues;
-
-	protected:
-		//--------------------------
-		//---- PROTECTED ATTRIBUTES
-		//--------------------------		
-
-		/*!	\brief core utilities Object  */
-		zUtilsCore coreUtils;			
-
-		/*!	\brief boolean indicating if the field values size is equal to mesh vertices(true) or equal to mesh faces(false)  */
-		bool setValuesperVertex;
-
-		/*!	\brief boolean indicating if the field mesh is triangulated(true or quadragulated (false)  */
-		bool triMesh = true;
-
-		/*!	\brief field color domain.  */
-		zDomainColor fieldColorDomain = zDomainColor(zColor(), zColor(1, 1, 1, 1));
-
-	public:
-
-		//--------------------------
-		//---- PUBLIC ATTRIBUTES
-		//--------------------------
-
-		/*!	\brief pointer to a field 2D object  */
-		zObjectMeshField<T> *fieldObj;
-
-		/*!	\brief mesh function set  */
-		zFnMesh fnMesh;
-
-		/*!	\brief container of the ring neighbourhood indicies.  */
-		ZSPACE_SUPPRESS_DLL_INTERFACE
-		vector<zIntArray> ringNeighbours;
-
-		/*!	\brief container of adjacent neighbourhood indicies.  */
-		ZSPACE_SUPPRESS_DLL_INTERFACE
-		vector<zIntArray> adjacentNeighbours;
-
-		//--------------------------
-		//---- CONSTRUCTOR
-		//--------------------------
-
-		/*! \brief Default constructor.
-		*
-		*	\since version 0.0.2
-		*/
-		zFnMeshFieldBase();
-
-		/*! \brief Overloaded constructor.
-		*
-		*	\param		[in]	_fieldObj			- input field2D object.
-		*	\since version 0.0.2
-		*/
-		zFnMeshFieldBase(zObjectMeshField<T> &_fieldObj);
-
-		//--------------------------
-		//---- DESTRUCTOR
-		//--------------------------
-
-		/*! \brief Default destructor.
-		*
-		*	\since version 0.0.2
-		*/
-		~zFnMeshFieldBase();
-
-		//--------------------------
-		//---- OVERRIDE METHODS
-		//--------------------------
-
-		/*! \brief This method return the function set type.
-		*
-		*	\return 	zFnType			- type of function set.
-		*	\since version 0.0.2
-		*/
-		zFnType getType();
-
-		/*! \brief This method clears the dynamic and array memory the object holds.
-		*
-		*	\param [out]		minBB			- output minimum bounding box.
-		*	\param [out]		maxBB			- output maximum bounding box.
-		*	\since version 0.0.2
-		*/
-		void getBounds(zPoint &minBB, zPoint &maxBB);
-
-		/*! \brief This method clears the dynamic and array memory the object holds.
-		*
-		*	\since version 0.0.2
-		*/
-		void clear();
-
-		//--------------------------
-		//---- CREATE METHODS
-		//--------------------------
-
-		/*! \brief This method creates a field from the input parameters.
-		*	\param		[in]	_minBB					- minimum bounds of the field.
-		*	\param		[in]	_maxBB					- maximum bounds of the field.
-		*	\param		[in]	_n_X					- number of pixels in x direction.
-		*	\param		[in]	_n_Y					- number of pixels in y direction.
-		*	\param		[in]	_NR						- ring number of neighbours to be computed. By default it is 1.
-		*	\param		[in]	_setValuesperVertex		- boolean indicating if the field values size is equal to mesh vertex is true, else equal to mesh faces
-		*	\param		[in]	_triMesh				- boolean true if triangulated mesh in needed. Works only when _setValuesperVertex is false.
-		*	\since version 0.0.2
-		*/
-		void create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _NR = 1, bool _setValuesperVertex = true, bool _triMesh = true);
-
-		/*! \brief Overloaded constructor.
-		*	\param		[in]	_unit_X		- size of each pixel in x direction.
-		*	\param		[in]	_unit_Y		- size of each pixel in y direction.
-		*	\param		[in]	_n_X		- number of pixels in x direction.
-		*	\param		[in]	_n_Y		- number of pixels in y direction.
-		*	\param		[in]	_minBB		- minimum bounds of the field.
-		*	\param		[in]	_NR			- ring number of neighbours to be computed. By default it is 1.
-		*	\param		[in]	_setValuesperVertex		- boolean indicating if the field values size is equal to mesh vertex is true, else equal to mesh faces
-		*	\param		[in]	_triMesh				- boolean true if triangulated mesh in needed. Works only when _setValuesperVertex is false.
-		*	\since version 0.0.2
-		*/
-		void create(double _unit_X, double _unit_Y, int _n_X, int _n_Y, zPoint _minBB = zPoint(), int _NR = 1, bool _setValuesperVertex = true, bool _triMesh = true);
-
-		//--------------------------
-		//---- QUERIES
-		//--------------------------
-
-		/*! \brief This method gets pointer to the internal mesh object.
-		*
-		*	\return				zObjectMesh*					- pointer to internal mesh object.
-		*	\since version 0.0.4
-		*/
-		zObjectMesh* getRawMesh();
-
-		/*! \brief This method gets the field indices which contain the input position.
-		*
-		*	\param		[in]	pos					- input position.
-		*	\param		[out]	containedGridPoints	- contatiner of contained points indicies.
-		*	\since version 0.0.2
-		*/
-		void getNeighbour_Contained(zPoint &pos, zIntArray &containedNeighbour);
-
-		/*! \brief This method gets the field Points which contain the input position.
-		*
-		*	\param		[in]	pos					- input position.
-		*	\param		[out]	containedGridPoints	- contatiner of contained points indicies.
-		*	\since version 0.0.2
-		*/
-		void getNeighbourPosition_Contained(zPoint &pos, zPointArray &containedNeighbour);
-
-		//--------------------------
-		//---- GET METHODS
-		//--------------------------
-
-		/*! \brief This method retruns the number of scalars in the field.
-		*
-		*	\return			int	- number of scalars in the field.
-		*	\since version 0.0.2
-		*/
-		int numFieldValues();
-			
-		/*! \brief This method gets the unit distances of the field.
-		*
-		*	\param		[out]	_n_X		- pixel resolution in x direction.
-		*	\param		[out]	_n_Y		- pixel resolution in y direction.
-		*	\since version 0.0.2
-		*/
-		void getResolution(int &_n_X, int &_n_Y);
-
-		/*! \brief This method gets the unit distances of the field.
-		*
-		*	\param		[out]	_unit_X		- size of each pixel in x direction.
-		*	\param		[out]	_unit_Y		- size of each pixel in y direction.
-		*	\since version 0.0.2
-		*/
-		void getUnitDistances(double &_unit_X, double &_unit_Y);
-
-		/*! \brief This method gets the bounds of the field.
-		*
-		*	\param		[out]	_minBB		- minimum bounds of the field.
-		*	\param		[out]	_maxBB		- maximum bounds of the field.
-		*	\since version 0.0.2
-		*/
-		void getBoundingBox(zPoint &_minBB, zPoint &_maxBB);
-
-		/*! \brief This method gets all the positions of the field.
-		*
-		*	\param		[out]	positions	- output positions container.
-		*	\since version 0.0.2
-		*/
-		void getPositions(zPointArray &positions);		
-		
-		/*! \brief This method gets the value of the field at the input sample position.
-		*
-		*	\param		[in]	samplePos	- index in the fieldvalues container.
-		*	\param		[in]	type		- type of sampling.  zFieldIndex / zFieldNeighbourWeighted / zFieldAdjacentWeighted
-		*	\param		[out]	fieldValue	- output field value.
-		*	\return				bool		- true if sample position is within bounds.
-		*	\since version 0.0.2
-		*/
-		bool getFieldValue(zPoint &samplePos, zFieldValueType type, T& fieldValue);
-
-	protected:
-
-		/*! \brief This method gets the value of the field at the input sample position.
-		*
-		*	\param		[in]	samplePos	- index in the fieldvalues container.
-		*	\param		[in]	type		- type of sampling.  zFieldIndex / zFieldNeighbourWeighted / zFieldAdjacentWeighted
-		*	\param		[out]	fieldValue	- output field value.
-		*	\return				bool		- true if sample position is within bounds.
-		*	\since version 0.0.2
-		*/
-		bool getScalarValue(zScalarArray &scalars, zPoint& samplePos, zFieldValueType type, zScalar& fieldValue);
-
-		/*! \brief This method gets all the values of the field.
-		*
-		*	\param		[out]	fieldValues			- container of field values.		
-		*	\since version 0.0.2
-		*/
-		void getFieldValues(vector<T>& fieldValues);
-
-		/*! \brief This method gets pointer to the internal field values container.
-		*
-		*	\return				T*					- pointer to internal field value container.
-		*	\since version 0.0.2
-		*/
-		T* getRawFieldValues();
-					
-		/*! \brief This method gets the gradient of the field at the input sample position.
-		*
-		*	\param		[in]	s			- scalar field iterator.
-		*	\param		[in]	epsilon		- small increment value, generally 0.0001.
-		*	\return				zVector		- gradient vector of the field.
-		*	\since version 0.0.2
-		*	\warning works only with scalar fields
-		*/
-		zVector getGradient(zItMeshScalarField &s, float epsilon = EPS);
-
-		/*! \brief This method gets the gradient of the field at the input sample position.
-		*
-		*	\param		[in]	samplePos	- index in the fieldvalues container.
-		*	\param		[in]	epsilon		- small increment value, generally 0.0001.
-		*	\return				zVector		- gradient vector of the field.
-		*	\since version 0.0.2
-		*	\warning works only with scalar fields
-		*/
-		zVectorArray getGradients(float epsilon = EPS);
-
-	public:
-
-		/*! \brief This method gets the boolean indicating if the field values aligns with mesh vertices or faces.
-		*
-		*	\return				bool		- if true field values aligns with mesh vertices else aligns with mesh faces.
-		*	\since version 0.0.2
-		*/
-		bool getValuesPerVertexBoolean();
-
-		/*! \brief This method gets the boolean indicating if the mesh field is triagulated.
-		*
-		*	\return				bool		- triagulated if true. 
-		*	\since version 0.0.2
-		*/
-		bool getTriMeshBoolean();
-
-		/*! \brief This method gets the field color domain.
-		*
-		*	\param		[out]	colDomain		- input color domain.
-		*	\since version 0.0.2
-		*/
-		void getFieldColorDomain(zDomainColor& colDomain);
-		
-		//--------------------------
-		//---- SET METHODS
-		//--------------------------
-
-		/*! \brief This method sets the field color domain.
-		*
-		*	\param		[in]	colDomain		- input color domain.
-		*	\since version 0.0.2
-		*/
-		void setFieldColorDomain(zDomainColor &colDomain);
-
-		/*! \brief This method sets the bounds of the field.
-		*
-		*	\param		[in]	_minBB		- minimum bounds of the field.
-		*	\param		[in]	_maxBB		- maximum bounds of the field.
-		*	\since version 0.0.2
-		*/
-		void setBoundingBox(zPoint &_minBB, zPoint &_maxBB);
-
-		/*! \brief This method sets the values of the field to the input container values.
-		*
-		*	\param		[in]	fValues		- input container of field value.
-		*	\param		[in]	type		- input filed coloring type (Regular / SDF / Slime).
-		*	\param		[in]	sdfWidth	- input width for SDF values (required only for SDF, if not use default value).
-		*	\since version 0.0.2
-		*/
-		void setFieldValues(vector<T>& fValues, zFieldColorType type = zFieldColorType::zFieldRegular, float sdfWidth = 0.1);
-
-		//--------------------------
-		//----  2D IDW FIELD METHODS
-		//--------------------------
-
-		/*! \brief This method computes the field values as inverse weighted distance from the input mesh vertex positions.
-		*
-		*	\param	[out]	fieldValues			- container for storing field values.
-		*	\param	[in]	inMeshObj			- input mesh object for distance calculations.
-		*	\param	[in]	meshValue			- value to be propagated for the mesh.
-		*	\param	[in]	influences			- influence value of the graph.		
-		*	\param	[in]	power				- input power value used for weight calculation. Default value is 2.
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectMesh &inMeshObj, T meshValue, double influence, double power = 2.0, bool normalise = true);
-
-		/*! \brief This method computes the field values as inverse weighted distance from the input graph vertex positions.
-		*
-		*	\param	[out]	fieldValues			- container for storing field values.
-		*	\param	[in]	inGraphObj			- input graph object set for distance calculations.
-		*	\param	[in]	graphValue			- value to be propagated for the graph.
-		*	\param	[in]	influences			- influence value of the graph.
-		*	\param	[in]	power				- input power value used for weight calculation. Default value is 2.
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectGraph &inGraphObj, T graphValue, double influence, double power = 2.0, bool normalise = true);
-	
-		/*! \brief This method computes the field values based on inverse weighted distance from the input positions.
-		*
-		*	\param	[out]	fieldValues			- container for storing field values.
-		*	\param	[in]	inPointsObj			- input point cloud object for distance calculations.
-		*	\param	[in]	value				- value to be propagated for each input position.
-		*	\param	[in]	influence			- influence value of each input position.
-		*	\param	[in]	power				- input power value used for weight calculation. Default value is 2.
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectPointCloud &inPointsObj, T value, double influence, double power = 2.0, bool normalise = true);
-
-		/*! \brief This method computes the field values based on inverse weighted distance from the input positions.
-		*
-		*	\param	[out]	fieldValues			- container for storing field values.
-		*	\param	[in]	inPointsObj			- input point cloud object for distance calculations.
-		*	\param	[in]	values				- value to be propagated for each input position. Size of container should be equal to inPositions.
-		*	\param	[in]	influences			- influence value of each input position. Size of container should be equal to inPositions.
-		*	\param	[in]	power				- input power value used for weight calculation. Default value is 2.
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zObjectPointCloud &inPointsObj, vector<T> &values, vector<double>& influences, double power = 2.0, bool normalise = true);
-
-		/*! \brief This method computes the field values based on inverse weighted distance from the input positions.
-		*
-		*	\param	[out]	fieldValues			- container for storing field values.
-		*	\param	[in]	inPositions			- input container of positions for distance calculations.
-		*	\param	[in]	value				- value to be propagated for each input position.
-		*	\param	[in]	influence			- influence value of each input position.
-		*	\param	[in]	power				- input power value used for weight calculation. Default value is 2.
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zPointArray &inPositions, T value, double influence, double power = 2.0, bool normalise = true);
-
-
-		/*! \brief This method computes the field values based on inverse weighted distance from the input positions.
-		*
-		*	\param	[out]	fieldValues			- container for storing field values.
-		*	\param	[in]	inPositions			- icontainer of positions for distance calculations.
-		*	\param	[in]	values				- value to be propagated for each input position. Size of container should be equal to inPositions.
-		*	\param	[in]	influences			- influence value of each input position. Size of container should be equal to inPositions.
-		*	\param	[in]	power				- input power value used for weight calculation. Default value is 2.
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getFieldValuesAsVertexDistance_IDW(vector<T> &fieldValues, zPointArray &inPositions, vector<T> &values, vector<double>& influences, double power = 2.0, bool normalise = true);
-
-	protected:
-
-		/*! \brief This method creates a vector field from the input scalarfield.
-		*	\param		[in]	scalarFieldObj		- input scalar field object.
-		*	\since version 0.0.2
-		*/
-		void createVectorFromScalarField(zObjectMeshField<zScalar> &scalarFieldObj);
-
-		//--------------------------
-		//----  2D SCALAR FIELD METHODS
-		//--------------------------
-
-		/*! \brief This method creates a vertex distance Field from the input  point cloud.
-		*
-		*	\param	[out]	scalars				- container for storing scalar values.
-		*	\param	[in]	inPositions			- input container of postions for distance calculations.
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zPointArray &inPositions, bool normalise = true);
-
-		/*! \brief This method creates a vertex distance Field from the input point cloud.
-		*
-		*	\param	[out]	scalars				- container for storing scalar values.
-		*	\param	[in]	inPositions			- input container of postions for distance calculations.
-		*	\param	[in]	offset				- input distance variable.
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zPointArray &inPositions, float offset, bool normalise = true);
-
-		/*! \brief This method creates a vertex distance Field from the input  point cloud.
-		*
-		*	\param	[out]	scalars				- container for storing scalar values.
-		*	\param	[in]	inPointsObj			- input point cloud object for distance calculations.
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjectPointCloud &inPointsObj, bool normalise = true);
-
-		/*! \brief This method creates a vertex distance Field from the input point cloud.
-		*
-		*	\param	[out]	scalars				- container for storing scalar values.
-		*	\param	[in]	inPointsObj			- input point cloud object for distance calculations.
-		*	\param	[in]	offset				- input distance variable.
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjectPointCloud &inPointsObj, float offset, bool normalise = true);
-
-		/*! \brief This method creates a vertex distance Field from the input mesh vertex positions.
-		*
-		*	\param	[out]	scalars				- container for storing scalar values.
-		*	\param	[in]	inMeshObj			- input mesh object for distance calculations.
-		*	\param	[in]	offset				- input distance variable.	
-		*	\param	[in]	normalise			- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjectMesh &inMeshObj, float offset, bool normalise = true);
-
-		/*! \brief This method creates a vertex distance Field from the input graph vertex positions.
-		*
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	inGraphObj		- input graph object for distance calculations.
-		*	\param	[in]	offset			- input distance variable.
-		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalarsAsVertexDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, float offset, bool normalise = true);
-
-		/*! \brief This method creates a edge distance Field from the input mesh.
-		*
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	inMeshObj		- input mesh object for distance calculations.
-		*	\param	[in]	offset			- input distance variable.
-		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectMesh &inMeshObj, float offset, bool normalise = true);
-
-		/*! \brief This method creates a edge distance Field from the input graph.
-		*
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	inGraphObj		- input graph object for distance calculations.
-		*	\param	[in]	offset			- input distance variable.
-		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalarsAsEdgeDistance(zScalarArray &scalars, zObjectGraph &inGraphObj, float offset, bool normalise = true);
-
-
-		//--------------------------
-		//----  2D SD FIELD METHODS
-		//--------------------------
-
-		/*! \brief This method gets the scalars for a circle.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	cen				- centre of the circle.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	r				- radius value.
-		*	\param	[in]	annularVal		- input annular / offset value.
-		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalars_Polygon(zScalarArray& scalars, zObjectGraph & inGraphObj, bool normalise = true);
-
-		/*! \brief This method gets the scalars for a circle.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	cen				- centre of the circle.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	r				- radius value.
-		*	\param	[in]	annularVal		- input annular / offset value.
-		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalars_Circle(zScalarArray &scalars, zVector &cen, float r, double annularVal = 0, bool normalise = true);
-
-		/*! \brief This method gets the scalars for a circle.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	cen				- centre of the circle.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	r				- radius value.
-		*	\param	[in]	annularVal		- input annular / offset value.
-		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalars_Ellipse(zScalarArray& scalars, zVector& cen, float a, float b, double annularVal = 0, bool normalise = true);
-
-		/*! \brief This method gets the scalars for a line.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	v0				- input positions 0 of line.
-		*	\param	[in]	v1				- input positions 1 of line.
-		*	\param	[in]	annularVal		- input annular / offset value.
-		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalars_Line(zScalarArray &scalars, zVector &v0, zVector &v1, double annularVal = 0, bool normalise = true);
-
-		/*! \brief This method gets the scalars for a line.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	v0				- input positions 0 of line.
-		*	\param	[in]	v1				- input positions 1 of line.
-		*	\param	[in]	annularVal		- input annular / offset value.
-		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalars_Triangle(zScalarArray& scalars, zPoint& p0, zPoint& p1, zPoint& p2, double annularVal = 0, bool normalise = true);
-
-
-		/*! \brief This method gets the scalars for a square.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	dimension		- input square dimensions.
-		*	\param	[in]	annularVal		- input annular / offset value.
-		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalars_Square(zScalarArray &scalars, zVector& cen, zVector &dimensions, float annularVal = 0, bool normalise = true);
-
-		/*! \brief This method gets the scalars for a trapezoid.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	r1				- input distance 1 value.
-		*	\param	[in]	r2				- input distance 2 value.
-		*	\param	[in]	he				- input height value.
-		*	\param	[in]	annularVal		- input annular / offset value.
-		*	\param	[in]	normalise		- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void getScalars_Trapezoid(zScalarArray &scalars, float r1, float r2, float he, float annularVal = 0, bool normalise = true);
-
-	public:
-
-		//--------------------------
-		//--- COMPUTE METHODS 
-		//--------------------------
-
-		/*! \brief This method checks if the input position is in the bounds of the field.
-		*
-		*	\param		[in]	pos					- input position.
-		*	\param		[out]	index				- index of the position.
-		*	\return				bool				- true if in bounds else false.
-		*	\since version 0.0.2
-		*/
-		bool checkPositionBounds(zPoint &pos, int &index);
-
-		/*! \brief This method check if the input index is the bounds of the resolution in X.
-		*
-		*	\param		[in]	index_X		- input index in X.
-		*	\return				bool		- true if index is in bounds.
-		*	\since version 0.0.2
-		*/
-		bool checkBounds_X(int index_X);
-
-		/*! \brief This method check if the input index is the bounds of the resolution in Y.
-		*
-		*	\param		[in]	index_Y		- input index in Y.
-		*	\return				bool		- true if index is in bounds.
-		*	\since version 0.0.2
-		*/
-		bool checkBounds_Y(int index_Y);
-
-		/*! \brief This method computes the min and max scalar values at the given Scalars buffer.
-		*
-		*	\param	[in]	values		- container of values
-		*	\param	[out]	domain		- stores the domain of values
-		*	\since version 0.0.2
-		*/
-		void computeDomain(vector<T> &values, zDomain <T> &domain);
-
-		/*! \brief This method normalises the field values.
-		*
-		*	\since version 0.0.2
-		*/
-		void normliseValues(vector<T> &values);
-		
-	protected:
-
-		/*! \brief This method avarages / smoothens the field values.
-		*
-		* 	\param		[out]	scalars				- container for storing scalar values.
-		*	\param		[in]	numSmooth			- number of times to smooth.
-		*	\param		[in]	diffuseDamp			- damping value of the averaging.
-		*	\param		[in]	type				- smooth type - zlaplacian / zAverage.
-		*	\since version 0.0.2
-		*/
-		void smoothField(zScalarArray& scalars, int numSmooth, double diffuseDamp = 1.0, zDiffusionType type = zAverage);
-
-	public:
-
-		/*! \brief This method computes the field index of each input position and stores them in a container per field index.
-		*
-		*	\param		[in]	positions			- container of positions.
-		*	\param		[out]	fieldIndexPositions	- container of position per field  index.
-		*	\since version 0.0.2
-		*/
-		void computePositionsInFieldIndex(zPointArray &positions, vector<zPointArray> &fieldIndexPositions);
-
-		/*! \brief This method computes the field index of each input position and stores the indicies in a container per field index.
-		*
-		*	\param		[in]	positions			- container of positions.
-		*	\param		[out]	fieldIndexPositions	- container of position indicies per field  index.
-		*	\since version 0.0.2
-		*/
-		void computePositionIndicesInFieldIndex(zPointArray &positions, vector<zIntArray> &fieldIndexPositionIndicies);
-
-		/*! \brief This method computes the distance function.
-		*
-		*	\param	[in]	r	- distance value.
-		*	\param	[in]	a	- value of a.
-		*	\param	[in]	b	- value of b.
-		*	\since version 0.0.2
-		*/
-		double F_of_r(double &r, double &a, double &b);
-
-	protected:
-
-		//--------------------------
-		//----  BLEND METHODS
-		//--------------------------
-
-		/*! \brief This method returns the blend between the two fields at the input current frame.
-		*
-		*	\param	[in]	currentFrame			- current frame value ( between 0 & totalFrames).
-		*	\param	[in]	totalFrames				- total number of frames for the blend.
-		*	\param	[in]	fieldValues_A			- field Values A.
-		*	\param	[in]	fieldValues_B			- field Values B.
-		*	\param	[in]	fieldValues_Result		- resultant field value.
-		*	\since version 0.0.4
-		*/
-		void blend_linear(int currentFrame, int totalFrames, zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result);
-
-
-		//--------------------------
-		//----  BOOLEAN METHODS
-		//--------------------------		
-		
-		/*! \brief This method creates a union of the fields at the input buffers and stores them in the result buffer.
-		*
-		*	\param	[in]	fieldValues_A			- field Values A.
-		*	\param	[in]	fieldValues_B			- field Values B.
-		*	\param	[in]	fieldValues_Result		- resultant field value.
-		*	\param	[in]	normalise				- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void boolean_union(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise = true);
-
-		/*! \brief This method creates a subtraction of the fields at the input buffers and stores them in the result buffer.
-		*
-		*	\param	[in]	fieldValues_A			- field Values A.
-		*	\param	[in]	fieldValues_B			- field Values B.
-		*	\param	[in]	fieldValues_Result		- resultant field value.
-		*	\param	[in]	normalise				- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void boolean_subtract(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise = true);
-
-		/*! \brief This method creates a intersect of the fields at the input buffers and stores them in the result buffer.
-		*
-		*	\param	[in]	fieldValues_A			- field Values A.
-		*	\param	[in]	fieldValues_B			- field Values B.
-		*	\param	[in]	fieldValues_Result		- resultant field value.
-		*	\param	[in]	normalise				- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void boolean_intersect(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise = true);
-
-		/*! \brief This method creates a difference of the fields at the input buffers and stores them in the result buffer.
-		*
-		*	\param	[in]	fieldValues_A			- field Values A.
-		*	\param	[in]	fieldValues_B			- field Values B.
-		*	\param	[in]	fieldValues_Result		- resultant field value.
-		*	\param	[in]	normalise				- true if the scalars need to mapped between -1 and 1. generally used for contouring.
-		*	\since version 0.0.2
-		*/
-		void boolean_difference(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise = true);
-
-		/*! \brief This method uses an input plane to clip an existing scalar field.
-		*
-		*	\param	[in]	field			- input field mesh.
-		*	\param	[in]	scalars				- vector of scalar values. Need to be equivalent to number of mesh vertices.
-		*	\param	[in]	clipPlane			- input zPlane used for clipping.
-		*	\since version 0.0.2
-		*/
-		void boolean_clipwithPlane(zScalarArray& scalars, zPlane &clipPlane);
-
-		/*! \brief This method uses an input plane to clip an existing scalar field.
-		*
-		*	\param	[in]	fieldValues_A			- field Values A.
-		* 	\param	[in]	fieldValues_Result		- resultant field value.
-		*	\param	[in]	clipPlane_center		- input clipPlane origin.
-		*	\param	[in]	clipPlane_Norm			- input clipPlane normal.
-		*	\since version 0.0.4
-		*/
-		void boolean_clipwithPlane(zScalarArray& fieldValues_A, zScalarArray& fieldValues_Result, zPoint& clipPlane_center , zVector& clipPlane_Norm);
-
-		//--------------------------
-		//----  UPDATE METHODS
-		//--------------------------
-
-		/*! \brief This method updates the color values of the field mesh based on the field values. Gradient - Black to Red
-		*
-		*	\warning works only for scalar fields.
-		*	\param		[in]	type		- input field coloring type (Regular / SDF / Slime).
-		*	\param		[in]	sdfWidth	- input width for SDF values (required only for SDF, if not use default value).
-		*	\since version 0.0.2
-		*	\warning	works only with scalar fields
-		*/
-		void updateColors(zFieldColorType type = zFieldColorType::zFieldRegular, float sdfWidth = 0.1);
-
-		//--------------------------
-		//---- CONTOUR METHODS
-		//--------------------------
-
-		/*! \brief This method creates a isocontour graph from the input field mesh at the given field threshold.
-		*
-		*	\param	[out]	coutourGraphObj	- isoline graph.
-		*	\param	[in]	inThreshold		- field threshold.
-		*	\return			zGraph			- contour graph.
-		*	\since version 0.0.2
-		*	\warning	works only with scalar fields
-		*/
-		void getIsocontour(zObjectGraph &coutourGraphObj, float inThreshold, int precision = PRECISION, float distTolerance = distanceTolerance);
-
-		/*! \brief This method creates a isoline mesh from the input field mesh at the given field threshold.
-		*
-		*	\details based on https://en.wikipedia.org/wiki/Marching_squares.
-		*	\param	[out]	coutourMeshObj	- isoline mesh.
-		*	\param	[in]	inThreshold		- field threshold.
-		*	\param	[in]	invertMesh		- true if inverted mesh is required.
-		*	\return			zMesh			- isoline mesh.
-		*	\since version 0.0.2
-		*	\warning	works only with scalar fields
-		*/
-		void getIsolineMesh(zObjectMesh &coutourMeshObj, float inThreshold = 0.5, bool invertMesh = false);
-
-		/*! \brief This method creates a isoband mesh from the input field mesh at the given field threshold.
-		*
-		*	\details based on https://en.wikipedia.org/wiki/Marching_squares.
-		*	\param	[out]	coutourMeshObj	- isoband mesh.
-		*	\param	[in]	inThresholdLow	- field threshold domain minimum.
-		*	\param	[in]	inThresholdHigh	- field threshold domain maximum.
-		*	\since version 0.0.2
-		*	\warning	works only with scalar fields
-		*/
-		void getIsobandMesh(zObjectMesh &coutourMeshObj, float inThresholdLow = 0.2, float inThresholdHigh = 0.5);
-
-	protected:
-		
-		//--------------------------
-		//---- PROTECTED CREATE METHODS
-		//--------------------------
-
-		/*! \brief This method creates the mesh from the field parameters.
-		*
-		*	\since version 0.0.2
-		*/
-		void createFieldMesh();
-
-		//--------------------------
-		//---- PROTECTED METHODS
-		//--------------------------
-
-		/*! \brief This method gets the scalar for the input point.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[in]	cen				- centre of the circle.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	r				- radius value.
-		*	\return			double			- scalar value.
-		*	\since version 0.0.2
-		*/
-		float getScalar_Polygon(zObjectGraph& inGraphObj, zPoint& p);
-
-		/*! \brief This method gets the scalar for the input point.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[in]	cen				- centre of the circle.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	r				- radius value.
-		*	\return			double			- scalar value.
-		*	\since version 0.0.2
-		*/
-		float getScalar_Circle(zPoint &cen, zPoint &p, float r);
-
-		/*! \brief This method gets the scalar for the input point.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[in]	cen				- centre of the circle.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	a				- radius value a.
-		* *	\param	[in]	b				- radius value b.
-		*	\return			double			- scalar value.
-		*	\since version 0.0.2
-		*/
-		float getScalar_Ellipse(zPoint& cen, zPoint& p, float a  , float b);
-
-		/*! \brief This method gets the scalar for the input line.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	v0				- input positions 0 of line.
-		*	\param	[in]	v1				- input positions 1 of line.
-		*	\return			double			- scalar value.
-		*	\since version 0.0.2
-		*/
-		float getScalar_Line(zPoint &p, zPoint &v0, zPoint &v1);
-
-		/*! \brief This method gets the scalar for the input line.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	p0				- input positions 0 of triangle.
-		*	\param	[in]	p1				- input positions 1 of triangle.
-		*	\param	[in]	p2				- input positions 2 of triangle.
-		*	\return			double			- scalar value.
-		*	\since version 0.0.2
-		*/
-		float getScalar_Triangle(zPoint& p, zPoint& p0, zPoint& p1, zPoint& p2);
-
-		/*! \brief This method gets the sqaure scalar for the input point.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[out]	scalars			- container for storing scalar values.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	dimention		- input distance.
-		*	\since version 0.0.2
-		*/
-		float getScalar_Square(zPoint &p, zVector& cen, zVector &dimensions);
-
-		/*! \brief This method gets the scalar for a trapezoid.
-		*
-		*	\detail based on https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm.
-		*	\param	[in]	p				- input field point.
-		*	\param	[in]	r1				- input distance 1 value.
-		*	\param	[in]	r2				- input distance 2 value.
-		*	\param	[in]	he				- input height value.
-		*	\return			double			- scalar value.
-		*	\since version 0.0.2
-		*/
-		double getScalar_Trapezoid(zPoint &p, float &r1, float &r2, float &he);
-
-
-	};	
-
-	// Deprecated compatibility alias. New code should use
-	// zFnMeshScalarField or zFnMeshVectorField.
-	template<typename T>
-	using zFnMeshField = zFnMeshFieldBase<T>;
+	class zFnMeshVectorField;
 
 	/** \addtogroup zInterface
 	*	\brief The Application Program Interface of the library.
@@ -957,68 +41,314 @@ namespace zSpace
 	*/
 
 	/*! \class zFnMeshScalarField
-	*	\brief A function set for 2D scalar mesh fields.
+	*	\brief A concrete 2D scalar mesh field function set.
 	*
 	*	\since version 0.0.5
 	*/
-	class ZSPACE_API zFnMeshScalarField : public zFnMeshFieldBase<zScalar>
+	class ZSPACE_API zFnMeshScalarField
 	{
+		friend class zFnMeshVectorField;
+
+	private:
+		zFnType fnType;
+		zDomain<float> contourValueDomain;
+		ZSPACE_SUPPRESS_DLL_INTERFACE
+		vector<float> contourVertexValues;
+
+	protected:
+		zUtilsCore coreUtils;
+		bool setValuesperVertex = true;
+		bool triMesh = true;
+		zDomainColor fieldColorDomain = zDomainColor(zColor(), zColor(1, 1, 1, 1));
+
 	public:
-		using zFnMeshFieldBase<zScalar>::zFnMeshFieldBase;
-		using zFnMeshFieldBase<zScalar>::create;
-		using zFnMeshFieldBase<zScalar>::numFieldValues;
-		using zFnMeshFieldBase<zScalar>::getResolution;
-		using zFnMeshFieldBase<zScalar>::getUnitDistances;
-		using zFnMeshFieldBase<zScalar>::getBoundingBox;
-		using zFnMeshFieldBase<zScalar>::getPositions;
-		using zFnMeshFieldBase<zScalar>::getFieldValues;
-		using zFnMeshFieldBase<zScalar>::getRawFieldValues;
-		using zFnMeshFieldBase<zScalar>::getScalarValue;
-		using zFnMeshFieldBase<zScalar>::getGradient;
-		using zFnMeshFieldBase<zScalar>::getGradients;
-		using zFnMeshFieldBase<zScalar>::getScalarsAsVertexDistance;
-		using zFnMeshFieldBase<zScalar>::getScalarsAsEdgeDistance;
-		using zFnMeshFieldBase<zScalar>::getScalars_Polygon;
-		using zFnMeshFieldBase<zScalar>::getScalars_Circle;
-		using zFnMeshFieldBase<zScalar>::getScalars_Ellipse;
-		using zFnMeshFieldBase<zScalar>::getScalars_Line;
-		using zFnMeshFieldBase<zScalar>::getScalars_Triangle;
-		using zFnMeshFieldBase<zScalar>::getScalars_Square;
-		using zFnMeshFieldBase<zScalar>::getScalars_Trapezoid;
-		using zFnMeshFieldBase<zScalar>::setFieldValues;
-		using zFnMeshFieldBase<zScalar>::smoothField;
-		using zFnMeshFieldBase<zScalar>::blend_linear;
-		using zFnMeshFieldBase<zScalar>::boolean_union;
-		using zFnMeshFieldBase<zScalar>::boolean_subtract;
-		using zFnMeshFieldBase<zScalar>::boolean_intersect;
-		using zFnMeshFieldBase<zScalar>::boolean_difference;
-		using zFnMeshFieldBase<zScalar>::boolean_clipwithPlane;
-		using zFnMeshFieldBase<zScalar>::updateColors;
-		using zFnMeshFieldBase<zScalar>::getIsocontour;
-		using zFnMeshFieldBase<zScalar>::getIsolineMesh;
-		using zFnMeshFieldBase<zScalar>::getIsobandMesh;
+		zObjectMeshScalarField* fieldObj;
+		zFnMesh fnMesh;
+
+		ZSPACE_SUPPRESS_DLL_INTERFACE
+		vector<zIntArray> ringNeighbours;
+
+		ZSPACE_SUPPRESS_DLL_INTERFACE
+		vector<zIntArray> adjacentNeighbours;
+
+		//--------------------------
+		//---- CONSTRUCTOR / DESTRUCTOR
+		//--------------------------
+
+		zFnMeshScalarField();
+		zFnMeshScalarField(zObjectMeshScalarField& _fieldObj);
+		~zFnMeshScalarField();
+
+		//--------------------------
+		//---- OVERRIDE / LIFECYCLE METHODS
+		//--------------------------
+
+		zFnType getType();
+		void getBounds(zPoint& minBB, zPoint& maxBB);
+		void clear();
+
+		//--------------------------
+		//---- CREATE METHODS
+		//--------------------------
+
+		void create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _NR = 1, bool _setValuesperVertex = true, bool _triMesh = true);
+		void create(double _unit_X, double _unit_Y, int _n_X, int _n_Y, zPoint _minBB = zPoint(), int _NR = 1, bool _setValuesperVertex = true, bool _triMesh = true);
+
+		//--------------------------
+		//---- DIRECT GRID & INDEX QUERIES
+		//--------------------------
+
+		zObjectMesh* getRawMesh();
+		int getIndex(int index_X, int index_Y) const;
+		void getIndices(int index, int& index_X, int& index_Y) const;
+		zPoint getPosition(int index) const;
+		zPoint getPosition(int index_X, int index_Y) const;
+		void getNeighbour_Ring(int index, int numRings, zIntArray& outRingNeighbours) const;
+		void getNeighbour_Adjacents(int index, zIntArray& outAdjacentNeighbours) const;
+		void getNeighbour_Contained(zPoint& pos, zIntArray& containedNeighbour);
+		void getNeighbourPosition_Contained(zPoint& pos, zPointArray& containedNeighbour);
+
+		//--------------------------
+		//---- GET METHODS
+		//--------------------------
+
+		int numFieldValues() const;
+		void getResolution(int& _n_X, int& _n_Y) const;
+		void getUnitDistances(double& _unit_X, double& _unit_Y) const;
+		void getBoundingBox(zPoint& _minBB, zPoint& _maxBB) const;
+		void getPositions(zPointArray& positions);
+
+		zScalar getFieldValue(int index) const;
+		bool getFieldValue(zPoint& samplePos, zFieldValueType type, zScalar& fieldValue);
+		bool getScalarValue(zScalarArray& scalars, zPoint& samplePos, zFieldValueType type, zScalar& fieldValue);
+
+		void getFieldValues(zScalarArray& fieldValues);
+		zScalar* getRawFieldValues();
+
+		zVector getGradient(int index, float epsilon = EPS);
+		zVectorArray getGradients(float epsilon = EPS);
+
+		bool getValuesPerVertexBoolean() const;
+		bool getTriMeshBoolean() const;
+		void getFieldColorDomain(zDomainColor& colDomain);
+
+		//--------------------------
+		//---- SET METHODS
+		//--------------------------
+
+		void setFieldColorDomain(zDomainColor& colDomain);
+		void setBoundingBox(zPoint& _minBB, zPoint& _maxBB);
+		void setFieldValue(int index, zScalar val, bool append = false);
+		void setFieldValues(zScalarArray& fValues, zFieldColorType type = zFieldColorType::zFieldRegular, float sdfWidth = 0.1f);
+
+		//--------------------------
+		//---- 2D IDW FIELD METHODS
+		//--------------------------
+
+		void getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zObjectMesh& inMeshObj, zScalar meshValue, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zObjectGraph& inGraphObj, zScalar graphValue, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zObjectPointCloud& inPointsObj, zScalar value, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zObjectPointCloud& inPointsObj, zScalarArray& values, vector<double>& influences, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zPointArray& inPositions, zScalar value, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zPointArray& inPositions, zScalarArray& values, vector<double>& influences, double power = 2.0, bool normalise = true);
+
+		//--------------------------
+		//---- 2D SCALAR DISTANCE METHODS
+		//--------------------------
+
+		void getScalarsAsVertexDistance(zScalarArray& scalars, zPointArray& inPositions, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray& scalars, zPointArray& inPositions, float offset, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray& scalars, zObjectPointCloud& inPointsObj, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray& scalars, zObjectPointCloud& inPointsObj, float offset, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, float offset, bool normalise = true);
+		void getScalarsAsVertexDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, float offset, bool normalise = true);
+		void getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, float offset, bool normalise = true);
+		void getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, float offset, bool normalise = true);
+
+		//--------------------------
+		//---- 2D SDF PRIMITIVE METHODS
+		//--------------------------
+
+		void getScalars_Polygon(zScalarArray& scalars, zObjectGraph& inGraphObj, bool normalise = true);
+		void getScalars_Circle(zScalarArray& scalars, zVector& cen, float r, double annularVal = 0, bool normalise = true);
+		void getScalars_Ellipse(zScalarArray& scalars, zVector& cen, float a, float b, double annularVal = 0, bool normalise = true);
+		void getScalars_Line(zScalarArray& scalars, zVector& v0, zVector& v1, double annularVal = 0, bool normalise = true);
+		void getScalars_Triangle(zScalarArray& scalars, zPoint& p0, zPoint& p1, zPoint& p2, double annularVal = 0, bool normalise = true);
+		void getScalars_Square(zScalarArray& scalars, zVector& cen, zVector& dimensions, float annularVal = 0, bool normalise = true);
+		void getScalars_Trapezoid(zScalarArray& scalars, float r1, float r2, float he, float annularVal = 0, bool normalise = true);
+
+		//--------------------------
+		//---- COMPUTE & SMOOTH METHODS
+		//--------------------------
+
+		bool checkPositionBounds(zPoint& pos, int& index);
+		bool checkBounds_X(int index_X) const;
+		bool checkBounds_Y(int index_Y) const;
+		void computeDomain(zScalarArray& values, zDomain<zScalar>& domain);
+		void normliseValues(zScalarArray& values);
+		void smoothField(zScalarArray& scalars, int numSmooth, double diffuseDamp = 1.0, zDiffusionType type = zAverage);
+		void computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions);
+		void computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies);
+		double F_of_r(double& r, double& a, double& b);
+
+		//--------------------------
+		//---- BLEND & BOOLEAN METHODS
+		//--------------------------
+
+		void blend_linear(int currentFrame, int totalFrames, zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result);
+		void boolean_union(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise = true);
+		void boolean_subtract(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise = true);
+		void boolean_intersect(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise = true);
+		void boolean_difference(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise = true);
+		void boolean_clipwithPlane(zScalarArray& scalars, zPlane& clipPlane);
+		void boolean_clipwithPlane(zScalarArray& fieldValues_A, zScalarArray& fieldValues_Result, zPoint& clipPlane_center, zVector& clipPlane_Norm);
+
+		//--------------------------
+		//---- UPDATE & CONTOUR METHODS
+		//--------------------------
+
+		void updateColors(zFieldColorType type = zFieldColorType::zFieldRegular, float sdfWidth = 0.1f);
+		void getIsocontour(zObjectGraph& coutourGraphObj, float inThreshold, int precision = PRECISION, float distTolerance = distanceTolerance);
+		void getIsolineMesh(zObjectMesh& coutourMeshObj, float inThreshold = 0.5f, bool invertMesh = false);
+		void getIsobandMesh(zObjectMesh& coutourMeshObj, float inThresholdLow = 0.2f, float inThresholdHigh = 0.5f);
+
+	protected:
+		void createFieldMesh();
+		float getScalar_Polygon(zObjectGraph& inGraphObj, zPoint& p);
+		float getScalar_Circle(zPoint& cen, zPoint& p, float r);
+		float getScalar_Ellipse(zPoint& cen, zPoint& p, float a, float b);
+		float getScalar_Line(zPoint& p, zPoint& v0, zPoint& v1);
+		float getScalar_Triangle(zPoint& p, zPoint& p0, zPoint& p1, zPoint& p2);
+		float getScalar_Square(zPoint& p, zVector& cen, zVector& dimensions);
+		double getScalar_Trapezoid(zPoint& p, float& r1, float& r2, float& he);
 	};
 
 	/*! \class zFnMeshVectorField
-	*	\brief A function set for 2D vector mesh fields.
+	*	\brief A concrete 2D vector mesh field function set.
 	*
 	*	\since version 0.0.5
 	*/
-	class ZSPACE_API zFnMeshVectorField : public zFnMeshFieldBase<zVector>
+	class ZSPACE_API zFnMeshVectorField
 	{
+	private:
+		zFnType fnType;
+
+	protected:
+		zUtilsCore coreUtils;
+		bool setValuesperVertex = true;
+		bool triMesh = true;
+		zDomainColor fieldColorDomain = zDomainColor(zColor(), zColor(1, 1, 1, 1));
+
 	public:
-		using zFnMeshFieldBase<zVector>::zFnMeshFieldBase;
-		using zFnMeshFieldBase<zVector>::create;
-		using zFnMeshFieldBase<zVector>::numFieldValues;
-		using zFnMeshFieldBase<zVector>::getResolution;
-		using zFnMeshFieldBase<zVector>::getUnitDistances;
-		using zFnMeshFieldBase<zVector>::getBoundingBox;
-		using zFnMeshFieldBase<zVector>::getPositions;
-		using zFnMeshFieldBase<zVector>::getFieldValues;
-		using zFnMeshFieldBase<zVector>::getRawFieldValues;
-		using zFnMeshFieldBase<zVector>::setFieldValues;
-		using zFnMeshFieldBase<zVector>::createVectorFromScalarField;
+		zObjectMeshVectorField* fieldObj;
+		zFnMesh fnMesh;
+
+		ZSPACE_SUPPRESS_DLL_INTERFACE
+		vector<zIntArray> ringNeighbours;
+
+		ZSPACE_SUPPRESS_DLL_INTERFACE
+		vector<zIntArray> adjacentNeighbours;
+
+		//--------------------------
+		//---- CONSTRUCTOR / DESTRUCTOR
+		//--------------------------
+
+		zFnMeshVectorField();
+		zFnMeshVectorField(zObjectMeshVectorField& _fieldObj);
+		~zFnMeshVectorField();
+
+		//--------------------------
+		//---- OVERRIDE / LIFECYCLE METHODS
+		//--------------------------
+
+		zFnType getType();
+		void getBounds(zPoint& minBB, zPoint& maxBB);
+		void clear();
+
+		//--------------------------
+		//---- CREATE METHODS
+		//--------------------------
+
+		void create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _NR = 1, bool _setValuesperVertex = true, bool _triMesh = true);
+		void create(double _unit_X, double _unit_Y, int _n_X, int _n_Y, zPoint _minBB = zPoint(), int _NR = 1, bool _setValuesperVertex = true, bool _triMesh = true);
+		void createVectorFromScalarField(zObjectMeshScalarField& scalarFieldObj);
+
+		//--------------------------
+		//---- DIRECT GRID & INDEX QUERIES
+		//--------------------------
+
+		zObjectMesh* getRawMesh();
+		int getIndex(int index_X, int index_Y) const;
+		void getIndices(int index, int& index_X, int& index_Y) const;
+		zPoint getPosition(int index) const;
+		zPoint getPosition(int index_X, int index_Y) const;
+		void getNeighbour_Ring(int index, int numRings, zIntArray& outRingNeighbours) const;
+		void getNeighbour_Adjacents(int index, zIntArray& outAdjacentNeighbours) const;
+		void getNeighbour_Contained(zPoint& pos, zIntArray& containedNeighbour);
+		void getNeighbourPosition_Contained(zPoint& pos, zPointArray& containedNeighbour);
+
+		//--------------------------
+		//---- GET METHODS
+		//--------------------------
+
+		int numFieldValues() const;
+		void getResolution(int& _n_X, int& _n_Y) const;
+		void getUnitDistances(double& _unit_X, double& _unit_Y) const;
+		void getBoundingBox(zPoint& _minBB, zPoint& _maxBB) const;
+		void getPositions(zPointArray& positions);
+
+		zVector getFieldValue(int index) const;
+		bool getFieldValue(zPoint& samplePos, zFieldValueType type, zVector& fieldValue);
+
+		void getFieldValues(zVectorArray& fieldValues);
+		zVector* getRawFieldValues();
+
+		bool getValuesPerVertexBoolean() const;
+		bool getTriMeshBoolean() const;
+		void getFieldColorDomain(zDomainColor& colDomain);
+
+		//--------------------------
+		//---- SET METHODS
+		//--------------------------
+
+		void setFieldColorDomain(zDomainColor& colDomain);
+		void setBoundingBox(zPoint& _minBB, zPoint& _maxBB);
+		void setFieldValue(int index, const zVector& val, bool append = false);
+		void setFieldValues(zVectorArray& fValues, zFieldColorType type = zFieldColorType::zFieldRegular, float sdfWidth = 0.1f);
+
+		//--------------------------
+		//---- 2D IDW FIELD METHODS
+		//--------------------------
+
+		void getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zObjectMesh& inMeshObj, zVector meshValue, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zObjectGraph& inGraphObj, zVector graphValue, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zObjectPointCloud& inPointsObj, zVector value, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zObjectPointCloud& inPointsObj, zVectorArray& values, vector<double>& influences, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zPointArray& inPositions, zVector value, double influence, double power = 2.0, bool normalise = true);
+		void getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zPointArray& inPositions, zVectorArray& values, vector<double>& influences, double power = 2.0, bool normalise = true);
+
+		//--------------------------
+		//---- COMPUTE METHODS
+		//--------------------------
+
+		bool checkPositionBounds(zPoint& pos, int& index);
+		bool checkBounds_X(int index_X) const;
+		bool checkBounds_Y(int index_Y) const;
+		void computeDomain(zVectorArray& values, zDomain<zVector>& domain);
+		void normliseValues(zVectorArray& values);
+		void computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions);
+		void computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies);
+		double F_of_r(double& r, double& a, double& b);
+
+	protected:
+		void createFieldMesh();
 	};
+
+	template<typename T>
+	using zFnMeshField = std::conditional_t<std::is_same_v<T, zScalar>, zFnMeshScalarField, zFnMeshVectorField>;
+
+	template<typename T>
+	using zFnMeshFieldBase = zFnMeshField<T>;
 
 	/** @}*/
 

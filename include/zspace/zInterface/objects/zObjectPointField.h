@@ -18,14 +18,16 @@
 #include <zspace/zInterface/objects/zObjectPointCloud.h>
 #include <zspace/zCore/field/zField3D.h>
 
+#include <memory>
+#include <type_traits>
 #include <vector>
 using namespace std;
 
 namespace zSpace
 {
-	template<typename T> class zFnPointFieldBase;
-	class zItPointScalarField;
-	class zItPointVectorField;
+	class zFieldObjectStorage;
+	class zFnPointScalarField;
+	class zFnPointVectorField;
 
 	/** \addtogroup zInterface
 	*	\brief The Application Program Interface of the library.
@@ -37,82 +39,56 @@ namespace zSpace
 	*  @{
 	*/
 
-	/*! \class zObjectPointField
-	*	\brief A template 3D point field object class.
-	*	\tparam				T			- Type to work with zScalar(scalar field) and zVector(vector field).
+	/*! \class zObjectPointScalarField
+	*	\brief A 3D scalar point field object class.
 	*	\since version 0.0.2
 	*/
-
-	/** @}*/
-
-	/** @}*/
-	
-	template<typename T>
-	class ZSPACE_API zObjectPointField : public zObjectPointCloud
+	class ZSPACE_API zObjectPointScalarField : public zObjectPointCloud
 	{
-		template<typename U> friend class zFnPointFieldBase;
-		friend class zItPointScalarField;
-		friend class zItPointVectorField;
+		friend class zFieldObjectStorage;
+		friend class zFnPointScalarField;
+		friend class zFnPointVectorField;
 
 	private:
-		//--------------------------
-		//---- PRIVATE ATTRIBUTES
-		//--------------------------
-
-		/*! \brief field 2D */
-		zField3D<T> field;
+		class Impl;
+		ZSPACE_SUPPRESS_DLL_INTERFACE
+		std::unique_ptr<Impl> fieldImpl;
 
 	public:
-
-		//--------------------------
-		//---- CONSTRUCTOR
-		//--------------------------
-
-		/*! \brief Default constructor.
-		*
-		*	\since version 0.0.2
-		*/
-		zObjectPointField();
-
-		//--------------------------
-		//---- DESTRUCTOR
-		//--------------------------
-
-		/*! \brief Default destructor.
-		*
-		*	\since version 0.0.2
-		*/
-		~zObjectPointField();
-	
-		//--------------------------
-		//---- OVERRIDE METHODS
-		//--------------------------
-
+		zObjectPointScalarField();
+		zObjectPointScalarField(const zObjectPointScalarField& other);
+		zObjectPointScalarField(zObjectPointScalarField&& other) noexcept;
+		zObjectPointScalarField& operator=(const zObjectPointScalarField& other);
+		zObjectPointScalarField& operator=(zObjectPointScalarField&& other) noexcept;
+		~zObjectPointScalarField();
 	};
 
-	/** \addtogroup zInterface
-	*	\brief The Application Program Interface of the library.
-	*  @{
-	*/
-
-	/** \addtogroup zObjects
-	*	\brief The object classes of the library.
-	*  @{
-	*/
-
-	/*! \typedef zObjectPointScalarField
-	*	\brief A 2D scalar field mesh object.
-	*
+	/*! \class zObjectPointVectorField
+	*	\brief A 3D vector point field object class.
 	*	\since version 0.0.2
 	*/
-	typedef zObjectPointField<zScalar> zObjectPointScalarField;
+	class ZSPACE_API zObjectPointVectorField : public zObjectPointCloud
+	{
+		friend class zFieldObjectStorage;
+		friend class zFnPointScalarField;
+		friend class zFnPointVectorField;
 
-	/*! \typedef zObjectPointVectorField
-	*	\brief A 2D scalar field mesh object.
-	*
-	*	\since version 0.0.2
-	*/
-	typedef zObjectPointField<zVector> zObjectPointVectorField;
+	private:
+		class Impl;
+		ZSPACE_SUPPRESS_DLL_INTERFACE
+		std::unique_ptr<Impl> fieldImpl;
+
+	public:
+		zObjectPointVectorField();
+		zObjectPointVectorField(const zObjectPointVectorField& other);
+		zObjectPointVectorField(zObjectPointVectorField&& other) noexcept;
+		zObjectPointVectorField& operator=(const zObjectPointVectorField& other);
+		zObjectPointVectorField& operator=(zObjectPointVectorField&& other) noexcept;
+		~zObjectPointVectorField();
+	};
+
+	template<typename T>
+	using zObjectPointField = std::conditional_t<std::is_same_v<T, zScalar>, zObjectPointScalarField, zObjectPointVectorField>;
 
 	/** @}*/
 
@@ -166,4 +142,3 @@ namespace zSpace
 #endif
 
 #endif
-

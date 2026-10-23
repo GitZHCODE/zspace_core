@@ -1,12 +1,17 @@
 #include <zspace/zInterface/functionsets/zFnMeshDynamics.h>
 #include <algorithm>
 #include <cmath>
-#include <map>
+#include <cstdint>
 #include <stdexcept>
+#include <unordered_map>
 
 namespace zSpace {
 namespace {
 constexpr double pi = 3.14159265358979323846;
+std::uint64_t origamiEdgeKey(int a, int b) {
+    const auto endpoints = std::minmax(a, b);
+    return (std::uint64_t(std::uint32_t(endpoints.first)) << 32) | std::uint32_t(endpoints.second);
+}
 struct V {
     double x=0, y=0, z=0;
     V() = default;
@@ -38,7 +43,8 @@ ZSPACE_INLINE void zFnMeshDynamics::prepareOrigami() {
     origamiEdges.clear(); origamiTriangles.clear(); origamiAngles.clear();
     zInt2DArray tris; getMeshTriangles(tris);
     zPoint* p=getRawVertexPositions();
-    std::map<std::pair<int,int>,int> edges;
+    std::unordered_map<std::uint64_t,int> edges;
+    edges.reserve(static_cast<std::size_t>(numEdges()) * 2);
     for(const auto& face:tris) for(std::size_t j=0;j+2<face.size();j+=3) {
         const std::array<int,3> t{face[j],face[j+1],face[j+2]};
         if((V(p[t[1]])-V(p[t[0]])).cross(V(p[t[2]])-V(p[t[0]])).length()<=1e-14)
@@ -48,7 +54,7 @@ ZSPACE_INLINE void zFnMeshDynamics::prepareOrigami() {
         for(int k=0;k<3;k++) {
             angles[k]=corner(p[t[(k+1)%3]],p[t[k]],p[t[(k+2)%3]]);
             const int a=t[k],b=t[(k+1)%3],c=t[(k+2)%3];
-            const std::pair<int,int> key{std::min(a,b),std::max(a,b)};
+            const std::uint64_t key=origamiEdgeKey(a,b);
             auto found=edges.find(key);
             if(found==edges.end()) {
                 OrigamiEdge e; e.a=a;e.b=b;e.c=c;e.rest=(V(p[b])-V(p[a])).length();
@@ -64,7 +70,7 @@ ZSPACE_INLINE void zFnMeshDynamics::prepareOrigami() {
     }
     zIntArray meshEdges; getEdgeData(meshEdges);
     for(std::size_t i=0;i+1<meshEdges.size();i+=2) {
-        const auto it=edges.find({std::min(meshEdges[i],meshEdges[i+1]),std::max(meshEdges[i],meshEdges[i+1])});
+        const auto it=edges.find(origamiEdgeKey(meshEdges[i],meshEdges[i+1]));
         if(it!=edges.end()) {
             auto& e=origamiEdges[it->second];
             e.source=static_cast<int>(i/2);
@@ -186,10 +192,10 @@ ZSPACE_INLINE void zFnMeshDynamics::stepOrigami(const zOrigamiSettings& s,double
         for(std::size_t i=0;i<particlesObj.size();i++) {
             zFnParticle fn(particlesObj[i]);*fn.getRawPosition()=next[i];fn.setVelocity(velocities[i]);fn.clearForce();
         }
-        setVertexPositions(next);
         remaining-=dt;
         getOrigamiForces(s,forces,diag);
     }
+    setVertexPositions(next);
     computeMeshNormals();
     diag.stableTimeStep=minimumStableStep;
 }

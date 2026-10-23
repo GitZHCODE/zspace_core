@@ -1043,30 +1043,27 @@ namespace zSpace
 
 	ZSPACE_INLINE double zUtilsCore::minDist_Edge_Point(zVector & pt, zVector & e0, zVector & e1, zVector & closest_Pt)
 	{
-		bool chk = pointOnLine(pt, e0, e1);
-		if (chk) return 0.0;
+		zVector ab = e1 - e0;
+		const double ab2 = static_cast<double>(ab.x) * ab.x +
+			static_cast<double>(ab.y) * ab.y +
+			static_cast<double>(ab.z) * ab.z;
+		if (ab2 <= 1.0e-12)
+		{
+			closest_Pt = e0;
+			return closest_Pt.distanceTo(pt);
+		}
+		zVector ap = pt - e0;
+		const double dot = static_cast<double>(ap.x) * ab.x +
+			static_cast<double>(ap.y) * ab.y +
+			static_cast<double>(ap.z) * ab.z;
+		double t = dot / ab2;
+		if (t < 0.0) t = 0.0;
+		else if (t > 1.0) t = 1.0;
 
-		zVector temp = (e1 - pt) ^ (e0 - pt);
-		temp.normalize();
-		zVector n = (e1 - e0) ^ temp;
-		//zVector n = (e1 - e0) ^ (zVector(0, 0, 1));
-		n.normalize();
-		closest_Pt = n * ((e0 - pt) * n);
-		closest_Pt += pt;
-
-		float len = e0.distanceTo(e1);
-
-		zVector ed = (e0 - e1) / len;
-		double param = (closest_Pt - e1) * ed;
-
-
-
-		if (param > len)param = len;
-		if (param < 0) param = 0;
-
-		closest_Pt = e1 + ed * param;
-
-		return closest_Pt.distanceTo(pt);
+		zVector scaledAb = ab * static_cast<float>(t);
+		closest_Pt = e0 + scaledAb;
+		const double dist = closest_Pt.distanceTo(pt);
+		return (dist < 1.0e-6) ? 0.0 : dist;
 	}
 
 	ZSPACE_INLINE double zUtilsCore::minDist_Point_Plane(zVector & pA, zVector & pB, zVector & norm)

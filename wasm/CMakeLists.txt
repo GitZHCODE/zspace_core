@@ -14,7 +14,7 @@ set(ZSPACE_WASM_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/out" CACHE PATH
 file(GLOB_RECURSE core_sources CONFIGURE_DEPENDS "${ZSPACE_ROOT}/src/zCore/*.cpp")
 file(GLOB_RECURSE interface_sources CONFIGURE_DEPENDS "${ZSPACE_ROOT}/src/zInterface/*.cpp")
 list(FILTER interface_sources EXCLUDE REGEX
-  "/(zFnComputeMesh|zObjectComputeMesh|zFnMeshField|zFnPointField|zObjectMeshField|zObjectPointField|zObjectComputeField2D)\\.cpp$")
+  "/(zFnComputeMesh|zObjectComputeMesh|zObjectComputeField2D)\\.cpp$")
 file(GLOB_RECURSE io_sources CONFIGURE_DEPENDS "${ZSPACE_ROOT}/src/zIO/*.cpp")
 
 # Match the Windows batch traversal: files in each directory before its

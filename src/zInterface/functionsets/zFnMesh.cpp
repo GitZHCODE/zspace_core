@@ -437,26 +437,31 @@ namespace zSpace
 				: (ab <= epsilon && bc <= epsilon && ca <= epsilon);
 		}
 
-		zIntArray triangulatePolygon(const zIntArray& polygon, const zPointArray& positions)
+		void triangulatePolygon(const int* polygon, int count, const zPointArray& positions, zIntArray& triangles)
 		{
-			zIntArray triangles;
-			if (polygon.size() < 3) return triangles;
-			if (polygon.size() == 3) return polygon;
+			triangles.clear();
+			if (count < 3) return;
+			if (count == 3)
+			{
+				triangles.assign(polygon, polygon + 3);
+				return;
+			}
 
 			double area = 0.0;
-			const zVector normal = computeFaceNormalAndArea(polygon, positions, area);
+			const zVector normal = computeFaceNormalAndArea(polygon, count, positions, area);
 			const double ax = std::abs(normal.x);
 			const double ay = std::abs(normal.y);
 			const double az = std::abs(normal.z);
 			const int axis = (ax >= ay && ax >= az) ? 0 : ((ay >= az) ? 1 : 2);
 
 			std::vector<Point2> projected;
-			projected.reserve(polygon.size());
-			for (int id : polygon) projected.push_back(projectPoint(positions[id], axis));
+			projected.reserve(static_cast<std::size_t>(count));
+			for (int i = 0; i < count; ++i) projected.push_back(projectPoint(positions[polygon[i]], axis));
 			const bool ccw = signedArea2D(projected) >= 0.0;
 
-			std::vector<int> remaining(polygon.size());
-			for (int i = 0; i < static_cast<int>(remaining.size()); ++i) remaining[i] = i;
+			triangles.reserve(static_cast<std::size_t>(count - 2) * 3);
+			std::vector<int> remaining(static_cast<std::size_t>(count));
+			for (int i = 0; i < count; ++i) remaining[i] = i;
 			while (remaining.size() > 3)
 			{
 				bool found = false;
@@ -492,6 +497,12 @@ namespace zSpace
 			}
 
 			for (int index : remaining) triangles.push_back(polygon[index]);
+		}
+
+		zIntArray triangulatePolygon(const zIntArray& polygon, const zPointArray& positions)
+		{
+			zIntArray triangles;
+			triangulatePolygon(polygon.data(), static_cast<int>(polygon.size()), positions, triangles);
 			return triangles;
 		}
 
@@ -620,9 +631,59 @@ namespace zSpace
 			zPoint position;
 			float scalar;
 			zColor color;
+			int origVertexId = -1;
+			int edgeU = -1;
+			int edgeV = -1;
+			int edgeSlot = 0;
 		};
 
-		ScalarCorner interpolateCorner(const ScalarCorner& a, const ScalarCorner& b, float threshold)
+		class FlatEdgeCrossingTable
+		{
+		private:
+			std::vector<int> head;
+			std::vector<int> targetV;
+			std::vector<int> targetSlot;
+			std::vector<int> mappedVertex;
+			std::vector<int> nextEntry;
+
+		public:
+			void init(int numSourceVertices, std::size_t reserveCrossings)
+			{
+				head.assign(static_cast<std::size_t>(numSourceVertices), -1);
+				targetV.clear();
+				targetSlot.clear();
+				mappedVertex.clear();
+				nextEntry.clear();
+				targetV.reserve(reserveCrossings);
+				targetSlot.reserve(reserveCrossings);
+				mappedVertex.reserve(reserveCrossings);
+				nextEntry.reserve(reserveCrossings);
+			}
+
+			int find(int u, int v, int slot) const noexcept
+			{
+				for (int e = head[u]; e != -1; e = nextEntry[e])
+				{
+					if (targetV[e] == v && targetSlot[e] == slot)
+					{
+						return mappedVertex[e];
+					}
+				}
+				return -1;
+			}
+
+			void insert(int u, int v, int slot, int outVertexId)
+			{
+				const int idx = static_cast<int>(targetV.size());
+				targetV.push_back(v);
+				targetSlot.push_back(slot);
+				mappedVertex.push_back(outVertexId);
+				nextEntry.push_back(head[u]);
+				head[u] = idx;
+			}
+		};
+
+		ScalarCorner interpolateCorner(const ScalarCorner& a, const ScalarCorner& b, float threshold, int slot = 0)
 		{
 			const float denominator = b.scalar - a.scalar;
 			const float t = std::abs(denominator) <= 1.0e-12f ? 0.0f : (threshold - a.scalar) / denominator;
@@ -635,31 +696,60 @@ namespace zSpace
 			out.color.g = a.color.g + (b.color.g - a.color.g) * t;
 			out.color.b = a.color.b + (b.color.b - a.color.b) * t;
 			out.color.a = a.color.a + (b.color.a - a.color.a) * t;
+			out.edgeSlot = slot;
+
+			if (t <= 1.0e-6f && a.origVertexId >= 0)
+			{
+				out.origVertexId = a.origVertexId;
+			}
+			else if (t >= 1.0f - 1.0e-6f && b.origVertexId >= 0)
+			{
+				out.origVertexId = b.origVertexId;
+			}
+			else if (a.origVertexId >= 0 && b.origVertexId >= 0)
+			{
+				out.edgeU = std::min(a.origVertexId, b.origVertexId);
+				out.edgeV = std::max(a.origVertexId, b.origVertexId);
+			}
+			else if (a.edgeU >= 0 && (b.origVertexId == a.edgeU || b.origVertexId == a.edgeV))
+			{
+				out.edgeU = a.edgeU;
+				out.edgeV = a.edgeV;
+			}
+			else if (b.edgeU >= 0 && (a.origVertexId == b.edgeU || a.origVertexId == b.edgeV))
+			{
+				out.edgeU = b.edgeU;
+				out.edgeV = b.edgeV;
+			}
 			return out;
 		}
 
-		std::vector<ScalarCorner> clipScalarPolygon(
-			const std::vector<ScalarCorner>& input, float threshold, bool keepAbove)
+		void clipScalarPolygonInPlace(
+			std::vector<ScalarCorner>& polygon,
+			std::vector<ScalarCorner>& scratch,
+			float threshold,
+			bool keepAbove,
+			int slot = 0)
 		{
-			std::vector<ScalarCorner> output;
-			if (input.empty()) return output;
+			scratch.clear();
+			if (polygon.empty()) return;
 			auto inside = [&](const ScalarCorner& corner)
 			{
 				return keepAbove ? corner.scalar >= threshold : corner.scalar <= threshold;
 			};
 
-			ScalarCorner previous = input.back();
+			ScalarCorner previous = polygon.back();
 			bool previousInside = inside(previous);
-			for (const auto& current : input)
+			for (const auto& current : polygon)
 			{
 				const bool currentInside = inside(current);
 				if (currentInside != previousInside)
-					output.push_back(interpolateCorner(previous, current, threshold));
-				if (currentInside) output.push_back(current);
+					scratch.push_back(interpolateCorner(previous, current, threshold, slot));
+				if (currentInside) scratch.push_back(current);
 				previous = current;
 				previousInside = currentInside;
 			}
-			return output;
+			polygon.swap(scratch);
 		}
 	}
 
@@ -2269,14 +2359,14 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getMeshTriangles(vector<zIntArray> &faceTris)
 	{
-		faceTris.clear();
 		const auto& data = zMeshObjectStorage::read(*meshObj);
-		faceTris.reserve(data.numFaces());
-		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+		const int nF = data.numFaces();
+		faceTris.resize(nF);
+		for (int faceId = 0; faceId < nF; ++faceId)
 		{
-			zIntArray polygon(data.faceVertexIndices.begin() + data.faceOffsets[faceId],
-				data.faceVertexIndices.begin() + data.faceOffsets[faceId + 1]);
-			faceTris.push_back(triangulatePolygon(polygon, data.positions));
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
+			triangulatePolygon(data.faceVertexIndices.data() + begin, end - begin, data.positions, faceTris[faceId]);
 		}
 	}
 
@@ -2678,7 +2768,7 @@ namespace zSpace
 	ZSPACE_INLINE void zFnMesh::getPlanarityDeviationPerFace(zDoubleArray& planarityDevs, zPlanarSolverType type, bool colorFaces, double tolerance)
 	{
 		const auto& data = zMeshObjectStorage::read(*meshObj);
-		if (planarityDevs.size() != data.numFaces())
+		if (planarityDevs.size() != static_cast<std::size_t>(data.numFaces()))
 		{
 			planarityDevs.clear();
 			planarityDevs.assign(data.numFaces(), -1);
@@ -2694,26 +2784,29 @@ namespace zSpace
 			getMeshFaceVolumes(faceTriangles, faceCenters, faceVolumes, false);
 		}
 
-		auto& editableData = zMeshObjectStorage::edit(*meshObj);
-		for (int faceId = 0; faceId < editableData.numFaces(); ++faceId)
+		const auto& readData = zMeshObjectStorage::read(*meshObj);
+		auto* editableData = colorFaces ? &zMeshObjectStorage::edit(*meshObj) : nullptr;
+		const auto& activeData = editableData ? *editableData : readData;
+		for (int faceId = 0; faceId < activeData.numFaces(); ++faceId)
 		{
-			zPointArray fVerts;
-			const int begin = editableData.faceOffsets[faceId];
-			const int end = editableData.faceOffsets[faceId + 1];
-			fVerts.reserve(end - begin);
-			for (int i = begin; i < end; ++i)
-				fVerts.push_back(editableData.positions[editableData.faceVertexIndices[i]]);
+			const int begin = activeData.faceOffsets[faceId];
+			const int end = activeData.faceOffsets[faceId + 1];
+			const int count = end - begin;
 
 			if (type == zQuadPlanar)
 			{
-				if (fVerts.size() == 3)planarityDevs[faceId] = 0.0;
+				if (count == 3) planarityDevs[faceId] = 0.0;
 
-				if (fVerts.size() == 4)
+				if (count == 4)
 				{
 					double uA, uB;
 					zPoint pA, pB;
+					zPoint v0 = activeData.positions[activeData.faceVertexIndices[begin]];
+					zPoint v1 = activeData.positions[activeData.faceVertexIndices[begin + 1]];
+					zPoint v2 = activeData.positions[activeData.faceVertexIndices[begin + 2]];
+					zPoint v3 = activeData.positions[activeData.faceVertexIndices[begin + 3]];
 
-					coreUtils.line_lineClosestPoints(fVerts[0], fVerts[2], fVerts[1], fVerts[3], uA, uB, pA, pB);
+					coreUtils.line_lineClosestPoints(v0, v2, v1, v3, uA, uB, pA, pB);
 					planarityDevs[faceId] = pA.distanceTo(pB);
 				}
 				
@@ -2724,16 +2817,12 @@ namespace zSpace
 				planarityDevs[faceId] = abs(faceVolumes[faceId]);
 			}
 
-			if (colorFaces && faceId < static_cast<int>(editableData.faceColors.size()))
+			if (editableData && faceId < static_cast<int>(editableData->faceColors.size()))
 			{
 				if (planarityDevs[faceId] == -1) continue;
-				editableData.faceColors[faceId] = (planarityDevs[faceId] < tolerance) ? zGREEN : zMAGENTA;
+				editableData->faceColors[faceId] = (planarityDevs[faceId] < tolerance) ? zGREEN : zMAGENTA;
 			}
 		}
-			
-		
-
-		
 	}
 
 	ZSPACE_INLINE void zFnMesh::getEdgeDihedralAngles(zDoubleArray &dihedralAngles)
@@ -2878,13 +2967,14 @@ namespace zSpace
 		faceAreas.clear();
 		double totalArea = 0;
 		const auto& data = zMeshObjectStorage::read(*meshObj);
-		faceAreas.reserve(data.numFaces());
-		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+		const int nF = data.numFaces();
+		faceAreas.reserve(nF);
+		for (int faceId = 0; faceId < nF; ++faceId)
 		{
-			zIntArray polygon(data.faceVertexIndices.begin() + data.faceOffsets[faceId],
-				data.faceVertexIndices.begin() + data.faceOffsets[faceId + 1]);
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
 			double fArea = 0.0;
-			computeFaceNormalAndArea(polygon, data.positions, fArea);
+			computeFaceNormalAndArea(data.faceVertexIndices.data() + begin, end - begin, data.positions, fArea);
 			faceAreas.push_back(fArea);
 
 			totalArea += fArea;
@@ -3092,62 +3182,104 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getIsoContour(zScalarArray& vertexScalars, float threshold, zPointArray& positions, zIntArray& edgeConnects,  zColorArray& cVertexColor, int precision, float distTolerance, bool selectedFaces, zColor selectedFaceColor)
 	{
-
+		(void)precision;
 		if (vertexScalars.size() != numVertices())
 		{
 			throw std::invalid_argument(" error: scalars values to match number of vertices");
-			return;
 		}
 
 		positions.clear();
 		edgeConnects.clear();
 		cVertexColor.clear();
-		unordered_map<string, int> positionVertex;
+
 		const auto& data = zMeshObjectStorage::read(*meshObj);
-		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+		const int nV = data.numVertices();
+		const int nF = data.numFaces();
+		std::vector<int> originalVertexRemap(static_cast<std::size_t>(nV), -1);
+		FlatEdgeCrossingTable edgeCrossings;
+		edgeCrossings.init(nV, static_cast<std::size_t>(nV / 4 + 16));
+
+		std::vector<ScalarCorner> intersections;
+		intersections.reserve(8);
+		const bool hasVertexColors = !data.vertexColors.empty();
+		const float tolSq = distTolerance * distTolerance;
+
+		auto getOrInsertCorner = [&](const ScalarCorner& corner) -> int
+		{
+			if (corner.origVertexId >= 0)
+			{
+				int mapped = originalVertexRemap[corner.origVertexId];
+				if (mapped >= 0) return mapped;
+				mapped = static_cast<int>(positions.size());
+				positions.push_back(corner.position);
+				cVertexColor.push_back(corner.color);
+				originalVertexRemap[corner.origVertexId] = mapped;
+				return mapped;
+			}
+			if (corner.edgeU >= 0)
+			{
+				int mapped = edgeCrossings.find(corner.edgeU, corner.edgeV, corner.edgeSlot);
+				if (mapped >= 0) return mapped;
+				mapped = static_cast<int>(positions.size());
+				positions.push_back(corner.position);
+				cVertexColor.push_back(corner.color);
+				edgeCrossings.insert(corner.edgeU, corner.edgeV, corner.edgeSlot, mapped);
+				return mapped;
+			}
+			const int mapped = static_cast<int>(positions.size());
+			positions.push_back(corner.position);
+			cVertexColor.push_back(corner.color);
+			return mapped;
+		};
+
+		for (int faceId = 0; faceId < nF; ++faceId)
 		{
 			if (selectedFaces)
 			{
-				if (faceId >= data.faceColors.size()) continue;
+				if (faceId >= static_cast<int>(data.faceColors.size())) continue;
 				zColor faceColor = data.faceColors[faceId];
 				if (!(faceColor == selectedFaceColor)) continue;
 			}
-			std::vector<ScalarCorner> intersections;
 			const int begin = data.faceOffsets[faceId];
 			const int end = data.faceOffsets[faceId + 1];
+
+			bool anyAbove = false;
+			bool anyBelow = false;
+			for (int i = begin; i < end; ++i)
+			{
+				const float d = vertexScalars[data.faceVertexIndices[i]] - threshold;
+				if (d >= -1.0e-12f) anyAbove = true;
+				if (d <= 1.0e-12f) anyBelow = true;
+			}
+			if (!anyAbove || !anyBelow) continue;
+
+			intersections.clear();
 			for (int i = begin; i < end; ++i)
 			{
 				const int next = (i + 1 == end) ? begin : i + 1;
 				const int aId = data.faceVertexIndices[i];
 				const int bId = data.faceVertexIndices[next];
 				ScalarCorner a{ data.positions[aId], vertexScalars[aId],
-					aId < data.vertexColors.size() ? data.vertexColors[aId] : zColor() };
+					(hasVertexColors && aId < static_cast<int>(data.vertexColors.size())) ? data.vertexColors[aId] : zColor(),
+					aId, -1, -1, 0 };
 				ScalarCorner b{ data.positions[bId], vertexScalars[bId],
-					bId < data.vertexColors.size() ? data.vertexColors[bId] : zColor() };
+					(hasVertexColors && bId < static_cast<int>(data.vertexColors.size())) ? data.vertexColors[bId] : zColor(),
+					bId, -1, -1, 0 };
 				const float da = a.scalar - threshold;
 				const float db = b.scalar - threshold;
 				if (std::abs(da) <= 1.0e-12f) intersections.push_back(a);
-				if (da * db < 0.0f) intersections.push_back(interpolateCorner(a, b, threshold));
+				if (da * db < 0.0f) intersections.push_back(interpolateCorner(a, b, threshold, 0));
 			}
 			for (std::size_t i = 0; i + 1 < intersections.size(); i += 2)
 			{
-				zPoint segmentStart = intersections[i].position;
-				zPoint segmentEnd = intersections[i + 1].position;
-				if (vectorLength(segmentEnd - segmentStart) <= distTolerance) continue;
-				for (int endpoint = 0; endpoint < 2; ++endpoint)
-				{
-					const auto& corner = intersections[i + endpoint];
-					int vertexId = -1;
-					zPoint position = corner.position;
-					if (!coreUtils.vertexExists(positionVertex, position, precision, vertexId))
-					{
-						vertexId = static_cast<int>(positions.size());
-						positions.push_back(position);
-						cVertexColor.push_back(corner.color);
-						coreUtils.addToPositionMap(positionVertex, position, vertexId, precision);
-					}
-					edgeConnects.push_back(vertexId);
-				}
+				const zPoint& segmentStart = intersections[i].position;
+				const zPoint& segmentEnd = intersections[i + 1].position;
+				const float dx = segmentEnd.x - segmentStart.x;
+				const float dy = segmentEnd.y - segmentStart.y;
+				const float dz = segmentEnd.z - segmentStart.z;
+				if (dx * dx + dy * dy + dz * dz <= tolSq) continue;
+				edgeConnects.push_back(getOrInsertCorner(intersections[i]));
+				edgeConnects.push_back(getOrInsertCorner(intersections[i + 1]));
 			}
 		}
 	}
@@ -3155,49 +3287,110 @@ namespace zSpace
 
 	ZSPACE_INLINE void zFnMesh::getIsoMesh(zScalarArray& vertexScalars, float threshold, bool invertMesh, zObjectMesh& coutourMeshObj)
 	{
-
 		if (vertexScalars.size() != numVertices())
 		{
 			throw std::invalid_argument(" error: scalars values to match number of vertices");
-			return;
 		}
+
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		const bool keepAbove = !invertMesh;
+		const int nV = data.numVertices();
+		const int nF = data.numFaces();
 
 		zPointArray positions;
 		zIntArray polyConnects;
 		zIntArray polyCounts;
 		zColorArray colors;
-		unordered_map<string, int> positionVertex;
-		const auto& data = zMeshObjectStorage::read(*meshObj);
-		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+		positions.reserve(static_cast<std::size_t>(nV));
+		colors.reserve(static_cast<std::size_t>(nV));
+		polyCounts.reserve(static_cast<std::size_t>(nF));
+		polyConnects.reserve(data.faceVertexIndices.size());
+
+		std::vector<int> originalVertexRemap(static_cast<std::size_t>(nV), -1);
+		FlatEdgeCrossingTable edgeCrossings;
+		edgeCrossings.init(nV, static_cast<std::size_t>(nV / 4 + 16));
+
+		std::vector<ScalarCorner> polygon;
+		std::vector<ScalarCorner> scratch;
+		polygon.reserve(8);
+		scratch.reserve(8);
+		const bool hasVertexColors = !data.vertexColors.empty();
+
+		auto getOrInsertOriginalVertex = [&](int srcVertexId) -> int
 		{
-			std::vector<ScalarCorner> polygon;
-			for (int i = data.faceOffsets[faceId]; i < data.faceOffsets[faceId + 1]; ++i)
+			int mapped = originalVertexRemap[srcVertexId];
+			if (mapped >= 0) return mapped;
+			mapped = static_cast<int>(positions.size());
+			positions.push_back(data.positions[srcVertexId]);
+			colors.push_back((hasVertexColors && srcVertexId < static_cast<int>(data.vertexColors.size()))
+				? data.vertexColors[srcVertexId] : zColor());
+			originalVertexRemap[srcVertexId] = mapped;
+			return mapped;
+		};
+
+		auto getOrInsertCorner = [&](const ScalarCorner& corner) -> int
+		{
+			if (corner.origVertexId >= 0)
+			{
+				return getOrInsertOriginalVertex(corner.origVertexId);
+			}
+			if (corner.edgeU >= 0)
+			{
+				int mapped = edgeCrossings.find(corner.edgeU, corner.edgeV, corner.edgeSlot);
+				if (mapped >= 0) return mapped;
+				mapped = static_cast<int>(positions.size());
+				positions.push_back(corner.position);
+				colors.push_back(corner.color);
+				edgeCrossings.insert(corner.edgeU, corner.edgeV, corner.edgeSlot, mapped);
+				return mapped;
+			}
+			const int mapped = static_cast<int>(positions.size());
+			positions.push_back(corner.position);
+			colors.push_back(corner.color);
+			return mapped;
+		};
+
+		for (int faceId = 0; faceId < nF; ++faceId)
+		{
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
+			const int cornerCount = end - begin;
+			int insideCount = 0;
+			for (int i = begin; i < end; ++i)
+			{
+				const float s = vertexScalars[data.faceVertexIndices[i]];
+				if (keepAbove ? (s >= threshold) : (s <= threshold)) ++insideCount;
+			}
+			if (insideCount == 0) continue;
+			if (insideCount == cornerCount)
+			{
+				polyCounts.push_back(cornerCount);
+				for (int i = begin; i < end; ++i)
+				{
+					polyConnects.push_back(getOrInsertOriginalVertex(data.faceVertexIndices[i]));
+				}
+				continue;
+			}
+
+			polygon.clear();
+			for (int i = begin; i < end; ++i)
 			{
 				const int vertexId = data.faceVertexIndices[i];
 				polygon.push_back({ data.positions[vertexId], vertexScalars[vertexId],
-					vertexId < data.vertexColors.size() ? data.vertexColors[vertexId] : zColor() });
+					(hasVertexColors && vertexId < static_cast<int>(data.vertexColors.size())) ? data.vertexColors[vertexId] : zColor(),
+					vertexId, -1, -1, 0 });
 			}
-			polygon = clipScalarPolygon(polygon, threshold, !invertMesh);
+			clipScalarPolygonInPlace(polygon, scratch, threshold, keepAbove, 0);
 			if (polygon.size() < 3) continue;
 			polyCounts.push_back(static_cast<int>(polygon.size()));
 			for (const auto& corner : polygon)
 			{
-				int vertexId = -1;
-				zPoint position = corner.position;
-				if (!coreUtils.vertexExists(positionVertex, position, PRECISION, vertexId))
-				{
-					vertexId = static_cast<int>(positions.size());
-					positions.push_back(position);
-					colors.push_back(corner.color);
-					coreUtils.addToPositionMap(positionVertex, position, vertexId, PRECISION);
-				}
-				polyConnects.push_back(vertexId);
+				polyConnects.push_back(getOrInsertCorner(corner));
 			}
 		}
-		zFnMesh tempFn(coutourMeshObj);
-		tempFn.create(positions, polyCounts, polyConnects);
-		if (colors.size() == positions.size()) tempFn.setVertexColors(colors, false);
-
+		zMeshObjectStorage::setMoved(coutourMeshObj, std::move(positions), polyCounts, std::move(polyConnects));
+		auto& outStorage = zMeshObjectStorage::edit(coutourMeshObj);
+		if (colors.size() == outStorage.positions.size()) outStorage.vertexColors = std::move(colors);
 	}
 	
 	ZSPACE_INLINE void zFnMesh::getIsobandMesh(zScalarArray& vertexScalars, float inThresholdLow, float inThresholdHigh, zObjectMesh& coutourMeshObj)
@@ -3206,42 +3399,109 @@ namespace zSpace
 			throw std::invalid_argument(" error: scalars values to match number of vertices");
 		const float low = std::min(inThresholdLow, inThresholdHigh);
 		const float high = std::max(inThresholdLow, inThresholdHigh);
+		const auto& data = zMeshObjectStorage::read(*meshObj);
+		const int nV = data.numVertices();
+		const int nF = data.numFaces();
+
 		zPointArray positions;
 		zIntArray polyConnects;
 		zIntArray polyCounts;
 		zColorArray colors;
-		unordered_map<string, int> positionVertex;
-		const auto& data = zMeshObjectStorage::read(*meshObj);
-		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+		positions.reserve(static_cast<std::size_t>(nV / 2 + 16));
+		colors.reserve(static_cast<std::size_t>(nV / 2 + 16));
+		polyCounts.reserve(static_cast<std::size_t>(nF / 2 + 16));
+		polyConnects.reserve(data.faceVertexIndices.size() / 2 + 16);
+
+		std::vector<int> originalVertexRemap(static_cast<std::size_t>(nV), -1);
+		FlatEdgeCrossingTable edgeCrossings;
+		edgeCrossings.init(nV, static_cast<std::size_t>(nV / 2 + 16));
+
+		std::vector<ScalarCorner> polygon;
+		std::vector<ScalarCorner> scratch;
+		polygon.reserve(8);
+		scratch.reserve(8);
+		const bool hasVertexColors = !data.vertexColors.empty();
+
+		auto getOrInsertOriginalVertex = [&](int srcVertexId) -> int
 		{
-			std::vector<ScalarCorner> polygon;
-			for (int i = data.faceOffsets[faceId]; i < data.faceOffsets[faceId + 1]; ++i)
+			int mapped = originalVertexRemap[srcVertexId];
+			if (mapped >= 0) return mapped;
+			mapped = static_cast<int>(positions.size());
+			positions.push_back(data.positions[srcVertexId]);
+			colors.push_back((hasVertexColors && srcVertexId < static_cast<int>(data.vertexColors.size()))
+				? data.vertexColors[srcVertexId] : zColor());
+			originalVertexRemap[srcVertexId] = mapped;
+			return mapped;
+		};
+
+		auto getOrInsertCorner = [&](const ScalarCorner& corner) -> int
+		{
+			if (corner.origVertexId >= 0)
+			{
+				return getOrInsertOriginalVertex(corner.origVertexId);
+			}
+			if (corner.edgeU >= 0)
+			{
+				int mapped = edgeCrossings.find(corner.edgeU, corner.edgeV, corner.edgeSlot);
+				if (mapped >= 0) return mapped;
+				mapped = static_cast<int>(positions.size());
+				positions.push_back(corner.position);
+				colors.push_back(corner.color);
+				edgeCrossings.insert(corner.edgeU, corner.edgeV, corner.edgeSlot, mapped);
+				return mapped;
+			}
+			const int mapped = static_cast<int>(positions.size());
+			positions.push_back(corner.position);
+			colors.push_back(corner.color);
+			return mapped;
+		};
+
+		for (int faceId = 0; faceId < nF; ++faceId)
+		{
+			const int begin = data.faceOffsets[faceId];
+			const int end = data.faceOffsets[faceId + 1];
+			const int cornerCount = end - begin;
+			int belowLowCount = 0;
+			int aboveHighCount = 0;
+			int insideBandCount = 0;
+			for (int i = begin; i < end; ++i)
+			{
+				const float s = vertexScalars[data.faceVertexIndices[i]];
+				if (s < low) ++belowLowCount;
+				else if (s > high) ++aboveHighCount;
+				else ++insideBandCount;
+			}
+			if (belowLowCount == cornerCount || aboveHighCount == cornerCount) continue;
+			if (insideBandCount == cornerCount)
+			{
+				polyCounts.push_back(cornerCount);
+				for (int i = begin; i < end; ++i)
+				{
+					polyConnects.push_back(getOrInsertOriginalVertex(data.faceVertexIndices[i]));
+				}
+				continue;
+			}
+
+			polygon.clear();
+			for (int i = begin; i < end; ++i)
 			{
 				const int vertexId = data.faceVertexIndices[i];
 				polygon.push_back({ data.positions[vertexId], vertexScalars[vertexId],
-					vertexId < data.vertexColors.size() ? data.vertexColors[vertexId] : zColor() });
+					(hasVertexColors && vertexId < static_cast<int>(data.vertexColors.size())) ? data.vertexColors[vertexId] : zColor(),
+					vertexId, -1, -1, 0 });
 			}
-			polygon = clipScalarPolygon(polygon, low, true);
-			polygon = clipScalarPolygon(polygon, high, false);
+			clipScalarPolygonInPlace(polygon, scratch, low, true, 0);
+			clipScalarPolygonInPlace(polygon, scratch, high, false, 1);
 			if (polygon.size() < 3) continue;
 			polyCounts.push_back(static_cast<int>(polygon.size()));
 			for (const auto& corner : polygon)
 			{
-				int vertexId = -1;
-				zPoint position = corner.position;
-				if (!coreUtils.vertexExists(positionVertex, position, PRECISION, vertexId))
-				{
-					vertexId = static_cast<int>(positions.size());
-					positions.push_back(position);
-					colors.push_back(corner.color);
-					coreUtils.addToPositionMap(positionVertex, position, vertexId, PRECISION);
-				}
-				polyConnects.push_back(vertexId);
+				polyConnects.push_back(getOrInsertCorner(corner));
 			}
 		}
-		zFnMesh tempFn(coutourMeshObj);
-		tempFn.create(positions, polyCounts, polyConnects);
-		if (colors.size() == positions.size()) tempFn.setVertexColors(colors, false);
+		zMeshObjectStorage::setMoved(coutourMeshObj, std::move(positions), polyCounts, std::move(polyConnects));
+		auto& outStorage = zMeshObjectStorage::edit(coutourMeshObj);
+		if (colors.size() == outStorage.positions.size()) outStorage.vertexColors = std::move(colors);
 	}
 
 	//---- TRI-MESH MODIFIER METHODS
@@ -3615,46 +3875,68 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 				values.push_back(value);
 		};
 
+		const auto& initialSource = zMeshObjectStorage::read(*meshObj);
+		if (initialSource.numVertices() == 0 || initialSource.numFaces() == 0) return;
+
+		zPointArray workingPositions;
+		zIntArray workingFaceOffsets;
+		zIntArray workingFaceVertexIndices;
+
+		zPointArray faceCenters;
+		std::vector<CornerEdge> cornerEdges;
+		std::vector<EdgeSubdivisionData> edges;
+		zIntArray cornerEdgePoints;
+		zVectorArray vertexFaceSums;
+		zIntArray vertexFaceCounts;
+		zIntArray vertexLastFace;
+		vector<zIntArray> boundaryNeighbors;
+		zVectorArray edgeMidpointSums;
+		zIntArray incidentEdgeCounts;
+		zIntArray facePointIndices;
+
 		for (int j = 0; j < numDivisions; j++)
 		{
-			const auto& source = zMeshObjectStorage::read(*meshObj);
-			const int vertexCount = source.numVertices();
-			const int faceCount = source.numFaces();
+			const zPointArray& sourcePositions = (j == 0) ? initialSource.positions : workingPositions;
+			const zIntArray& sourceFaceOffsets = (j == 0) ? initialSource.faceOffsets : workingFaceOffsets;
+			const zIntArray& sourceFaceVertexIndices = (j == 0) ? initialSource.faceVertexIndices : workingFaceVertexIndices;
+			const int vertexCount = static_cast<int>(sourcePositions.size());
+			const int faceCount = sourceFaceOffsets.empty() ? 0 : static_cast<int>(sourceFaceOffsets.size()) - 1;
 			if (vertexCount == 0 || faceCount == 0) return;
 
-			zPointArray faceCenters(faceCount, zPoint());
+			faceCenters.assign(faceCount, zPoint());
 			ZSPACE_MESH_TIMER(phaseTimer);
-			std::vector<CornerEdge> cornerEdges;
-			cornerEdges.reserve(source.faceVertexIndices.size());
-			std::vector<EdgeSubdivisionData> edges;
-			edges.reserve(source.numEdges());
-			zIntArray cornerEdgePoints(source.faceVertexIndices.size(), -1);
-			zVectorArray vertexFaceSums(vertexCount, zVector());
-			zIntArray vertexFaceCounts(vertexCount, 0);
-			zIntArray vertexLastFace(vertexCount, -1);
-			vector<zIntArray> boundaryNeighbors(vertexCount);
-			zVectorArray edgeMidpointSums(vertexCount, zVector());
-			zIntArray incidentEdgeCounts(vertexCount, 0);
+			cornerEdges.clear();
+			cornerEdges.reserve(sourceFaceVertexIndices.size());
+			edges.clear();
+			edges.reserve((j == 0) ? static_cast<std::size_t>(initialSource.numEdges()) : (sourceFaceVertexIndices.size() / 2 + 1));
+			cornerEdgePoints.assign(sourceFaceVertexIndices.size(), -1);
+			vertexFaceSums.assign(vertexCount, zVector());
+			vertexFaceCounts.assign(vertexCount, 0);
+			vertexLastFace.assign(vertexCount, -1);
+			boundaryNeighbors.resize(vertexCount);
+			for (int v = 0; v < vertexCount; ++v) boundaryNeighbors[v].clear();
+			edgeMidpointSums.assign(vertexCount, zVector());
+			incidentEdgeCounts.assign(vertexCount, 0);
 
 			for (int faceId = 0; faceId < faceCount; ++faceId)
 			{
-				const int begin = source.faceOffsets[faceId];
-				const int end = source.faceOffsets[faceId + 1];
+				const int begin = sourceFaceOffsets[faceId];
+				const int end = sourceFaceOffsets[faceId + 1];
 				const int count = end - begin;
 				if (count < 3) continue;
 
 				for (int i = begin; i < end; ++i)
 				{
-					const int vertexId = source.faceVertexIndices[i];
-					faceCenters[faceId] += source.positions[vertexId];
+					const int vertexId = sourceFaceVertexIndices[i];
+					faceCenters[faceId] += sourcePositions[vertexId];
 				}
 				faceCenters[faceId] /= static_cast<float>(count);
 
 				for (int i = begin; i < end; ++i)
 				{
 					const int next = (i + 1 < end) ? i + 1 : begin;
-					const int a = source.faceVertexIndices[i];
-					const int b = source.faceVertexIndices[next];
+					const int a = sourceFaceVertexIndices[i];
+					const int b = sourceFaceVertexIndices[next];
 					// Face IDs are visited in order. This accumulates the same
 					// unique incident faces without allocating a list per vertex.
 					if (vertexLastFace[a] != faceId)
@@ -3674,7 +3956,6 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 			std::sort(cornerEdges.begin(), cornerEdges.end(), [](const CornerEdge& x, const CornerEdge& y) {
 				if (x.a != y.a) return x.a < y.a;
 				if (x.b != y.b) return x.b < y.b;
-				if (x.face != y.face) return x.face < y.face;
 				return x.corner < y.corner;
 			});
 			for (const auto& corner : cornerEdges)
@@ -3697,8 +3978,8 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 			ZSPACE_MESH_STAGE(phaseTimer, "face-edge-collection", faceCount);
 			for (const auto& edge : edges)
 			{
-				zVector a = source.positions[edge.a];
-				zVector b = source.positions[edge.b];
+				zVector a = sourcePositions[edge.a];
+				zVector b = sourcePositions[edge.b];
 				zVector midpoint = (a + b) * 0.5f;
 				edgeMidpointSums[edge.a] += midpoint;
 				edgeMidpointSums[edge.b] += midpoint;
@@ -3712,11 +3993,11 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 				}
 			}
 
-			zPointArray newPositions = source.positions;
-			newPositions.reserve(source.positions.size() + edges.size() + faceCenters.size());
+			zPointArray newPositions = sourcePositions;
+			newPositions.reserve(sourcePositions.size() + edges.size() + faceCenters.size());
 			for (int vertexId = 0; vertexId < vertexCount; ++vertexId)
 			{
-				zVector P = source.positions[vertexId];
+				zVector P = sourcePositions[vertexId];
 				if (!boundaryNeighbors[vertexId].empty())
 				{
 					if (!smoothCorner && incidentEdgeCounts[vertexId] == 2)
@@ -3727,8 +4008,8 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 
 					if (boundaryNeighbors[vertexId].size() >= 2)
 					{
-						zVector n0 = source.positions[boundaryNeighbors[vertexId][0]];
-						zVector n1 = source.positions[boundaryNeighbors[vertexId][1]];
+						zVector n0 = sourcePositions[boundaryNeighbors[vertexId][0]];
+						zVector n1 = sourcePositions[boundaryNeighbors[vertexId][1]];
 						newPositions[vertexId] = (P * 0.75f) + ((n0 + n1) * 0.125f);
 					}
 					else newPositions[vertexId] = P;
@@ -3754,8 +4035,8 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 
 			for (const auto& edge : edges)
 			{
-				zVector a = source.positions[edge.a];
-				zVector b = source.positions[edge.b];
+				zVector a = sourcePositions[edge.a];
+				zVector b = sourcePositions[edge.b];
 				zVector edgePoint;
 				if (edge.faceCount >= 2)
 				{
@@ -3769,32 +4050,29 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 				newPositions.push_back(edgePoint);
 			}
 
-			zIntArray facePointIndices(faceCount, -1);
+			facePointIndices.assign(faceCount, -1);
 			for (int faceId = 0; faceId < faceCount; ++faceId)
 			{
 				facePointIndices[faceId] = static_cast<int>(newPositions.size());
 				newPositions.push_back(faceCenters[faceId]);
 			}
 
-			zIntArray newCounts;
 			zIntArray newConnects;
-			newCounts.reserve(source.faceVertexIndices.size());
-			newConnects.reserve(source.faceVertexIndices.size() * 4);
+			newConnects.reserve(sourceFaceVertexIndices.size() * 4);
 
 			for (int faceId = 0; faceId < faceCount; ++faceId)
 			{
-				const int begin = source.faceOffsets[faceId];
-				const int end = source.faceOffsets[faceId + 1];
+				const int begin = sourceFaceOffsets[faceId];
+				const int end = sourceFaceOffsets[faceId + 1];
 				if (end - begin < 3) continue;
 
 				for (int i = begin; i < end; ++i)
 				{
 					const int previous = (i == begin) ? end - 1 : i - 1;
-					const int vertexId = source.faceVertexIndices[i];
+					const int vertexId = sourceFaceVertexIndices[i];
 					const int previousEdgePoint = cornerEdgePoints[previous];
 					const int nextEdgePoint = cornerEdgePoints[i];
 
-					newCounts.push_back(4);
 					newConnects.push_back(vertexId);
 					newConnects.push_back(nextEdgePoint);
 					newConnects.push_back(facePointIndices[faceId]);
@@ -3803,7 +4081,19 @@ ZSPACE_INLINE void zFnMesh::subdivide(int numDivisions)
 			}
 
 			ZSPACE_MESH_STAGE(phaseTimer, "subdivision-output", faceCount);
-			zMeshObjectStorage::setMoved(*meshObj, std::move(newPositions), newCounts, std::move(newConnects));
+			if (j + 1 < numDivisions)
+			{
+				const int newFaceCount = static_cast<int>(newConnects.size() / 4);
+				workingFaceOffsets.resize(static_cast<std::size_t>(newFaceCount) + 1);
+				for (int f = 0; f <= newFaceCount; ++f) workingFaceOffsets[f] = f * 4;
+				workingPositions = std::move(newPositions);
+				workingFaceVertexIndices = std::move(newConnects);
+			}
+			else
+			{
+				zIntArray newCounts(newConnects.size() / 4, 4);
+				zMeshObjectStorage::setMoved(*meshObj, std::move(newPositions), newCounts, std::move(newConnects));
+			}
 			ZSPACE_MESH_STAGE(phaseTimer, "storage-install", faceCount);
 		}
 		// Intermediate divisions only consume positions/connectivity.

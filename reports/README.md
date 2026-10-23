@@ -13,6 +13,7 @@ for active instructions.
 | Graph storage/topology | [Graph topology audit](graph-topology-audit.html) |
 | Graph optimization | [Graph optimization](graph-optimization.html) |
 | Graph construction | [Construction optimization](graph-construction-optimization.html) |
+| 2D & 3D Fields | [Field optimization](field-optimization.md) |
 | Typed sketch buffers | [Typed buffer audit](sketch-typed-audit.html) |
 | Viewer boundaries | [Boundary table optimization](viewer-boundary-table-optimization.html) |
 | Viewer reconstruction | [Reconstruction optimization](viewer-reconstruction-optimization.html) |

@@ -18,59 +18,28 @@ namespace zSpace
 
 	template <typename T>
 	ZSPACE_INLINE zField2D<T>::zField2D()
+		: n_X(0), n_Y(0), unit_X(0.0), unit_Y(0.0), valuesperVertex(true)
 	{
 		fieldValues.clear();
 	}
 
 	template <typename T>
 	ZSPACE_INLINE zField2D<T>::zField2D(zVector _minBB, zVector _maxBB, int _n_X, int _n_Y)
+		: n_X(_n_X), n_Y(_n_Y), minBB(_minBB), maxBB(_maxBB), valuesperVertex(true)
 	{
-		vector<zVector>positions;
-		vector<int>polyConnects;
-		vector<int>polyCounts;
+		unit_X = (n_X > 1) ? (maxBB.x - minBB.x) / (n_X - 1) : (maxBB.x - minBB.x);
+		unit_Y = (n_Y > 1) ? (maxBB.y - minBB.y) / (n_Y - 1) : (maxBB.y - minBB.y);
 
-		minBB = _minBB;
-		maxBB = _maxBB;
-		n_X = _n_X;
-		n_Y = _n_Y;
-
-		unit_X = (maxBB.x - minBB.x) / (n_X - 1);
-		unit_Y = (maxBB.y - minBB.y) / (n_Y - 1);
-
-		zVector unitVec = zVector(unit_X, unit_Y, 0);
-		zVector startPt = minBB;
-
-		fieldValues.clear();
-
-		T defaultValue;
-		fieldValues.assign(n_X*n_Y, defaultValue);
-
+		fieldValues.assign(static_cast<std::size_t>(n_X) * static_cast<std::size_t>(n_Y), T());
 	}
 
 	template <typename T>
-	ZSPACE_INLINE zField2D<T>::zField2D(double _unit_X, double _unit_Y, int _n_X, int _n_Y, zVector _minBB )
+	ZSPACE_INLINE zField2D<T>::zField2D(double _unit_X, double _unit_Y, int _n_X, int _n_Y, zVector _minBB)
+		: n_X(_n_X), n_Y(_n_Y), unit_X(_unit_X), unit_Y(_unit_Y), minBB(_minBB), valuesperVertex(true)
 	{
-		vector<zVector>positions;
-		vector<int>polyConnects;
-		vector<int>polyCounts;
-
-		unit_X = _unit_X;
-		unit_Y = _unit_Y;
-		n_X = _n_X;
-		n_Y = _n_Y;
-
-		minBB = _minBB;
 		maxBB = _minBB + zVector(unit_X * n_X, unit_Y * n_Y, 0);
 
-
-		zVector unitVec = zVector(unit_X, unit_Y, 0);
-		zVector startPt = _minBB;
-
-		fieldValues.clear();
-
-		T defaultValue;
-		fieldValues.assign(n_X*n_Y, defaultValue);
-
+		fieldValues.assign(static_cast<std::size_t>(n_X) * static_cast<std::size_t>(n_Y), T());
 	}
 
 	//---- DESTRUCTOR

@@ -7,1446 +7,1805 @@
 // If a copy of the MIT License was not distributed with this file, You can 
 // obtain one at https://opensource.org/licenses/MIT.
 //
-// Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com> 
+// Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>
 //
 
+#include <zspace/zInterface/functionsets/zFnPointField.h>
+#include <src/zInterface/functionsets/internal/zFieldAccel.h>
+#include <src/zInterface/objects/zFieldObjectStorage.h>
+#include <src/zInterface/objects/zMeshObjectStorage.h>
+#include <src/zInterface/objects/zGraphObjectStorage.h>
+#include <src/zInterface/objects/internal/zObjectPointCloudImpl.h>
 
-#include<zspace/zInterface/functionsets/zFnPointField.h>
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <stdexcept>
 
 namespace zSpace
 {
-
-	//---- CONSTRUCTOR
-
-	template<typename T>
-	ZSPACE_INLINE zFnPointFieldBase<T>::zFnPointFieldBase()
+	namespace
 	{
-		fnType = zFnType::zPointFieldFn;
-		fieldObj = nullptr;
+		struct EdgeSegment3D
+		{
+			zPoint p0;
+			zVector ab;
+			double ab2;
+		};
+
+		inline zPoint gridCellPosition3D(const zVector& minBB, double unit_X, double unit_Y, double unit_Z, int i, int j, int k) noexcept
+		{
+			return zPoint(
+				minBB.x + static_cast<float>(i * unit_X),
+				minBB.y + static_cast<float>(j * unit_Y),
+				minBB.z + static_cast<float>(k * unit_Z));
+		}
+
+		inline bool computeCellCoords3D(
+			const zPoint& pos,
+			const zVector& minBB,
+			double unit_X,
+			double unit_Y,
+			double unit_Z,
+			int n_X,
+			int n_Y,
+			int n_Z,
+			int& index_X,
+			int& index_Y,
+			int& index_Z) noexcept
+		{
+			if (n_X <= 0 || n_Y <= 0 || n_Z <= 0 || unit_X == 0.0 || unit_Y == 0.0 || unit_Z == 0.0)
+			{
+				index_X = -1;
+				index_Y = -1;
+				index_Z = -1;
+				return false;
+			}
+			index_X = static_cast<int>(std::floor((pos.x - minBB.x) / unit_X));
+			index_Y = static_cast<int>(std::floor((pos.y - minBB.y) / unit_Y));
+			index_Z = static_cast<int>(std::floor((pos.z - minBB.z) / unit_Z));
+			return (index_X >= 0 && index_X < n_X &&
+				index_Y >= 0 && index_Y < n_Y &&
+				index_Z >= 0 && index_Z < n_Z);
+		}
+
+		template<typename T, typename ValueT>
+		bool sampleField3D(
+			const ValueT* values,
+			std::size_t valueCount,
+			const zVector& minBB,
+			double unit_X,
+			double unit_Y,
+			double unit_Z,
+			int n_X,
+			int n_Y,
+			int n_Z,
+			const zPoint& samplePos,
+			zFieldValueType type,
+			T& fieldValue)
+		{
+			int ix = -1, iy = -1, iz = -1;
+			if (!computeCellCoords3D(samplePos, minBB, unit_X, unit_Y, unit_Z, n_X, n_Y, n_Z, ix, iy, iz))
+			{
+				return false;
+			}
+			const int strideX = n_Y * n_Z;
+			const int centerId = ix * strideX + iy * n_Z + iz;
+			if (centerId < 0 || static_cast<std::size_t>(centerId) >= valueCount)
+			{
+				return false;
+			}
+
+			if (type == zFieldIndex)
+			{
+				fieldValue = values[centerId];
+				return true;
+			}
+
+			if (type == zFieldNeighbourWeighted)
+			{
+				const int iMin = std::max(0, ix - 1);
+				const int iMax = std::min(n_X - 1, ix + 1);
+				const int jMin = std::max(0, iy - 1);
+				const int jMax = std::min(n_Y - 1, iy + 1);
+				const int kMin = std::max(0, iz - 1);
+				const int kMax = std::min(n_Z - 1, iz + 1);
+
+				double wSum = 0.0;
+				T weightedSum = T();
+				for (int i = iMin; i <= iMax; ++i)
+				{
+					for (int j = jMin; j <= jMax; ++j)
+					{
+						for (int k = kMin; k <= kMax; ++k)
+						{
+							const zPoint nPos = gridCellPosition3D(minBB, unit_X, unit_Y, unit_Z, i, j, k);
+							const double dx = static_cast<double>(samplePos.x) - nPos.x;
+							const double dy = static_cast<double>(samplePos.y) - nPos.y;
+							const double dz = static_cast<double>(samplePos.z) - nPos.z;
+							const double distSq = dx * dx + dy * dy + dz * dz;
+							if (distSq <= 0.0)
+							{
+								fieldValue = values[i * strideX + j * n_Z + k];
+								return true;
+							}
+							const double w = 1.0 / distSq;
+							ValueT v = values[i * strideX + j * n_Z + k];
+							weightedSum += v * static_cast<float>(w);
+							wSum += w;
+						}
+					}
+				}
+				if (wSum > 0.0) weightedSum /= static_cast<float>(wSum);
+				fieldValue = weightedSum;
+				return true;
+			}
+
+			if (type == zFieldAdjacentWeighted)
+			{
+				const int iMin = std::max(0, ix - 1);
+				const int iMax = std::min(n_X - 1, ix + 1);
+				const int jMin = std::max(0, iy - 1);
+				const int jMax = std::min(n_Y - 1, iy + 1);
+				const int kMin = std::max(0, iz - 1);
+				const int kMax = std::min(n_Z - 1, iz + 1);
+
+				double wSum = 0.0;
+				T weightedSum = T();
+				for (int i = iMin; i <= iMax; ++i)
+				{
+					for (int j = jMin; j <= jMax; ++j)
+					{
+						for (int k = kMin; k <= kMax; ++k)
+						{
+							if (i != ix && j != iy && k != iz) continue;
+							const zPoint nPos = gridCellPosition3D(minBB, unit_X, unit_Y, unit_Z, i, j, k);
+							const double dx = static_cast<double>(samplePos.x) - nPos.x;
+							const double dy = static_cast<double>(samplePos.y) - nPos.y;
+							const double dz = static_cast<double>(samplePos.z) - nPos.z;
+							const double distSq = dx * dx + dy * dy + dz * dz;
+							if (distSq <= 0.0)
+							{
+								fieldValue = values[i * strideX + j * n_Z + k];
+								return true;
+							}
+							const double w = 1.0 / distSq;
+							ValueT v = values[i * strideX + j * n_Z + k];
+							weightedSum += v * static_cast<float>(w);
+							wSum += w;
+						}
+					}
+				}
+				if (wSum > 0.0) weightedSum /= static_cast<float>(wSum);
+				fieldValue = weightedSum;
+				return true;
+			}
+
+			if (type == zFieldContainedWeighted)
+			{
+				const zPoint cPos = gridCellPosition3D(minBB, unit_X, unit_Y, unit_Z, ix, iy, iz);
+				const int stepX = (samplePos.x - cPos.x < 0.0f) ? -1 : 1;
+				const int stepY = (samplePos.y - cPos.y < 0.0f) ? -1 : 1;
+				const int stepZ = (samplePos.z - cPos.z < 0.0f) ? -1 : 1;
+
+				const int xs[2] = { ix, ix + stepX };
+				const int ys[2] = { iy, iy + stepY };
+				const int zs[2] = { iz, iz + stepZ };
+
+				double wSum = 0.0;
+				T weightedSum = T();
+				for (int a = 0; a < 2; ++a)
+				{
+					const int i = xs[a];
+					if (i < 0 || i >= n_X) continue;
+					for (int b = 0; b < 2; ++b)
+					{
+						const int j = ys[b];
+						if (j < 0 || j >= n_Y) continue;
+						for (int c = 0; c < 2; ++c)
+						{
+							const int k = zs[c];
+							if (k < 0 || k >= n_Z) continue;
+							const zPoint nPos = gridCellPosition3D(minBB, unit_X, unit_Y, unit_Z, i, j, k);
+							const double dx = static_cast<double>(samplePos.x) - nPos.x;
+							const double dy = static_cast<double>(samplePos.y) - nPos.y;
+							const double dz = static_cast<double>(samplePos.z) - nPos.z;
+							const double distSq = dx * dx + dy * dy + dz * dz;
+							if (distSq <= 0.0)
+							{
+								fieldValue = values[i * strideX + j * n_Z + k];
+								return true;
+							}
+							const double w = 1.0 / distSq;
+							ValueT v = values[i * strideX + j * n_Z + k];
+							weightedSum += v * static_cast<float>(w);
+							wSum += w;
+						}
+					}
+				}
+				if (wSum > 0.0) weightedSum /= static_cast<float>(wSum);
+				fieldValue = weightedSum;
+				return true;
+			}
+
+			return false;
+		}
+
+		void buildContainedNeighbours3D(
+			const zPoint& pos,
+			const zVector& minBB,
+			double unit_X,
+			double unit_Y,
+			double unit_Z,
+			int n_X,
+			int n_Y,
+			int n_Z,
+			zIntArray& containedNeighbour)
+		{
+			containedNeighbour.clear();
+			int ix = -1, iy = -1, iz = -1;
+			if (!computeCellCoords3D(pos, minBB, unit_X, unit_Y, unit_Z, n_X, n_Y, n_Z, ix, iy, iz)) return;
+
+			const zPoint cPos = gridCellPosition3D(minBB, unit_X, unit_Y, unit_Z, ix, iy, iz);
+			const int stepX = (pos.x - cPos.x < 0.0f) ? -1 : 1;
+			const int stepY = (pos.y - cPos.y < 0.0f) ? -1 : 1;
+			const int stepZ = (pos.z - cPos.z < 0.0f) ? -1 : 1;
+
+			const int xs[2] = { ix, ix + stepX };
+			const int ys[2] = { iy, iy + stepY };
+			const int zs[2] = { iz, iz + stepZ };
+			const int strideX = n_Y * n_Z;
+
+			for (int a = 0; a < 2; ++a)
+			{
+				const int i = xs[a];
+				if (i < 0 || i >= n_X) continue;
+				for (int b = 0; b < 2; ++b)
+				{
+					const int j = ys[b];
+					if (j < 0 || j >= n_Y) continue;
+					for (int c = 0; c < 2; ++c)
+					{
+						const int k = zs[c];
+						if (k < 0 || k >= n_Z) continue;
+						containedNeighbour.push_back(i * strideX + j * n_Z + k);
+					}
+				}
+			}
+		}
+
+		void buildRingNeighbours3D(int index, int numRings, int n_X, int n_Y, int n_Z, zIntArray& out)
+		{
+			out.clear();
+			const int total = n_X * n_Y * n_Z;
+			if (n_X <= 0 || n_Y <= 0 || n_Z <= 0 || index < 0 || index >= total) return;
+			const int strideX = n_Y * n_Z;
+			const int ix = index / strideX;
+			const int rem = index % strideX;
+			const int iy = rem / n_Z;
+			const int iz = rem % n_Z;
+
+			const int iMin = std::max(0, ix - numRings);
+			const int iMax = std::min(n_X - 1, ix + numRings);
+			const int jMin = std::max(0, iy - numRings);
+			const int jMax = std::min(n_Y - 1, iy + numRings);
+			const int kMin = std::max(0, iz - numRings);
+			const int kMax = std::min(n_Z - 1, iz + numRings);
+
+			for (int i = iMin; i <= iMax; ++i)
+			{
+				for (int j = jMin; j <= jMax; ++j)
+				{
+					for (int k = kMin; k <= kMax; ++k)
+					{
+						out.push_back(i * strideX + j * n_Z + k);
+					}
+				}
+			}
+		}
+
+		void buildAdjacentNeighbours3D(int index, int n_X, int n_Y, int n_Z, zIntArray& out)
+		{
+			out.clear();
+			const int total = n_X * n_Y * n_Z;
+			if (n_X <= 0 || n_Y <= 0 || n_Z <= 0 || index < 0 || index >= total) return;
+			const int strideX = n_Y * n_Z;
+			const int ix = index / strideX;
+			const int rem = index % strideX;
+			const int iy = rem / n_Z;
+			const int iz = rem % n_Z;
+
+			for (int di = -1; di <= 1; ++di)
+			{
+				for (int dj = -1; dj <= 1; ++dj)
+				{
+					for (int dk = -1; dk <= 1; ++dk)
+					{
+						if (di != 0 && dj != 0 && dk != 0) continue;
+						const int i = ix + di;
+						const int j = iy + dj;
+						const int k = iz + dk;
+						if (i >= 0 && i < n_X && j >= 0 && j < n_Y && k >= 0 && k < n_Z)
+						{
+							out.push_back(i * strideX + j * n_Z + k);
+						}
+					}
+				}
+			}
+		}
 	}
 
-	template<typename T>
-	ZSPACE_INLINE zFnPointFieldBase<T>::zFnPointFieldBase(zObjectPointField<T>& _fieldObj)
+	//==========================================================================
+	// zFnPointScalarField
+	//==========================================================================
+
+	ZSPACE_INLINE zFnPointScalarField::zFnPointScalarField()
+		: fnType(zFnType::zPointFieldFn), fieldObj(nullptr)
 	{
-		fieldObj = &_fieldObj;
-		fnPoints = zFnPointCloud(_fieldObj);
-
-		fnType = zFnType::zPointFieldFn;
-
 	}
 
-	//---- DESTRUCTOR
+	ZSPACE_INLINE zFnPointScalarField::zFnPointScalarField(zObjectPointScalarField& _fieldObj)
+		: fnType(zFnType::zPointFieldFn), fieldObj(&_fieldObj), fnPoints(_fieldObj)
+	{
+	}
 
-	template<typename T>
-	ZSPACE_INLINE zFnPointFieldBase<T>::~zFnPointFieldBase() {}
+	ZSPACE_INLINE zFnPointScalarField::~zFnPointScalarField() = default;
 
-	//--------------------------
-	//---- FACTORY METHODS
-	//--------------------------
-
-	template<typename T>
-	ZSPACE_INLINE zFnType zFnPointFieldBase<T>::getType()
+	ZSPACE_INLINE zFnType zFnPointScalarField::getType()
 	{
 		return zFnType::zPointFieldFn;
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getBounds(zPoint& minBB, zPoint& maxBB)
+	ZSPACE_INLINE void zFnPointScalarField::getBounds(zPoint& minBB, zPoint& maxBB)
 	{
-		minBB = fieldObj->field.minBB;
-		maxBB = fieldObj->field.maxBB;
+		getBoundingBox(minBB, maxBB);
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::clear()
+	ZSPACE_INLINE void zFnPointScalarField::clear()
 	{
-
-		fieldObj->field.fieldValues.clear();
-
 		fnPoints.clear();
-	}
-
-	//--------------------------
-	//---- CREATE METHODS
-	//--------------------------
-
-	//---- zScalar &  zVector specilization for create
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _n_Z, int _NR)
-	{
-		fieldObj->field = zField3D<zScalar>(_minBB, _maxBB, _n_X, _n_Y, _n_Z);
-
-		// compute neighbours
+		if (fieldObj)
+		{
+			zFieldObjectStorage::get(*fieldObj).fieldValues.clear();
+		}
 		ringNeighbours.clear();
 		adjacentNeighbours.clear();
+	}
 
-		//int i = 0;
-		//for (zItPointScalarField s(*fieldObj); !s.end(); s++, i++)
-		//{
-		//	vector<int> temp_ringNeighbour;
-		//	s.getNeighbour_Ring(_NR, temp_ringNeighbour);
-
-		//	for (auto& o : temp_ringNeighbour) cout << o << endl;
-		//	ringNeighbours[i] = (temp_ringNeighbour);
-
-		//	vector<int> temp_adjacentNeighbour;
-		//	s.getNeighbour_Adjacents(temp_adjacentNeighbour);
-		//	adjacentNeighbours[i] = (temp_adjacentNeighbour);
-		//}
-
-		vector<int> temp_ringNeighbour;
-		vector<int> temp_adjacentNeighbour;
-
-		int size = _n_X * _n_Y * _n_Z;
-		ringNeighbours.assign(size, temp_ringNeighbour);
-		adjacentNeighbours.assign(size, temp_ringNeighbour);
-
-		int i = 0;
-		for (zItPointScalarField s(*fieldObj); !s.end(); s++, i++)
-		{
-			s.getNeighbour_Ring(_NR, temp_ringNeighbour);
-			ringNeighbours[i] = (temp_ringNeighbour);
-
-			s.getNeighbour_Adjacents(temp_adjacentNeighbour);
-			adjacentNeighbours[i] = (temp_adjacentNeighbour);
-		}
-
-		// create field points
+	ZSPACE_INLINE void zFnPointScalarField::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _n_Z, int _NR)
+	{
+		(void)_NR;
+		auto& field = zFieldObjectStorage::get(*fieldObj);
+		field = zField3D<zScalar>(_minBB, _maxBB, _n_X, _n_Y, _n_Z);
+		ringNeighbours.clear();
+		adjacentNeighbours.clear();
 		createPointCloud();
 	}
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zVector>::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _n_Z, int _NR)
+	ZSPACE_INLINE void zFnPointScalarField::create(double _unit_X, double _unit_Y, double _unit_Z, int _n_X, int _n_Y, int _n_Z, zPoint _minBB, int _NR)
 	{
-		fieldObj->field = zField3D<zVector>(_minBB, _maxBB, _n_X, _n_Y, _n_Z);
-
-		// compute neighbours
+		(void)_NR;
+		auto& field = zFieldObjectStorage::get(*fieldObj);
+		field = zField3D<zScalar>(_unit_X, _unit_Y, _unit_Z, _n_X, _n_Y, _n_Z, _minBB);
 		ringNeighbours.clear();
 		adjacentNeighbours.clear();
-
-		int i = 0;
-		for (zItPointVectorField s(*fieldObj); !s.end(); s++, i++)
-		{
-			vector<int> temp_ringNeighbour;
-			s.getNeighbour_Ring(_NR, temp_ringNeighbour);
-			ringNeighbours[i] = (temp_ringNeighbour);
-
-			vector<int> temp_adjacentNeighbour;
-			s.getNeighbour_Adjacents(temp_adjacentNeighbour);
-			adjacentNeighbours[i] = (temp_adjacentNeighbour);
-		}
-
-		// create field points
 		createPointCloud();
 	}
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::create(double _unit_X, double _unit_Y, double _unit_Z, int _n_X, int _n_Y, int _n_Z, zPoint _minBB, int _NR)
+	ZSPACE_INLINE int zFnPointScalarField::getIndex(int index_X, int index_Y, int index_Z) const
 	{
-		fieldObj->field = zField3D<zScalar>(_unit_X, _unit_Y, _unit_Z, _n_X, _n_Y, _n_Z, _minBB);
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return index_X * field.n_Y * field.n_Z + index_Y * field.n_Z + index_Z;
+	}
 
-		// compute neighbours
-		ringNeighbours.clear();
-		adjacentNeighbours.clear();
-
-		int i = 0;
-		for (zItPointScalarField s(*fieldObj); !s.end(); s++, i++)
+	ZSPACE_INLINE void zFnPointScalarField::getIndices(int index, int& index_X, int& index_Y, int& index_Z) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		const int strideX = field.n_Y * field.n_Z;
+		if (strideX <= 0 || field.n_Z <= 0)
 		{
-			vector<int> temp_ringNeighbour;
-			s.getNeighbour_Ring(_NR, temp_ringNeighbour);
-			ringNeighbours[i] = (temp_ringNeighbour);
-
-			vector<int> temp_adjacentNeighbour;
-			s.getNeighbour_Adjacents(temp_adjacentNeighbour);
-			adjacentNeighbours[i] = (temp_adjacentNeighbour);
+			index_X = 0; index_Y = 0; index_Z = 0;
+			return;
 		}
-
-		// create field points
-		createPointCloud();
+		index_X = index / strideX;
+		const int rem = index % strideX;
+		index_Y = rem / field.n_Z;
+		index_Z = rem % field.n_Z;
 	}
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zVector>::create(double _unit_X, double _unit_Y, double _unit_Z, int _n_X, int _n_Y, int _n_Z, zPoint _minBB, int _NR)
+	ZSPACE_INLINE zPoint zFnPointScalarField::getPosition(int index) const
 	{
-		fieldObj->field = zField3D<zVector>(_unit_X, _unit_Y, _unit_Z, _n_X, _n_Y, _n_Z, _minBB);
+		int ix = 0, iy = 0, iz = 0;
+		getIndices(index, ix, iy, iz);
+		return getPosition(ix, iy, iz);
+	}
 
-		// compute neighbours
-		ringNeighbours.clear();
-		adjacentNeighbours.clear();
+	ZSPACE_INLINE zPoint zFnPointScalarField::getPosition(int index_X, int index_Y, int index_Z) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return gridCellPosition3D(field.minBB, field.unit_X, field.unit_Y, field.unit_Z, index_X, index_Y, index_Z);
+	}
 
-		int i = 0;
-		for (zItPointVectorField s(*fieldObj); !s.end(); s++, i++)
+	ZSPACE_INLINE void zFnPointScalarField::getNeighbour_Ring(int index, int numRings, zIntArray& outRingNeighbours) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		buildRingNeighbours3D(index, numRings, field.n_X, field.n_Y, field.n_Z, outRingNeighbours);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::getNeighbour_Adjacents(int index, zIntArray& outAdjacentNeighbours) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		buildAdjacentNeighbours3D(index, field.n_X, field.n_Y, field.n_Z, outAdjacentNeighbours);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::getNeighbour_Contained(zPoint& pos, zIntArray& containedNeighbour)
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		buildContainedNeighbours3D(pos, field.minBB, field.unit_X, field.unit_Y, field.unit_Z, field.n_X, field.n_Y, field.n_Z, containedNeighbour);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::getNeighbourPosition_Contained(zPoint& pos, zPointArray& containedNeighbour)
+	{
+		containedNeighbour.clear();
+		zIntArray indices;
+		getNeighbour_Contained(pos, indices);
+		containedNeighbour.reserve(indices.size());
+		for (int id : indices)
 		{
-			vector<int> temp_ringNeighbour;
-			s.getNeighbour_Ring(_NR, temp_ringNeighbour);
-			ringNeighbours[i] = (temp_ringNeighbour);
-
-			vector<int> temp_adjacentNeighbour;
-			s.getNeighbour_Adjacents(temp_adjacentNeighbour);
-			adjacentNeighbours[i] = (temp_adjacentNeighbour);
+			containedNeighbour.push_back(getPosition(id));
 		}
-
-		// create field points
-		createPointCloud();
 	}
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zVector>::createVectorFromScalarField(zFnPointFieldBase<zScalar>& inFnScalarField)
+	ZSPACE_INLINE int zFnPointScalarField::numFieldValues() const
 	{
-		zVector minBB, maxBB;
-		inFnScalarField.getBoundingBox(minBB, maxBB);
-
-		int n_X, n_Y, n_Z;
-		inFnScalarField.getResolution(n_X, n_Y, n_Z);
-
-		vector<zVector> gradients = inFnScalarField.getGradients();
-
-		create(minBB, maxBB, n_X, n_Y, n_Z);
-		setFieldValues(gradients);
+		return static_cast<int>(zFieldObjectStorage::get(*fieldObj).fieldValues.size());
 	}
 
-	//--- FIELD QUERY METHODS 
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getNeighbour_Contained(zPoint& pos, zIntArray& containedNeighbour)
+	ZSPACE_INLINE void zFnPointScalarField::getResolution(int& _n_X, int& _n_Y, int& _n_Z) const
 	{
-
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		_n_X = field.n_X;
+		_n_Y = field.n_Y;
+		_n_Z = field.n_Z;
 	}
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getNeighbourPosition_Contained(zPoint& pos, zPointArray& containedNeighbour)
+	ZSPACE_INLINE void zFnPointScalarField::getUnitDistances(double& _unit_X, double& _unit_Y, double& _unit_Z) const
 	{
-
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		_unit_X = field.unit_X;
+		_unit_Y = field.unit_Y;
+		_unit_Z = field.unit_Z;
 	}
 
-	//---- GET METHODS
-
-	template<typename T>
-	ZSPACE_INLINE int zFnPointFieldBase<T>::numFieldValues()
+	ZSPACE_INLINE void zFnPointScalarField::getBoundingBox(zPoint& _minBB, zPoint& _maxBB) const
 	{
-		return fieldObj->field.fieldValues.size();
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		_minBB = field.minBB;
+		_maxBB = field.maxBB;
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getResolution(int& _n_X, int& _n_Y, int& _n_Z)
+	ZSPACE_INLINE void zFnPointScalarField::getPositions(zPointArray& positions)
 	{
-		_n_X = fieldObj->field.n_X;
-		_n_Y = fieldObj->field.n_Y;
-		_n_Z = fieldObj->field.n_Z;
+		fnPoints.getVertexPositions(positions);
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getUnitDistances(double& _unit_X, double& _unit_Y, double& _unit_Z)
+	ZSPACE_INLINE zScalar zFnPointScalarField::getFieldValue(int index) const
 	{
-		_unit_X = fieldObj->field.unit_X;
-		_unit_Y = fieldObj->field.unit_Y;
-		_unit_Z = fieldObj->field.unit_Z;
+		return zFieldObjectStorage::get(*fieldObj).fieldValues[index];
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getBoundingBox(zPoint& _minBB, zPoint& _maxBB)
+	ZSPACE_INLINE bool zFnPointScalarField::getFieldValue(zPoint& samplePos, zFieldValueType type, zScalar& fieldValue)
 	{
-		_minBB = fieldObj->field.minBB;
-		_maxBB = fieldObj->field.maxBB;
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return sampleField3D(
+			field.fieldValues.data(),
+			field.fieldValues.size(),
+			field.minBB,
+			field.unit_X,
+			field.unit_Y,
+			field.unit_Z,
+			field.n_X,
+			field.n_Y,
+			field.n_Z,
+			samplePos,
+			type,
+			fieldValue);
 	}
 
-	//---- zScalar and zVector specilization for getFieldValue
-
-	template<>
-	ZSPACE_INLINE bool zFnPointFieldBase<zScalar>::getFieldValue(zPoint& samplePos, zFieldValueType type, zScalar& fieldValue)
+	ZSPACE_INLINE void zFnPointScalarField::getFieldValues(zScalarArray& fieldValues)
 	{
-
-		bool out = false;
-
-		zItPointScalarField s(*fieldObj, samplePos);
-
-		int index = s.getId();
-
-		if (type == zFieldIndex)
-		{
-			zScalar fVal;
-
-			fVal = fieldObj->field.fieldValues[index];
-
-			fieldValue = fVal;
-		}
-
-		else if (type == zFieldNeighbourWeighted)
-		{
-			zScalar fVal = 0;
-
-			zItPointScalarField s(*fieldObj, index);
-
-			vector<zItPointScalarField> ringNeighbours;
-			s.getNeighbour_Ring(1, ringNeighbours);
-
-			zPointArray positions;
-			for (int i = 0; i < ringNeighbours.size(); i++)
-			{
-				positions.push_back(ringNeighbours[i].getPosition());
-			}
-
-			vector<double> weights;
-			coreUtils.getDistanceWeights(samplePos, positions, 2.0, weights);
-
-			double w = 0;
-			for (int i = 0; i < ringNeighbours.size(); i++)
-			{
-				zScalar val = ringNeighbours[i].getValue();
-				fVal += val * weights[i];
-				w += weights[i];
-			}
-
-			fVal /= w;
-
-			fieldValue = fVal;
-		}
-
-		else if (type == zFieldAdjacentWeighted)
-		{
-			zScalar fVal = 0;
-
-			zItPointScalarField s(*fieldObj, index);
-
-			vector<zItPointScalarField> adjNeighbours;
-			s.getNeighbour_Adjacents(adjNeighbours);
-
-			zPointArray positions;
-			for (int i = 0; i < adjNeighbours.size(); i++)
-			{
-				positions.push_back(adjNeighbours[i].getPosition());
-			}
-
-			vector<double> weights;
-			coreUtils.getDistanceWeights(samplePos, positions, 2.0, weights);
-
-			double w = 0;
-			for (int i = 0; i < adjNeighbours.size(); i++)
-			{
-				zScalar val = adjNeighbours[i].getValue();
-				fVal += val * weights[i];
-
-				w += weights[i];
-			}
-
-			fVal /= w;
-
-			fieldValue = fVal;
-		}
-
-		else throw std::invalid_argument(" error: invalid zFieldValueType.");
-
-		return true;
+		fieldValues = zFieldObjectStorage::get(*fieldObj).fieldValues;
 	}
 
-	template<>
-	ZSPACE_INLINE bool zFnPointFieldBase<zVector>::getFieldValue(zVector& samplePos, zFieldValueType type, zVector& fieldValue)
+	ZSPACE_INLINE zScalar* zFnPointScalarField::getRawFieldValues()
 	{
-
-		bool out = false;
-
-		zItPointVectorField s(*fieldObj, samplePos);
-
-		int index = s.getId();
-
-		if (type == zFieldIndex)
-		{
-			zVector fVal;
-
-			fVal = fieldObj->field.fieldValues[index];
-
-			fieldValue = fVal;
-		}
-
-		else if (type == zFieldNeighbourWeighted)
-		{
-			zVector fVal;
-
-			zItPointVectorField s(*fieldObj, index);
-
-			vector<zItPointVectorField> ringNeighbours;
-			s.getNeighbour_Ring(1, ringNeighbours);
-
-			zPointArray positions;
-			for (int i = 0; i < ringNeighbours.size(); i++)
-			{
-				positions.push_back(ringNeighbours[i].getPosition());
-			}
-
-			vector<double> weights;
-			coreUtils.getDistanceWeights(samplePos, positions, 2.0, weights);
-
-			double w = 0;
-			for (int i = 0; i < ringNeighbours.size(); i++)
-			{
-				zVector val = ringNeighbours[i].getValue();
-				fVal += val * weights[i];
-				w += weights[i];
-			}
-
-			fVal /= w;
-
-			fieldValue = fVal;
-		}
-
-		else if (type == zFieldAdjacentWeighted)
-		{
-			zVector fVal;
-
-			zItPointVectorField s(*fieldObj, index);
-
-			vector<zItPointVectorField> adjNeighbours;
-			s.getNeighbour_Adjacents(adjNeighbours);
-
-			zPointArray positions;
-			for (int i = 0; i < adjNeighbours.size(); i++)
-			{
-				positions.push_back(adjNeighbours[i].getPosition());
-			}
-
-			vector<double> weights;
-			coreUtils.getDistanceWeights(samplePos, positions, 2.0, weights);
-
-			double w = 0;
-			for (int i = 0; i < adjNeighbours.size(); i++)
-			{
-				zVector val = adjNeighbours[i].getValue();
-				fVal += val * weights[i];
-
-				w += weights[i];
-			}
-
-			fVal /= w;
-
-			fieldValue = fVal;
-		}
-
-		else throw std::invalid_argument(" error: invalid zFieldValueType.");
-
-		return true;
+		auto& vals = zFieldObjectStorage::get(*fieldObj).fieldValues;
+		if (vals.empty()) throw std::invalid_argument(" error: null pointer.");
+		return vals.data();
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValues(vector<T>& fieldValues)
+	ZSPACE_INLINE zVector zFnPointScalarField::getGradient(int index, float epsilon)
 	{
-		fieldValues = fieldObj->field.fieldValues;
-	}
-
-	//---- zScalar specilization for getFieldValue
-
-	template<>
-	ZSPACE_INLINE zVector zFnPointFieldBase<zScalar>::getGradient(zItPointScalarField& s, float epsilon)
-	{
-
-		bool out = true;
-
-		zVector samplePos = s.getPosition();
-
-		int id_X, id_Y, id_Z;
-		s.getIndices(id_X, id_Y, id_Z);
-
-		if (id_X == 0 || id_Y == 0 || id_Z == 0 || id_X == fieldObj->field.n_X - 1 || id_Y == fieldObj->field.n_Y - 1 || id_Z == fieldObj->field.n_Z - 1)
+		(void)epsilon;
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		const int nX = field.n_X;
+		const int nY = field.n_Y;
+		const int nZ = field.n_Z;
+		const int strideX = nY * nZ;
+		if (strideX <= 0 || nZ <= 0) return zVector();
+		const int id_X = index / strideX;
+		const int rem = index % strideX;
+		const int id_Y = rem / nZ;
+		const int id_Z = rem % nZ;
+		if (id_X <= 0 || id_Y <= 0 || id_Z <= 0 || id_X >= nX - 1 || id_Y >= nY - 1 || id_Z >= nZ - 1)
 		{
 			return zVector();
 		}
-
-
-		zItPointScalarField s1(*fieldObj, id_X + 1, id_Y, id_Z);
-		zVector samplePos1 = s1.getPosition();
-		zScalar fieldVal1 = s1.getValue();
-
-		zItPointScalarField s2(*fieldObj, id_X, id_Y + 1, id_Z);
-		zVector samplePos2 = s2.getPosition();
-		zScalar fieldVal2 = s2.getValue();
-
-		zItPointScalarField s3(*fieldObj, id_X, id_Y, id_Z + 1);
-		zVector samplePos3 = s3.getPosition();
-		zScalar fieldVal3 = s3.getValue();
-
-		zScalar fieldVal = s.getValue();
-
-		zScalar gX = coreUtils.ofMap(samplePos.x + epsilon, samplePos.x, samplePos1.x, fieldVal, fieldVal1) - fieldVal;
-		zScalar gY = coreUtils.ofMap(samplePos.y + epsilon, samplePos.y, samplePos2.y, fieldVal, fieldVal2) - fieldVal;
-		zScalar gZ = coreUtils.ofMap(samplePos.z + epsilon, samplePos.z, samplePos2.z, fieldVal, fieldVal3) - fieldVal;
-
-		zVector gradient = zVector(gX, gY, gZ);
-		gradient /= (3.0 * epsilon);
-
-		return gradient;
+		const float invX = (field.unit_X != 0.0) ? static_cast<float>(1.0 / (3.0 * field.unit_X)) : 0.0f;
+		const float invY = (field.unit_Y != 0.0) ? static_cast<float>(1.0 / (3.0 * field.unit_Y)) : 0.0f;
+		const float invZ = (field.unit_Z != 0.0) ? static_cast<float>(1.0 / (3.0 * field.unit_Z)) : 0.0f;
+		const zScalar fieldVal = field.fieldValues[index];
+		const zScalar fieldVal1 = field.fieldValues[index + strideX];
+		const zScalar fieldVal2 = field.fieldValues[index + nZ];
+		const zScalar fieldVal3 = field.fieldValues[index + 1];
+		return zVector((fieldVal1 - fieldVal) * invX, (fieldVal2 - fieldVal) * invY, (fieldVal3 - fieldVal) * invZ);
 	}
 
-	template<>
-	ZSPACE_INLINE vector<zVector> zFnPointFieldBase<zScalar>::getGradients(float epsilon)
+	ZSPACE_INLINE vector<zVector> zFnPointScalarField::getGradients(float epsilon)
 	{
-		vector<zVector> out;
+		(void)epsilon;
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		const int nX = field.n_X;
+		const int nY = field.n_Y;
+		const int nZ = field.n_Z;
+		const int strideX = nY * nZ;
+		const int total = static_cast<int>(field.fieldValues.size());
+		vector<zVector> out(static_cast<std::size_t>(total), zVector());
+		if (nX <= 2 || nY <= 2 || nZ <= 2 || total != nX * nY * nZ) return out;
 
-		for (zItPointScalarField s(*fieldObj); !s.end(); s++)
+		const float invX = (field.unit_X != 0.0) ? static_cast<float>(1.0 / (3.0 * field.unit_X)) : 0.0f;
+		const float invY = (field.unit_Y != 0.0) ? static_cast<float>(1.0 / (3.0 * field.unit_Y)) : 0.0f;
+		const float invZ = (field.unit_Z != 0.0) ? static_cast<float>(1.0 / (3.0 * field.unit_Z)) : 0.0f;
+		const zScalar* vals = field.fieldValues.data();
+		zVector* dst = out.data();
+
+		for (int i = 1; i < nX - 1; ++i)
 		{
-			out.push_back(getGradient(s, epsilon));
+			const int baseI = i * strideX;
+			for (int j = 1; j < nY - 1; ++j)
+			{
+				const int baseIJ = baseI + j * nZ;
+				for (int k = 1; k < nZ - 1; ++k)
+				{
+					const int idx = baseIJ + k;
+					const zScalar v = vals[idx];
+					dst[idx] = zVector(
+						(vals[idx + strideX] - v) * invX,
+						(vals[idx + nZ] - v) * invY,
+						(vals[idx + 1] - v) * invZ);
+				}
+			}
 		}
-
 		return out;
 	}
 
-	//---- SET METHODS
-
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::setFieldColorDomain(zDomainColor& colDomain)
+	ZSPACE_INLINE void zFnPointScalarField::setFieldColorDomain(zDomainColor& colDomain)
 	{
 		fieldColorDomain = colDomain;
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::setBoundingBox(zPoint& _minBB, zPoint& _maxBB)
+	ZSPACE_INLINE void zFnPointScalarField::setBoundingBox(zPoint& _minBB, zPoint& _maxBB)
 	{
-		fieldObj->field.minBB = _minBB;
-		fieldObj->field.maxBB = _maxBB;
+		auto& field = zFieldObjectStorage::get(*fieldObj);
+		field.minBB = _minBB;
+		field.maxBB = _maxBB;
 	}
 
-	//---- zScalar and zVector specilization for setFieldValues
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::setFieldValues(zScalarArray& fValues)
+	ZSPACE_INLINE void zFnPointScalarField::setFieldValue(int index, zScalar val, bool append)
 	{
-		if (fValues.size() == numFieldValues())
-		{
-			int i = 0;
-			for (zItPointScalarField s(*fieldObj); !s.end(); s++, i++)
-			{
-				s.setValue(fValues[i]);
-			}
+		auto& vals = zFieldObjectStorage::get(*fieldObj).fieldValues;
+		if (append) vals[index] += val;
+		else vals[index] = val;
+	}
 
-			updateColors();
+	ZSPACE_INLINE void zFnPointScalarField::setFieldValues(zScalarArray& fValues)
+	{
+		auto& field = zFieldObjectStorage::get(*fieldObj);
+		if (fValues.size() != field.fieldValues.size())
+		{
+			throw std::invalid_argument("input fValues size not field scalars.");
 		}
-
+		field.fieldValues = fValues;
 	}
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zVector>::setFieldValues(vector<zVector>& fValues)
+	//---- 3D IDW FIELD METHODS (Scalar)
+
+	ZSPACE_INLINE void zFnPointScalarField::getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zObjectMesh& inMeshObj, zScalar meshValue, double influence, double power, bool normalise)
 	{
-		if (fValues.size() == numFieldValues())
+		const auto& inData = zMeshObjectStorage::read(inMeshObj);
+		const auto& gridPts = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPts.size();
+		const std::size_t nIn = inData.positions.size();
+		fieldValues.resize(nGrid);
+
+		for (std::size_t i = 0; i < nGrid; ++i)
 		{
-			int i = 0;
-			for (zItPointVectorField s(*fieldObj); !s.end(); s++, i++)
-			{
-				s.setValue(fValues[i]);
-			}
-
-		}
-
-		else throw std::invalid_argument("input fValues size not field vectors.");
-	}
-
-	//----  3D IDW FIELD METHODS
-
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectMesh& inMeshObj, T meshValue, double influence, double power, bool normalise)
-	{
-		fieldValues.clear();
-		zFnMesh inFnMesh(inMeshObj);
-
-		zVector* positions = fnPoints.getRawVertexPositions();
-		zVector* inPositions = inFnMesh.getRawVertexPositions();
-
-		for (int i = 0; i < fnPoints.numVertices(); i++)
-		{
-			T d;
+			zScalar d = 0.0f;
 			double wSum = 0.0;
-			double tempDist = 10000;
+			double tempDist = 10000.0;
+			zPoint gp = gridPts[i];
 
-			for (int j = 0; j < inFnMesh.numVertices(); j++)
+			for (std::size_t j = 0; j < nIn; ++j)
 			{
-				double r = positions[i].distanceTo(inPositions[j]);
-
+				const double r = gp.distanceTo(const_cast<zPoint&>(inData.positions[j]));
 				if (r < tempDist)
 				{
-					double w = pow(r, power);
+					const double w = std::pow(r, power);
 					wSum += w;
-					double val = (w > 0.0) ? ((r * influence) / (w)) : 0.0;;
-
-					d = meshValue * val;
-
+					const double val = (w > 0.0) ? ((r * influence) / w) : 0.0;
+					d = static_cast<zScalar>(meshValue * val);
 					tempDist = r;
 				}
-
 			}
-
-			if (wSum > 0)  d /= wSum;
-			else d = T();
-
-			fieldValues.push_back(d);
+			fieldValues[i] = (wSum > 0.0) ? static_cast<zScalar>(d / wSum) : 0.0f;
 		}
-
-		if (normalise)
-		{
-			normliseValues(fieldValues);
-		}
-
+		if (normalise) normliseValues(fieldValues);
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectGraph& inGraphObj, T graphValue, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointScalarField::getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zObjectGraph& inGraphObj, zScalar graphValue, double influence, double power, bool normalise)
 	{
-		fieldValues.clear();
-		zFnGraph inFnGraph(inGraphObj);
+		const auto& inData = zGraphObjectStorage::read(inGraphObj);
+		const auto& gridPts = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPts.size();
+		const std::size_t nIn = inData.positions.size();
+		fieldValues.resize(nGrid);
 
-		zVector* positions = fnPoints.getRawVertexPositions();
-		zVector* inPositions = inFnGraph.getRawVertexPositions();
-
-		for (int i = 0; i < fnPoints.numVertices(); i++)
+		for (std::size_t i = 0; i < nGrid; ++i)
 		{
-			T d;
+			zScalar d = 0.0f;
 			double wSum = 0.0;
-			double tempDist = 10000;
+			double tempDist = 10000.0;
+			zPoint gp = gridPts[i];
 
-			for (int j = 0; j < inFnGraph.numVertices(); j++)
+			for (std::size_t j = 0; j < nIn; ++j)
 			{
-				double r = positions[i].distanceTo(inPositions[j]);
-
+				const double r = gp.distanceTo(const_cast<zPoint&>(inData.positions[j]));
 				if (r < tempDist)
 				{
-					double w = pow(r, power);
+					const double w = std::pow(r, power);
 					wSum += w;
-					double val = (w > 0.0) ? ((r * influence) / (w)) : 0.0;;
-
-					d = graphValue * val;
-
+					const double val = (w > 0.0) ? ((r * influence) / w) : 0.0;
+					d = static_cast<zScalar>(graphValue * val);
 					tempDist = r;
 				}
-
 			}
-
-			if (wSum > 0) d /= wSum;
-			else d = T();
-
-			fieldValues.push_back(d);
-
-
+			fieldValues[i] = (wSum > 0.0) ? static_cast<zScalar>(d / wSum) : 0.0f;
 		}
-
-		if (normalise)
-		{
-			normliseValues(fieldValues);
-		}
-
-
+		if (normalise) normliseValues(fieldValues);
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectPointCloud& inPointsObj, T value, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointScalarField::getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zObjectPointCloud& inPointsObj, zScalar value, double influence, double power, bool normalise)
 	{
-
-		fieldValues.clear();
-		zFnPointCloud inFnPoints(inPointsObj);
-
-		zVector* positions = fnPoints.getRawVertexPositions();
-		zVector* inPositions = inFnPoints.getRawVertexPositions();
-
-		for (int i = 0; i < fnPoints.numVertices(); i++)
-		{
-			T d;
-			double wSum = 0.0;
-			double tempDist = 10000;
-
-			for (int j = 0; j < inFnPoints.numVertices(); j++)
-			{
-				double r = positions[i].distanceTo(inPositions[j]);
-
-				double w = pow(r, power);
-				wSum += w;
-
-				double val = (w > 0.0) ? ((r * influence) / (w)) : 0.0;;
-
-				d += (value * val);
-			}
-
-
-			if (wSum > 0)  d /= wSum;
-			d = T();
-
-			fieldValues.push_back(d);
-		}
-
-		if (normalise)	normliseValues(fieldValues);
-
-
-
+		getFieldValuesAsVertexDistance_IDW(fieldValues, inPointsObj.impl->storage.vertexPositions, value, influence, power, normalise);
 	}
 
-	template <typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zObjectPointCloud& inPointsObj, vector<T>& values, vector<double>& influences, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointScalarField::getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zObjectPointCloud& inPointsObj, zScalarArray& values, vector<double>& influences, double power, bool normalise)
 	{
-		fieldValues.clear();
-		zFnPointCloud inFnPoints(inPointsObj);
-
-
-		if (inFnPoints.numVertices() != values.size()) throw std::invalid_argument(" error: size of inPositions and values dont match.");
-		if (inFnPoints.numVertices() != influences.size()) throw std::invalid_argument(" error: size of inPositions and influences dont match.");
-
-		zVector* positions = fnPoints.getRawVertexPositions();
-		zVector* inPositions = inFnPoints.getRawVertexPositions();
-
-		for (int i = 0; i < fnPoints.numVertices(); i++)
-		{
-			T d;
-			double wSum = 0.0;
-			double tempDist = 10000;
-
-			for (int j = 0; j < inFnPoints.numVertices(); j++)
-			{
-				double r = positions[i].distanceTo(inPositions[j]);
-
-				double w = pow(r, power);
-				wSum += w;
-
-				double val = (w > 0.0) ? ((r * influences[j]) / (w)) : 0.0;;
-
-				d += (values[j] * val);
-			}
-
-
-			if (wSum > 0)  d /= wSum;
-			else d = T();
-
-			fieldValues.push_back(d);
-		}
-
-		if (normalise)	normliseValues(fieldValues);
+		getFieldValuesAsVertexDistance_IDW(fieldValues, inPointsObj.impl->storage.vertexPositions, values, influences, power, normalise);
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zPointArray& inPositions, T value, double influence, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointScalarField::getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zPointArray& inPositions, zScalar value, double influence, double power, bool normalise)
 	{
+		const auto& gridPts = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPts.size();
+		const std::size_t nIn = inPositions.size();
+		fieldValues.resize(nGrid);
 
-		fieldValues.clear();
-
-		zVector* positions = fnPoints.getRawVertexPositions();
-
-		for (int i = 0; i < fnPoints.numVertices(); i++)
+		for (std::size_t i = 0; i < nGrid; ++i)
 		{
-			T d;
+			double d = 0.0;
 			double wSum = 0.0;
-			double tempDist = 10000;
+			zPoint gp = gridPts[i];
 
-			for (int j = 0; j < inPositions.size(); j++)
+			for (std::size_t j = 0; j < nIn; ++j)
 			{
-				double r = positions[i].distanceTo(inPositions[j]);
-
-				double w = pow(r, power);
+				const double r = gp.distanceTo(inPositions[j]);
+				const double w = std::pow(r, power);
 				wSum += w;
-
-				double val = (w > 0.0) ? ((r * influence) / (w)) : 0.0;;
-
-				d += (value * val);
+				const double val = (w > 0.0) ? ((r * influence) / w) : 0.0;
+				d += value * val;
 			}
-
-
-			if (wSum > 0) d /= wSum;
-			else d = T();
-
-			fieldValues.push_back(d);
+			fieldValues[i] = (wSum > 0.0) ? static_cast<zScalar>(d / wSum) : 0.0f;
 		}
-
-		if (normalise)	normliseValues(fieldValues);
-
-
-
+		if (normalise) normliseValues(fieldValues);
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::getFieldValuesAsVertexDistance_IDW(vector<T>& fieldValues, zPointArray& inPositions, vector<T>& values, vector<double>& influences, double power, bool normalise)
+	ZSPACE_INLINE void zFnPointScalarField::getFieldValuesAsVertexDistance_IDW(zScalarArray& fieldValues, zPointArray& inPositions, zScalarArray& values, vector<double>& influences, double power, bool normalise)
 	{
 		if (inPositions.size() != values.size()) throw std::invalid_argument(" error: size of inPositions and values dont match.");
 		if (inPositions.size() != influences.size()) throw std::invalid_argument(" error: size of inPositions and influences dont match.");
 
-		zVector* positions = fnPoints.getRawVertexPositions();
+		const auto& gridPts = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPts.size();
+		const std::size_t nIn = inPositions.size();
+		fieldValues.resize(nGrid);
 
-		for (int i = 0; i < fnPoints.numVertices(); i++)
+		for (std::size_t i = 0; i < nGrid; ++i)
 		{
-			T d;
+			double d = 0.0;
 			double wSum = 0.0;
-			double tempDist = 10000;
+			zPoint gp = gridPts[i];
 
-			for (int j = 0; j < inPositions.size(); j++)
+			for (std::size_t j = 0; j < nIn; ++j)
 			{
-				double r = positions[i].distanceTo(inPositions[j]);
-
-				double w = pow(r, power);
+				const double r = gp.distanceTo(inPositions[j]);
+				const double w = std::pow(r, power);
 				wSum += w;
-
-				double val = (w > 0.0) ? ((r * influences[j]) / (w)) : 0.0;;
-
-				d += (values[j] * val);
+				const double val = (w > 0.0) ? ((r * influences[j]) / w) : 0.0;
+				d += values[j] * val;
 			}
-
-
-			if (wSum > 0)	d /= wSum;
-			else d = T();
-
-			fieldValues.push_back(d);
+			fieldValues[i] = (wSum > 0.0) ? static_cast<zScalar>(d / wSum) : 0.0f;
 		}
-
-		if (normalise)	normliseValues(fieldValues);
-
-
-
+		if (normalise) normliseValues(fieldValues);
 	}
 
-	//----  3D SCALAR FIELD METHODS
+	//---- 3D SCALAR DISTANCE METHODS
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectPointCloud& inPointsObj, bool normalise)
+	ZSPACE_INLINE void zFnPointScalarField::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectPointCloud& inPointsObj, bool normalise)
 	{
-		scalars.clear();
-
-		zFnPointCloud inFnPoints(inPointsObj);
-
-		zVector* positions = fnPoints.getRawVertexPositions();
-		zVector* inPositions = inFnPoints.getRawVertexPositions();
-
-		vector<double> distVals;
-		double dMin = 100000;
-		double dMax = 0;;
-
-		for (int i = 0; i < fnPoints.numVertices(); i++)
+		const auto& gridPts = fieldObj->impl->storage.vertexPositions;
+		const auto& srcPts = inPointsObj.impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPts.size();
+		const std::size_t nIn = srcPts.size();
+		scalars.resize(nGrid);
+		if (nIn == 0)
 		{
-			distVals.push_back(10000);
+			std::fill(scalars.begin(), scalars.end(), 0.0f);
+			return;
 		}
 
-		for (int j = 0; j < fnPoints.numVertices(); j++)
+		std::vector<double> distVals(nGrid, 10000.0);
+		double dMin = 100000.0;
+		double dMax = 0.0;
+
+		for (std::size_t i = 0; i < nGrid; ++i)
 		{
-
-			for (int i = 0; i < inFnPoints.numVertices(); i++)
+			const float gx = gridPts[i].x;
+			const float gy = gridPts[i].y;
+			const float gz = gridPts[i].z;
+			double minSq = 10000.0;
+			for (std::size_t j = 0; j < nIn; ++j)
 			{
+				const double dx = static_cast<double>(gx) - srcPts[j].x;
+				const double dy = static_cast<double>(gy) - srcPts[j].y;
+				const double dz = static_cast<double>(gz) - srcPts[j].z;
+				const double distSq = dx * dx + dy * dy + dz * dz;
+				if (distSq < minSq) minSq = distSq;
+			}
+			distVals[i] = minSq;
+			if (minSq < dMin) dMin = minSq;
+			if (minSq > dMax) dMax = minSq;
+		}
 
-				double dist = positions[i].squareDistanceTo(inPositions[j]);
+		for (std::size_t i = 0; i < nGrid; ++i)
+		{
+			scalars[i] = static_cast<zScalar>(coreUtils.ofMap(distVals[i], dMin, dMax, 0.0, 1.0));
+		}
 
-				if (dist < distVals[j])
+		if (normalise) normliseValues(scalars);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, double offset, bool normalise)
+	{
+		const auto& inData = zMeshObjectStorage::read(inMeshObj);
+		const auto& gridPtsVec = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPtsVec.size();
+		const std::size_t nIn = inData.positions.size();
+		scalars.resize(nGrid);
+		if (nIn == 0)
+		{
+			std::fill(scalars.begin(), scalars.end(), 0.0f);
+			return;
+		}
+
+		const zPoint* gridPts = gridPtsVec.data();
+		const zPoint* srcPts = inData.positions.data();
+		const float offsetF = static_cast<float>(offset);
+
+		if (nIn >= 32)
+		{
+			detail::FlatPointKDTree kdtree;
+			kdtree.build(srcPts, nIn);
+			detail::zFieldParallelFor(static_cast<int>(nGrid), 2048, [&](int begin, int end)
+			{
+				int hint = 0;
+				for (int i = begin; i < end; ++i)
 				{
-					distVals[j] = dist;
+					const float minDistSq = kdtree.nearestDistSq(gridPts[i].x, gridPts[i].y, gridPts[i].z, hint);
+					scalars[i] = std::sqrt(minDistSq) - offsetF;
 				}
-			}
+			});
 		}
-
-		for (int i = 0; i < distVals.size(); i++)
+		else
 		{
-			dMin = coreUtils.zMin(dMin, distVals[i]);
-			dMax = coreUtils.zMax(dMax, distVals[i]);
+			detail::zFieldParallelFor(static_cast<int>(nGrid), 2048, [&](int begin, int end)
+			{
+				for (int i = begin; i < end; ++i)
+				{
+					const float gx = gridPts[i].x;
+					const float gy = gridPts[i].y;
+					const float gz = gridPts[i].z;
+					float minDistSq = std::numeric_limits<float>::max();
+					for (std::size_t j = 0; j < nIn; ++j)
+					{
+						const float dx = gx - srcPts[j].x;
+						const float dy = gy - srcPts[j].y;
+						const float dz = gz - srcPts[j].z;
+						const float distSq = dx * dx + dy * dy + dz * dz;
+						if (distSq < minDistSq) minDistSq = distSq;
+					}
+					scalars[i] = std::sqrt(minDistSq) - offsetF;
+				}
+			});
 		}
 
-		for (int j = 0; j < fnPoints.numVertices(); j++)
-		{
-			double val = coreUtils.ofMap(distVals[j], dMin, dMax, 0.0, 1.0);
-			scalars.push_back(val);
-		}
-
-
-		if (normalise)
-		{
-			normliseValues(scalars);
-		}
-
-
+		if (normalise) normliseValues(scalars);
 	}
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointScalarField::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, double offset, bool normalise)
 	{
-		scalars.clear();
-
-		zFnMesh inFnMesh(inMeshObj);
-
-		zVector* positions = fnPoints.getRawVertexPositions();
-		zVector* inPositions = inFnMesh.getRawVertexPositions();
-
-		for (int i = 0; i < fnPoints.numVertices(); i++)
+		const auto& inData = zGraphObjectStorage::read(inGraphObj);
+		const auto& gridPtsVec = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPtsVec.size();
+		const std::size_t nIn = inData.positions.size();
+		scalars.resize(nGrid);
+		if (nIn == 0)
 		{
-			double d = 0.0;
-			double tempDist = 10000;
+			std::fill(scalars.begin(), scalars.end(), 0.0f);
+			return;
+		}
 
-			for (int j = 0; j < inFnMesh.numVertices(); j++)
+		const zPoint* gridPts = gridPtsVec.data();
+		const zPoint* srcPts = inData.positions.data();
+		const float offsetF = static_cast<float>(offset);
+
+		if (nIn >= 32)
+		{
+			detail::FlatPointKDTree kdtree;
+			kdtree.build(srcPts, nIn);
+			detail::zFieldParallelFor(static_cast<int>(nGrid), 2048, [&](int begin, int end)
 			{
-				double r = positions[i].squareDistanceTo(inPositions[j]);
+				int hint = 0;
+				for (int i = begin; i < end; ++i)
+				{
+					const float minDistSq = kdtree.nearestDistSq(gridPts[i].x, gridPts[i].y, gridPts[i].z, hint);
+					scalars[i] = std::sqrt(minDistSq) - offsetF;
+				}
+			});
+		}
+		else
+		{
+			detail::zFieldParallelFor(static_cast<int>(nGrid), 2048, [&](int begin, int end)
+			{
+				for (int i = begin; i < end; ++i)
+				{
+					const float gx = gridPts[i].x;
+					const float gy = gridPts[i].y;
+					const float gz = gridPts[i].z;
+					float minDistSq = std::numeric_limits<float>::max();
+					for (std::size_t j = 0; j < nIn; ++j)
+					{
+						const float dx = gx - srcPts[j].x;
+						const float dy = gy - srcPts[j].y;
+						const float dz = gz - srcPts[j].z;
+						const float distSq = dx * dx + dy * dy + dz * dz;
+						if (distSq < minDistSq) minDistSq = distSq;
+					}
+					scalars[i] = std::sqrt(minDistSq) - offsetF;
+				}
+			});
+		}
 
-				r = r - offset;
+		if (normalise) normliseValues(scalars);
+	}
 
+	ZSPACE_INLINE void zFnPointScalarField::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, double offset, bool normalise)
+	{
+		const auto& inData = zMeshObjectStorage::read(inMeshObj);
+		const auto& gridPtsVec = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPtsVec.size();
+		const int nEdges = inData.numEdges();
+		scalars.resize(nGrid);
+
+		std::vector<EdgeSegment3D> segments;
+		segments.reserve(static_cast<std::size_t>(nEdges));
+		for (int e = 0; e < nEdges; ++e)
+		{
+			const int v0 = inData.edgeVertexIndices[e * 2];
+			const int v1 = inData.edgeVertexIndices[e * 2 + 1];
+			zPoint p0 = inData.positions[v0];
+			zPoint p1 = inData.positions[v1];
+			const zVector ab = p1 - p0;
+			const double ab2 = static_cast<double>(ab.x) * ab.x +
+				static_cast<double>(ab.y) * ab.y +
+				static_cast<double>(ab.z) * ab.z;
+			segments.push_back({ p0, ab, ab2 });
+		}
+
+		const zPoint* gridPts = gridPtsVec.data();
+		for (std::size_t i = 0; i < nGrid; ++i)
+		{
+			if (segments.empty())
+			{
+				scalars[i] = 0.0f;
+				continue;
+			}
+			const zPoint& pt = gridPts[i];
+			double minDistSq = std::numeric_limits<double>::max();
+			for (const auto& seg : segments)
+			{
+				double t = 0.0;
+				if (seg.ab2 > 1.0e-12)
+				{
+					const double apx = static_cast<double>(pt.x) - seg.p0.x;
+					const double apy = static_cast<double>(pt.y) - seg.p0.y;
+					const double apz = static_cast<double>(pt.z) - seg.p0.z;
+					t = (apx * seg.ab.x + apy * seg.ab.y + apz * seg.ab.z) / seg.ab2;
+					if (t < 0.0) t = 0.0;
+					else if (t > 1.0) t = 1.0;
+				}
+				const double cx = seg.p0.x + seg.ab.x * t - pt.x;
+				const double cy = seg.p0.y + seg.ab.y * t - pt.y;
+				const double cz = seg.p0.z + seg.ab.z * t - pt.z;
+				const double distSq = cx * cx + cy * cy + cz * cz;
+				if (distSq < minDistSq) minDistSq = distSq;
+			}
+			double minDist = std::sqrt(minDistSq);
+			if (minDist < 1.0e-6) minDist = 0.0;
+			scalars[i] = static_cast<zScalar>(minDist - offset);
+		}
+
+		if (normalise) normliseValues(scalars);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, double offset, bool normalise)
+	{
+		const auto& inData = zGraphObjectStorage::read(inGraphObj);
+		const auto& gridPtsVec = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPtsVec.size();
+		const int nEdges = inData.numEdges();
+		scalars.resize(nGrid);
+
+		std::vector<EdgeSegment3D> segments;
+		segments.reserve(static_cast<std::size_t>(nEdges));
+		for (int e = 0; e < nEdges; ++e)
+		{
+			const int v0 = inData.edgeVertexIndices[e * 2];
+			const int v1 = inData.edgeVertexIndices[e * 2 + 1];
+			zPoint p0 = inData.positions[v0];
+			zPoint p1 = inData.positions[v1];
+			const zVector ab = p1 - p0;
+			const double ab2 = static_cast<double>(ab.x) * ab.x +
+				static_cast<double>(ab.y) * ab.y +
+				static_cast<double>(ab.z) * ab.z;
+			if (ab2 < static_cast<double>(EPS) * static_cast<double>(EPS)) continue;
+			segments.push_back({ p0, ab, ab2 });
+		}
+
+		const zPoint* gridPts = gridPtsVec.data();
+		for (std::size_t i = 0; i < nGrid; ++i)
+		{
+			if (segments.empty())
+			{
+				scalars[i] = 0.0f;
+				continue;
+			}
+			const zPoint& pt = gridPts[i];
+			double minDistSq = std::numeric_limits<double>::max();
+			for (const auto& seg : segments)
+			{
+				const double apx = static_cast<double>(pt.x) - seg.p0.x;
+				const double apy = static_cast<double>(pt.y) - seg.p0.y;
+				const double apz = static_cast<double>(pt.z) - seg.p0.z;
+				double t = (apx * seg.ab.x + apy * seg.ab.y + apz * seg.ab.z) / seg.ab2;
+				if (t < 0.0) t = 0.0;
+				else if (t > 1.0) t = 1.0;
+
+				const double cx = seg.p0.x + seg.ab.x * t - pt.x;
+				const double cy = seg.p0.y + seg.ab.y * t - pt.y;
+				const double cz = seg.p0.z + seg.ab.z * t - pt.z;
+				const double distSq = cx * cx + cy * cy + cz * cz;
+				if (distSq < minDistSq) minDistSq = distSq;
+			}
+			double minDist = std::sqrt(minDistSq);
+			if (minDist < 1.0e-6) minDist = 0.0;
+			scalars[i] = static_cast<zScalar>(minDist - offset);
+		}
+
+		if (normalise) normliseValues(scalars);
+	}
+
+	//---- COMPUTE & SMOOTH METHODS
+
+	ZSPACE_INLINE bool zFnPointScalarField::checkPositionBounds(zPoint& pos, int& index) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		int ix = -1, iy = -1, iz = -1;
+		const bool inBounds = computeCellCoords3D(pos, field.minBB, field.unit_X, field.unit_Y, field.unit_Z, field.n_X, field.n_Y, field.n_Z, ix, iy, iz);
+		index = ix * field.n_Y * field.n_Z + iy * field.n_Z + iz;
+		return inBounds;
+	}
+
+	ZSPACE_INLINE bool zFnPointScalarField::checkBounds_X(int index_X) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return (index_X >= 0 && index_X < field.n_X);
+	}
+
+	ZSPACE_INLINE bool zFnPointScalarField::checkBounds_Y(int index_Y) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return (index_Y >= 0 && index_Y < field.n_Y);
+	}
+
+	ZSPACE_INLINE bool zFnPointScalarField::checkBounds_Z(int index_Z) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return (index_Z >= 0 && index_Z < field.n_Z);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::computeMinMaxOfScalars(zScalarArray& values, zScalar& dMin, zScalar& dMax)
+	{
+		if (values.empty())
+		{
+			dMin = 0.0f;
+			dMax = 0.0f;
+			return;
+		}
+		auto [minIt, maxIt] = std::minmax_element(values.begin(), values.end());
+		dMin = *minIt;
+		dMax = *maxIt;
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::computeDomain(zScalarArray& values, zDomain<zScalar>& domain)
+	{
+		computeMinMaxOfScalars(values, domain.min, domain.max);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::normliseValues(zScalarArray& fieldValues)
+	{
+		zDomainFloat d;
+		computeDomain(fieldValues, d);
+
+		zDomainFloat outNeg(-1.0f, 0.0f);
+		zDomainFloat outPos(0.0f, 1.0f);
+
+		zDomainFloat inNeg(d.min, 0.0f);
+		zDomainFloat inPos(0.0f, d.max);
+
+		const std::size_t n = fieldValues.size();
+		for (std::size_t i = 0; i < n; ++i)
+		{
+			if (fieldValues[i] < 0.0f) fieldValues[i] = coreUtils.ofMap(fieldValues[i], inNeg, outNeg);
+			else fieldValues[i] = coreUtils.ofMap(fieldValues[i], inPos, outPos);
+		}
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::smoothField(int numSmooth, double diffuseDamp, zDiffusionType type)
+	{
+		if (numSmooth <= 0) return;
+		auto& field = zFieldObjectStorage::get(*fieldObj);
+		auto& scalars = field.fieldValues;
+		const int nX = field.n_X;
+		const int nY = field.n_Y;
+		const int nZ = field.n_Z;
+		const int strideX = nY * nZ;
+		if (static_cast<int>(scalars.size()) != nX * nY * nZ || scalars.empty()) return;
+
+		zScalarArray tempValues(scalars.size());
+		const float damp = static_cast<float>(diffuseDamp);
+
+		for (int step = 0; step < numSmooth; ++step)
+		{
+			const zScalar* src = scalars.data();
+			zScalar* dst = tempValues.data();
+
+			if (type == zAverage)
+			{
+				detail::zFieldParallelFor(nX, 8, [&](int iBegin, int iEnd)
+				{
+					for (int i = iBegin; i < iEnd; ++i)
+					{
+						const int iMin = std::max(0, i - 1);
+						const int iMax = std::min(nX - 1, i + 1);
+						for (int j = 0; j < nY; ++j)
+						{
+							const int jMin = std::max(0, j - 1);
+							const int jMax = std::min(nY - 1, j + 1);
+							for (int k = 0; k < nZ; ++k)
+							{
+								const int kMin = std::max(0, k - 1);
+								const int kMax = std::min(nZ - 1, k + 1);
+								float sum = 0.0f;
+								int count = 0;
+								for (int ii = iMin; ii <= iMax; ++ii)
+								{
+									const int baseI = ii * strideX;
+									for (int jj = jMin; jj <= jMax; ++jj)
+									{
+										const zScalar* row = src + baseI + jj * nZ;
+										for (int kk = kMin; kk <= kMax; ++kk)
+										{
+											sum += row[kk];
+											++count;
+										}
+									}
+								}
+								dst[i * strideX + j * nZ + k] = (sum != 0.0f && count > 0) ? (sum / static_cast<float>(count)) : 0.0f;
+							}
+						}
+					}
+				});
+			}
+			else if (type == zLaplacian)
+			{
+				detail::zFieldParallelFor(nX, 8, [&](int iBegin, int iEnd)
+				{
+					for (int i = iBegin; i < iEnd; ++i)
+					{
+						const int iMin = std::max(0, i - 1);
+						const int iMax = std::min(nX - 1, i + 1);
+						for (int j = 0; j < nY; ++j)
+						{
+							const int jMin = std::max(0, j - 1);
+							const int jMax = std::min(nY - 1, j + 1);
+							for (int k = 0; k < nZ; ++k)
+							{
+								const int kMin = std::max(0, k - 1);
+								const int kMax = std::min(nZ - 1, k + 1);
+								const int centerId = i * strideX + j * nZ + k;
+								float lapA = 0.0f;
+								for (int ii = iMin; ii <= iMax; ++ii)
+								{
+									const int baseI = ii * strideX;
+									for (int jj = jMin; jj <= jMax; ++jj)
+									{
+										const int baseIJ = baseI + jj * nZ;
+										for (int kk = kMin; kk <= kMax; ++kk)
+										{
+											const int id = baseIJ + kk;
+											if (id != centerId) lapA += src[id];
+											else lapA += src[id] * -26.0f;
+										}
+									}
+								}
+								dst[centerId] = src[centerId] + lapA * damp;
+							}
+						}
+					}
+				});
+			}
+
+			scalars.swap(tempValues);
+		}
+		updateColors();
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions)
+	{
+		fieldIndexPositions.clear();
+		fieldIndexPositions.resize(static_cast<std::size_t>(numFieldValues()));
+		for (std::size_t i = 0; i < positions.size(); ++i)
+		{
+			int fieldIndex = -1;
+			if (checkPositionBounds(positions[i], fieldIndex) && fieldIndex >= 0 && fieldIndex < numFieldValues())
+			{
+				fieldIndexPositions[fieldIndex].push_back(positions[i]);
+			}
+		}
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies)
+	{
+		fieldIndexPositionIndicies.clear();
+		fieldIndexPositionIndicies.resize(static_cast<std::size_t>(numFieldValues()));
+		for (std::size_t i = 0; i < positions.size(); ++i)
+		{
+			int fieldIndex = -1;
+			if (checkPositionBounds(positions[i], fieldIndex) && fieldIndex >= 0 && fieldIndex < numFieldValues())
+			{
+				fieldIndexPositionIndicies[fieldIndex].push_back(static_cast<int>(i));
+			}
+		}
+	}
+
+	ZSPACE_INLINE double zFnPointScalarField::F_of_r(double& r, double& a, double& b)
+	{
+		if (0 <= r && r <= b / 3.0) return (a * (1.0 - (3.0 * r * r) / (b * b)));
+		if (b / 3.0 <= r && r <= b) return (3 * a / 2 * std::pow(1.0 - (r / b), 2.0));
+		return 0.0;
+	}
+
+	//---- BOOLEAN & UPDATE METHODS
+
+	ZSPACE_INLINE void zFnPointScalarField::boolean_union(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	{
+		const std::size_t n = fieldValues_A.size();
+		fieldValues_Result.resize(n);
+		for (std::size_t i = 0; i < n; ++i)
+		{
+			fieldValues_Result[i] = std::min(fieldValues_A[i], fieldValues_B[i]);
+		}
+		if (normalise) normliseValues(fieldValues_Result);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::boolean_subtract(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	{
+		const std::size_t n = fieldValues_A.size();
+		fieldValues_Result.resize(n);
+		for (std::size_t i = 0; i < n; ++i)
+		{
+			fieldValues_Result[i] = std::max(fieldValues_A[i], -fieldValues_B[i]);
+		}
+		if (normalise) normliseValues(fieldValues_Result);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::boolean_intersect(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	{
+		const std::size_t n = fieldValues_A.size();
+		fieldValues_Result.resize(n);
+		for (std::size_t i = 0; i < n; ++i)
+		{
+			fieldValues_Result[i] = std::max(fieldValues_A[i], fieldValues_B[i]);
+		}
+		if (normalise) normliseValues(fieldValues_Result);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::boolean_difference(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
+	{
+		zScalarArray AUnionB;
+		boolean_union(fieldValues_A, fieldValues_B, AUnionB, normalise);
+
+		zScalarArray AIntersectB;
+		boolean_intersect(fieldValues_B, fieldValues_A, AIntersectB, normalise);
+
+		boolean_subtract(AUnionB, AIntersectB, fieldValues_Result, normalise);
+		if (normalise) normliseValues(fieldValues_Result);
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::boolean_clipwithPlane(zScalarArray& scalars, zMatrix4& clipPlane)
+	{
+		const auto& gridPts = fieldObj->impl->storage.vertexPositions;
+		zVector O(clipPlane(3, 0), clipPlane(3, 1), clipPlane(3, 2));
+		zVector Z(clipPlane(2, 0), clipPlane(2, 1), clipPlane(2, 2));
+		const double zLen = Z.length();
+		if (zLen <= 1.0e-12) return;
+
+		const std::size_t n = std::min(scalars.size(), gridPts.size());
+		for (std::size_t i = 0; i < n; ++i)
+		{
+			zPoint pos = gridPts[i];
+			zVector A = pos - O;
+			const double minDist_Plane = (A * Z) / zLen;
+			if (minDist_Plane > 0.0)
+			{
+				scalars[i] = 1.0f;
+			}
+		}
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::updateColors()
+	{
+		auto& scalars = zFieldObjectStorage::get(*fieldObj).fieldValues;
+		auto& pc = fieldObj->impl->storage;
+		if (scalars.size() != pc.vertexColors.size() || scalars.empty()) return;
+
+		computeDomain(scalars, contourValueDomain);
+		if (contourValueDomain.min == contourValueDomain.max)
+		{
+			std::fill(pc.vertexColors.begin(), pc.vertexColors.end(), zColor(0.5f, 0.5f, 0.5f));
+			return;
+		}
+
+		fieldColorDomain.min.toHSV();
+		fieldColorDomain.max.toHSV();
+		const float domSpan = contourValueDomain.max - contourValueDomain.min;
+		const float invDomSpan = (domSpan != 0.0f) ? (1.0f / domSpan) : 0.0f;
+
+		const std::size_t n = scalars.size();
+		zColor* cols = pc.vertexColors.data();
+		const zScalar* vals = scalars.data();
+		const float cMin = contourValueDomain.min;
+		const float cMax = contourValueDomain.max;
+		const zColor colMin = fieldColorDomain.min;
+		const zColor colMax = fieldColorDomain.max;
+
+		detail::zFieldParallelFor(static_cast<int>(n), 4096, [&](int begin, int end)
+		{
+			for (int i = begin; i < end; ++i)
+			{
+				const float v = vals[i];
+				if (v < cMin) cols[i] = colMin;
+				else if (v > cMax) cols[i] = colMax;
+				else cols[i] = detail::blendHSVPrecomputed(v, cMin, invDomSpan, colMin, colMax);
+			}
+		});
+	}
+
+	ZSPACE_INLINE void zFnPointScalarField::createPointCloud()
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		zFieldObjectStorage::populateGridPointCloud3D(
+			*fieldObj,
+			field.minBB,
+			field.unit_X,
+			field.unit_Y,
+			field.unit_Z,
+			field.n_X,
+			field.n_Y,
+			field.n_Z);
+	}
+
+	//==========================================================================
+	// zFnPointVectorField
+	//==========================================================================
+
+	ZSPACE_INLINE zFnPointVectorField::zFnPointVectorField()
+		: fnType(zFnType::zPointFieldFn), fieldObj(nullptr)
+	{
+	}
+
+	ZSPACE_INLINE zFnPointVectorField::zFnPointVectorField(zObjectPointVectorField& _fieldObj)
+		: fnType(zFnType::zPointFieldFn), fieldObj(&_fieldObj), fnPoints(_fieldObj)
+	{
+	}
+
+	ZSPACE_INLINE zFnPointVectorField::~zFnPointVectorField() = default;
+
+	ZSPACE_INLINE zFnType zFnPointVectorField::getType()
+	{
+		return zFnType::zPointFieldFn;
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getBounds(zPoint& minBB, zPoint& maxBB)
+	{
+		getBoundingBox(minBB, maxBB);
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::clear()
+	{
+		fnPoints.clear();
+		if (fieldObj)
+		{
+			zFieldObjectStorage::get(*fieldObj).fieldValues.clear();
+		}
+		ringNeighbours.clear();
+		adjacentNeighbours.clear();
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::create(zPoint _minBB, zPoint _maxBB, int _n_X, int _n_Y, int _n_Z, int _NR)
+	{
+		(void)_NR;
+		auto& field = zFieldObjectStorage::get(*fieldObj);
+		field = zField3D<zVector>(_minBB, _maxBB, _n_X, _n_Y, _n_Z);
+		ringNeighbours.clear();
+		adjacentNeighbours.clear();
+		createPointCloud();
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::create(double _unit_X, double _unit_Y, double _unit_Z, int _n_X, int _n_Y, int _n_Z, zPoint _minBB, int _NR)
+	{
+		(void)_NR;
+		auto& field = zFieldObjectStorage::get(*fieldObj);
+		field = zField3D<zVector>(_unit_X, _unit_Y, _unit_Z, _n_X, _n_Y, _n_Z, _minBB);
+		ringNeighbours.clear();
+		adjacentNeighbours.clear();
+		createPointCloud();
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::createVectorFromScalarField(zFnPointScalarField& inFnScalarField)
+	{
+		zPoint minBB, maxBB;
+		inFnScalarField.getBoundingBox(minBB, maxBB);
+
+		int n_X = 0, n_Y = 0, n_Z = 0;
+		inFnScalarField.getResolution(n_X, n_Y, n_Z);
+
+		create(minBB, maxBB, n_X, n_Y, n_Z, 1);
+		zFieldObjectStorage::get(*fieldObj).fieldValues = inFnScalarField.getGradients();
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::createVectorFromScalarField(zObjectPointScalarField& scalarFieldObj)
+	{
+		zFnPointScalarField inFn(scalarFieldObj);
+		createVectorFromScalarField(inFn);
+	}
+
+	ZSPACE_INLINE int zFnPointVectorField::getIndex(int index_X, int index_Y, int index_Z) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return index_X * field.n_Y * field.n_Z + index_Y * field.n_Z + index_Z;
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getIndices(int index, int& index_X, int& index_Y, int& index_Z) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		const int strideX = field.n_Y * field.n_Z;
+		if (strideX <= 0 || field.n_Z <= 0)
+		{
+			index_X = 0; index_Y = 0; index_Z = 0;
+			return;
+		}
+		index_X = index / strideX;
+		const int rem = index % strideX;
+		index_Y = rem / field.n_Z;
+		index_Z = rem % field.n_Z;
+	}
+
+	ZSPACE_INLINE zPoint zFnPointVectorField::getPosition(int index) const
+	{
+		int ix = 0, iy = 0, iz = 0;
+		getIndices(index, ix, iy, iz);
+		return getPosition(ix, iy, iz);
+	}
+
+	ZSPACE_INLINE zPoint zFnPointVectorField::getPosition(int index_X, int index_Y, int index_Z) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return gridCellPosition3D(field.minBB, field.unit_X, field.unit_Y, field.unit_Z, index_X, index_Y, index_Z);
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getNeighbour_Ring(int index, int numRings, zIntArray& outRingNeighbours) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		buildRingNeighbours3D(index, numRings, field.n_X, field.n_Y, field.n_Z, outRingNeighbours);
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getNeighbour_Adjacents(int index, zIntArray& outAdjacentNeighbours) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		buildAdjacentNeighbours3D(index, field.n_X, field.n_Y, field.n_Z, outAdjacentNeighbours);
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getNeighbour_Contained(zPoint& pos, zIntArray& containedNeighbour)
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		buildContainedNeighbours3D(pos, field.minBB, field.unit_X, field.unit_Y, field.unit_Z, field.n_X, field.n_Y, field.n_Z, containedNeighbour);
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getNeighbourPosition_Contained(zPoint& pos, zPointArray& containedNeighbour)
+	{
+		containedNeighbour.clear();
+		zIntArray indices;
+		getNeighbour_Contained(pos, indices);
+		containedNeighbour.reserve(indices.size());
+		for (int id : indices)
+		{
+			containedNeighbour.push_back(getPosition(id));
+		}
+	}
+
+	ZSPACE_INLINE int zFnPointVectorField::numFieldValues() const
+	{
+		return static_cast<int>(zFieldObjectStorage::get(*fieldObj).fieldValues.size());
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getResolution(int& _n_X, int& _n_Y, int& _n_Z) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		_n_X = field.n_X;
+		_n_Y = field.n_Y;
+		_n_Z = field.n_Z;
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getUnitDistances(double& _unit_X, double& _unit_Y, double& _unit_Z) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		_unit_X = field.unit_X;
+		_unit_Y = field.unit_Y;
+		_unit_Z = field.unit_Z;
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getBoundingBox(zPoint& _minBB, zPoint& _maxBB) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		_minBB = field.minBB;
+		_maxBB = field.maxBB;
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getPositions(zPointArray& positions)
+	{
+		fnPoints.getVertexPositions(positions);
+	}
+
+	ZSPACE_INLINE zVector zFnPointVectorField::getFieldValue(int index) const
+	{
+		return zFieldObjectStorage::get(*fieldObj).fieldValues[index];
+	}
+
+	ZSPACE_INLINE bool zFnPointVectorField::getFieldValue(zPoint& samplePos, zFieldValueType type, zVector& fieldValue)
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return sampleField3D(
+			field.fieldValues.data(),
+			field.fieldValues.size(),
+			field.minBB,
+			field.unit_X,
+			field.unit_Y,
+			field.unit_Z,
+			field.n_X,
+			field.n_Y,
+			field.n_Z,
+			samplePos,
+			type,
+			fieldValue);
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::getFieldValues(zVectorArray& fieldValues)
+	{
+		fieldValues = zFieldObjectStorage::get(*fieldObj).fieldValues;
+	}
+
+	ZSPACE_INLINE zVector* zFnPointVectorField::getRawFieldValues()
+	{
+		auto& vals = zFieldObjectStorage::get(*fieldObj).fieldValues;
+		if (vals.empty()) throw std::invalid_argument(" error: null pointer.");
+		return vals.data();
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::setFieldColorDomain(zDomainColor& colDomain)
+	{
+		fieldColorDomain = colDomain;
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::setBoundingBox(zPoint& _minBB, zPoint& _maxBB)
+	{
+		auto& field = zFieldObjectStorage::get(*fieldObj);
+		field.minBB = _minBB;
+		field.maxBB = _maxBB;
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::setFieldValue(int index, const zVector& val, bool append)
+	{
+		auto& vals = zFieldObjectStorage::get(*fieldObj).fieldValues;
+		if (append) vals[index] += val;
+		else vals[index] = val;
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::setFieldValues(zVectorArray& fValues)
+	{
+		auto& field = zFieldObjectStorage::get(*fieldObj);
+		if (fValues.size() != field.fieldValues.size())
+		{
+			throw std::invalid_argument("input fValues size not field vectors.");
+		}
+		field.fieldValues = fValues;
+	}
+
+	//---- 3D IDW FIELD METHODS (Vector)
+
+	ZSPACE_INLINE void zFnPointVectorField::getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zObjectMesh& inMeshObj, zVector meshValue, double influence, double power, bool normalise)
+	{
+		const auto& inData = zMeshObjectStorage::read(inMeshObj);
+		const auto& gridPts = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPts.size();
+		const std::size_t nIn = inData.positions.size();
+		fieldValues.resize(nGrid);
+
+		for (std::size_t i = 0; i < nGrid; ++i)
+		{
+			zVector d;
+			double wSum = 0.0;
+			double tempDist = 10000.0;
+			zPoint gp = gridPts[i];
+
+			for (std::size_t j = 0; j < nIn; ++j)
+			{
+				const double r = gp.distanceTo(const_cast<zPoint&>(inData.positions[j]));
 				if (r < tempDist)
 				{
-					d = r;
-					//d = F_of_r(r, a, b);
+					const double w = std::pow(r, power);
+					wSum += w;
+					const double val = (w > 0.0) ? ((r * influence) / w) : 0.0;
+					d = meshValue * static_cast<float>(val);
 					tempDist = r;
 				}
-
 			}
-
-			scalars.push_back(d);
+			fieldValues[i] = (wSum > 0.0) ? (d / static_cast<float>(wSum)) : zVector();
 		}
-
-		if (normalise)
-		{
-			normliseValues(scalars);
-		}
-
-
+		if (normalise) normliseValues(fieldValues);
 	}
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getScalarsAsVertexDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointVectorField::getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zObjectGraph& inGraphObj, zVector graphValue, double influence, double power, bool normalise)
 	{
-		scalars.clear();
+		const auto& inData = zGraphObjectStorage::read(inGraphObj);
+		const auto& gridPts = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPts.size();
+		const std::size_t nIn = inData.positions.size();
+		fieldValues.resize(nGrid);
 
-		zFnGraph inFnGraph(inGraphObj);
-
-		zVector* positions = fnPoints.getRawVertexPositions();
-		zVector* inPositions = inFnGraph.getRawVertexPositions();
-
-		// update values from meta balls
-
-		for (int i = 0; i < fnPoints.numVertices(); i++)
+		for (std::size_t i = 0; i < nGrid; ++i)
 		{
-			double d = 0.0;
-			double tempDist = 10000;
+			zVector d;
+			double wSum = 0.0;
+			double tempDist = 10000.0;
+			zPoint gp = gridPts[i];
 
-			for (int j = 0; j < inFnGraph.numVertices(); j++)
+			for (std::size_t j = 0; j < nIn; ++j)
 			{
-				double r = positions[i].squareDistanceTo(inPositions[j]);
-
-				r = r - offset;
-
+				const double r = gp.distanceTo(const_cast<zPoint&>(inData.positions[j]));
 				if (r < tempDist)
 				{
-					d = r;
-					//d = F_of_r(r, a, b);
+					const double w = std::pow(r, power);
+					wSum += w;
+					const double val = (w > 0.0) ? ((r * influence) / w) : 0.0;
+					d = graphValue * static_cast<float>(val);
 					tempDist = r;
 				}
-
 			}
-			cout << "d value" << d << endl;
-			scalars.push_back(d);
+			fieldValues[i] = (wSum > 0.0) ? (d / static_cast<float>(wSum)) : zVector();
 		}
-		cout << "points " << fnPoints.numVertices() << endl;
-
-		if (normalise)
-		{
-			normliseValues(scalars);
-		}
-
-
+		if (normalise) normliseValues(fieldValues);
 	}
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectMesh& inMeshObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointVectorField::getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zObjectPointCloud& inPointsObj, zVector value, double influence, double power, bool normalise)
 	{
-		scalars.clear();
-		zFnMesh inFnMesh(inMeshObj);
+		getFieldValuesAsVertexDistance_IDW(fieldValues, inPointsObj.impl->storage.vertexPositions, value, influence, power, normalise);
+	}
 
-		zVector* positions = fnPoints.getRawVertexPositions();
-		zVector* inPositions = inFnMesh.getRawVertexPositions();
+	ZSPACE_INLINE void zFnPointVectorField::getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zObjectPointCloud& inPointsObj, zVectorArray& values, vector<double>& influences, double power, bool normalise)
+	{
+		getFieldValuesAsVertexDistance_IDW(fieldValues, inPointsObj.impl->storage.vertexPositions, values, influences, power, normalise);
+	}
 
-		// update values from edge distance
-		for (int i = 0; i < fnPoints.numVertices(); i++)
+	ZSPACE_INLINE void zFnPointVectorField::getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zPointArray& inPositions, zVector value, double influence, double power, bool normalise)
+	{
+		const auto& gridPts = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPts.size();
+		const std::size_t nIn = inPositions.size();
+		fieldValues.resize(nGrid);
+
+		for (std::size_t i = 0; i < nGrid; ++i)
 		{
-			double d = 0.0;
-			double tempDist = 10000;
+			zVector d;
+			double wSum = 0.0;
+			zPoint gp = gridPts[i];
 
-			for (zItMeshEdge e(inMeshObj); !e.end(); e++)
+			for (std::size_t j = 0; j < nIn; ++j)
 			{
-
-				int e0 = e.getHalfEdge(0).getVertex().getId();
-				int e1 = e.getHalfEdge(0).getStartVertex().getId();
-
-				zVector closestPt;
-
-				double r = coreUtils.minDist_Edge_Point(positions[i], inPositions[e0], inPositions[e1], closestPt);
-
-				r = r - offset;
-
-				if (r < tempDist)
-				{
-					d = r;
-					//d = F_of_r(r, a, b);
-					tempDist = r;
-				}
-
-				//if (r < tempDist)
-				//{
-
-				//	d = F_of_r(r, a, b);
-
-				//	tempDist = r;
-				//}
+				const double r = gp.distanceTo(inPositions[j]);
+				const double w = std::pow(r, power);
+				wSum += w;
+				const double val = (w > 0.0) ? ((r * influence) / w) : 0.0;
+				d += value * static_cast<float>(val);
 			}
-
-			scalars.push_back(d);
-
+			fieldValues[i] = (wSum > 0.0) ? (d / static_cast<float>(wSum)) : zVector();
 		}
-
-		if (normalise)
-		{
-			normliseValues(scalars);
-		}
-
-
+		if (normalise) normliseValues(fieldValues);
 	}
 
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::getScalarsAsEdgeDistance(zScalarArray& scalars, zObjectGraph& inGraphObj, double offset, bool normalise)
+	ZSPACE_INLINE void zFnPointVectorField::getFieldValuesAsVertexDistance_IDW(zVectorArray& fieldValues, zPointArray& inPositions, zVectorArray& values, vector<double>& influences, double power, bool normalise)
 	{
-		scalars.clear();
-		zFnGraph inFnGraph(inGraphObj);
+		if (inPositions.size() != values.size()) throw std::invalid_argument(" error: size of inPositions and values dont match.");
+		if (inPositions.size() != influences.size()) throw std::invalid_argument(" error: size of inPositions and influences dont match.");
 
-		zVector* positions = fnPoints.getRawVertexPositions();
-		zVector* inPositions = inFnGraph.getRawVertexPositions();
+		const auto& gridPts = fieldObj->impl->storage.vertexPositions;
+		const std::size_t nGrid = gridPts.size();
+		const std::size_t nIn = inPositions.size();
+		fieldValues.resize(nGrid);
 
-		// update values from edge distance
-		for (int i = 0; i < fnPoints.numVertices(); i++)
+		for (std::size_t i = 0; i < nGrid; ++i)
 		{
-			double d = 0.0;
-			double tempDist = 10000;
+			zVector d;
+			double wSum = 0.0;
+			zPoint gp = gridPts[i];
 
-			for (zItGraphEdge e(inGraphObj); !e.end(); e++)
+			for (std::size_t j = 0; j < nIn; ++j)
 			{
-
-				int e0 = e.getHalfEdge(0).getVertex().getId();
-				int e1 = e.getHalfEdge(0).getStartVertex().getId();
-
-				zVector closestPt;
-
-				double r = coreUtils.minDist_Edge_Point(positions[i], inPositions[e0], inPositions[e1], closestPt);
-
-				r = r - offset;
-
-				if (r < tempDist)
-				{
-					d = r;
-					//d = F_of_r(r, a, b);
-					tempDist = r;
-				}
-
-				//cout << "d value" << d << endl;
-
-				//if (r < tempDist)
-				//{
-
-				//	d = F_of_r(r, a, b);
-
-				//	tempDist = r;
-				//}
+				const double r = gp.distanceTo(inPositions[j]);
+				const double w = std::pow(r, power);
+				wSum += w;
+				const double val = (w > 0.0) ? ((r * influences[j]) / w) : 0.0;
+				d += values[j] * static_cast<float>(val);
 			}
-			//if(i==0) cout << "d value" << d << endl;
-			scalars.push_back(d);
-
+			fieldValues[i] = (wSum > 0.0) ? (d / static_cast<float>(wSum)) : zVector();
 		}
-
-		//cout << "points " << fnPoints.numVertices() << endl;
-
-		if (normalise)
-		{
-			normliseValues(scalars);
-		}
-
-
+		if (normalise) normliseValues(fieldValues);
 	}
 
-	//--- COMPUTE METHODS 
-
-	template<typename T>
-	ZSPACE_INLINE bool zFnPointFieldBase<T>::checkBounds_X(int index_X)
+	ZSPACE_INLINE bool zFnPointVectorField::checkPositionBounds(zPoint& pos, int& index) const
 	{
-		return (index_X < fieldObj->field.n_X&& index_X >= 0);
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		int ix = -1, iy = -1, iz = -1;
+		const bool inBounds = computeCellCoords3D(pos, field.minBB, field.unit_X, field.unit_Y, field.unit_Z, field.n_X, field.n_Y, field.n_Z, ix, iy, iz);
+		index = ix * field.n_Y * field.n_Z + iy * field.n_Z + iz;
+		return inBounds;
 	}
 
-	template<typename T>
-	ZSPACE_INLINE bool zFnPointFieldBase<T>::checkBounds_Y(int index_Y)
+	ZSPACE_INLINE bool zFnPointVectorField::checkBounds_X(int index_X) const
 	{
-		return (index_Y < fieldObj->field.n_Y&& index_Y >= 0);
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return (index_X >= 0 && index_X < field.n_X);
 	}
 
-	template<typename T>
-	ZSPACE_INLINE bool zFnPointFieldBase<T>::checkBounds_Z(int index_Z)
+	ZSPACE_INLINE bool zFnPointVectorField::checkBounds_Y(int index_Y) const
 	{
-		return (index_Z < fieldObj->field.n_Z&& index_Z >= 0);
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return (index_Y >= 0 && index_Y < field.n_Y);
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::computeMinMaxOfScalars(vector<T>& values, T& dMin, T& dMax)
+	ZSPACE_INLINE bool zFnPointVectorField::checkBounds_Z(int index_Z) const
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		return (index_Z >= 0 && index_Z < field.n_Z);
+	}
+
+	ZSPACE_INLINE void zFnPointVectorField::computeMinMaxOfScalars(zVectorArray& values, zVector& dMin, zVector& dMax)
 	{
 		dMin = coreUtils.zMin(values);
 		dMax = coreUtils.zMax(values);
 	}
 
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::computeDomain(vector<T>& values, zDomain <T>& domain)
+	ZSPACE_INLINE void zFnPointVectorField::computeDomain(zVectorArray& values, zDomain<zVector>& domain)
 	{
 		domain.min = coreUtils.zMin(values);
 		domain.max = coreUtils.zMax(values);
 	}
 
-	//---- zScalar and zVector specilization for normliseValues
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::normliseValues(zScalarArray& fieldValues)
+	ZSPACE_INLINE void zFnPointVectorField::normliseValues(zVectorArray& fieldValues)
 	{
-		zDomainFloat d;
-		computeDomain(fieldValues, d);
-
-		for (int i = 0; i < fieldValues.size(); i++) fieldValues[i] = d.max - fieldValues[i];
-
-		computeDomain(fieldValues, d);
-
-		zDomainFloat out(-1.0, 1.0);
-		for (int i = 0; i < fieldValues.size(); i++) fieldValues[i] = coreUtils.ofMap(fieldValues[i], d, out);
-	}
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zVector>::normliseValues(vector<zVector>& fieldValues)
-	{
-		for (int i = 0; i < fieldValues.size(); i++) fieldValues[i].normalize();
-	}
-
-	//---- zScalar specilization for smoothField
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::smoothField(int numSmooth, double diffuseDamp, zDiffusionType type)
-	{
-		for (int k = 0; k < numSmooth; k++)
+		for (std::size_t i = 0; i < fieldValues.size(); ++i)
 		{
-			vector<float> tempValues;
+			fieldValues[i].normalize();
+		}
+	}
 
-			for (zItPointScalarField s(*fieldObj); !s.end(); s++)
+	ZSPACE_INLINE void zFnPointVectorField::computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions)
+	{
+		fieldIndexPositions.clear();
+		fieldIndexPositions.resize(static_cast<std::size_t>(numFieldValues()));
+		for (std::size_t i = 0; i < positions.size(); ++i)
+		{
+			int fieldIndex = -1;
+			if (checkPositionBounds(positions[i], fieldIndex) && fieldIndex >= 0 && fieldIndex < numFieldValues())
 			{
-				double lapA = 0;
-
-				vector<zItPointScalarField> aNeigbours;
-				s.getNeighbour_Adjacents(aNeigbours);
-
-				for (int j = 0; j < aNeigbours.size(); j++)
-				{
-					int id = aNeigbours[j].getId();
-					zScalar val = aNeigbours[j].getValue();
-
-					if (type == zLaplacian)
-					{
-						if (id != s.getId()) lapA += (val * 1);
-						else lapA += (val * -6);
-					}
-					else if (type == zAverage)
-					{
-						lapA += (val * 1);
-					}
-				}
-
-
-
-				if (type == zLaplacian)
-				{
-					double val1 = s.getValue();
-
-					double newA = val1 + (lapA * diffuseDamp);
-					tempValues.push_back(newA);
-				}
-				else if (type == zAverage)
-				{
-					if (lapA != 0) lapA /= (aNeigbours.size());
-
-					tempValues.push_back(lapA);
-				}
-
-			}
-
-			setFieldValues(tempValues);
-
-		}
-
-		updateColors();
-
-	}
-
-	//---- zScalar & zVector specilization for computePositionsInFieldIndex
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions)
-	{
-		for (int i = 0; i < numFieldValues(); i++)
-		{
-			vector<zVector> temp;
-			fieldIndexPositions.push_back(temp);
-		}
-
-
-		for (int i = 0; i < positions.size(); i++)
-		{
-			zItPointScalarField s(*fieldObj, positions[i]);
-			int fieldIndex = s.getId();
-
-			fieldIndexPositions[fieldIndex].push_back(positions[i]);
-		}
-	}
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zVector>::computePositionsInFieldIndex(zPointArray& positions, vector<zPointArray>& fieldIndexPositions)
-	{
-		for (int i = 0; i < numFieldValues(); i++)
-		{
-			vector<zVector> temp;
-			fieldIndexPositions.push_back(temp);
-		}
-
-
-		for (int i = 0; i < positions.size(); i++)
-		{
-			zItPointVectorField s(*fieldObj, positions[i]);
-			int fieldIndex = s.getId();
-
-			fieldIndexPositions[fieldIndex].push_back(positions[i]);
-		}
-	}
-
-	//---- zScalar & zVector specilization for computePositionIndicesInFieldIndex
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies)
-	{
-		for (int i = 0; i < numFieldValues(); i++)
-		{
-			vector<int> temp;
-			fieldIndexPositionIndicies.push_back(temp);
-		}
-
-
-		for (int i = 0; i < positions.size(); i++)
-		{
-			zItPointScalarField s(*fieldObj, positions[i]);
-			int fieldIndex = s.getId();
-
-			fieldIndexPositionIndicies[fieldIndex].push_back(i);
-		}
-	}
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zVector>::computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies)
-	{
-		for (int i = 0; i < numFieldValues(); i++)
-		{
-			vector<int> temp;
-			fieldIndexPositionIndicies.push_back(temp);
-		}
-
-
-		for (int i = 0; i < positions.size(); i++)
-		{
-			zItPointVectorField s(*fieldObj, positions[i]);
-			int fieldIndex = s.getId();
-
-			fieldIndexPositionIndicies[fieldIndex].push_back(i);
-		}
-	}
-
-	template<typename T>
-	ZSPACE_INLINE double zFnPointFieldBase<T>::F_of_r(double& r, double& a, double& b)
-	{
-		if (0 <= r && r <= b / 3.0)return (a * (1.0 - (3.0 * r * r) / (b * b)));
-		if (b / 3.0 <= r && r <= b) return (3 * a / 2 * pow(1.0 - (r / b), 2.0));
-		if (b <= r) return 0;
-	}
-
-	//----  SCALAR BOOLEAN METHODS
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::boolean_union(zScalarArray& scalars0, zScalarArray& scalars1, zScalarArray& scalarsResult, bool normalise)
-	{
-		vector<float> out;
-
-		for (int i = 0; i < scalars0.size(); i++)
-		{
-			out.push_back(coreUtils.zMin(scalars0[i], scalars1[i]));
-		}
-
-		if (normalise) normliseValues(out);
-
-		scalarsResult = out;
-	}
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::boolean_subtract(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
-	{
-		vector<float> out;
-
-		for (int i = 0; i < fieldValues_A.size(); i++)
-		{
-			out.push_back(coreUtils.zMax(fieldValues_A[i], -1 * fieldValues_B[i]));
-		}
-
-		if (normalise) normliseValues(out);
-
-		fieldValues_Result = out;
-	}
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::boolean_intersect(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
-	{
-		vector<float> out;
-
-		for (int i = 0; i < fieldValues_A.size(); i++)
-		{
-			out.push_back(coreUtils.zMax(fieldValues_A[i], fieldValues_B[i]));
-		}
-
-		if (normalise) normliseValues(out);
-
-		fieldValues_Result = out;
-	}
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::boolean_difference(zScalarArray& fieldValues_A, zScalarArray& fieldValues_B, zScalarArray& fieldValues_Result, bool normalise)
-	{
-		vector<float> AUnionB;
-		boolean_union(fieldValues_A, fieldValues_B, AUnionB, normalise);
-
-		vector<float> AIntersectB;
-		boolean_intersect(fieldValues_B, fieldValues_A, AIntersectB, normalise);
-
-		vector<float> out;
-		boolean_subtract(AUnionB, AIntersectB, out, normalise);
-
-		if (normalise) normliseValues(out);
-
-		fieldValues_Result = out;
-	}
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::boolean_clipwithPlane(zScalarArray& scalars, zMatrix4& clipPlane)
-	{
-		int i = 0;
-		for (zItPointCloudVertex v(*fieldObj); !v.end(); v++, i++)
-		{
-			//zVector O = coreUtils.fromMatrix4Column(clipPlane, 3);
-			//zVector Z = coreUtils.fromMatrix4Column(clipPlane, 2);
-
-			//zVector A = v.getPosition() - O;
-			//double minDist_Plane = A * Z;
-			//minDist_Plane /= Z.length();
-
-			//// printf("\n dist %1.2f ", minDist_Plane);
-
-			//if (minDist_Plane > 0)
-			//{
-			//	scalars[i] = 1;
-			//}
-
-		}
-
-	}
-
-	//----  UPDATE METHODS
-
-	//---- zScalar specilization for updateColors
-
-	template<>
-	ZSPACE_INLINE void zFnPointFieldBase<zScalar>::updateColors()
-	{
-
-		vector<float> scalars;
-		getFieldValues(scalars);
-
-		computeDomain(scalars, contourValueDomain);
-
-		//convert to HSV
-
-		if (contourValueDomain.min == contourValueDomain.max)
-		{
-			zColor col(0.5, 0.5, 0.5);
-
-			fnPoints.setVertexColor(col);
-
-			return;
-		}
-
-		else
-		{
-			fieldColorDomain.min.toHSV(); fieldColorDomain.max.toHSV();
-
-			zColor* cols = fnPoints.getRawVertexColors();
-
-			for (int i = 0; i < scalars.size(); i++)
-			{
-
-				//SDFs
-					const float maxAbsValue = coreUtils.zMax(std::abs(contourValueDomain.min), std::abs(contourValueDomain.max));
-					const float zeroBand = 0.1f * maxAbsValue;
-
-					if (scalars[i] < -zeroBand)
-					{
-						cols[i] = zGREY;
-					}
-					else if (scalars[i] > zeroBand)
-					{
-						cols[i] = zWHITE;
-					}
-					else cols[i] = zMAGENTA;
-
-				//if (scalars[i] < contourValueDomain.min) cols[i] = fieldColorDomain.min;
-				//else if (scalars[i] > contourValueDomain.max) cols[i] = fieldColorDomain.max;
-				//else
-				//{
-				//	cols[i] = coreUtils.blendColor(scalars[i], contourValueDomain, fieldColorDomain, zHSV);
-				//}
-
-			}
-
-		}
-
-	}
-
-	//----  PROTECTED METHODS
-
-	template<typename T>
-	ZSPACE_INLINE void zFnPointFieldBase<T>::createPointCloud()
-	{
-		vector<zVector>positions;
-
-		zVector minBB, maxBB;
-		double unit_X, unit_Y, unit_Z;
-		int n_X, n_Y, n_Z;
-
-		getUnitDistances(unit_X, unit_Y, unit_Z);
-		getResolution(n_X, n_Y, n_Z);
-
-		getBoundingBox(minBB, maxBB);
-
-		zVector unitVec = zVector(unit_X, unit_Y, unit_Z);
-		zVector startPt = minBB;
-
-		for (int i = 0; i < n_X; i++)
-		{
-			for (int j = 0; j < n_Y; j++)
-			{
-
-				for (int k = 0; k < n_Z; k++)
-				{
-
-					zVector pos;
-					pos.x = startPt.x + i * unitVec.x;
-					pos.y = startPt.y + j * unitVec.y;
-					pos.z = startPt.z + k * unitVec.z;
-
-					positions.push_back(pos);
-
+				fieldIndexPositions[fieldIndex].push_back(positions[i]);
 			}
 		}
 	}
 
-		fnPoints.create(positions);
+	ZSPACE_INLINE void zFnPointVectorField::computePositionIndicesInFieldIndex(zPointArray& positions, vector<zIntArray>& fieldIndexPositionIndicies)
+	{
+		fieldIndexPositionIndicies.clear();
+		fieldIndexPositionIndicies.resize(static_cast<std::size_t>(numFieldValues()));
+		for (std::size_t i = 0; i < positions.size(); ++i)
+		{
+			int fieldIndex = -1;
+			if (checkPositionBounds(positions[i], fieldIndex) && fieldIndex >= 0 && fieldIndex < numFieldValues())
+			{
+				fieldIndexPositionIndicies[fieldIndex].push_back(static_cast<int>(i));
+			}
+		}
+	}
 
-}
+	ZSPACE_INLINE double zFnPointVectorField::F_of_r(double& r, double& a, double& b)
+	{
+		if (0 <= r && r <= b / 3.0) return (a * (1.0 - (3.0 * r * r) / (b * b)));
+		if (b / 3.0 <= r && r <= b) return (3 * a / 2 * std::pow(1.0 - (r / b), 2.0));
+		return 0.0;
+	}
 
-
-#if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
-	// explicit instantiation
-	template class zFnPointFieldBase<zVector>;
-
-	template class zFnPointFieldBase<zScalar>;
-
-#endif
+	ZSPACE_INLINE void zFnPointVectorField::createPointCloud()
+	{
+		const auto& field = zFieldObjectStorage::get(*fieldObj);
+		zFieldObjectStorage::populateGridPointCloud3D(
+			*fieldObj,
+			field.minBB,
+			field.unit_X,
+			field.unit_Y,
+			field.unit_Z,
+			field.n_X,
+			field.n_Y,
+			field.n_Z);
+	}
 }

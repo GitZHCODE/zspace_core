@@ -20,6 +20,7 @@ namespace zSpace
 	ZSPACE_INLINE zPointCloud::zPointCloud()
 	{
 		n_v = 0;
+		positionMapDirty = false;
 	}
 
 	//---- DESTRUCTOR
@@ -30,13 +31,19 @@ namespace zSpace
 
 	ZSPACE_INLINE void zPointCloud::create(zPointArray &_positions)
 	{
-		// clear containers
 		clear();
 
-		vertices.reserve(_positions.size());
-
-		for (int i = 0; i < _positions.size(); i++)	addVertex(_positions[i]);
-
+		const int count = static_cast<int>(_positions.size());
+		n_v = count;
+		vertices.resize(count);
+		for (int i = 0; i < count; i++)
+		{
+			vertices[i].setId(i);
+		}
+		vertexPositions = _positions;
+		vertexColors.assign(count, zColor(1, 0, 0, 1));
+		vertexWeights.assign(count, 2.0);
+		positionMapDirty = true;
 	}
 
 	ZSPACE_INLINE void zPointCloud::clear()
@@ -45,7 +52,8 @@ namespace zSpace
 		vertexPositions.clear();
 		vertexColors.clear();
 		vertexWeights.clear();
-
+		positionVertex.clear();
+		positionMapDirty = false;
 
 		n_v = 0;
 	}
@@ -56,8 +64,10 @@ namespace zSpace
 	{
 		bool out = false;
 
-
-		addToPositionMap(pos, n_v);
+		if (!positionMapDirty)
+		{
+			addToPositionMap(pos, n_v);
+		}
 
 		zItVertex newV = vertices.insert(vertices.end(), zVertex());
 		newV->setId(n_v);
@@ -77,8 +87,20 @@ namespace zSpace
 
 	ZSPACE_INLINE bool zPointCloud::vertexExists(zPoint &pos, int &outVertexId, int precisionfactor)
 	{
-		bool out = false;;
+		bool out = false;
 		outVertexId = -1;
+
+		if (positionMapDirty)
+		{
+			positionVertex.clear();
+			positionVertex.reserve(vertexPositions.size());
+			for (int i = 0; i < static_cast<int>(vertexPositions.size()); ++i)
+			{
+				if (i < static_cast<int>(vertices.size()) && !vertices[i].isActive()) continue;
+				addToPositionMap(vertexPositions[i], i, precisionfactor);
+			}
+			positionMapDirty = false;
+		}
 
 		double factor = pow(10, precisionfactor);
 		double x = std::round(pos.x *factor) / factor;
@@ -119,6 +141,18 @@ namespace zSpace
 
 	ZSPACE_INLINE void zPointCloud::removeFromPositionMap(zPoint &pos, int precisionfactor)
 	{
+		if (positionMapDirty)
+		{
+			positionVertex.clear();
+			positionVertex.reserve(vertexPositions.size());
+			for (int i = 0; i < static_cast<int>(vertexPositions.size()); ++i)
+			{
+				if (i < static_cast<int>(vertices.size()) && !vertices[i].isActive()) continue;
+				addToPositionMap(vertexPositions[i], i, precisionfactor);
+			}
+			positionMapDirty = false;
+		}
+
 		double factor = pow(10, precisionfactor);
 		double x = std::round(pos.x *factor) / factor;
 		double y = std::round(pos.y *factor) / factor;

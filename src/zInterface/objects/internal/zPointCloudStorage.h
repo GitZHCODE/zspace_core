@@ -70,6 +70,7 @@ namespace zSpace
 
 		/*!	\brief position to vertexId map. Used to check if vertex exists with the haskey being the vertex position.	 */
 		unordered_map <string, int> positionVertex;
+		bool positionMapDirty = false;
 
 		//--------------------------
 		//---- CONSTRUCTOR

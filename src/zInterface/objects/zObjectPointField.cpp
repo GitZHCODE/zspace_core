@@ -10,29 +10,60 @@
 // Author : Vishu Bhooshan <vishu.bhooshan@zaha-hadid.com>, Leo Bieling <leo.bieling@zaha-hadid.com>
 //
 
-
-#include<zspace/zInterface/objects/zObjectPointField.h>
+#include <zspace/zInterface/objects/zObjectPointField.h>
+#include <src/zInterface/objects/zFieldObjectStorage.h>
 
 namespace zSpace
 {
-
-	//---- CONSTRUCTOR
-
-	template<typename T>
-	ZSPACE_INLINE zObjectPointField<T>::zObjectPointField()
+	ZSPACE_INLINE zObjectPointScalarField::zObjectPointScalarField()
+		: zObjectPointCloud(), fieldImpl(std::make_unique<Impl>())
 	{
 	}
 
-	//---- DESTRUCTOR
+	ZSPACE_INLINE zObjectPointScalarField::zObjectPointScalarField(const zObjectPointScalarField& other)
+		: zObjectPointCloud(other), fieldImpl(std::make_unique<Impl>(*other.fieldImpl))
+	{
+	}
 
-	template<typename T>
-	ZSPACE_INLINE zObjectPointField<T>::~zObjectPointField() {}
+	ZSPACE_INLINE zObjectPointScalarField::zObjectPointScalarField(zObjectPointScalarField&& other) noexcept = default;
 
-#if defined(ZSPACE_STATIC_LIBRARY)  || defined(ZSPACE_DYNAMIC_LIBRARY)
-	// explicit instantiation
-	template class zObjectPointField<zVector>;
+	ZSPACE_INLINE zObjectPointScalarField& zObjectPointScalarField::operator=(const zObjectPointScalarField& other)
+	{
+		if (this != &other)
+		{
+			zObjectPointCloud::operator=(other);
+			*fieldImpl = *other.fieldImpl;
+		}
+		return *this;
+	}
 
-	template class zObjectPointField<zScalar>;
+	ZSPACE_INLINE zObjectPointScalarField& zObjectPointScalarField::operator=(zObjectPointScalarField&& other) noexcept = default;
 
-#endif
+	ZSPACE_INLINE zObjectPointScalarField::~zObjectPointScalarField() = default;
+
+	ZSPACE_INLINE zObjectPointVectorField::zObjectPointVectorField()
+		: zObjectPointCloud(), fieldImpl(std::make_unique<Impl>())
+	{
+	}
+
+	ZSPACE_INLINE zObjectPointVectorField::zObjectPointVectorField(const zObjectPointVectorField& other)
+		: zObjectPointCloud(other), fieldImpl(std::make_unique<Impl>(*other.fieldImpl))
+	{
+	}
+
+	ZSPACE_INLINE zObjectPointVectorField::zObjectPointVectorField(zObjectPointVectorField&& other) noexcept = default;
+
+	ZSPACE_INLINE zObjectPointVectorField& zObjectPointVectorField::operator=(const zObjectPointVectorField& other)
+	{
+		if (this != &other)
+		{
+			zObjectPointCloud::operator=(other);
+			*fieldImpl = *other.fieldImpl;
+		}
+		return *this;
+	}
+
+	ZSPACE_INLINE zObjectPointVectorField& zObjectPointVectorField::operator=(zObjectPointVectorField&& other) noexcept = default;
+
+	ZSPACE_INLINE zObjectPointVectorField::~zObjectPointVectorField() = default;
 }
