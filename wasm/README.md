@@ -253,3 +253,20 @@ optimization. This benchmark measures solver calls, not browser rendering FPS.
 Viewer playback budgets complete updates (including geometry and analysis),
 starting at one solver frame per redraw and capping adaptive batches at four.
 Physics timesteps and convergence tolerances are independent of this scheduling.
+
+## Reusable Core build
+
+Set `ZSPACE_WASM_OBJECT_LIBRARY=ON` before adding this directory with
+`add_subdirectory`. The `zspace_core_wasm_objects` target contains Core,
+Interface, IO and the unchanged Core C ABI bindings. The default remains the
+independent `zspace_core.js/.wasm` build.
+
+`ZSPACE_WASM_WITH_FIELDS`, `ZSPACE_WASM_WITH_USD`, `ZSPACE_WASM_THREADS` and
+`ZSPACE_WASM_OPENMP` select optional capabilities. Consumers call
+`zspace_wasm_configure_compilation(target)` for compatible compilation settings
+and own their final runtime memory, thread-pool and export options. Link the
+object target directly to retain its exported bindings.
+
+The shared WASM compilation and optimized linking use -O2, without explicit
+NDEBUG, SIMD or LTO flags. Keep ZSPACE_WASM_FAST_LINK disabled for optimized
+builds. Imported prebuilt SDK archives retain their original compilation options.

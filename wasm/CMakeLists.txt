@@ -9,12 +9,26 @@ get_filename_component(ZSPACE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
 set(ZSPACE_WASM_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/out" CACHE PATH
   "Standard SDK-free JavaScript/WASM output directory")
 
+# Reusable build mode for consumers; bindings remain owned by Core.
+option(ZSPACE_WASM_OBJECT_LIBRARY "Build reusable Core objects instead of an executable" OFF)
+option(ZSPACE_WASM_WITH_FIELDS "Include mesh/point field implementations" OFF)
+option(ZSPACE_WASM_WITH_USD "Enable Core OpenUSD IO" OFF)
+option(ZSPACE_WASM_THREADS "Compile for shared-memory threads" OFF)
+option(ZSPACE_WASM_OPENMP "Compile Core with OpenMP" OFF)
+
 # Keep the batch build's source set. CONFIGURE_DEPENDS makes
 # additions/removals trigger regeneration even when building Ninja directly.
 file(GLOB_RECURSE core_sources CONFIGURE_DEPENDS "${ZSPACE_ROOT}/src/zCore/*.cpp")
 file(GLOB_RECURSE interface_sources CONFIGURE_DEPENDS "${ZSPACE_ROOT}/src/zInterface/*.cpp")
 list(FILTER interface_sources EXCLUDE REGEX
   "/(zFnComputeMesh|zObjectComputeMesh|zFnMeshField|zFnPointField|zObjectMeshField|zObjectPointField|zObjectComputeField2D)\\.cpp$")
+if(ZSPACE_WASM_WITH_FIELDS)
+  list(APPEND interface_sources
+    "${ZSPACE_ROOT}/src/zInterface/objects/zObjectMeshField.cpp"
+    "${ZSPACE_ROOT}/src/zInterface/objects/zObjectPointField.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/bridge/mesh_field_compat.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/bridge/point_field_compat.cpp")
+endif()
 file(GLOB_RECURSE io_sources CONFIGURE_DEPENDS "${ZSPACE_ROOT}/src/zIO/*.cpp")
 
 # Match the Windows batch traversal: files in each directory before its
@@ -52,16 +66,41 @@ set(wasm_sources ${core_sources} ${interface_sources} ${io_sources}
   "${CMAKE_CURRENT_SOURCE_DIR}/bridge/default_live_sketch.cpp")
 
 function(zspace_wasm_configure_compilation target)
+  get_filename_component(ZSPACE_ROOT "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/.." ABSOLUTE)
   set_target_properties(${target} PROPERTIES
     CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
   target_include_directories(${target} PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/bridge" "${ZSPACE_ROOT}"
+    "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bridge" "${ZSPACE_ROOT}"
     "${ZSPACE_ROOT}/include" "${ZSPACE_ROOT}/third_party"
     "${ZSPACE_ROOT}/third_party/depends")
   target_compile_definitions(${target} PRIVATE ZSPACE_STATIC_LIBRARY)
   target_compile_options(${target} PRIVATE -O2 -fexceptions
-    -include "${CMAKE_CURRENT_SOURCE_DIR}/bridge/zspace_wasm_compat.h")
+    -include "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/bridge/zspace_wasm_compat.h")
+  if(ZSPACE_WASM_THREADS)
+    target_compile_options(${target} PRIVATE -pthread)
+  endif()
+  if(ZSPACE_WASM_OPENMP)
+    target_compile_options(${target} PRIVATE -fopenmp)
+    target_compile_definitions(${target} PRIVATE EIGEN_DONT_PARALLELIZE)
+  endif()
+  if(ZSPACE_WASM_WITH_USD)
+    target_compile_definitions(${target} PRIVATE ZSPACE_IO_OPENUSD)
+    target_compile_options(${target} PRIVATE -Uunix)
+    include("${ZSPACE_ROOT}/cmake/ZSpaceOpenUSD.cmake")
+    zspace_link_openusd(${target})
+  endif()
 endfunction()
+
+if(ZSPACE_WASM_OBJECT_LIBRARY)
+  add_library(zspace_core_wasm_objects OBJECT ${wasm_sources})
+  zspace_wasm_configure_compilation(zspace_core_wasm_objects)
+  option(ZSPACE_WASM_USE_PCH "Reuse precompiled Eigen and JSON headers" ON)
+  if(ZSPACE_WASM_USE_PCH)
+    target_precompile_headers(zspace_core_wasm_objects PRIVATE
+      <depends/Eigen/Dense> <depends/Eigen/Sparse> <depends/nlohmann/json.hpp>)
+  endif()
+  return()
+endif()
 
 option(ZSPACE_WASM_SCHEDULE_HEAVY_FIRST
   "Start expensive compilation units early while preserving link order" ON)
