@@ -102,6 +102,15 @@ namespace zSpace
 		//---- CREATE METHODS
 		//--------------------------
 
+		/*! \brief Replace this mesh with a joined quad ribbon around a graph.
+		* Offsets are measured on each side in XY; graph elevations are retained.
+		* Bends and branches share miter corners. Terminal ends remain open.
+		* Throws for nonpositive/nonfinite offsets, vertical/collapsed members,
+		* overlapping outgoing directions, or offsets that invert ribbon faces.
+		* Isolated vertices are omitted. The graph and this mesh are unchanged on failure.
+		*/
+		void graphMesh(zObjectGraph& graph, double offset);
+
 		/*! \brief This method reserves memorm for the mesh element containers. 
 		*
 		*	\param		[in]	_n_v			- size of vertices.
@@ -930,6 +939,7 @@ namespace zSpace
 #else
 #include<src/zInterface/functionsets/zFnMesh.cpp>
 #include<src/zInterface/functionsets/zFnMeshUnroll.cpp>
+#include<src/zInterface/functionsets/zFnMeshGraph.cpp>
 #endif
 
 #endif

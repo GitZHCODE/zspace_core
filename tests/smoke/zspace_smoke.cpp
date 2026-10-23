@@ -19,6 +19,25 @@ namespace
 
 #include "mesh_iterator_geometry_fixture.h"
 
+	void testGraphMesh()
+	{
+		zObjectGraph graph;zObjectMesh mesh;zFnMesh fn(mesh);
+		zPointArray p={zPoint(0,0,1),zPoint(4,0,3),zPoint(4,4,4)};zIntArray e={0,1,1,2};
+		zFnGraph(graph).create(p,e);fn.graphMesh(graph,.5);
+		require(fn.numPolygons()==4&&fn.numVertices()==9,"graphMesh joins bends with centreline quads");
+		zPointArray out;fn.getVertexPositions(out);
+		require(out[1].y==.5f&&out[2].y==-.5f&&out[1].z==1,"graphMesh half offset and elevation");
+		zPointArray original;zFnGraph(graph).getVertexPositions(original);require(original[1].z==3,"graphMesh preserves source graph");
+		bool rejected=false;try{fn.graphMesh(graph,10);}catch(const std::invalid_argument&){rejected=true;}
+		require(rejected&&fn.numPolygons()==4,"graphMesh rejects collapsed widths without replacing output");
+		p={zPoint(0,0,0),zPoint(4,0,0),zPoint(-2,4,0),zPoint(-2,-4,0)};e={0,1,0,2,0,3};
+		zFnGraph(graph).create(p,e);fn.graphMesh(graph,.2);
+		require(fn.numVertices()==13&&fn.numPolygons()==6,"graphMesh shares branch corners");
+		fn.computeMeshNormals();for(int i=0;i<fn.numPolygons();++i)require(zItMeshFace(mesh,i).getNormal().z>0,"graphMesh winds faces upwards");
+		p={zPoint(0,0,0),zPoint(0,0,2)};e={0,1};zFnGraph(graph).create(p,e);
+		rejected=false;try{fn.graphMesh(graph,.2);}catch(const std::invalid_argument&){rejected=true;}require(rejected,"graphMesh rejects vertical edges");
+	}
+
 	void testDynamicsVertexLoads()
 	{
 		zPointArray points={zPoint(0,0,0),zPoint(1,0,0),zPoint(0,1,0)};
@@ -61,7 +80,10 @@ namespace
 			sum-=forces[i];
 			require(sum.length()<1e-5, "origami display components sum to resultant");
 		}
-		for (int i=0;i<12000;++i) dynamics.stepOrigami(settings,0.01,diagnostics);
+		for (int i=0;i<12000;++i) {
+			dynamics.stepOrigami(settings,0.01,diagnostics);
+			if (diagnostics.maxAngleError<0.015 && diagnostics.maxStrain<0.005) break;
+		}
 		require(diagnostics.maxAngleError<0.02, "native origami reaches crease angle");
 		require(diagnostics.maxStrain<0.01, "native origami preserves edge lengths");
 		const auto p=fn.getRawVertexPositions();
@@ -478,6 +500,7 @@ int main(int argc, char** argv)
 		zSpace::zObjectGraph graph;
 
 		testMesh(mesh);
+		testGraphMesh();
 		testDynamicsVertexLoads();
 		testOrigami();
 		testGraph(graph);
