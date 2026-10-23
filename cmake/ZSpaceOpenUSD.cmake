@@ -121,7 +121,7 @@ function(zspace_link_openusd target)
     set(PXR_FIND_TBB_IN_CONFIG ON)
     find_package(pxr CONFIG REQUIRED PATHS "${ZSPACE_OPENUSD_ROOT}" NO_DEFAULT_PATH)
     # Monolithic SDKs expose component names as INTERFACE targets only.
-    # usd_m carries the actual shared library/import library (usd_ms on Windows).
+    # usd_m carries the actual shared library/import library (zspace_usd in the isolated Windows SDK).
     if(TARGET usd_m)
       target_link_libraries(${target} PRIVATE usd_m)
     else()

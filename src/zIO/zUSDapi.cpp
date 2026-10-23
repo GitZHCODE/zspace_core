@@ -177,8 +177,9 @@ void USDdoc::open(const std::string &path) {
   if (!stage)
     throw std::runtime_error("Cannot open USD document: " + path);
   impl->stage = stage;
+  lifetime = std::make_shared<int>(0);
 }
-void USDdoc::close() { impl->stage.Reset(); }
+void USDdoc::close() { impl->stage.Reset(); lifetime = std::make_shared<int>(0); }
 zUSDMetadata USDdoc::readMetadata() const {
   auto stage = impl->stage;
   if (!stage)
@@ -251,6 +252,51 @@ USDdoc::readPoints(const std::string &path) const {
     points.push_back({v[0], v[1], v[2]});
   }
   return points;
+}
+USDPrim USDdoc::definePrim(const std::string &path, const std::string &type) {
+  if (!impl->stage) throw std::runtime_error("No USD document.");
+  SdfPath p(path);
+  if (!p.IsAbsolutePath() || !p.IsPrimPath()) throw std::runtime_error("Expected absolute prim path.");
+  if (!impl->stage->DefinePrim(p, TfToken(type))) throw std::runtime_error("Cannot define USD prim.");
+  return getPrimAtPath(path);
+}
+void USDdoc::removePrim(const std::string &path) {
+  if (!impl->stage) throw std::runtime_error("No USD document.");
+  SdfPath p(path);
+  if (!p.IsAbsolutePath() || !p.IsPrimPath()) throw std::runtime_error("Expected absolute prim path.");
+  if (impl->stage->GetPrimAtPath(p) && (!impl->stage->RemovePrim(p) || impl->stage->GetPrimAtPath(p)))
+    throw std::runtime_error("Cannot remove composed prim: " + path);
+}
+void USDdoc::setCustomLayerData(const std::map<std::string, zUSDValue> &values) {
+  if (!impl->stage) throw std::runtime_error("No USD document.");
+  VtDictionary data;
+  for (const auto &entry : values) data[entry.first] = typed(entry.second);
+  impl->stage->GetRootLayer()->SetCustomLayerData(data);
+}
+void USDdoc::createAttribute(const std::string &path, const std::string &name, const std::string &type, bool custom) {
+  auto p = getPrim(impl->stage, path);
+  auto t = SdfSchema::GetInstance().FindType(TfToken(type));
+  if (!t) throw std::runtime_error("Unknown USD attribute type: " + type);
+  auto existing = p.GetAttribute(TfToken(name));
+  if (existing && existing.GetTypeName() != t) throw std::runtime_error("USD attribute type mismatch: " + name);
+  if (!p.CreateAttribute(TfToken(name), t, custom)) throw std::runtime_error("Cannot create USD attribute.");
+}
+std::string USDdoc::attributeType(const std::string &path, const std::string &name) const {
+  auto a = getPrim(impl->stage, path).GetAttribute(TfToken(name));
+  if (!a) throw std::runtime_error("Missing USD attribute: " + name);
+  return a.GetTypeName().GetAsToken().GetString();
+}
+zUSDData USDdoc::getAttributeValue(const std::string &path, const std::string &name) const {
+  auto a = getPrim(impl->stage, path).GetAttribute(TfToken(name));
+  VtValue value;
+  if (!a || !a.Get(&value)) throw std::runtime_error("Missing or unreadable USD attribute: " + name);
+  return decode(value); // Raw values: no implicit primvar flattening or transforms.
+}
+void USDdoc::setAttributeValue(const std::string &path, const std::string &name, const zUSDData &value) {
+  auto a = getPrim(impl->stage, path).GetAttribute(TfToken(name));
+  if (!a) throw std::runtime_error("Missing USD attribute: " + name);
+  if (!a.Set(typed({a.GetTypeName().GetAsToken().GetString(), value})))
+    throw std::runtime_error("Cannot set USD attribute: " + name);
 }
 void USDdoc::applyEdits(const zUSDEdits &edits) {
   if (!impl->stage)
@@ -332,6 +378,13 @@ std::vector<std::array<double, 3>>
 USDdoc::readPoints(const std::string &) const {
   USD_DISABLED;
 }
+USDPrim USDdoc::definePrim(const std::string &, const std::string &) { USD_DISABLED; }
+void USDdoc::removePrim(const std::string &) { USD_DISABLED; }
+void USDdoc::setCustomLayerData(const std::map<std::string, zUSDValue> &) { USD_DISABLED; }
+void USDdoc::createAttribute(const std::string &, const std::string &, const std::string &, bool) { USD_DISABLED; }
+std::string USDdoc::attributeType(const std::string &, const std::string &) const { USD_DISABLED; }
+zUSDData USDdoc::getAttributeValue(const std::string &, const std::string &) const { USD_DISABLED; }
+void USDdoc::setAttributeValue(const std::string &, const std::string &, const zUSDData &) { USD_DISABLED; }
 void USDdoc::applyEdits(const zUSDEdits &) { USD_DISABLED; }
 void USDdoc::save(const std::string &) const { USD_DISABLED; }
 std::string USDdoc::text() const { USD_DISABLED; }
@@ -595,3 +648,28 @@ void USDdoc::writeNormals(zUSDPrimEdit &prim, const std::string &name,
   prim.attributes[name] = std::move(attribute);
 }
 } // namespace zSpace
+
+namespace zSpace {
+USDPrim USDdoc::getPrimAtPath(const std::string &path) { return USDPrim(*this, path); }
+USDPrim::USDPrim(USDdoc &doc, std::string p) : owner(&doc), lifetime(doc.lifetime), path(std::move(p)) {}
+USDAttribute::USDAttribute(USDdoc &doc, std::string p, std::string n) : owner(&doc), lifetime(doc.lifetime), path(std::move(p)), name(std::move(n)) {}
+USDdoc &USDPrim::document() const {
+  if (lifetime.expired()) throw std::runtime_error("Expired USD prim handle.");
+  return *owner;
+}
+USDdoc &USDAttribute::document() const {
+  if (lifetime.expired()) throw std::runtime_error("Expired USD attribute handle.");
+  return *owner;
+}
+bool USDPrim::isValid() const { try { document().readPrim(path); return true; } catch (...) { return false; } }
+bool USDAttribute::isValid() const { try { return document().hasAttribute(path, name); } catch (...) { return false; } }
+std::string USDPrim::getTypeName() const { return document().readPrim(path).type; }
+std::string USDAttribute::getTypeName() const { return document().attributeType(path, name); }
+USDAttribute USDPrim::getAttribute(const std::string &name) const { return USDAttribute(document(), path, name); }
+USDAttribute USDPrim::createAttribute(const std::string &name, const std::string &type, bool custom) {
+  document().createAttribute(path, name, type, custom);
+  return getAttribute(name);
+}
+zUSDData USDAttribute::get() const { return document().getAttributeValue(path, name); }
+void USDAttribute::set(const zUSDData &value) { document().setAttributeValue(path, name, value); }
+}

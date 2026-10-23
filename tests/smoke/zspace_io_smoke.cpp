@@ -1,3 +1,4 @@
+#include <zspace/zIO/zUSDapi.h>
 #include <zspace/io.h>
 #include <depends/nlohmann/json.hpp>
 
@@ -333,6 +334,44 @@ def Xform "Asset" {
 	}
 }
 
+#if defined(ZSPACE_TEST_OPENUSD)
+void testUSDObjectAPI(const std::filesystem::path &directory) {
+  using namespace zSpace;
+  const auto source = directory / "objects.usda";
+  { std::ofstream file(source); file << R"(#usda 1.0
+def Mesh "Block" {
+  point3f[] points = [(1,2,3)]
+  double3 xformOp:translate = (10,0,0)
+  uniform token[] xformOpOrder = ["xformOp:translate"]
+  float[] primvars:test = [10,20] (interpolation = "vertex")
+  int[] primvars:test:indices = [1,0,1]
+}
+)"; }
+  USDdoc doc; doc.open(source.string());
+  auto prim = doc.getPrimAtPath("/Block");
+  require(prim.isValid() && prim.getTypeName() == "Mesh", "object prim lookup");
+  auto points = prim.getAttribute("points");
+  require(points.get<std::vector<float>>()[0] == 1, "raw points remain local");
+  require(doc.readWorldPoints("/Block")[0][0] == 11, "explicit world transform");
+  require(prim.getAttribute("primvars:test").get<std::vector<float>>().size() == 2, "raw primvar is not flattened");
+  require(!prim.getAttribute("missing").isValid(), "missing attribute validity");
+  auto output = doc.definePrim("/Output", "Scope");
+  auto width = output.createAttribute("width", "float");
+  require(width.getTypeName() == "float", "unvalued attribute type");
+  width.set(2.5f); require(width.get<float>() == 2.5f, "direct float set/get");
+  bool rejected = false;
+  try { width.set(std::string("bad")); } catch (...) { rejected = true; }
+  require(rejected && width.get<float>() == 2.5f, "type mismatch preserves value");
+  output.createAttribute("normals", "normal3f[]").set(std::vector<float>{0,0,1});
+  const auto saved = directory / "objects-out.usda"; doc.save(saved.string());
+  doc.open(saved.string());
+  require(!width.isValid() && !prim.isValid(), "reopen invalidates old handles");
+  auto reopened = doc.getPrimAtPath("/Output").getAttribute("width");
+  require(reopened.get<float>() == 2.5f, "roundtrip direct edits");
+  doc.close(); require(!reopened.isValid(), "close invalidates handles");
+}
+#endif
+
 int main()
 {
 	try
@@ -343,6 +382,7 @@ int main()
 		testMesh(directory);
 #if defined(ZSPACE_TEST_OPENUSD)
 		testExternalUSD(directory);
+        testUSDObjectAPI(directory);
 #endif
 		testExternalOBJ(directory);
 		testNonManifoldMeshIO(directory);

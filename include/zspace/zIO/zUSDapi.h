@@ -1,5 +1,9 @@
 #pragma once
 #include <array>
+#include <cmath>
+#include <limits>
+#include <stdexcept>
+#include <type_traits>
 #include <map>
 #include <memory>
 #include <string>
@@ -42,6 +46,8 @@ struct zUSDEdits {
   std::map<std::string, zUSDValue> customLayerData;
   std::vector<std::string> removeCustomLayerData;
 };
+class USDPrim;
+class USDAttribute;
 class ZSPACE_IO USDdoc {
 public:
   USDdoc();
@@ -49,6 +55,11 @@ public:
   USDdoc(const USDdoc &) = delete;
   USDdoc &operator=(const USDdoc &) = delete;
   static bool supported();
+  USDPrim getPrimAtPath(const std::string &path);
+  USDPrim definePrim(const std::string &path, const std::string &type);
+  void removePrim(const std::string &path);
+  void setCustomLayerData(const std::map<std::string, zUSDValue> &values);
+  std::vector<std::array<double, 3>> readWorldPoints(const std::string &path) const { return readPoints(path); }
   void open(const std::string &path);
   void close();
   zUSDMetadata readMetadata() const;
@@ -137,7 +148,70 @@ public:
   std::string text() const;
 
 private:
+  friend class USDPrim;
+  friend class USDAttribute;
+  std::shared_ptr<int> lifetime = std::make_shared<int>(0);
+  void createAttribute(const std::string &path, const std::string &name, const std::string &type, bool custom);
+  zUSDData getAttributeValue(const std::string &path, const std::string &name) const;
+  std::string attributeType(const std::string &path, const std::string &name) const;
+  void setAttributeValue(const std::string &path, const std::string &name, const zUSDData &value);
   struct Impl;
   std::unique_ptr<Impl> impl;
+};
+// Lightweight path handles; close/open or document destruction invalidates them.
+class ZSPACE_IO USDAttribute {
+public:
+  bool isValid() const;
+  std::string getTypeName() const;
+  zUSDData get() const;
+  template<class T> T get() const {
+    const auto value = get();
+    if (const auto *exact = std::get_if<T>(&value)) return *exact;
+    // Preserve supported float/double conversions; no implicit bool/int coercion.
+    if constexpr (std::is_same_v<T, float> || std::is_same_v<T, double>) {
+      using Other = std::conditional_t<std::is_same_v<T, float>, double, float>;
+      if (const auto *v = std::get_if<Other>(&value)) {
+        if (!std::isfinite(*v) || std::abs(double(*v)) > std::numeric_limits<T>::max())
+          throw std::runtime_error("USD numeric overflow.");
+        return static_cast<T>(*v);
+      }
+    } else if constexpr (std::is_same_v<T, std::vector<float>> || std::is_same_v<T, std::vector<double>>) {
+      using E = typename T::value_type;
+      using Other = std::conditional_t<std::is_same_v<E, float>, double, float>;
+      if (const auto *v = std::get_if<std::vector<Other>>(&value)) {
+        T out; out.reserve(v->size());
+        for (auto n : *v) {
+          if (!std::isfinite(n) || std::abs(double(n)) > std::numeric_limits<E>::max())
+            throw std::runtime_error("USD numeric overflow.");
+          out.push_back(static_cast<E>(n));
+        }
+        return out;
+      }
+    }
+    throw std::runtime_error("USD attribute type mismatch.");
+  }
+  void set(const zUSDData &value);
+private:
+  friend class USDPrim;
+  USDAttribute(USDdoc &doc, std::string path, std::string name);
+  USDdoc &document() const;
+  USDdoc *owner;
+  std::weak_ptr<int> lifetime;
+  std::string path, name;
+};
+class ZSPACE_IO USDPrim {
+public:
+  bool isValid() const;
+  std::string getTypeName() const;
+  const std::string &getPath() const { return path; }
+  USDAttribute getAttribute(const std::string &name) const;
+  USDAttribute createAttribute(const std::string &name, const std::string &type, bool custom = true);
+private:
+  friend class USDdoc;
+  USDPrim(USDdoc &doc, std::string path);
+  USDdoc &document() const;
+  USDdoc *owner;
+  std::weak_ptr<int> lifetime;
+  std::string path;
 };
 } // namespace zSpace

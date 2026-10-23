@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.21)
+project(zspace_core_python LANGUAGES CXX)
+set(ZSPACE_CORE_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/.." CACHE PATH "Core source tree")
+include("${CMAKE_CURRENT_SOURCE_DIR}/HeadlessPython.cmake")
+add_subdirectory("${ZSPACE_CORE_SOURCE}" "${CMAKE_BINARY_DIR}/native-core")
+set(ZSPACE_PYTHON_PACKAGE_DIR "${CMAKE_BINARY_DIR}/package/zspace" CACHE PATH "Python package output")
+add_subdirectory(core)

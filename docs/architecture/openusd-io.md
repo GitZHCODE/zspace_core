@@ -309,3 +309,46 @@ edits.prims.push_back({"/Result", "Scope", {}});
 USDdoc::writeFloat(edits.prims.back(), "spacing", spacing);
 doc.applyEdits(edits);
 ```
+
+
+## Object access API
+
+`USDdoc.getPrimAtPath(path)` returns a lightweight `USDPrim` handle.
+`prim.getAttribute(name)` returns a `USDAttribute` handle. `isValid()` tests
+existence, not whether an attribute has an authored value. Handles expire when
+ their document is destroyed, closed or reopened. A missing value throws on `get()`.
+
+```cpp
+USDdoc doc;
+doc.open("input.usda");
+auto settings = doc.getPrimAtPath("/Slicer_setting");
+double spacing = settings.getAttribute("slicer:LayerSpacing").get<double>();
+auto output = doc.definePrim("/TDP_gcode", "Scope");
+output.createAttribute("printWidths", "float[]").set(widths);
+doc.save("output.usda");
+```
+
+Python and JavaScript expose the same lower-camel-case method names, with
+`attribute.get()` returning the stored value and `attribute.set(value)` selecting
+conversion from the attribute's USD type. C++ additionally provides `get<T>()`.
+Float/double reads allow checked conversion; other mismatches throw. Vector
+attributes retain their USD type/role but use flat XYZ numeric arrays at this
+boundary. The explicit `readWorldPoints(path)` convenience returns transformed
+points (C++/Python triples; JavaScript flat triples) in source units and up axis.
+
+`get()` reads default-time, local, raw attribute values. It does **not** flatten
+indexed primvars or apply transforms, unit scaling or up-axis changes. Existing
+`readAttribute()` retains its legacy primvar-flattening behavior. This API is a
+subset of PXR, not a complete replacement for schemas, layers or time samples.
+
+`createAttribute()` authors a declaration, and `set()` modifies the open stage
+immediately without saving to disk or cloning the full document. `save()` exports
+its root layer. Sequential writes are not a transaction: a later failure leaves
+successful earlier writes in memory. The existing `applyEdits()` batch API remains
+available for callers requiring rollback on failure. `setCustomLayerData()`
+replaces the dictionary; read and merge it first to preserve unrelated metadata.
+
+Python bindings are conditional on `ZSPACE_PYTHON_WITH_USD`; Blender's existing
+USD-disabled build continues using its native `pxr` module. The WASM C bridge
+adds direct operations alongside the existing batch protocol; its document is
+still single-instance and browser callbacks must remain synchronous.

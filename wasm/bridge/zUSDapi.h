@@ -41,6 +41,28 @@ template <class T> zSpace::zUSDData buffer(const void *p, int count) {
 }
 } // namespace USDdocBridge
 extern "C" {
+EMSCRIPTEN_KEEPALIVE int USDdoc_definePrimDirect(const char *p, const char *t) {
+  return USDdocBridge::query([&] { USDdocBridge::document.definePrim(p ? p : "", t ? t : ""); });
+}
+EMSCRIPTEN_KEEPALIVE int USDdoc_removePrimDirect(const char *p) {
+  return USDdocBridge::query([&] { USDdocBridge::document.removePrim(p ? p : ""); });
+}
+EMSCRIPTEN_KEEPALIVE int USDdoc_createAttribute(const char *p, const char *n, const char *t, int custom) {
+  return USDdocBridge::query([&] { USDdocBridge::document.getPrimAtPath(p ? p : "").createAttribute(n ? n : "", t ? t : "", custom != 0); });
+}
+EMSCRIPTEN_KEEPALIVE int USDdoc_attributeType(const char *p, const char *n) {
+  return USDdocBridge::query([&] { USDdocBridge::attribute.type = USDdocBridge::document.getPrimAtPath(p ? p : "").getAttribute(n ? n : "").getTypeName(); });
+}
+EMSCRIPTEN_KEEPALIVE int USDdoc_getAttribute(const char *p, const char *n) {
+  return USDdocBridge::query([&] {
+    auto a = USDdocBridge::document.getPrimAtPath(p ? p : "").getAttribute(n ? n : "");
+    USDdocBridge::attribute.type = a.getTypeName();
+    USDdocBridge::valueData = a.get();
+  });
+}
+EMSCRIPTEN_KEEPALIVE int USDdoc_setAttributeDirect(const char *p, const char *n) {
+  return USDdocBridge::query([&] { USDdocBridge::document.getPrimAtPath(p ? p : "").getAttribute(n ? n : "").set(USDdocBridge::valueData); });
+}
 EMSCRIPTEN_KEEPALIVE int USDdoc_open(const char *path) {
   return USDdocBridge::query([&] {
     USDdocBridge::editing = false;
