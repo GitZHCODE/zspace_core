@@ -1,4 +1,5 @@
 #include <zspace/zInterface/functionsets/zFnMesh.h>
+#include <zspace/zInterface/functionsets/zFnGraph.h>
 #include <zspace/zInterface/functionsets/zFnMeshDynamics.h>
 #include <zspace/zInterface/functionsets/zFnParticle.h>
 #include <zspace/zInterface/objects/zObjectMesh.h>
@@ -18,6 +19,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdint>
+#include <deque>
 #include <exception>
 #include <map>
 #include <stdexcept>
@@ -143,13 +145,66 @@ namespace
 		std::vector<EdgePair> edgePairs;
 		std::vector<unsigned char> edgeActiveMask;
 		std::vector<double> lastUpdateDisplacements;
+		zSpace::zIntArray cachedTriangles;
 		double cachedMeshScale = 1.0;
+
+		const zSpace::zIntArray& getCachedTriangles()
+		{
+			if (cachedTriangles.empty() && meshObj)
+			{
+				zSpace::zInt2DArray faceTris;
+				getMeshTriangles(faceTris);
+				for (const auto& face : faceTris)
+				{
+					cachedTriangles.insert(cachedTriangles.end(), face.begin(), face.end());
+				}
+			}
+			return cachedTriangles;
+		}
+
+		void addMinimizeAreaForce(double strength)
+		{
+			const int nV = static_cast<int>(dynamicPositions.size());
+			if (nV == 0 || particlesObj.size() != static_cast<std::size_t>(nV)) return;
+
+			const auto& tris = getCachedTriangles();
+			const zSpace::zPoint* vPositions = dynamicPositions.data();
+
+			for (std::size_t j = 0; j + 2 < tris.size(); j += 3)
+			{
+				const int i0 = tris[j + 0];
+				const int i1 = tris[j + 1];
+				const int i2 = tris[j + 2];
+				zSpace::zPoint PA = vPositions[i0];
+				zSpace::zPoint PB = vPositions[i1];
+				zSpace::zPoint PC = vPositions[i2];
+
+				zSpace::zVector AB = PB - PA;
+				zSpace::zVector BC = PC - PB;
+				zSpace::zVector CA = PA - PC;
+
+				zSpace::zVector Normal = AB ^ BC;
+				const double normalLength = Normal.length();
+				if (!std::isfinite(normalLength) || normalLength <= 0.0) continue;
+				Normal /= static_cast<float>(normalLength);
+
+				const float halfStrength = static_cast<float>(0.5 * strength);
+				zSpace::zVector f0 = (BC ^ Normal) * halfStrength;
+				zSpace::zVector f1 = (CA ^ Normal) * halfStrength;
+				zSpace::zVector f2 = (f0 * -1.0f) - f1;
+
+				zSpace::zFnParticle(particlesObj[i0]).addForce(f0);
+				zSpace::zFnParticle(particlesObj[i1]).addForce(f1);
+				zSpace::zFnParticle(particlesObj[i2]).addForce(f2);
+			}
+		}
 
 		void createLinked(zSpace::zObjectMesh& mesh)
 		{
 			meshObj = &mesh;
 			particlesObj.clear();
 			lastUpdateDisplacements.clear();
+			cachedTriangles.clear();
 			const auto& meshData = zSpace::zMeshObjectStorage::read(mesh);
 			dynamicPositions = meshData.positions;
 
@@ -372,6 +427,7 @@ namespace
 			edgePairs.clear();
 			edgeActiveMask.clear();
 			lastUpdateDisplacements.clear();
+			cachedTriangles.clear();
 			cachedMeshScale = 1.0;
 		}
 
@@ -418,11 +474,10 @@ namespace
 		std::vector<double> vertexAreas()
 		{
 			std::vector<double> areas(dynamicPositions.size(), 0.0);
-			zSpace::zInt2DArray triangles;
-			getMeshTriangles(triangles);
-			for (const auto& face : triangles) for (std::size_t j = 0; j + 2 < face.size(); j += 3)
+			const auto& tris = getCachedTriangles();
+			for (std::size_t j = 0; j + 2 < tris.size(); j += 3)
 			{
-				const int a = face[j], b = face[j+1], c = face[j+2];
+				const int a = tris[j], b = tris[j+1], c = tris[j+2];
 				zSpace::zVector ab = dynamicPositions[b] - dynamicPositions[a];
 				zSpace::zVector ac = dynamicPositions[c] - dynamicPositions[a];
 				const double thirdArea = (ab ^ ac).length() / 6.0;
@@ -442,14 +497,13 @@ namespace
 			double meanArea = 0.0;
 			for (double value : areas) meanArea += value;
 			meanArea /= std::max<std::size_t>(1, areas.size());
-			zSpace::zInt2DArray triangles;
-			getMeshTriangles(triangles);
+			const auto& tris = getCachedTriangles();
 			// Evaluate the same triangulation throughout backtracking and reject element flips.
 			auto area = [&](const zSpace::zPointArray& points, bool checkOrientation) {
 				double total = 0.0;
-				for (const auto& face : triangles) for (std::size_t j = 0; j + 2 < face.size(); j += 3)
+				for (std::size_t j = 0; j + 2 < tris.size(); j += 3)
 				{
-					const int a = face[j], b = face[j + 1], c = face[j + 2];
+					const int a = tris[j], b = tris[j + 1], c = tris[j + 2];
 					auto cross = [&](const zSpace::zPointArray& p) {
 						const double ux = double(p[b].x)-p[a].x, uy = double(p[b].y)-p[a].y, uz = double(p[b].z)-p[a].z;
 						const double vx = double(p[c].x)-p[a].x, vy = double(p[c].y)-p[a].y, vz = double(p[c].z)-p[a].z;
@@ -509,7 +563,7 @@ namespace
 			return accepted;
 		}
 
-		bool updateGuarded(double dT, zSpace::zIntergrationType type, double maxVertexStep)
+		bool updateGuarded(double dT, zSpace::zIntergrationType type, double maxVertexStep, bool computeNormals = true)
 		{
 			zSpace::zPoint* positions = dynamicPositions.empty() ? nullptr : dynamicPositions.data();
 			const int vertexCount = static_cast<int>(dynamicPositions.size());
@@ -578,7 +632,7 @@ namespace
 
 			zSpace::zFnMesh meshFn(*meshObj);
 			meshFn.setVertexPositions(dynamicPositions);
-			meshFn.computeMeshNormals();
+			if (computeNormals) meshFn.computeMeshNormals();
 			return true;
 		}
 	};
@@ -622,7 +676,7 @@ namespace
 		return any && satisfied;
 	}
 	zSpace::zPointArray gSolverInitialPositions;
-	std::vector<zSpace::zPointArray> gSolverHistory;
+	std::deque<zSpace::zPointArray> gSolverHistory;
 	zSpace::zIntArray gSolverSupports;
 	zSpace::zIntArray gSolverRemovedEdges;
 	std::vector<unsigned char> gSolverSupportMask;
@@ -1742,6 +1796,30 @@ extern "C"
 		} catch (const std::exception& e) { gBuffers.lastError = e.what(); return 0; }
 	}
 
+	ZSPACE_WASM_EXPORT int zspace_mesh_graph_from_buffers(const float* positions, int positionCount,
+		const std::uint32_t* edges, int edgeIndexCount, double offset)
+	{
+		try {
+			gBuffers.lastError.clear();
+			if (!positions || !edges || positionCount<=0 || positionCount%3 || edgeIndexCount<=0 || edgeIndexCount%2)
+				throw std::invalid_argument("Invalid graph buffers.");
+			zSpace::zPointArray points; zSpace::zIntArray connects;
+			for(int i=0;i<positionCount;i+=3) {
+				if(!std::isfinite(positions[i])||!std::isfinite(positions[i+1])||!std::isfinite(positions[i+2]))
+					throw std::invalid_argument("Graph positions must be finite.");
+				points.emplace_back(positions[i],positions[i+1],positions[i+2]);
+			}
+			for(int i=0;i<edgeIndexCount;++i) {
+				if(edges[i]>=points.size())throw std::invalid_argument("Graph vertex ID out of range.");
+				connects.push_back(int(edges[i]));
+			}
+			zSpace::zObjectGraph graph;zSpace::zFnGraph(graph).create(points,connects);
+			zSpace::zObjectMesh candidate;zSpace::zFnMesh(candidate).graphMesh(graph,offset);
+			activeMeshObject()=std::move(candidate);resetSolverState();gHasMesh=true;
+			clearPrimitiveBuffers();copyActiveMeshToRenderBuffers();return 1;
+		} catch(const std::exception& e) {gBuffers.lastError=e.what();return 0;}
+	}
+
 	ZSPACE_WASM_EXPORT int zspace_mesh_read(const char* path)
 	{
 		try
@@ -2519,7 +2597,7 @@ extern "C"
 			{
 				const zSpace::zPointArray beforeStep = currentMeshPositions();
 				gSolverHistory.push_back(beforeStep);
-				if (gSolverHistory.size() > 240) gSolverHistory.erase(gSolverHistory.begin());
+				if (gSolverHistory.size() > 240) gSolverHistory.pop_front();
 
 				bool frameValid = true;
 				for (int subStep = 0; subStep < subStepCount; ++subStep)
@@ -2556,7 +2634,7 @@ extern "C"
 					gMeshDynamics.addDragForce(gSolverParams.dragStrength, gSolverParams.drag);
 
 					if (!gMeshDynamics.limitForces(meshStepScale, subTimeStep, 0.25) ||
-						!gMeshDynamics.updateGuarded(subTimeStep, gSolverParams.integrationType, maxVertexStep))
+						!gMeshDynamics.updateGuarded(subTimeStep, gSolverParams.integrationType, maxVertexStep, false))
 					{
 						frameValid = false;
 						break;
@@ -2585,6 +2663,10 @@ extern "C"
 				if (gSolverEquilibriumReached) break;
 			}
 
+			if (gSolverParams.mode != 2)
+			{
+				zSpace::zFnMesh(activeMeshObject()).computeMeshNormals();
+			}
 			copyActiveMeshToRenderBuffers();
 			copySolverPreviewToPrimitiveBuffers(false);
 			return 1;

@@ -73,24 +73,38 @@ namespace zSpace
 
 		if (fixBoundary)
 		{
-			std::map<std::pair<int, int>, int> edgeUseCount;
-			for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+			const int nE = data.numEdges();
+			if (data.edgeUseCounts.size() == static_cast<size_t>(nE) &&
+				data.edgeVertexIndices.size() == static_cast<size_t>(nE * 2))
 			{
-				const int begin = data.faceOffsets[faceId];
-				const int end = data.faceOffsets[faceId + 1];
-				for (int i = begin; i < end; ++i)
+				for (int edgeId = 0; edgeId < nE; ++edgeId)
 				{
-					const int next = (i + 1 < end) ? i + 1 : begin;
-					const auto key = std::minmax(data.faceVertexIndices[i], data.faceVertexIndices[next]);
-					edgeUseCount[key]++;
+					if (data.edgeUseCounts[edgeId] != 1) continue;
+					boundaryVertices[data.edgeVertexIndices[edgeId * 2]] = true;
+					boundaryVertices[data.edgeVertexIndices[edgeId * 2 + 1]] = true;
 				}
 			}
-
-			for (const auto& item : edgeUseCount)
+			else
 			{
-				if (item.second != 1) continue;
-				boundaryVertices[item.first.first] = true;
-				boundaryVertices[item.first.second] = true;
+				std::map<std::pair<int, int>, int> edgeUseCount;
+				for (int faceId = 0; faceId < data.numFaces(); ++faceId)
+				{
+					const int begin = data.faceOffsets[faceId];
+					const int end = data.faceOffsets[faceId + 1];
+					for (int i = begin; i < end; ++i)
+					{
+						const int next = (i + 1 < end) ? i + 1 : begin;
+						const auto key = std::minmax(data.faceVertexIndices[i], data.faceVertexIndices[next]);
+						edgeUseCount[key]++;
+					}
+				}
+
+				for (const auto& item : edgeUseCount)
+				{
+					if (item.second != 1) continue;
+					boundaryVertices[item.first.first] = true;
+					boundaryVertices[item.first.second] = true;
+				}
 			}
 		}
 
@@ -138,6 +152,24 @@ namespace zSpace
 	ZSPACE_INLINE void zFnMeshDynamics::setFixed_boundary()
 	{
 		const auto& data = zMeshObjectStorage::read(*meshObj);
+		const int nE = data.numEdges();
+		if (data.edgeUseCounts.size() == static_cast<size_t>(nE) &&
+			data.edgeVertexIndices.size() == static_cast<size_t>(nE * 2))
+		{
+			for (int edgeId = 0; edgeId < nE; ++edgeId)
+			{
+				if (data.edgeUseCounts[edgeId] != 1) continue;
+
+				for (int vertexId : { data.edgeVertexIndices[edgeId * 2], data.edgeVertexIndices[edgeId * 2 + 1] })
+				{
+					if (vertexId < 0 || vertexId >= static_cast<int>(particlesObj.size())) continue;
+					zFnParticle fnParticle(particlesObj[vertexId]);
+					fnParticle.setFixed(true);
+				}
+			}
+			return;
+		}
+
 		std::map<std::pair<int, int>, int> edgeUseCount;
 		for (int faceId = 0; faceId < data.numFaces(); ++faceId)
 		{
@@ -296,7 +328,7 @@ namespace zSpace
 	{
 		if (!std::isfinite(strength) || strength < 0 || !std::isfinite(tolerance) || tolerance < 0)
 			throw std::invalid_argument("Invalid planarity strength or tolerance.");
-		computeMeshNormals();
+		if (type == zVolumePlanar) computeMeshNormals();
 		// Read face-list storage directly: mutable topology iterators invalidate raw position buffers.
 		const auto& data = zMeshObjectStorage::read(*meshObj);
 		forceDir.assign(data.numVertices(), zVector());
